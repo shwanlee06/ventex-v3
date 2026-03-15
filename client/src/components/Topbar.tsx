@@ -25,8 +25,9 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
   const [, navigate] = useLocation();
 
   const handleSignOut = useCallback(() => {
-    toast.info("Signed out successfully");
-  }, []);
+    toast.info("Signed out — redirecting to landing");
+    setTimeout(() => navigate("/landing"), 600);
+  }, [navigate]);
 
   return (
     <>
@@ -79,7 +80,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => toast.info("Profile page coming soon")}>
+                <DropdownMenuItem onClick={() => navigate("/profile")}>
                   <User className="size-4 mr-2" />
                   Profile
                 </DropdownMenuItem>
@@ -88,7 +89,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
                   Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
+                <DropdownMenuItem onClick={handleSignOut} className="text-red-400 focus:text-red-400">
                   <LogOut className="size-4 mr-2" />
                   Sign out
                 </DropdownMenuItem>

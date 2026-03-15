@@ -4,6 +4,8 @@
  * Fonts: IBM Plex Mono (body), Bebas Neue (display), Share Tech Mono (data)
  */
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useLocation } from "wouter";
+import { toast } from "sonner";
 
 /* ─── helpers ─── */
 function estNow() {
@@ -171,6 +173,83 @@ const LOADER_MSGS = [
   "ACCESS GRANTED_",
 ];
 
+/* cipher characters for the decode effect */
+const CIPHER_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*!?<>{}[]=/+~^|";
+const TARGET_WORD = "ATLAS";
+const CIPHER_GRID_ROWS = 12;
+const CIPHER_GRID_COLS = 24;
+
+function useCipherDecode() {
+  const [grid, setGrid] = useState<string[][]>([]);
+  const [phase, setPhase] = useState<"scramble" | "converge" | "reveal" | "done">("scramble");
+  const [revealedLetters, setRevealedLetters] = useState(0);
+  const frameRef = useRef<number>(0);
+  const startRef = useRef(0);
+
+  useEffect(() => {
+    // Initialize random grid
+    const initGrid = () => {
+      const g: string[][] = [];
+      for (let r = 0; r < CIPHER_GRID_ROWS; r++) {
+        const row: string[] = [];
+        for (let c = 0; c < CIPHER_GRID_COLS; c++) {
+          row.push(CIPHER_CHARS[Math.floor(Math.random() * CIPHER_CHARS.length)]);
+        }
+        g.push(row);
+      }
+      return g;
+    };
+
+    setGrid(initGrid());
+    startRef.current = performance.now();
+
+    // Phase 1: Random scramble (0-1500ms) — characters keep changing randomly
+    const scrambleInterval = setInterval(() => {
+      setGrid(prev => prev.map(row =>
+        row.map(() => CIPHER_CHARS[Math.floor(Math.random() * CIPHER_CHARS.length)])
+      ));
+    }, 50);
+
+    // Phase 2: Converge (1500ms) — grid starts collapsing toward center
+    const t1 = setTimeout(() => {
+      setPhase("converge");
+      clearInterval(scrambleInterval);
+    }, 1500);
+
+    // Phase 3: Reveal ATLAS letter by letter (2200ms)
+    const t2 = setTimeout(() => {
+      setPhase("reveal");
+    }, 2200);
+
+    // Reveal each letter with delay
+    const letterTimers = TARGET_WORD.split("").map((_, i) =>
+      setTimeout(() => setRevealedLetters(i + 1), 2200 + i * 250)
+    );
+
+    // Phase 4: Done (3700ms)
+    const t3 = setTimeout(() => setPhase("done"), 3700);
+
+    return () => {
+      clearInterval(scrambleInterval);
+      [t1, t2, t3, ...letterTimers].forEach(clearTimeout);
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    };
+  }, []);
+
+  // During converge phase, keep scrambling but fade chars
+  useEffect(() => {
+    if (phase !== "converge") return;
+    const iv = setInterval(() => {
+      setGrid(prev => prev.map(row =>
+        row.map(() => CIPHER_CHARS[Math.floor(Math.random() * CIPHER_CHARS.length)])
+      ));
+    }, 60);
+    return () => clearInterval(iv);
+  }, [phase]);
+
+  return { grid, phase, revealedLetters };
+}
+
 const HERO_READOUTS = [
   "// SYSTEM STATUS",
   "ATLAS CORE ........ [ONLINE]",
@@ -286,11 +365,13 @@ function Section({
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════ */
 export default function SpyOps() {
+  const [, navigate] = useLocation();
   /* ─── state ─── */
   const [loading, setLoading] = useState(true);
   const [loaderStep, setLoaderStep] = useState(0); // 0-4
   const [loaderMsg, setLoaderMsg] = useState(0);
   const [loaderBar, setLoaderBar] = useState(0);
+  const cipher = useCipherDecode();
   const [clock, setClock] = useState(fmtClock(estNow()));
   const [scrollY, setScrollY] = useState(0);
   const [scrollPct, setScrollPct] = useState(0);
@@ -446,7 +527,7 @@ export default function SpyOps() {
         }}
       />
 
-      {/* ═══ SECTION 1 — LOADING SCREEN ═══ */}
+      {/* ═══ SECTION 1 — CIPHER DECODE LOADING SCREEN ═══ */}
       {loading && (
         <div
           style={{
@@ -459,91 +540,144 @@ export default function SpyOps() {
             alignItems: "center",
             justifyContent: "center",
             cursor: "none",
+            overflow: "hidden",
           }}
         >
+          {/* Background cipher grid — random characters filling the screen */}
           <div
             style={{
-              opacity: loaderStep >= 1 ? 1 : 0,
-              transition: "opacity 0.5s",
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: "clamp(36px, 6vw, 60px)",
-              letterSpacing: "0.3em",
-              color: "#fff",
-              textAlign: "center",
-            }}
-          >
-            ROYALTON INVESTMENTS
-          </div>
-          <div
-            style={{
-              opacity: loaderStep >= 2 ? 1 : 0,
-              transition: "opacity 0.5s",
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
               fontFamily: "'Share Tech Mono', monospace",
-              fontSize: 11,
-              color: "#555",
-              letterSpacing: "0.3em",
-              marginTop: 16,
-              textAlign: "center",
-            }}
-          >
-            ENGINEERED BY
-          </div>
-          <div
-            style={{
-              opacity: loaderStep >= 3 ? 1 : 0,
-              transition: "opacity 0.5s",
-              fontFamily: "'Share Tech Mono', monospace",
-              fontSize: 13,
-              color: "#888",
+              fontSize: "clamp(12px, 1.5vw, 18px)",
+              lineHeight: 1.8,
               letterSpacing: "0.5em",
-              marginTop: 8,
-              textAlign: "center",
+              color: cipher.phase === "converge" ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.15)",
+              transition: "color 0.5s, opacity 0.5s",
+              opacity: cipher.phase === "reveal" || cipher.phase === "done" ? 0 : 1,
+              pointerEvents: "none",
             }}
           >
-            ATLAS
+            {cipher.grid.map((row, ri) => (
+              <div key={ri} style={{ whiteSpace: "nowrap" }}>
+                {row.map((ch, ci) => (
+                  <span key={ci}>{ch}</span>
+                ))}
+              </div>
+            ))}
           </div>
-          {/* progress bar */}
+
+          {/* Center: ATLAS reveal */}
           <div
             style={{
-              marginTop: 32,
-              width: 280,
-              height: 1,
-              background: "#222",
-              opacity: loaderStep >= 4 ? 1 : 0,
-              transition: "opacity 0.3s",
+              position: "relative",
+              zIndex: 2,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 0,
             }}
           >
+            {/* The ATLAS letters */}
             <div
               style={{
-                width: `${loaderBar}%`,
-                height: "100%",
-                background: "#fff",
+                display: "flex",
+                gap: "clamp(8px, 2vw, 24px)",
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: "clamp(80px, 18vw, 220px)",
+                letterSpacing: "0.1em",
+                lineHeight: 1,
+                color: "#fff",
               }}
-            />
+            >
+              {TARGET_WORD.split("").map((letter, i) => {
+                const isRevealed = cipher.revealedLetters > i;
+                const isScrambling = cipher.phase === "scramble" || cipher.phase === "converge";
+                return (
+                  <span
+                    key={i}
+                    style={{
+                      display: "inline-block",
+                      opacity: isRevealed ? 1 : isScrambling ? 0 : 0.3,
+                      transform: isRevealed ? "translateY(0) scale(1)" : "translateY(20px) scale(0.8)",
+                      transition: "opacity 0.3s ease, transform 0.4s ease",
+                      textShadow: isRevealed ? "0 0 40px rgba(255,255,255,0.3)" : "none",
+                    }}
+                  >
+                    {isRevealed ? letter : CIPHER_CHARS[Math.floor(Math.random() * CIPHER_CHARS.length)]}
+                  </span>
+                );
+              })}
+            </div>
+
+            {/* Subtitle — appears after ATLAS is revealed */}
+            <div
+              style={{
+                fontFamily: "'Share Tech Mono', monospace",
+                fontSize: 11,
+                letterSpacing: "0.4em",
+                color: "#555",
+                marginTop: 24,
+                opacity: cipher.phase === "done" ? 1 : 0,
+                transform: cipher.phase === "done" ? "translateY(0)" : "translateY(10px)",
+                transition: "opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s",
+                textAlign: "center",
+              }}
+            >
+              VENTURE INTELLIGENCE OPERATIONS
+            </div>
+
+            {/* Progress bar */}
+            <div
+              style={{
+                marginTop: 32,
+                width: 280,
+                height: 1,
+                background: "#222",
+                opacity: loaderStep >= 4 ? 1 : 0,
+                transition: "opacity 0.3s",
+              }}
+            >
+              <div
+                style={{
+                  width: `${loaderBar}%`,
+                  height: "100%",
+                  background: "#fff",
+                }}
+              />
+            </div>
+
+            {/* Status text */}
+            <div
+              style={{
+                marginTop: 12,
+                fontFamily: "'Share Tech Mono', monospace",
+                fontSize: 10,
+                color: "#555",
+                opacity: loaderStep >= 4 ? 1 : 0,
+                transition: "opacity 0.3s",
+                textAlign: "center",
+              }}
+            >
+              {LOADER_MSGS[loaderMsg]}
+            </div>
           </div>
-          {/* status text */}
-          <div
-            style={{
-              marginTop: 12,
-              fontFamily: "'Share Tech Mono', monospace",
-              fontSize: 10,
-              color: "#555",
-              opacity: loaderStep >= 4 ? 1 : 0,
-              transition: "opacity 0.3s",
-              textAlign: "center",
-            }}
-          >
-            {LOADER_MSGS[loaderMsg]}
-          </div>
-          {/* coordinates */}
+
+          {/* Bottom coordinates */}
           <div
             style={{
               position: "absolute",
               bottom: 40,
               fontFamily: "'Share Tech Mono', monospace",
               fontSize: 10,
-              color: "#444",
+              color: "#333",
               textAlign: "center",
+              opacity: cipher.phase === "done" ? 1 : 0,
+              transition: "opacity 0.5s ease 0.3s",
             }}
           >
             N 40.712800 // W 074.006000 // EST NEW YORK
@@ -759,6 +893,7 @@ export default function SpyOps() {
             </p>
             <div style={{ display: "flex", gap: 12, marginTop: 32, flexWrap: "wrap" }}>
               <button
+                onClick={() => navigate("/")}
                 className="spyops-btn-primary"
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
@@ -774,6 +909,7 @@ export default function SpyOps() {
                 ENTER COMMAND CENTER ▶
               </button>
               <button
+                onClick={() => toast.info("Access request submitted. An operator will contact you.")}
                 className="spyops-btn-secondary"
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
