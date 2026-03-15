@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { startSession, logAction } from "@/lib/operatorSession";
 
 /* ─── helpers ─── */
 function estNow() {
@@ -437,6 +438,7 @@ export default function SpyOps() {
     if (name) {
       setOperatorName(name);
       localStorage.setItem("atlas_operator", name);
+      startSession(name);
       setKeyError(false);
       setFlowPhase("welcome");
     } else {

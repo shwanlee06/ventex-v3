@@ -24,6 +24,7 @@ import { motion } from "framer-motion";
 import { Layers3, MapPin, ListChecks, AlertTriangle, Plus, X, ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { toast } from "sonner";
+import { logAction } from "@/lib/operatorSession";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
@@ -105,6 +106,7 @@ export default function VerticalsPage() {
     setVentures(prev => [nv, ...prev]);
     setAddOpen(false);
     setNewName(""); setNewLocation("");
+    logAction("Venture added", nv.name);
     toast.success(`Venture "${nv.name}" added`);
   }, [newName, newTheme, newStage, newLocation]);
 

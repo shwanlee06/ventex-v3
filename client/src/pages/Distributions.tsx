@@ -28,6 +28,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { exportDistributionPdf, exportAllDistributionsPdf } from "@/lib/exportPdf";
+import { logAction } from "@/lib/operatorSession";
 
 export default function DistributionsPage() {
   const [distributions, setDistributions] = useState<Distribution[]>([...DISTRIBUTIONS]);
@@ -75,6 +77,7 @@ export default function DistributionsPage() {
     setDistributions(prev => [nd, ...prev]);
     setAddOpen(false);
     setNewName(""); setNewFund(""); setNewAmount(""); setNewDate(""); setNewNotes("");
+    logAction("Distribution created", nd.name);
     toast.success(`Distribution "${nd.name}" added`);
   }, [newName, newFund, newAmount, newDate, newType, newMethod, newStatus, newNotes]);
 
@@ -116,7 +119,10 @@ export default function DistributionsPage() {
 
         {/* Add button */}
         <div className="flex justify-end">
-          <Button size="sm" className="text-xs h-8" onClick={() => setAddOpen(true)}>
+          <Button variant="outline" size="sm" className="text-xs h-8 mr-2" onClick={() => { exportAllDistributionsPdf(distributions); toast.success("Summary PDF downloaded"); }}>
+              <FileDown className="size-3.5 mr-1" /> Export All PDF
+            </Button>
+            <Button size="sm" className="text-xs h-8" onClick={() => setAddOpen(true)}>
             <Plus className="size-3.5 mr-1" /> New Distribution
           </Button>
         </div>
@@ -261,7 +267,7 @@ export default function DistributionsPage() {
                 )}
               </div>
               <DialogFooter>
-                <Button variant="outline" size="sm" className="text-xs" onClick={() => toast.info("PDF export coming soon")}>
+                <Button variant="outline" size="sm" className="text-xs" onClick={() => { exportDistributionPdf(distModal); toast.success("PDF downloaded"); }}>
                   <FileDown className="size-3.5 mr-1" /> Export PDF
                 </Button>
                 <Button variant="ghost" size="sm" className="text-xs" onClick={() => setDistModal(null)}>Close</Button>

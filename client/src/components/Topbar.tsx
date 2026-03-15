@@ -13,6 +13,7 @@ import CommandPalette from "@/components/CommandPalette";
 import { useState, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { endCurrentSession, logAction } from "@/lib/operatorSession";
 
 interface TopbarProps {
   title: string;
@@ -30,6 +31,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
   const initials = operatorName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
   const handleSignOut = useCallback(() => {
+    endCurrentSession();
     localStorage.removeItem("atlas_operator");
     toast.info("Signed out — redirecting to landing");
     setTimeout(() => navigate("/"), 600);

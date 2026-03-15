@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { toast } from "sonner";
+import { logAction } from "@/lib/operatorSession";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -82,6 +83,7 @@ export default function SettingsPage() {
     setSpvs(prev => prev.map(s => {
       if (s.id !== id) return s;
       const next = PRIORITY_CYCLE[s.priority] || "Medium";
+      logAction("SPV priority changed", `${s.name} → ${next}`);
       toast.info(`Priority changed to ${next}`);
       return { ...s, priority: next };
     }));
@@ -89,6 +91,7 @@ export default function SettingsPage() {
 
   const updateStage = useCallback((id: string, stage: string) => {
     setSpvs(prev => prev.map(s => s.id === id ? { ...s, stage: stage as SPV["stage"] } : s));
+    logAction("SPV stage updated", `${id} → ${stage}`);
     toast.success(`Stage updated to ${stage}`);
     setSpvModal(null);
   }, []);
@@ -106,6 +109,7 @@ export default function SettingsPage() {
     setSpvs(prev => [nd, ...prev]);
     setAddOpen(false);
     setNewName(""); setNewNotes("");
+    logAction("Deal added", nd.name);
     toast.success(`Deal "${nd.name}" added`);
   }, [newName, newTheme, newPriority, newStage, newNotes]);
 

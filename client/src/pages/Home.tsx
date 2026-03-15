@@ -46,6 +46,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { logAction } from "@/lib/operatorSession";
 import {
   Sheet,
   SheetContent,
@@ -119,6 +120,7 @@ export default function Home() {
     } else {
       // Marking complete
       setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: "complete" as const } : t));
+      logAction("Task completed", `Marked task ${taskId} complete`);
       toast.success("Task marked complete");
     }
   }, [tasks]);
@@ -132,6 +134,7 @@ export default function Home() {
 
   const handleReassign = useCallback((taskId: string, assignee: string) => {
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, assignees: [assignee] } : t));
+    logAction("Task reassigned", `Reassigned to ${assignee}`);
     toast.success(`Task reassigned to ${assignee}`);
     setTaskModal(null);
   }, []);

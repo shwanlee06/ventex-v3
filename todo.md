@@ -1,22 +1,17 @@
-# SpyOps Landing Page — 20 Fixes
+# Current Tasks
 
-- [ ] FIX 1: Remove ~400px blank gap between sector cards and next section
-- [ ] FIX 2: Add officer names and roles to officer hours cards
-- [ ] FIX 3: Remove ~600-700px blank gap below officer cards
-- [ ] FIX 4: Others sector card should show "04 VENTURES · 03 ACTIVE"
-- [ ] FIX 5: Increase ATL background letters to 50vw, bleed right, 4-5% opacity
-- [ ] FIX 6: Add 1px white left border to hero system status readout
-- [ ] FIX 7: Make ATL_ underscore blink in nav logo
-- [ ] FIX 8: Add scroll progress bar to nav bottom border
-- [ ] FIX 9: Typewriter animate coordinates on scroll into view
-- [ ] FIX 10: Add McLean Virginia as 4th coordinate node
-- [ ] FIX 11: Force Bebas Neue on the large EST clock
-- [ ] FIX 12: Add instant hover row inversion to SPV pipeline table
-- [ ] FIX 13: Make sector card hover instantaneous (transition: none)
-- [ ] FIX 14: Wire ENTER COMMAND CENTER to navigate to dashboard
-- [ ] FIX 15: Wire REQUEST ACCESS to scroll to contact or mailto
-- [ ] FIX 16: Wire nav links to smooth-scroll anchors
-- [ ] FIX 17: Make status bar ■ SECURE dot white and blinking
-- [ ] FIX 18: Fix mobile layout overflow for sector cards, officer grid, SPV table
-- [ ] FIX 19: Add ROYALTON INVESTMENTS branding to auth screen
-- [ ] FIX 20: Fix auth screen placeholder to match actual key format
+## Export PDF
+- [ ] Find where Export PDF button is located
+- [ ] Implement PDF generation
+- [ ] Test PDF export works
+
+## Settings Page Tabs
+- [ ] Review current Settings tabs
+- [ ] Configure all tabs with working content
+- [ ] Ensure each tab is fully functional
+
+## Multi-User Tracking
+- [ ] Review current session/auth management
+- [ ] Implement operator activity tracking (login time, actions)
+- [ ] Show active operators / session log
+- [ ] Ensure each operator's session is independent
