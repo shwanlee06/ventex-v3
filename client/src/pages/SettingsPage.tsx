@@ -23,6 +23,7 @@ import {
   Mail, MessageSquare, RefreshCw,
 } from "lucide-react";
 import { useState, useCallback, useEffect, useMemo } from "react";
+import { useTheme } from "@/contexts/ThemeContext";
 import { toast } from "sonner";
 import {
   getSessionHistory,
@@ -48,7 +49,8 @@ const SOC2_ITEMS = [
 ];
 
 export default function SettingsConfigPage() {
-  const [darkMode, setDarkMode] = useState(true);
+  const { theme, toggleTheme } = useTheme();
+  const darkMode = theme === "dark";
   const [compactView, setCompactView] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [apiKey] = useState("atl_sk_••••••••••••••••••••");
@@ -106,35 +108,35 @@ export default function SettingsConfigPage() {
         "Name,Theme,Stage,Status,Location",
         ...VENTURES.map(v => `"${v.name}","${v.theme}","${v.stage}","${v.status}","${v.location}"`)
       ].join("\n");
-      downloadCsv(csv, "royalton_ventures.csv");
+      downloadCsv(csv, "thalora_ventures.csv");
       toast.success("Ventures CSV downloaded");
     } else if (type === "spvs") {
       const csv = [
         "Name,Stage,Theme,Priority",
         ...SPVS.map(s => `"${s.name}","${s.stage}","${s.theme}","${s.priority}"`)
       ].join("\n");
-      downloadCsv(csv, "royalton_spvs.csv");
+      downloadCsv(csv, "thalora_spvs.csv");
       toast.success("SPVs CSV downloaded");
     } else if (type === "tasks") {
       const csv = [
         "Title,Status,Due Date,Priority,Assignees",
         ...TASKS.map(t => `"${t.title}","${t.status}","${t.dueDate}","${t.priority}","${t.assignees.join(", ")}"`)
       ].join("\n");
-      downloadCsv(csv, "royalton_tasks.csv");
+      downloadCsv(csv, "thalora_tasks.csv");
       toast.success("Tasks CSV downloaded");
     } else if (type === "team") {
       const csv = [
         "Name,Role,Function,Status,Type",
         ...TEAM.map((m: { name: string; role: string; function: string; status: string; type: string }) => `"${m.name}","${m.role}","${m.function}","${m.status}","${m.type}"`)
       ].join("\n");
-      downloadCsv(csv, "royalton_team.csv");
+      downloadCsv(csv, "thalora_team.csv");
       toast.success("Team CSV downloaded");
     } else if (type === "sessions") {
       const csv = [
         "Operator,Login Time,Logout Time,IP,Actions Count",
         ...sessions.map(s => `"${s.operator}","${s.loginTime}","${s.logoutTime || "Active"}","${s.ip}","${s.actions.length}"`)
       ].join("\n");
-      downloadCsv(csv, "royalton_sessions.csv");
+      downloadCsv(csv, "thalora_sessions.csv");
       toast.success("Sessions CSV downloaded");
     }
   }, [sessions]);
@@ -181,7 +183,7 @@ export default function SettingsConfigPage() {
                         <p className="text-sm text-foreground">Dark Mode</p>
                         <p className="text-xs text-muted-foreground">Use dark theme across the dashboard</p>
                       </div>
-                      <Switch checked={darkMode} onCheckedChange={(v) => { setDarkMode(v); logAction("Setting changed", `Dark mode: ${v}`); toast.success(`Dark mode ${v ? "enabled" : "disabled"}`); }} />
+                      <Switch checked={darkMode} onCheckedChange={() => { if (toggleTheme) toggleTheme(); logAction("Setting changed", `Dark mode: ${!darkMode}`); toast.success(`Dark mode ${!darkMode ? "enabled" : "disabled"}`); }} />
                     </div>
                     <Separator />
                     <div className="flex items-center justify-between">

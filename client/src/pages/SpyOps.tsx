@@ -1,5 +1,5 @@
 /**
- * ATLAS × ROYALTON INVESTMENTS — Spy-Ops Landing Page
+ * ATLAS × THALORA — Spy-Ops Landing Page
  * Design: ose-engineering.fr inspired — pure black/white, monospace, military-ops feel
  * Fonts: IBM Plex Mono (body), Bebas Neue (display), Share Tech Mono (data)
  */
@@ -684,7 +684,7 @@ export default function SpyOps() {
                 animation: "spyops-fadeIn 0.6s ease",
               }}
             >
-              {/* ROYALTON INVESTMENTS */}
+              {/* THALORA */}
               <div
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
@@ -695,7 +695,7 @@ export default function SpyOps() {
                   textAlign: "center",
                 }}
               >
-                ROYALTON INVESTMENTS
+                THALORA
               </div>
 
               {/* engineered by ATLAS */}
@@ -947,7 +947,7 @@ export default function SpyOps() {
               textTransform: "uppercase",
             }}
           >
-            ROYALTON INVESTMENTS
+            THALORA
           </span>
         </div>
         {/* center */}
@@ -1815,7 +1815,7 @@ export default function SpyOps() {
               letterSpacing: "0.4em",
             }}
           >
-            ROYALTON INVESTMENTS × ATLAS
+            THALORA × ATLAS
           </div>
         </div>
       </Section>
@@ -1857,7 +1857,7 @@ export default function SpyOps() {
                 lineHeight: 2,
               }}
             >
-              ROYALTON INVESTMENTS
+              THALORA
               <br />
               ENGINEERED BY ATLAS
             </div>
@@ -1935,7 +1935,7 @@ export default function SpyOps() {
                 lineHeight: 2,
               }}
             >
-              © 2026 ROYALTON INVESTMENTS
+              © 2026 THALORA
               <br />
               POWERED BY ATLAS / AUROVIA LLC
               <br />

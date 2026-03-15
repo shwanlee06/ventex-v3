@@ -321,7 +321,7 @@ export default function SettingsPage() {
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <span className="text-[10px] text-muted-foreground">Attendees:</span>
-                        {[...meeting.royaltonAttendees, ...meeting.attendees].map((a) => (
+                        {[...meeting.thaloraAttendees, ...meeting.attendees].map((a) => (
                           <span key={a} className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-foreground">{a}</span>
                         ))}
                       </div>

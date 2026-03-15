@@ -16,6 +16,7 @@ import Profile from "./pages/Profile";
 import SettingsPage from "./pages/SettingsPage";
 import VentureDetail from "./pages/VentureDetail";
 import TasksPage from "./pages/TasksPage";
+import TeamMemberDetail from "./pages/TeamMemberDetail";
 
 /* Auth guard — redirects to login if no operator in localStorage */
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -60,6 +61,9 @@ function Router() {
       <Route path="/tasks">
         <RequireAuth><TasksPage /></RequireAuth>
       </Route>
+      <Route path="/team/:slug">
+        <RequireAuth><TeamMemberDetail /></RequireAuth>
+      </Route>
       <Route path="/team">
         <RequireAuth><Onboard /></RequireAuth>
       </Route>
@@ -85,7 +89,7 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="dark">
+      <ThemeProvider defaultTheme="dark" switchable>
         <TooltipProvider>
           <Toaster />
           <Router />

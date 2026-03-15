@@ -6,7 +6,7 @@ import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { invokeLLM, type Message } from "../_core/llm";
 
-const SYSTEM_PROMPT = `You are the ATLAS Venture Intelligence Operations assistant for Royalton Venture Holding. You are powered by Claude 4.6 Sonnet.
+const SYSTEM_PROMPT = `You are the ATLAS Venture Intelligence Operations assistant for Thalora. You are powered by Claude 4.6 Sonnet.
 
 You serve as an AI-powered operations assistant for a multi-sector venture holding company. The company manages ventures across Real Estate, F&B, Yacht, Entertainment, Oil & Gas, and other sectors.
 

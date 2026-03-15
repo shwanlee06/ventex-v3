@@ -66,3 +66,51 @@
 - [x] Build Tasks screen with filters and bottom sheet
 - [x] Apply dark theme styling matching web app
 - [x] Pre-populate with same data as web app
+
+## FIX 8 — Rename Royalton to Thalora
+- [x] Global find-replace Royalton Investments → Thalora across all files
+- [x] Update page title, sidebar, auth page, landing page, footer, AI prompt, data strings
+- [x] Do NOT change ATLAS, Aurovia, SSH Maritime or other brand names
+
+## FIX 3 — Add Shwan Lee and Najib to team
+- [x] Add Shwan Lee (Founder & CEO) and Najib (Advisor) to team data
+- [x] Ensure they appear in all team member dropdowns
+
+## FIX 1 — Persistent AI chat history
+- [x] Save messages to localStorage (atlas_chat_history)
+- [x] Pre-populate chat on page load from localStorage
+- [x] Cap at 50 messages
+- [x] Clear button removes localStorage and resets UI
+- [x] Show timestamps on messages from previous sessions
+
+## FIX 2 — AI chat file/image attachments
+- [x] Add paperclip button to chat input
+- [x] Show preview chips with remove button
+- [x] Images: base64 vision message to Claude
+- [x] Documents: include filename reference in text
+- [x] Multiple file support, clear after send
+
+## FIX 4 — Venture detail downloadable files
+- [x] Store file data (base64) in localStorage per venture
+- [x] Open button: lightbox for images, new tab for PDFs, download for others
+- [x] Download button for all file types
+- [x] 5MB file size limit with toast warning
+- [x] File type icons (PDF red, image thumbnail, Word blue, Excel green)
+
+## FIX 5 — Remove Tasks from venture detail
+- [x] Remove Tasks section from VentureDetail.tsx
+- [x] Ensure no gap in layout
+
+## FIX 6 — Fix dark mode toggle
+- [x] Define full light mode CSS custom properties
+- [x] Toggle adds/removes light-mode class on html element
+- [x] Persist preference to localStorage (atlas_theme)
+- [x] Apply on app load before render
+- [x] Works across all pages
+
+## FIX 7 — Team member profile pages
+- [x] Create /team/:slug route
+- [x] Make team rows clickable with hover arrow
+- [x] Build profile page: header, about/bio, expertise tags, roles, contact, ventures, tasks, activity
+- [x] Photo upload with localStorage persistence
+- [x] Edit mode for all sections

@@ -5,7 +5,7 @@
 import { Router, Request, Response } from "express";
 import { ENV } from "../_core/env";
 
-const SYSTEM_PROMPT = `You are the ATLAS Venture Intelligence Operations assistant for Royalton Venture Holding. You are powered by Claude 4.6 Sonnet.
+const SYSTEM_PROMPT = `You are the ATLAS Venture Intelligence Operations assistant for Thalora. You are powered by Claude 4.6 Sonnet.
 
 You serve as an AI-powered operations assistant for a multi-sector venture holding company managing ventures across Real Estate, F&B, Yacht, Entertainment, Oil & Gas, and other sectors.
 
@@ -51,7 +51,7 @@ aiStreamRouter.post("/api/ai/stream", async (req: Request, res: Response) => {
 
   const llmMessages = [
     { role: "system", content: SYSTEM_PROMPT },
-    ...messages.map((m: { role: string; content: string }) => ({
+    ...messages.map((m: { role: string; content: string | Array<unknown> }) => ({
       role: m.role,
       content: m.content,
     })),

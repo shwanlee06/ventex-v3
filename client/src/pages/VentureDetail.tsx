@@ -1,14 +1,14 @@
 // ============================================================================
 // Venture Detail Page — /ventures/:slug
-// Sections: Key Details, Team, Tasks, Files, Activity Log
+// Sections: Key Details, Team, Files (downloadable), Activity Log
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
 import {
-  VENTURES, TASKS, TEAM, STATUS_CONFIG, getThemeColor, getTaskStatusFromDate,
-  formatDate, type Venture, type Task, type TeamMember,
+  VENTURES, TEAM, getThemeColor,
+  type Venture, type TeamMember,
 } from "@/lib/data";
 import { findVentureBySlug, slugify } from "@/lib/slugify";
 import { useRoute, useLocation, Link } from "wouter";
@@ -18,14 +18,13 @@ import { logAction } from "@/lib/operatorSession";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Edit3, Save, Plus, Trash2, FileText, Upload, MessageSquare,
-  CheckCircle2, User, Clock, ChevronRight, File, Image, FileSpreadsheet,
-  X, AlertTriangle,
+  User, Clock, File, Image, FileSpreadsheet, Download, Eye,
+  X, AlertTriangle, ZoomIn, ZoomOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -46,8 +45,10 @@ interface AttachedFile {
   id: string;
   name: string;
   size: string;
+  sizeBytes: number;
   type: string;
   dateAdded: string;
+  dataUrl: string; // base64 data URL for download/preview
 }
 
 interface ActivityEntry {
@@ -56,23 +57,38 @@ interface ActivityEntry {
   timestamp: Date;
 }
 
-interface VentureTask extends Task {
-  ventureId?: string;
-}
-
 // ── Helpers ───────────────────────────────────────────────────────────────
 
 const STAGES = ["In Validation", "Active ventures", "In Fundraising", "On Hold"];
 const STATUSES = ["In progress", "On-Hold", "Completed", "Closed"];
 const SECTORS = ["Real Estate", "F&B", "Yacht", "Entertainment", "Oil & Gas", "Others"];
-const PRIORITIES = ["High", "Medium", "Low"];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 function getFileIcon(name: string) {
   const ext = name.split(".").pop()?.toLowerCase();
   if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext || "")) return <Image className="size-4 text-blue-400" />;
   if (["xls", "xlsx", "csv"].includes(ext || "")) return <FileSpreadsheet className="size-4 text-emerald-400" />;
   if (["pdf"].includes(ext || "")) return <FileText className="size-4 text-red-400" />;
+  if (["doc", "docx"].includes(ext || "")) return <FileText className="size-4 text-blue-500" />;
   return <File className="size-4 text-muted-foreground" />;
+}
+
+function getFileColor(name: string): string {
+  const ext = name.split(".").pop()?.toLowerCase();
+  if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext || "")) return "bg-blue-500/10 border-blue-500/20";
+  if (["xls", "xlsx", "csv"].includes(ext || "")) return "bg-emerald-500/10 border-emerald-500/20";
+  if (["pdf"].includes(ext || "")) return "bg-red-500/10 border-red-500/20";
+  if (["doc", "docx"].includes(ext || "")) return "bg-blue-500/10 border-blue-500/20";
+  return "bg-secondary border-border";
+}
+
+function isImageFile(name: string): boolean {
+  const ext = name.split(".").pop()?.toLowerCase();
+  return ["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext || "");
+}
+
+function isPdfFile(name: string): boolean {
+  return name.split(".").pop()?.toLowerCase() === "pdf";
 }
 
 function formatFileSize(bytes: number): string {
@@ -83,6 +99,27 @@ function formatFileSize(bytes: number): string {
 
 function getInitials(name: string): string {
   return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+}
+
+// localStorage key per venture
+function getStorageKey(slug: string): string {
+  return `thalora_venture_files_${slug}`;
+}
+
+function loadFilesFromStorage(slug: string): AttachedFile[] {
+  try {
+    const raw = localStorage.getItem(getStorageKey(slug));
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch { return []; }
+}
+
+function saveFilesToStorage(slug: string, files: AttachedFile[]) {
+  try {
+    localStorage.setItem(getStorageKey(slug), JSON.stringify(files));
+  } catch (e) {
+    console.warn("Failed to save files to localStorage:", e);
+  }
 }
 
 // ── Component ─────────────────────────────────────────────────────────────
@@ -109,17 +146,13 @@ export default function VentureDetail() {
   const [assignMemberId, setAssignMemberId] = useState("");
   const [assignResponsibility, setAssignResponsibility] = useState("");
 
-  // Tasks
-  const [ventureTasks, setVentureTasks] = useState<VentureTask[]>([]);
-  const [addTaskOpen, setAddTaskOpen] = useState(false);
-  const [newTaskName, setNewTaskName] = useState("");
-  const [newTaskDue, setNewTaskDue] = useState("");
-  const [newTaskAssignee, setNewTaskAssignee] = useState("");
-  const [newTaskPriority, setNewTaskPriority] = useState("Medium");
-
-  // Files
+  // Files — persisted to localStorage
   const [files, setFiles] = useState<AttachedFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Lightbox
+  const [lightboxFile, setLightboxFile] = useState<AttachedFile | null>(null);
+  const [lightboxZoom, setLightboxZoom] = useState(1);
 
   // Activity
   const [activity, setActivity] = useState<ActivityEntry[]>([]);
@@ -138,23 +171,17 @@ export default function VentureDetail() {
       dateAdded: "2026-01-15",
     });
 
-    // Pre-populate tasks linked to this venture
-    const linked = TASKS.filter(t =>
-      t.ventureLink && baseVenture.name.toLowerCase().includes(t.ventureLink.split(" - ")[0].toLowerCase())
-    );
-    setVentureTasks(linked.map(t => ({ ...t })));
+    // Load persisted files from localStorage
+    setFiles(loadFilesFromStorage(slug));
 
-    // Pre-populate team (assign first 2 team members based on task assignees)
+    // Pre-populate team from task assignees
     const assignees = new Set<string>();
-    linked.forEach(t => t.assignees.forEach(a => assignees.add(a)));
     const preAssigned: AssignedMember[] = [];
     assignees.forEach(name => {
       const member = TEAM.find(m => m.name === name);
       if (member) {
         preAssigned.push({
-          id: member.id,
-          name: member.name,
-          role: member.role,
+          id: member.id, name: member.name, role: member.role,
           responsibility: `Working on ${baseVenture.name}`,
         });
       }
@@ -166,6 +193,11 @@ export default function VentureDetail() {
       { id: "init-1", action: `Venture "${baseVenture.name}" viewed`, timestamp: new Date() },
     ]);
   }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Persist files to localStorage whenever they change
+  useEffect(() => {
+    if (slug) saveFilesToStorage(slug, files);
+  }, [files, slug]);
 
   // ── Handlers ────────────────────────────────────────────────────────────
 
@@ -222,51 +254,41 @@ export default function VentureDetail() {
     }
   }, [assignedMembers, addActivity]);
 
-  const handleAddTask = useCallback(() => {
-    if (!newTaskName.trim()) { toast.error("Task name is required"); return; }
-    const newTask: VentureTask = {
-      id: `task-${Date.now()}`,
-      title: newTaskName.trim(),
-      status: "open",
-      dueDate: newTaskDue || new Date().toISOString().split("T")[0],
-      priority: newTaskPriority,
-      assignees: newTaskAssignee ? [newTaskAssignee] : [],
-      ventureLink: venture?.name,
-    };
-    setVentureTasks(prev => [...prev, newTask]);
-    setAddTaskOpen(false);
-    setNewTaskName(""); setNewTaskDue(""); setNewTaskAssignee(""); setNewTaskPriority("Medium");
-    addActivity(`Task added: ${newTask.title}`);
-    logAction("Task added", newTask.title);
-    toast.success("Task added");
-  }, [newTaskName, newTaskDue, newTaskAssignee, newTaskPriority, venture, addActivity]);
-
-  const handleToggleTask = useCallback((taskId: string) => {
-    setVentureTasks(prev => prev.map(t => {
-      if (t.id !== taskId) return t;
-      const newStatus = t.status === "complete" ? "open" : "complete";
-      addActivity(`Task "${t.title}" marked ${newStatus}`);
-      return { ...t, status: newStatus as Task["status"] };
-    }));
-    toast.success("Task updated");
-  }, [addActivity]);
-
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
     if (!fileList) return;
+
+    let addedCount = 0;
     Array.from(fileList).forEach(f => {
-      const newFile: AttachedFile = {
-        id: `file-${Date.now()}-${Math.random()}`,
-        name: f.name,
-        size: formatFileSize(f.size),
-        type: f.type || "application/octet-stream",
-        dateAdded: new Date().toISOString().split("T")[0],
+      // 5MB size limit
+      if (f.size > MAX_FILE_SIZE) {
+        toast.error(`${f.name} exceeds 5MB limit (${formatFileSize(f.size)})`);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        const newFile: AttachedFile = {
+          id: `file-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          name: f.name,
+          size: formatFileSize(f.size),
+          sizeBytes: f.size,
+          type: f.type || "application/octet-stream",
+          dateAdded: new Date().toISOString().split("T")[0],
+          dataUrl,
+        };
+        setFiles(prev => [...prev, newFile]);
+        addActivity(`File attached: ${f.name} (${formatFileSize(f.size)})`);
+        addedCount++;
       };
-      setFiles(prev => [...prev, newFile]);
-      addActivity(`File attached: ${f.name}`);
+      reader.readAsDataURL(f);
     });
+
     logAction("File attached", `${fileList.length} file(s)`);
-    toast.success(`${fileList.length} file(s) attached`);
+    if (addedCount > 0 || fileList.length > 0) {
+      toast.success(`Processing ${fileList.length} file(s)...`);
+    }
     e.target.value = "";
   }, [addActivity]);
 
@@ -278,6 +300,36 @@ export default function VentureDetail() {
       toast.info(`${file.name} removed`);
     }
   }, [files, addActivity]);
+
+  const handleDownloadFile = useCallback((file: AttachedFile) => {
+    const link = document.createElement("a");
+    link.href = file.dataUrl;
+    link.download = file.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    addActivity(`File downloaded: ${file.name}`);
+    logAction("File downloaded", file.name);
+  }, [addActivity]);
+
+  const handleOpenFile = useCallback((file: AttachedFile) => {
+    if (isImageFile(file.name)) {
+      // Open lightbox for images
+      setLightboxFile(file);
+      setLightboxZoom(1);
+    } else if (isPdfFile(file.name)) {
+      // Open PDF in new tab
+      const win = window.open();
+      if (win) {
+        win.document.write(`<iframe src="${file.dataUrl}" style="width:100%;height:100%;border:none;" />`);
+        win.document.title = file.name;
+      }
+    } else {
+      // Download for other types
+      handleDownloadFile(file);
+    }
+    addActivity(`File opened: ${file.name}`);
+  }, [addActivity, handleDownloadFile]);
 
   // ── 404 ─────────────────────────────────────────────────────────────────
   if (!baseVenture) {
@@ -419,96 +471,89 @@ export default function VentureDetail() {
               </div>
             </motion.div>
 
-            {/* Section C — Open Tasks */}
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-card border border-border rounded-lg">
+            {/* Section B — Attached Files (downloadable) */}
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card border border-border rounded-lg">
               <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-foreground">Tasks</h2>
-                <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setAddTaskOpen(true)}>
-                  <Plus className="size-3 mr-1" /> Add Task
-                </Button>
-              </div>
-              {ventureTasks.length === 0 ? (
-                <div className="p-8 text-center">
-                  <p className="text-xs text-muted-foreground">No tasks linked to this venture yet.</p>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-semibold text-foreground">Attached Files</h2>
+                  <span className="text-[10px] font-mono text-muted-foreground">{files.length} file{files.length !== 1 ? "s" : ""}</span>
                 </div>
-              ) : (
-                <div className="divide-y divide-border">
-                  {ventureTasks.map(task => {
-                    const rs = getTaskStatusFromDate(task);
-                    const sc = STATUS_CONFIG[rs];
-                    return (
-                      <div key={task.id} className="px-4 py-3 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Checkbox
-                            checked={task.status === "complete"}
-                            onCheckedChange={() => handleToggleTask(task.id)}
-                            className="size-3.5"
-                          />
-                          <div>
-                            <span className={cn("text-xs font-medium text-foreground", task.status === "complete" && "line-through opacity-50")}>
-                              {task.title}
-                            </span>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-[10px] font-mono text-muted-foreground">Due {formatDate(task.dueDate)}</span>
-                              {task.assignees.length > 0 && (
-                                <span className="text-[10px] text-muted-foreground">· {task.assignees[0]}</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded",
-                            task.priority === "High" ? "bg-red-500/10 text-red-400" :
-                            task.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
-                            "bg-secondary text-muted-foreground"
-                          )}>{task.priority}</span>
-                          <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />
-                        </div>
-                      </div>
-                    );
-                  })}
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground">Max 5MB per file</span>
+                  <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => fileInputRef.current?.click()}>
+                    <Plus className="size-3 mr-1" /> Attach File
+                  </Button>
                 </div>
-              )}
-            </motion.div>
-
-            {/* Section D — Attached Files */}
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-card border border-border rounded-lg">
-              <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-foreground">Attached Files</h2>
-                <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => fileInputRef.current?.click()}>
-                  <Plus className="size-3 mr-1" /> Attach File
-                </Button>
-                <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileSelect}
+                  accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip,.pptx,.ppt"
+                />
               </div>
               {files.length === 0 ? (
-                <div className="p-8 text-center">
-                  <p className="text-xs text-muted-foreground">No files attached yet.</p>
+                <div className="p-10 text-center">
+                  <Upload className="size-8 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-xs text-muted-foreground mb-1">No files attached yet.</p>
+                  <p className="text-[10px] text-muted-foreground/60">Drag & drop or click "Attach File" to upload documents, images, and spreadsheets.</p>
                 </div>
               ) : (
                 <div className="divide-y divide-border">
                   {files.map(file => (
-                    <div key={file.id} className="px-4 py-3 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {getFileIcon(file.name)}
-                        <div>
-                          <span className="text-xs font-medium text-foreground">{file.name}</span>
+                    <div key={file.id} className="px-4 py-3 flex items-center justify-between group hover:bg-accent/20 transition-colors">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        {/* File icon with color background */}
+                        <div className={cn("size-9 rounded-md border flex items-center justify-center flex-shrink-0", getFileColor(file.name))}>
+                          {isImageFile(file.name) && file.dataUrl ? (
+                            <img src={file.dataUrl} alt={file.name} className="size-9 rounded-md object-cover" />
+                          ) : (
+                            getFileIcon(file.name)
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-xs font-medium text-foreground truncate block">{file.name}</span>
                           <div className="flex items-center gap-2 mt-0.5">
                             <span className="text-[10px] font-mono text-muted-foreground">{file.size}</span>
                             <span className="text-[10px] text-muted-foreground">· {file.dateAdded}</span>
                           </div>
                         </div>
                       </div>
-                      <button onClick={() => handleRemoveFile(file.id)} className="size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors">
-                        <Trash2 className="size-3.5" />
-                      </button>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {/* Open / Preview */}
+                        <button
+                          onClick={() => handleOpenFile(file)}
+                          className="size-7 rounded-md flex items-center justify-center hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                          title={isImageFile(file.name) ? "Preview" : isPdfFile(file.name) ? "Open PDF" : "Open"}
+                        >
+                          <Eye className="size-3.5" />
+                        </button>
+                        {/* Download */}
+                        <button
+                          onClick={() => handleDownloadFile(file)}
+                          className="size-7 rounded-md flex items-center justify-center hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 transition-colors"
+                          title="Download"
+                        >
+                          <Download className="size-3.5" />
+                        </button>
+                        {/* Remove */}
+                        <button
+                          onClick={() => handleRemoveFile(file.id)}
+                          className="size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors"
+                          title="Remove"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
             </motion.div>
 
-            {/* Section E — Activity Log */}
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="bg-card border border-border rounded-lg">
+            {/* Section C — Activity Log */}
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-card border border-border rounded-lg">
               <div className="px-4 py-3 border-b border-border">
                 <h2 className="text-sm font-semibold text-foreground">Activity Log</h2>
               </div>
@@ -530,8 +575,8 @@ export default function VentureDetail() {
 
           {/* Right Column */}
           <div className="space-y-6">
-            {/* Section B — Team & Responsibilities */}
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card border border-border rounded-lg">
+            {/* Team & Responsibilities */}
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-card border border-border rounded-lg">
               <div className="px-4 py-3 border-b border-border flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-foreground">Assigned Team</h2>
                 <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setAssignModalOpen(true)}>
@@ -609,49 +654,65 @@ export default function VentureDetail() {
         </DialogContent>
       </Dialog>
 
-      {/* ── Add Task Modal ─────────────────────────────────────────────────── */}
-      <Dialog open={addTaskOpen} onOpenChange={setAddTaskOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-sm">Add Task</DialogTitle>
-            <DialogDescription className="text-[10px] font-mono">Create a new task for this venture</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div>
-              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Task Name</Label>
-              <Input value={newTaskName} onChange={e => setNewTaskName(e.target.value)} placeholder="Task name" className="mt-1 h-8 text-xs" />
-            </div>
-            <div>
-              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Due Date</Label>
-              <Input type="date" value={newTaskDue} onChange={e => setNewTaskDue(e.target.value)} className="mt-1 h-8 text-xs" />
-            </div>
-            <div>
-              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Assignee</Label>
-              <Select value={newTaskAssignee} onValueChange={setNewTaskAssignee}>
-                <SelectTrigger className="mt-1 h-8 text-xs"><SelectValue placeholder="Select assignee" /></SelectTrigger>
-                <SelectContent>
-                  {TEAM.map(m => <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Priority</Label>
-              <Select value={newTaskPriority} onValueChange={setNewTaskPriority}>
-                <SelectTrigger className="mt-1 h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {PRIORITIES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button size="sm" className="text-xs" onClick={handleAddTask}>
-              <Plus className="size-3.5 mr-1" /> Add Task
-            </Button>
-            <Button variant="ghost" size="sm" className="text-xs" onClick={() => setAddTaskOpen(false)}>Cancel</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* ── Image Lightbox ─────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {lightboxFile && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setLightboxFile(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-4xl max-h-[85vh] flex flex-col items-center"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Controls */}
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs text-white/70 font-mono">{lightboxFile.name}</span>
+                <button
+                  onClick={() => setLightboxZoom(z => Math.max(0.5, z - 0.25))}
+                  className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                >
+                  <ZoomOut className="size-4" />
+                </button>
+                <span className="text-[10px] text-white/50 font-mono w-12 text-center">{Math.round(lightboxZoom * 100)}%</span>
+                <button
+                  onClick={() => setLightboxZoom(z => Math.min(3, z + 0.25))}
+                  className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                >
+                  <ZoomIn className="size-4" />
+                </button>
+                <button
+                  onClick={() => handleDownloadFile(lightboxFile)}
+                  className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                >
+                  <Download className="size-4" />
+                </button>
+                <button
+                  onClick={() => setLightboxFile(null)}
+                  className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+              {/* Image */}
+              <div className="overflow-auto max-h-[75vh] rounded-lg">
+                <img
+                  src={lightboxFile.dataUrl}
+                  alt={lightboxFile.name}
+                  className="rounded-lg transition-transform duration-200"
+                  style={{ transform: `scale(${lightboxZoom})`, transformOrigin: "center center" }}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </DashboardLayout>
   );
 }

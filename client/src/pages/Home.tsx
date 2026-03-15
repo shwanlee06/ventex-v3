@@ -151,7 +151,7 @@ export default function Home() {
   const sectorActive = sectorVentures.filter(v => v.status === "In progress").length;
 
   return (
-    <DashboardLayout title="Dashboard" subtitle="ROYALTON VENTURE HOLDING">
+    <DashboardLayout title="Dashboard" subtitle="THALORA">
       <div className="p-4 md:p-6 space-y-6">
         {/* Metrics Bar — clickable */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

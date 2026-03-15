@@ -1,5 +1,5 @@
 // ============================================================================
-// Operator Session Tracking — Royalton System
+// Operator Session Tracking — Thalora System
 // Tracks operator logins, activity, and session history in localStorage
 // ============================================================================
 

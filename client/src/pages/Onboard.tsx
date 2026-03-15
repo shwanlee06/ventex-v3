@@ -32,6 +32,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useCallback, useEffect } from "react";
+import { useLocation } from "wouter";
+import { slugify } from "@/lib/slugify";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -54,6 +56,7 @@ function MemberTypeBadge({ type }: { type: string }) {
 }
 
 export default function OnboardPage() {
+  const [, navigate] = useLocation();
   const [team, setTeam] = useState<TeamMember[]>([...TEAM]);
   const [drawerMember, setDrawerMember] = useState<TeamMember | null>(null);
   const [contactDrawer, setContactDrawer] = useState<Contact | null>(null);
@@ -159,7 +162,7 @@ export default function OnboardPage() {
             </TableHeader>
             <TableBody>
               {team.map((member) => (
-                <TableRow key={member.id} className="cursor-pointer hover:bg-accent/30" onClick={() => setDrawerMember(member)}>
+                <TableRow key={member.id} className="cursor-pointer hover:bg-accent/30 group" onClick={() => navigate(`/team/${slugify(member.name)}`)}>
                   <TableCell>
                     <div>
                       <span className="text-xs text-foreground font-medium">{member.name}</span>
