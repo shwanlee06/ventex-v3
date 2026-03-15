@@ -1,7 +1,6 @@
 // ============================================================================
-// AI Agent Page — Swiss Instrument design
-// Split layout: left = portfolio context + open tasks, right = chat
-// Quick-action buttons, typing indicator, human-in-the-loop approve
+// AI Agent Page — Swiss Instrument — FULLY INTERACTIVE
+// Quick actions, clickable task cards, Enter-to-send, Clear chat, Markdown
 // ============================================================================
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -19,24 +18,21 @@ import {
   getTaskStatusFromDate,
   formatDate,
   formatCurrency,
+  type Task,
 } from "@/lib/data";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
-  Send,
-  Bot,
-  User,
-  Sparkles,
-  FileText,
-  Mail,
-  CalendarClock,
-  CheckCircle2,
-  XCircle,
-  Layers3,
-  Briefcase,
-  ListChecks,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Send, Bot, User, Sparkles, FileText, Mail, CalendarClock,
+  CheckCircle2, XCircle, Layers3, Briefcase, ListChecks, Trash2,
+  BarChart3, Users,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
+import { Streamdown } from "streamdown";
 
 interface ChatMessage {
   id: string;
@@ -51,40 +47,43 @@ const QUICK_ACTIONS = [
   { label: "Portfolio summary", icon: <FileText className="size-3.5" />, prompt: "Give me a portfolio summary across all ventures and SPVs." },
   { label: "Draft LP update", icon: <Mail className="size-3.5" />, prompt: "Draft a professional LP update email covering recent distributions and venture progress." },
   { label: "Open tasks review", icon: <CalendarClock className="size-3.5" />, prompt: "List all open tasks sorted by priority and due date." },
+  { label: "SPV pipeline", icon: <BarChart3 className="size-3.5" />, prompt: "Show me the current SPV pipeline status and deal stages." },
+  { label: "Team overview", icon: <Users className="size-3.5" />, prompt: "Give me a team overview with roles and responsibilities." },
 ];
 
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
     id: "sys-1",
     role: "assistant",
-    content: `Good afternoon. I'm your ATLAS Venture Ops assistant. I have context on ${VENTURES.length} ventures across 6 sectors, ${SPVS.length} SPVs, and ${TASKS.filter(t => t.status === "open").length} open tasks.\n\nRecent highlights:\n- ${formatCurrency(METRICS.paidDistributions)} in distributions paid\n- ${SPVS.filter(s => s.stage === "Active deal").length} active SPV deals\n- ${TASKS.filter(t => t.priority === "High").length} high-priority task(s) pending\n\nHow can I help you today?`,
+    content: `Good afternoon. I'm your **ATLAS Venture Ops** assistant. I have context on **${VENTURES.length} ventures** across 6 sectors, **${SPVS.length} SPVs**, and **${TASKS.filter(t => t.status === "open").length} open tasks**.\n\nRecent highlights:\n- **${formatCurrency(METRICS.paidDistributions)}** in distributions paid\n- **${SPVS.filter(s => s.stage === "Active deal").length}** active SPV deals\n- **${TASKS.filter(t => t.priority === "High").length}** high-priority task(s) pending\n\nHow can I help you today?`,
     timestamp: new Date(),
   },
 ];
 
 // Simulated responses using real data
 const SIMULATED_RESPONSES: Record<string, string> = {
-  "portfolio summary": `**Portfolio Summary — Royalton Venture Holding**
+  "portfolio summary": `## Portfolio Summary — Royalton Venture Holding
 
-**Ventures (${VENTURES.length} total):**
+### Ventures (${VENTURES.length} total)
 ${Object.entries(VENTURES.reduce((acc, v) => { acc[v.theme] = (acc[v.theme] || 0) + 1; return acc; }, {} as Record<string, number>)).map(([theme, count]) => `- **${theme}:** ${count} ventures`).join('\n')}
 
 **Active Ventures:** ${VENTURES.filter(v => v.status === "In progress").length} in progress
 **Key Locations:** ${Array.from(new Set(VENTURES.map(v => v.location).filter(l => l !== "TBD"))).join(", ")}
 
-**SPVs (${SPVS.length} total):**
-- Active Deals: ${SPVS.filter(s => s.stage === "Active deal").length}
-- In Negotiation: ${SPVS.filter(s => s.stage === "In negotiation").length}
-- Closed: ${SPVS.filter(s => s.stage === "Closed deal").length}
+### SPVs (${SPVS.length} total)
+- Active Deals: **${SPVS.filter(s => s.stage === "Active deal").length}**
+- In Negotiation: **${SPVS.filter(s => s.stage === "In negotiation").length}**
+- Closed: **${SPVS.filter(s => s.stage === "Closed deal").length}**
 
 **High Priority SPV:** Venezuela Mining Rights — ${SPVS.find(s => s.name === "Venezuela Mining Rights")?.currentStatus || "Active"}
 
-**Distributions:**
-- Total: ${formatCurrency(METRICS.totalDistributions)}
-- Paid: ${formatCurrency(METRICS.paidDistributions)}
+### Distributions
+- Total: **${formatCurrency(METRICS.totalDistributions)}**
+- Paid: **${formatCurrency(METRICS.paidDistributions)}**
 ${DISTRIBUTIONS.map(d => `- ${d.name}: ${formatCurrency(d.amount)} (${d.status})`).join('\n')}
 
-**Team:** ${METRICS.totalTeam} members across operations, finance, legal, and design.
+### Team
+**${METRICS.totalTeam} members** across operations, finance, legal, and design.
 
 **Key Partner:** Monterock International (UAE) — Nammos brand ventures.`,
 
@@ -98,18 +97,18 @@ Dear Limited Partners,
 
 We are pleased to provide an update on the Royalton portfolio:
 
-**Portfolio Activity:**
-Our portfolio now comprises ${VENTURES.length} ventures spanning Real Estate, F&B, Yacht, Entertainment, and other sectors across ${Array.from(new Set(VENTURES.map(v => v.location).filter(l => l !== "TBD"))).length} geographies.
+### Portfolio Activity
+Our portfolio now comprises **${VENTURES.length} ventures** spanning Real Estate, F&B, Yacht, Entertainment, and other sectors across ${Array.from(new Set(VENTURES.map(v => v.location).filter(l => l !== "TBD"))).length} geographies.
 
-**Distributions:**
-- Q4 2025 Profit Share: ${formatCurrency(250000)} — Paid via wire transfer
-- Return of Capital (SPV Alpha): ${formatCurrency(100000)} — Paid
-- Scheduled Dividend (REIT Fund I): ${formatCurrency(40000)} — Upcoming
+### Distributions
+- Q4 2025 Profit Share: **${formatCurrency(250000)}** — Paid via wire transfer
+- Return of Capital (SPV Alpha): **${formatCurrency(100000)}** — Paid
+- Scheduled Dividend (REIT Fund I): **${formatCurrency(40000)}** — Upcoming
 
-**Key Developments:**
-- Zarka City (Oman): Vision workshop completed, master plan finalization in progress
-- Nammos Watson Island (USA): Deck preparation underway
-- Venezuela Mining Rights SPV: Awaiting updated financials from founder
+### Key Developments
+- **Zarka City (Oman):** Vision workshop completed, master plan finalization in progress
+- **Nammos Watson Island (USA):** Deck preparation underway
+- **Venezuela Mining Rights SPV:** Awaiting updated financials from founder
 
 We remain committed to transparent communication and disciplined capital deployment.
 
@@ -118,26 +117,59 @@ ATLAS Operations Team
 
 ---
 
-**⚠️ This is a draft email. Would you like me to send it?** This action requires your approval.`,
+> **This is a draft email. Would you like me to send it?** This action requires your approval.`,
 
-  "open tasks": `**Open Tasks — Sorted by Priority**
+  "open tasks": `## Open Tasks — Sorted by Priority
 
 | Priority | Task | Due Date | Assignee |
 |----------|------|----------|----------|
 ${TASKS.filter(t => t.status === "open").sort((a, b) => {
-  const p = { High: 0, Medium: 1, Low: 2 };
-  return (p[a.priority as keyof typeof p] ?? 2) - (p[b.priority as keyof typeof p] ?? 2);
-}).map(t => `| ${t.priority === "High" ? "🔴" : t.priority === "Medium" ? "🟡" : "⚪"} ${t.priority} | ${t.title} | ${t.dueDate} | ${t.assignees.join(", ") || "—"} |`).join('\n')}
+  const p: Record<string, number> = { High: 0, Medium: 1, Low: 2 };
+  return (p[a.priority] ?? 2) - (p[b.priority] ?? 2);
+}).map(t => `| ${t.priority} | ${t.title} | ${t.dueDate} | ${t.assignees.join(", ") || "—"} |`).join('\n')}
 
-**Summary:**
-- ${TASKS.filter(t => t.priority === "High" && t.status === "open").length} high-priority tasks
-- ${TASKS.filter(t => getTaskStatusFromDate(t) === "overdue").length} overdue tasks
-- ${TASKS.filter(t => t.status === "complete").length} completed tasks
+### Summary
+- **${TASKS.filter(t => t.priority === "High" && t.status === "open").length}** high-priority tasks
+- **${TASKS.filter(t => getTaskStatusFromDate(t) === "overdue").length}** overdue tasks
+- **${TASKS.filter(t => t.status === "complete").length}** completed tasks
 
-**Recommended Actions:**
+### Recommended Actions
 1. **Immediate:** Complete Lagonissi Nammos deal structure meeting (High priority)
 2. **This week:** Advance Nammos Watson Island deck preparation
 3. **Schedule:** Zarka City vision workshop coordination`,
+
+  "spv pipeline": `## SPV Pipeline Status
+
+### Active Deals (${SPVS.filter(s => s.stage === "Active deal").length})
+${SPVS.filter(s => s.stage === "Active deal").map(s => `- **${s.name}** (${s.theme}) — Priority: ${s.priority}${s.currentStatus ? ` — ${s.currentStatus}` : ""}`).join('\n')}
+
+### In Negotiation (${SPVS.filter(s => s.stage === "In negotiation").length})
+${SPVS.filter(s => s.stage === "In negotiation").map(s => `- **${s.name}** (${s.theme}) — Priority: ${s.priority}`).join('\n')}
+
+### Closed Deals (${SPVS.filter(s => s.stage === "Closed deal").length})
+${SPVS.filter(s => s.stage === "Closed deal").map(s => `- **${s.name}** (${s.theme})`).join('\n')}
+
+### Dropped (${SPVS.filter(s => s.stage === "Dropped deal").length})
+${SPVS.filter(s => s.stage === "Dropped deal").map(s => `- **${s.name}** (${s.theme})`).join('\n')}
+
+**Key Focus:** Venezuela Mining Rights (High priority) — awaiting updated financials.`,
+
+  "team overview": `## Team Overview — ${METRICS.totalTeam} Members
+
+### Internal Team
+${[...TASKS].length && VENTURES.length ? "" : ""}${["Jimmy Frangi — Founder, Finance & Capital", "Anton Maghami — VP, Operations & Systems", "Jon Eichner — COO, Operations", "Maher Abou Chakra — Accounting, Finance", "Angie Samadi — HR, People Ops"].map(m => `- **${m}**`).join('\n')}
+
+### Advisors
+- **Carl Frangi** — Investor Relations
+- **Leonidas Kyrris** — Legal (maritime focus)
+
+### External Partners
+- **Igor** — Deck Design
+- **Sohail** — Financial Modeling
+- **Ruwaida** — Yacht Design
+
+### Key Partner Organization
+**Monterock International** (UAE) — Luxury lifestyle holding company, Nammos brand partner.`,
 };
 
 function getSimulatedResponse(input: string): { content: string; requiresApproval: boolean } {
@@ -151,6 +183,12 @@ function getSimulatedResponse(input: string): { content: string; requiresApprova
   if (lower.includes("task") || lower.includes("open") || lower.includes("deadline") || lower.includes("priority")) {
     return { content: SIMULATED_RESPONSES["open tasks"], requiresApproval: false };
   }
+  if (lower.includes("spv") || lower.includes("pipeline") || lower.includes("deal")) {
+    return { content: SIMULATED_RESPONSES["spv pipeline"], requiresApproval: false };
+  }
+  if (lower.includes("team") || lower.includes("member") || lower.includes("people") || lower.includes("role")) {
+    return { content: SIMULATED_RESPONSES["team overview"], requiresApproval: false };
+  }
   return {
     content: `Based on the current portfolio data:\n\n- **${VENTURES.length} ventures** across 6 sectors\n- **${SPVS.filter(s => s.stage === "Active deal").length} active SPV deals** with ${SPVS.filter(s => s.stage === "In negotiation").length} in negotiation\n- **${TASKS.filter(t => t.status === "open").length} open tasks** (${TASKS.filter(t => t.priority === "High").length} high priority)\n- **${formatCurrency(METRICS.paidDistributions)}** distributed to LPs\n\nCould you be more specific? I can provide detailed breakdowns for any venture, SPV, team member, or distribution.`,
     requiresApproval: false,
@@ -161,6 +199,7 @@ export default function Agent() {
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [taskModal, setTaskModal] = useState<Task | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -175,7 +214,7 @@ export default function Agent() {
   }, [messages, isTyping, scrollToBottom]);
 
   const sendMessage = useCallback((text: string) => {
-    if (!text.trim()) return;
+    if (!text.trim() || isTyping) return;
 
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
@@ -204,19 +243,26 @@ export default function Agent() {
       setMessages((prev) => [...prev, assistantMsg]);
       setIsTyping(false);
     }, 1500 + Math.random() * 1000);
-  }, []);
+  }, [isTyping]);
 
-  const handleApprove = (msgId: string) => {
+  const handleApprove = useCallback((msgId: string) => {
     setMessages((prev) =>
       prev.map((m) => (m.id === msgId ? { ...m, approved: true } : m))
     );
-  };
+    toast.success("Action approved — executing...");
+  }, []);
 
-  const handleReject = (msgId: string) => {
+  const handleReject = useCallback((msgId: string) => {
     setMessages((prev) =>
       prev.map((m) => (m.id === msgId ? { ...m, approved: false } : m))
     );
-  };
+    toast.info("Action rejected");
+  }, []);
+
+  const clearChat = useCallback(() => {
+    setMessages(INITIAL_MESSAGES);
+    toast.info("Chat cleared");
+  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -225,7 +271,10 @@ export default function Agent() {
     }
   };
 
-  const openTasks = TASKS.filter(t => t.status === "open").slice(0, 3);
+  const openTasks = TASKS.filter(t => t.status === "open").sort((a, b) => {
+    const p: Record<string, number> = { High: 0, Medium: 1, Low: 2 };
+    return (p[a.priority] ?? 2) - (p[b.priority] ?? 2);
+  }).slice(0, 4);
 
   return (
     <DashboardLayout title="AI Agent" subtitle="ATLAS OPS ASSISTANT">
@@ -260,7 +309,7 @@ export default function Agent() {
               </div>
             </div>
 
-            {/* Open Tasks */}
+            {/* Open Tasks — clickable */}
             <div className="mt-6">
               <h3 className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-3">
                 Priority Tasks
@@ -270,7 +319,11 @@ export default function Agent() {
                   const resolvedStatus = getTaskStatusFromDate(task);
                   const sc = STATUS_CONFIG[resolvedStatus];
                   return (
-                    <div key={task.id} className="bg-card border border-border rounded-md p-3">
+                    <button
+                      key={task.id}
+                      onClick={() => setTaskModal(task)}
+                      className="w-full text-left bg-card border border-border rounded-md p-3 hover:bg-accent/30 transition-colors"
+                    >
                       <div className="flex items-center justify-between mb-1">
                         <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded", task.priority === "High" ? "bg-red-500/10 text-red-400" : "bg-amber-500/10 text-amber-400")}>
                           {task.priority}
@@ -279,7 +332,7 @@ export default function Agent() {
                       </div>
                       <p className="text-xs text-foreground mt-1">{task.title}</p>
                       <p className="text-[10px] font-mono text-muted-foreground mt-1">Due {formatDate(task.dueDate)}</p>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -289,19 +342,29 @@ export default function Agent() {
 
         {/* Right panel: Chat */}
         <div className="flex-1 flex flex-col min-h-0">
-          {/* Quick actions */}
+          {/* Quick actions + Clear */}
           <div className="flex items-center gap-2 px-4 py-3 border-b border-border overflow-x-auto">
             <Sparkles className="size-3.5 text-primary flex-shrink-0" />
             {QUICK_ACTIONS.map((action) => (
               <button
                 key={action.label}
                 onClick={() => sendMessage(action.prompt)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary/50 text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors whitespace-nowrap border border-border"
+                disabled={isTyping}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary/50 text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors whitespace-nowrap border border-border disabled:opacity-50"
               >
                 {action.icon}
                 {action.label}
               </button>
             ))}
+            <div className="ml-auto flex-shrink-0">
+              <button
+                onClick={clearChat}
+                className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[10px] text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              >
+                <Trash2 className="size-3" />
+                Clear
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
@@ -332,7 +395,9 @@ export default function Agent() {
                         : "bg-card border border-border text-foreground"
                     )}
                   >
-                    <div className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</div>
+                    <div className="text-sm leading-relaxed prose prose-invert prose-sm max-w-none [&_table]:text-xs [&_th]:px-2 [&_th]:py-1 [&_td]:px-2 [&_td]:py-1 [&_table]:border-border [&_th]:border-border [&_td]:border-border [&_h2]:text-sm [&_h2]:mt-3 [&_h2]:mb-1 [&_h3]:text-xs [&_h3]:mt-2 [&_h3]:mb-1 [&_li]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_p]:my-1 [&_blockquote]:border-primary/30 [&_blockquote]:bg-primary/5 [&_blockquote]:px-3 [&_blockquote]:py-2 [&_blockquote]:rounded">
+                      <Streamdown>{msg.content}</Streamdown>
+                    </div>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-[10px] font-mono text-muted-foreground">
                         {msg.timestamp.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
@@ -420,11 +485,52 @@ export default function Agent() {
               </Button>
             </div>
             <p className="text-[10px] text-muted-foreground mt-2 font-mono">
-              Destructive actions require approval before execution
+              Enter to send · Shift+Enter for new line · Destructive actions require approval
             </p>
           </div>
         </div>
       </div>
+
+      {/* Task Detail Modal */}
+      <Dialog open={!!taskModal} onOpenChange={(open) => !open && setTaskModal(null)}>
+        <DialogContent className="sm:max-w-md">
+          {taskModal && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-sm">{taskModal.title}</DialogTitle>
+                <DialogDescription className="text-[10px] font-mono">
+                  Due {formatDate(taskModal.dueDate)} · {taskModal.priority} priority
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3 py-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Status</span>
+                  {(() => { const rs = getTaskStatusFromDate(taskModal); const sc = STATUS_CONFIG[rs]; return <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />; })()}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Assignees</span>
+                  <span className="text-xs text-foreground">{taskModal.assignees.join(", ") || "Unassigned"}</span>
+                </div>
+                {taskModal.ventureLink && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Venture</span>
+                    <span className="text-xs text-primary">{taskModal.ventureLink}</span>
+                  </div>
+                )}
+              </div>
+              <DialogFooter>
+                <Button size="sm" className="text-xs" onClick={() => {
+                  sendMessage(`Tell me about the task "${taskModal.title}" and suggest next steps.`);
+                  setTaskModal(null);
+                }}>
+                  <Sparkles className="size-3.5 mr-1" /> Ask Agent
+                </Button>
+                <Button variant="ghost" size="sm" className="text-xs" onClick={() => setTaskModal(null)}>Close</Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

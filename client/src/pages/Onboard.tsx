@@ -1,29 +1,42 @@
 // ============================================================================
-// Team & Contacts Page — Swiss Instrument design
-// Team members, contacts, organizations from Airtable
+// Team & Contacts Page — Swiss Instrument — FULLY INTERACTIVE
+// Profile drawers, status toggles, Add Member form, clickable contacts
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
-import { TEAM, CONTACTS, ORGANIZATIONS, LP_INVESTORS, type TeamMember, type Contact } from "@/lib/data";
+import {
+  TEAM, CONTACTS, ORGANIZATIONS, LP_INVESTORS,
+  type TeamMember, type Contact,
+} from "@/lib/data";
 import { motion } from "framer-motion";
 import {
-  Users,
-  UserCircle,
-  Building2,
-  Briefcase,
-  Phone,
-  Globe,
-  ExternalLink,
+  Users, UserCircle, Building2, Briefcase, Phone, Globe, ExternalLink,
+  Plus, MessageCircle, Send, X,
 } from "lucide-react";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import {
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
+} from "@/components/ui/sheet";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState, useCallback } from "react";
+import { toast } from "sonner";
+
+const STATUS_CYCLE: Record<string, string> = { Active: "Advisor", Advisor: "Contributor", Contributor: "Active" };
+const MEMBER_TYPES = ["Internal", "External Partner", "Advisor"];
+const FUNCTIONS = ["Finance & Capital", "Operations & Systems", "Operations", "Finance / Accounting", "People Ops / HR", "Investor Relations", "Legal", "Design", "Financial Modeling"];
 
 function MemberTypeBadge({ type }: { type: string }) {
   const config: Record<string, { bg: string; text: string }> = {
@@ -40,8 +53,45 @@ function MemberTypeBadge({ type }: { type: string }) {
 }
 
 export default function OnboardPage() {
-  const internalTeam = TEAM.filter(m => m.type === "Internal");
-  const externalTeam = TEAM.filter(m => m.type !== "Internal");
+  const [team, setTeam] = useState<TeamMember[]>([...TEAM]);
+  const [drawerMember, setDrawerMember] = useState<TeamMember | null>(null);
+  const [contactDrawer, setContactDrawer] = useState<Contact | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+
+  // Add form
+  const [newName, setNewName] = useState("");
+  const [newRole, setNewRole] = useState("");
+  const [newFunc, setNewFunc] = useState("Operations");
+  const [newType, setNewType] = useState("Internal");
+  const [newNotes, setNewNotes] = useState("");
+
+  const internalTeam = team.filter(m => m.type === "Internal");
+
+  const toggleStatus = useCallback((id: string) => {
+    setTeam(prev => prev.map(m => {
+      if (m.id !== id) return m;
+      const next = STATUS_CYCLE[m.status] || "Active";
+      toast.info(`${m.name} status changed to ${next}`);
+      return { ...m, status: next };
+    }));
+  }, []);
+
+  const handleAdd = useCallback(() => {
+    if (!newName.trim()) { toast.error("Name is required"); return; }
+    const nm: TeamMember = {
+      id: `rec_new_${Date.now()}`,
+      name: newName.trim(),
+      role: newRole.trim() || "Member",
+      function: newFunc,
+      status: "Active",
+      type: newType as TeamMember["type"],
+      notes: newNotes.trim() || undefined,
+    };
+    setTeam(prev => [nm, ...prev]);
+    setAddOpen(false);
+    setNewName(""); setNewRole(""); setNewNotes("");
+    toast.success(`${nm.name} added to team`);
+  }, [newName, newRole, newFunc, newType, newNotes]);
 
   return (
     <DashboardLayout title="Team & Contacts" subtitle="PEOPLE & ORGANIZATIONS">
@@ -49,7 +99,7 @@ export default function OnboardPage() {
         {/* Summary metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { label: "Team Members", value: TEAM.length, icon: <Users className="size-4 text-blue-400" /> },
+            { label: "Team Members", value: team.length, icon: <Users className="size-4 text-blue-400" /> },
             { label: "Internal", value: internalTeam.length, icon: <UserCircle className="size-4 text-emerald-400" /> },
             { label: "Contacts", value: CONTACTS.length, icon: <Phone className="size-4 text-amber-400" /> },
             { label: "Organizations", value: ORGANIZATIONS.length, icon: <Building2 className="size-4 text-primary" /> },
@@ -70,7 +120,14 @@ export default function OnboardPage() {
           ))}
         </div>
 
-        {/* Team Members Table */}
+        {/* Add button */}
+        <div className="flex justify-end">
+          <Button size="sm" className="text-xs h-8" onClick={() => setAddOpen(true)}>
+            <Plus className="size-3.5 mr-1" /> Add Member
+          </Button>
+        </div>
+
+        {/* Team Members Table — clickable rows */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -79,7 +136,7 @@ export default function OnboardPage() {
         >
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
             <h2 className="text-sm font-semibold text-foreground">Team Members</h2>
-            <span className="text-[10px] font-mono text-muted-foreground">{TEAM.length} people</span>
+            <span className="text-[10px] font-mono text-muted-foreground">{team.length} people</span>
           </div>
 
           <Table>
@@ -93,8 +150,8 @@ export default function OnboardPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {TEAM.map((member: TeamMember) => (
-                <TableRow key={member.id}>
+              {team.map((member) => (
+                <TableRow key={member.id} className="cursor-pointer hover:bg-accent/30" onClick={() => setDrawerMember(member)}>
                   <TableCell>
                     <div>
                       <span className="text-xs text-foreground font-medium">{member.name}</span>
@@ -107,14 +164,17 @@ export default function OnboardPage() {
                   <TableCell className="text-xs text-muted-foreground">{member.function}</TableCell>
                   <TableCell><MemberTypeBadge type={member.type} /></TableCell>
                   <TableCell>
-                    <span className={cn(
-                      "text-[10px] font-medium px-1.5 py-0.5 rounded",
-                      member.status === "Active" ? "bg-emerald-500/10 text-emerald-400" :
-                      member.status === "Advisor" ? "bg-amber-500/10 text-amber-400" :
-                      "bg-secondary text-muted-foreground"
-                    )}>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); toggleStatus(member.id); }}
+                      className={cn(
+                        "text-[10px] font-medium px-1.5 py-0.5 rounded cursor-pointer hover:opacity-80 transition-opacity",
+                        member.status === "Active" ? "bg-emerald-500/10 text-emerald-400" :
+                        member.status === "Advisor" ? "bg-amber-500/10 text-amber-400" :
+                        "bg-secondary text-muted-foreground"
+                      )}
+                    >
                       {member.status}
-                    </span>
+                    </button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -122,7 +182,7 @@ export default function OnboardPage() {
           </Table>
         </motion.div>
 
-        {/* Contacts Table */}
+        {/* Contacts Table — clickable rows */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -145,8 +205,8 @@ export default function OnboardPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {CONTACTS.map((contact: Contact) => (
-                <TableRow key={contact.id}>
+              {CONTACTS.map((contact) => (
+                <TableRow key={contact.id} className="cursor-pointer hover:bg-accent/30" onClick={() => setContactDrawer(contact)}>
                   <TableCell className="text-xs text-foreground font-medium">{contact.name}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{contact.role || "—"}</TableCell>
                   <TableCell>
@@ -170,7 +230,6 @@ export default function OnboardPage() {
 
         {/* Organizations & LPs */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Organizations */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -203,7 +262,6 @@ export default function OnboardPage() {
             </div>
           </motion.div>
 
-          {/* LP Investors */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -243,6 +301,174 @@ export default function OnboardPage() {
           </motion.div>
         </div>
       </div>
+
+      {/* Member Profile Drawer */}
+      <Sheet open={!!drawerMember} onOpenChange={(open) => !open && setDrawerMember(null)}>
+        <SheetContent side="right" className="w-[420px] sm:max-w-[420px] bg-card border-border p-0">
+          {drawerMember && (() => {
+            const live = team.find(m => m.id === drawerMember.id) || drawerMember;
+            return (
+              <>
+                <SheetHeader className="px-4 pt-4 pb-3 border-b border-border">
+                  <SheetTitle className="text-sm font-semibold">{live.name}</SheetTitle>
+                  <SheetDescription className="text-[10px] font-mono text-muted-foreground">
+                    {live.role} · {live.function}
+                  </SheetDescription>
+                </SheetHeader>
+                <ScrollArea className="h-[calc(100vh-140px)]">
+                  <div className="p-4 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Type</span>
+                        <MemberTypeBadge type={live.type} />
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Status</span>
+                        <button
+                          onClick={() => toggleStatus(live.id)}
+                          className={cn(
+                            "text-[10px] font-medium px-2 py-1 rounded cursor-pointer hover:opacity-80",
+                            live.status === "Active" ? "bg-emerald-500/10 text-emerald-400" :
+                            live.status === "Advisor" ? "bg-amber-500/10 text-amber-400" :
+                            "bg-secondary text-muted-foreground"
+                          )}
+                        >
+                          {live.status} (click to toggle)
+                        </button>
+                      </div>
+                    </div>
+
+                    {live.notes && (
+                      <div>
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Notes</span>
+                        <p className="text-xs text-foreground bg-secondary/30 rounded-md p-2">{live.notes}</p>
+                      </div>
+                    )}
+
+                    {/* Contact methods */}
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-2">Contact</span>
+                      <div className="space-y-2">
+                        {live.telegram && (
+                          <a
+                            href={`https://t.me/${live.telegram.replace("@", "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                          >
+                            <Send className="size-3.5" />
+                            <span>Telegram: {live.telegram}</span>
+                          </a>
+                        )}
+                        {live.whatsapp && (
+                          <a
+                            href={`https://wa.me/${live.whatsapp.replace(/[^0-9]/g, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                          >
+                            <MessageCircle className="size-3.5" />
+                            <span>WhatsApp: {live.whatsapp}</span>
+                          </a>
+                        )}
+                        {!live.telegram && !live.whatsapp && (
+                          <p className="text-xs text-muted-foreground">No contact methods on file.</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </ScrollArea>
+              </>
+            );
+          })()}
+        </SheetContent>
+      </Sheet>
+
+      {/* Contact Detail Drawer */}
+      <Sheet open={!!contactDrawer} onOpenChange={(open) => !open && setContactDrawer(null)}>
+        <SheetContent side="right" className="w-[420px] sm:max-w-[420px] bg-card border-border p-0">
+          {contactDrawer && (
+            <>
+              <SheetHeader className="px-4 pt-4 pb-3 border-b border-border">
+                <SheetTitle className="text-sm font-semibold">{contactDrawer.name}</SheetTitle>
+                <SheetDescription className="text-[10px] font-mono text-muted-foreground">
+                  {contactDrawer.role || "Contact"} {contactDrawer.geography ? `· ${contactDrawer.geography}` : ""}
+                </SheetDescription>
+              </SheetHeader>
+              <div className="p-4 space-y-4">
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Status</span>
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400">{contactDrawer.status}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-2">Industries</span>
+                  <div className="flex flex-wrap gap-1">
+                    {contactDrawer.industries.map((ind) => (
+                      <span key={ind} className="text-[10px] px-2 py-1 rounded bg-secondary text-foreground">{ind}</span>
+                    ))}
+                  </div>
+                </div>
+                {contactDrawer.geography && (
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Geography</span>
+                    <span className="text-xs font-mono text-foreground">{contactDrawer.geography}</span>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Add Member Dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Add Team Member</DialogTitle>
+            <DialogDescription className="text-[10px] font-mono">Add a new member to the team</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label className="text-xs mb-1">Name</Label>
+              <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Full name" className="h-8 text-xs" />
+            </div>
+            <div>
+              <Label className="text-xs mb-1">Role</Label>
+              <Input value={newRole} onChange={(e) => setNewRole(e.target.value)} placeholder="e.g. Analyst, VP" className="h-8 text-xs" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs mb-1">Function</Label>
+                <Select value={newFunc} onValueChange={setNewFunc}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {FUNCTIONS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs mb-1">Type</Label>
+                <Select value={newType} onValueChange={setNewType}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {MEMBER_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs mb-1">Notes</Label>
+              <Textarea value={newNotes} onChange={(e) => setNewNotes(e.target.value)} placeholder="Optional notes..." className="text-xs min-h-[60px]" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button size="sm" className="text-xs" onClick={handleAdd}>
+              <Plus className="size-3.5 mr-1" /> Add Member
+            </Button>
+            <Button variant="ghost" size="sm" className="text-xs" onClick={() => setAddOpen(false)}>Cancel</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

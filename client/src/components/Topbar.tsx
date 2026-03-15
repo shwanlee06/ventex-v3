@@ -1,12 +1,18 @@
-// ============================================================================
-// Topbar — Swiss Instrument design
-// Persistent top bar with search, notifications, user avatar
-// ============================================================================
-
 import { cn } from "@/lib/utils";
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, User, Settings, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { NotificationPanel, useNotifications } from "@/components/NotificationPanel";
+import CommandPalette from "@/components/CommandPalette";
+import { useState, useCallback } from "react";
+import { useLocation } from "wouter";
+import { toast } from "sonner";
 
 interface TopbarProps {
   title: string;
@@ -14,44 +20,92 @@ interface TopbarProps {
 }
 
 export default function Topbar({ title, subtitle }: TopbarProps) {
+  const { notifications, setNotifications, open: notifOpen, setOpen: setNotifOpen, unreadCount } = useNotifications();
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [, navigate] = useLocation();
+
+  const handleSignOut = useCallback(() => {
+    toast.info("Signed out successfully");
+  }, []);
+
   return (
-    <header className="h-14 border-b border-border bg-background/80 backdrop-blur-sm flex items-center justify-between px-6 sticky top-0 z-30">
-      <div className="flex flex-col">
-        <h1 className="text-sm font-semibold tracking-tight text-foreground leading-tight">{title}</h1>
-        {subtitle && (
-          <p className="text-[11px] text-muted-foreground font-mono tracking-wide">{subtitle}</p>
-        )}
-      </div>
+    <>
+      <header className="h-14 border-b border-border bg-background/80 backdrop-blur-sm flex items-center justify-between px-6 sticky top-0 z-30">
+        <div className="flex flex-col">
+          <h1 className="text-sm font-semibold tracking-tight text-foreground leading-tight">{title}</h1>
+          {subtitle && (
+            <p className="text-[11px] text-muted-foreground font-mono tracking-wide">{subtitle}</p>
+          )}
+        </div>
 
-      <div className="flex items-center gap-3">
-        {/* Search */}
-        <button className="flex items-center gap-2 h-8 px-3 rounded-md bg-secondary/50 text-muted-foreground text-xs hover:bg-secondary transition-colors">
-          <Search className="size-3.5" />
-          <span className="hidden sm:inline">Search</span>
-          <kbd className="hidden sm:inline text-[10px] font-mono bg-background/50 px-1.5 py-0.5 rounded border border-border">
-            /
-          </kbd>
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Search */}
+          <button
+            onClick={() => setCmdOpen(true)}
+            className="flex items-center gap-2 h-8 px-3 rounded-md bg-secondary/50 text-muted-foreground text-xs hover:bg-secondary transition-colors"
+          >
+            <Search className="size-3.5" />
+            <span className="hidden sm:inline">Search</span>
+            <kbd className="hidden sm:inline text-[10px] font-mono bg-background/50 px-1.5 py-0.5 rounded border border-border">
+              /
+            </kbd>
+          </button>
 
-        {/* Notifications */}
-        <button className="relative flex items-center justify-center size-8 rounded-md hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground">
-          <Bell className="size-4" />
-          <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-red-500" />
-        </button>
+          {/* Notifications */}
+          <button
+            onClick={() => setNotifOpen(true)}
+            className="relative flex items-center justify-center size-8 rounded-md hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+          >
+            <Bell className="size-4" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-red-500" />
+            )}
+          </button>
 
-        {/* User */}
-        <div className="flex items-center gap-2 pl-3 border-l border-border">
-          <Avatar className="size-7">
-            <AvatarFallback className="bg-primary/20 text-primary text-[10px] font-semibold">
-              AT
-            </AvatarFallback>
-          </Avatar>
-          <div className="hidden sm:flex flex-col">
-            <span className="text-xs font-medium text-foreground leading-tight">ATLAS Admin</span>
-            <span className="text-[10px] text-muted-foreground font-mono">ops@atlas.vc</span>
+          {/* User Avatar Dropdown */}
+          <div className="flex items-center gap-2 pl-3 border-l border-border">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                  <Avatar className="size-7">
+                    <AvatarFallback className="bg-primary/20 text-primary text-[10px] font-semibold">
+                      AT
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="hidden sm:flex flex-col text-left">
+                    <span className="text-xs font-medium text-foreground leading-tight">ATLAS Admin</span>
+                    <span className="text-[10px] text-muted-foreground font-mono">ops@atlas.vc</span>
+                  </div>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => toast.info("Profile page coming soon")}>
+                  <User className="size-4 mr-2" />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/settings")}>
+                  <Settings className="size-4 mr-2" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut}>
+                  <LogOut className="size-4 mr-2" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Panels */}
+      <NotificationPanel
+        open={notifOpen}
+        onOpenChange={setNotifOpen}
+        notifications={notifications}
+        setNotifications={setNotifications}
+      />
+      <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
+    </>
   );
 }

@@ -9,6 +9,7 @@ import Agent from "./pages/Agent";
 import Verticals from "./pages/Verticals";
 import Onboard from "./pages/Onboard";
 import Settings from "./pages/Settings";
+import Distributions from "./pages/Distributions";
 
 function Router() {
   return (
@@ -18,7 +19,7 @@ function Router() {
       <Route path="/ventures" component={Verticals} />
       <Route path="/team" component={Onboard} />
       <Route path="/spvs" component={Settings} />
-      <Route path="/distributions" component={Settings} />
+      <Route path="/distributions" component={Distributions} />
       <Route path="/settings" component={Settings} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

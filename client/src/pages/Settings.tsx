@@ -1,6 +1,6 @@
 // ============================================================================
-// SPVs & Deals Page — Swiss Instrument design
-// SPV table, distributions, meetings from Airtable
+// SPVs & Deals Page — Swiss Instrument — FULLY INTERACTIVE
+// Row modals, priority cycling, stage updates, New Deal form, distributions
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
@@ -15,29 +15,92 @@ import {
   getThemeColor,
   formatCurrency,
   formatDate,
+  type SPV,
+  type Distribution,
 } from "@/lib/data";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { motion } from "framer-motion";
 import {
-  Briefcase,
-  DollarSign,
-  CalendarDays,
-  FileText,
-  TrendingUp,
-  TrendingDown,
+  Briefcase, DollarSign, CalendarDays, FileText, TrendingUp, TrendingDown, Plus, X, ArrowUpDown,
 } from "lucide-react";
+import { useState, useCallback, useMemo } from "react";
+import { toast } from "sonner";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
+const ALL_STAGES = ["All", "Active deal", "In negotiation", "Closed deal", "Dropped deal"];
+const ALL_THEMES_SPV = ["All", "Oil & Gas", "Yacht", "Others", "Entertainment", "TBD"];
+const PRIORITY_CYCLE: Record<string, string> = { Low: "Medium", Medium: "High", High: "Low" };
 
 export default function SettingsPage() {
-  const activeSPVs = SPVS.filter(s => s.stage === "Active deal").length;
-  const totalDistributed = DISTRIBUTIONS.reduce((sum, d) => sum + d.amount, 0);
-  const paidDistributed = DISTRIBUTIONS.filter(d => d.status === "Paid").reduce((sum, d) => sum + d.amount, 0);
+  const [spvs, setSpvs] = useState<SPV[]>([...SPVS]);
+  const [distributions] = useState<Distribution[]>([...DISTRIBUTIONS]);
+  const [stageFilter, setStageFilter] = useState("All");
+  const [themeFilter, setThemeFilter] = useState("All");
+  const [spvModal, setSpvModal] = useState<SPV | null>(null);
+  const [distModal, setDistModal] = useState<Distribution | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [meetingExpanded, setMeetingExpanded] = useState<string | null>(null);
+
+  // Add form
+  const [newName, setNewName] = useState("");
+  const [newTheme, setNewTheme] = useState("Oil & Gas");
+  const [newPriority, setNewPriority] = useState("Medium");
+  const [newStage, setNewStage] = useState("In negotiation");
+  const [newNotes, setNewNotes] = useState("");
+
+  const filtered = useMemo(() => {
+    return spvs.filter(s => {
+      if (stageFilter !== "All" && s.stage !== stageFilter) return false;
+      if (themeFilter !== "All" && s.theme !== themeFilter) return false;
+      return true;
+    });
+  }, [spvs, stageFilter, themeFilter]);
+
+  const activeSPVs = spvs.filter(s => s.stage === "Active deal").length;
+  const totalDistributed = distributions.reduce((sum, d) => sum + d.amount, 0);
+  const paidDistributed = distributions.filter(d => d.status === "Paid").reduce((sum, d) => sum + d.amount, 0);
+
+  const cyclePriority = useCallback((id: string) => {
+    setSpvs(prev => prev.map(s => {
+      if (s.id !== id) return s;
+      const next = PRIORITY_CYCLE[s.priority] || "Medium";
+      toast.info(`Priority changed to ${next}`);
+      return { ...s, priority: next };
+    }));
+  }, []);
+
+  const updateStage = useCallback((id: string, stage: string) => {
+    setSpvs(prev => prev.map(s => s.id === id ? { ...s, stage: stage as SPV["stage"] } : s));
+    toast.success(`Stage updated to ${stage}`);
+    setSpvModal(null);
+  }, []);
+
+  const handleAddDeal = useCallback(() => {
+    if (!newName.trim()) { toast.error("Name is required"); return; }
+    const nd: SPV = {
+      id: `rec_new_${Date.now()}`,
+      name: newName.trim(),
+      theme: newTheme,
+      stage: newStage as SPV["stage"],
+      priority: newPriority,
+      currentStatus: newNotes.trim() || undefined,
+    };
+    setSpvs(prev => [nd, ...prev]);
+    setAddOpen(false);
+    setNewName(""); setNewNotes("");
+    toast.success(`Deal "${nd.name}" added`);
+  }, [newName, newTheme, newPriority, newStage, newNotes]);
 
   return (
     <DashboardLayout title="SPVs & Deals" subtitle="DEAL PIPELINE & DISTRIBUTIONS">
@@ -45,7 +108,7 @@ export default function SettingsPage() {
         {/* Summary metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { label: "Total SPVs", value: SPVS.length, icon: <Briefcase className="size-4 text-blue-400" /> },
+            { label: "Total SPVs", value: filtered.length, icon: <Briefcase className="size-4 text-blue-400" /> },
             { label: "Active Deals", value: activeSPVs, icon: <TrendingUp className="size-4 text-emerald-400" /> },
             { label: "Total Distributed", value: formatCurrency(totalDistributed), icon: <DollarSign className="size-4 text-primary" /> },
             { label: "Paid Out", value: formatCurrency(paidDistributed), icon: <TrendingDown className="size-4 text-amber-400" /> },
@@ -66,7 +129,33 @@ export default function SettingsPage() {
           ))}
         </div>
 
-        {/* SPVs Table */}
+        {/* Filters + Add */}
+        <div className="flex flex-wrap items-center gap-3">
+          <Select value={stageFilter} onValueChange={setStageFilter}>
+            <SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {ALL_STAGES.map(s => <SelectItem key={s} value={s}>{s === "All" ? "All Stages" : s}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={themeFilter} onValueChange={setThemeFilter}>
+            <SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {ALL_THEMES_SPV.map(t => <SelectItem key={t} value={t}>{t === "All" ? "All Sectors" : t}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          {(stageFilter !== "All" || themeFilter !== "All") && (
+            <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => { setStageFilter("All"); setThemeFilter("All"); }}>
+              <X className="size-3 mr-1" /> Clear
+            </Button>
+          )}
+          <div className="ml-auto">
+            <Button size="sm" className="text-xs h-8" onClick={() => setAddOpen(true)}>
+              <Plus className="size-3.5 mr-1" /> New Deal
+            </Button>
+          </div>
+        </div>
+
+        {/* SPVs Table — clickable rows, priority cycling */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -75,60 +164,71 @@ export default function SettingsPage() {
         >
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
             <h2 className="text-sm font-semibold text-foreground">All SPVs & Deals</h2>
-            <span className="text-[10px] font-mono text-muted-foreground">{SPVS.length} deals</span>
+            <span className="text-[10px] font-mono text-muted-foreground">{filtered.length} deals</span>
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">SPV Name</TableHead>
-                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Sector</TableHead>
-                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Priority</TableHead>
-                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Stage</TableHead>
-                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {SPVS.map((spv) => {
-                const tc = getThemeColor(spv.theme);
-                const sc = SPV_STAGE_CONFIG[spv.stage];
-                return (
-                  <TableRow key={spv.id}>
-                    <TableCell>
-                      <div>
-                        <span className="text-xs text-foreground font-medium">{spv.name}</span>
-                        {spv.currentStatus && (
-                          <p className="text-[10px] text-muted-foreground mt-0.5 truncate max-w-[200px]">{spv.currentStatus}</p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="size-2 rounded-full flex-shrink-0" style={{ backgroundColor: tc.color }} />
-                        <span className="text-xs" style={{ color: tc.color }}>{spv.theme}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded",
-                        spv.priority === "High" ? "bg-red-500/10 text-red-400" :
-                        spv.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
-                        "bg-secondary text-muted-foreground"
-                      )}>
-                        {spv.priority}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{spv.stage}</TableCell>
-                    <TableCell>
-                      {sc && <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+          {filtered.length === 0 ? (
+            <div className="p-12 text-center">
+              <Briefcase className="size-8 text-muted-foreground mx-auto mb-3 opacity-40" />
+              <p className="text-sm text-muted-foreground">No deals match the current filters.</p>
+              <Button variant="ghost" size="sm" className="text-xs mt-2" onClick={() => { setStageFilter("All"); setThemeFilter("All"); }}>Clear filters</Button>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">SPV Name</TableHead>
+                  <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Sector</TableHead>
+                  <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">
+                    <div className="flex items-center gap-1">Priority <ArrowUpDown className="size-3" /></div>
+                  </TableHead>
+                  <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Stage</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((spv) => {
+                  const tc = getThemeColor(spv.theme);
+                  const sc = SPV_STAGE_CONFIG[spv.stage];
+                  return (
+                    <TableRow key={spv.id} className="cursor-pointer hover:bg-accent/30">
+                      <TableCell onClick={() => setSpvModal(spv)}>
+                        <div>
+                          <span className="text-xs text-foreground font-medium">{spv.name}</span>
+                          {spv.currentStatus && (
+                            <p className="text-[10px] text-muted-foreground mt-0.5 truncate max-w-[200px]">{spv.currentStatus}</p>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell onClick={() => setSpvModal(spv)}>
+                        <div className="flex items-center gap-2">
+                          <div className="size-2 rounded-full flex-shrink-0" style={{ backgroundColor: tc.color }} />
+                          <span className="text-xs" style={{ color: tc.color }}>{spv.theme}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); cyclePriority(spv.id); }}
+                          className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded cursor-pointer hover:opacity-80 transition-opacity",
+                            spv.priority === "High" ? "bg-red-500/10 text-red-400" :
+                            spv.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
+                            "bg-secondary text-muted-foreground"
+                          )}
+                        >
+                          {spv.priority}
+                        </button>
+                      </TableCell>
+                      <TableCell onClick={() => setSpvModal(spv)}>
+                        {sc && <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
         </motion.div>
 
-        {/* Distributions Table */}
+        {/* Distributions Table — clickable rows */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -152,25 +252,21 @@ export default function SettingsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {DISTRIBUTIONS.map((dist) => {
+              {distributions.map((dist) => {
                 const dc = DIST_STATUS_CONFIG[dist.status];
                 return (
-                  <TableRow key={dist.id}>
+                  <TableRow key={dist.id} className="cursor-pointer hover:bg-accent/30" onClick={() => setDistModal(dist)}>
                     <TableCell>
                       <div>
                         <span className="text-xs text-foreground font-medium">{dist.name}</span>
-                        {dist.notes && (
-                          <p className="text-[10px] text-muted-foreground mt-0.5 truncate max-w-[200px]">{dist.notes}</p>
-                        )}
+                        {dist.notes && <p className="text-[10px] text-muted-foreground mt-0.5 truncate max-w-[200px]">{dist.notes}</p>}
                       </div>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{dist.fund}</TableCell>
                     <TableCell className="text-xs font-mono text-muted-foreground">{formatDate(dist.date)}</TableCell>
                     <TableCell className="text-xs font-mono font-medium text-foreground">{formatCurrency(dist.amount)}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">{dist.type}</TableCell>
-                    <TableCell>
-                      {dc && <StatusBadge label={dc.label} bg={dc.bg} dot={dc.dot} />}
-                    </TableCell>
+                    <TableCell>{dc && <StatusBadge label={dc.label} bg={dc.bg} dot={dc.dot} />}</TableCell>
                   </TableRow>
                 );
               })}
@@ -178,7 +274,7 @@ export default function SettingsPage() {
           </Table>
         </motion.div>
 
-        {/* Meetings */}
+        {/* Meetings — expandable */}
         {MEETINGS.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -189,33 +285,204 @@ export default function SettingsPage() {
             <div className="px-4 py-3 border-b border-border">
               <h2 className="text-sm font-semibold text-foreground">Recent Meetings</h2>
             </div>
-            <div className="p-4 space-y-3">
+            <div className="divide-y divide-border">
               {MEETINGS.map((meeting) => (
-                <div key={meeting.id} className="p-4 bg-secondary/30 rounded-md">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CalendarDays className="size-4 text-primary" />
-                    <span className="text-sm font-medium text-foreground">{meeting.name}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed mb-3">{meeting.agenda}</p>
-                  <div className="bg-background/50 rounded-md p-3 mb-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FileText className="size-3.5 text-muted-foreground" />
-                      <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Meeting Summary</span>
+                <div key={meeting.id}>
+                  <button
+                    onClick={() => setMeetingExpanded(meetingExpanded === meeting.id ? null : meeting.id)}
+                    className="w-full text-left px-4 py-3 flex items-center justify-between hover:bg-accent/30 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="size-4 text-primary" />
+                      <span className="text-sm font-medium text-foreground">{meeting.name}</span>
                     </div>
-                    <p className="text-xs text-foreground whitespace-pre-line leading-relaxed">{meeting.summary}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="text-[10px] text-muted-foreground">Attendees:</span>
-                    {[...meeting.royaltonAttendees, ...meeting.attendees].map((a) => (
-                      <span key={a} className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-foreground">{a}</span>
-                    ))}
-                  </div>
+                    <span className="text-[10px] text-muted-foreground">{meetingExpanded === meeting.id ? "Collapse" : "Expand"}</span>
+                  </button>
+                  {meetingExpanded === meeting.id && (
+                    <div className="px-4 pb-4 space-y-3">
+                      <p className="text-xs text-muted-foreground leading-relaxed">{meeting.agenda}</p>
+                      <div className="bg-secondary/30 rounded-md p-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="size-3.5 text-muted-foreground" />
+                          <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Meeting Summary</span>
+                        </div>
+                        <p className="text-xs text-foreground whitespace-pre-line leading-relaxed">{meeting.summary}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="text-[10px] text-muted-foreground">Attendees:</span>
+                        {[...meeting.royaltonAttendees, ...meeting.attendees].map((a) => (
+                          <span key={a} className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-foreground">{a}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           </motion.div>
         )}
       </div>
+
+      {/* SPV Detail Modal */}
+      <Dialog open={!!spvModal} onOpenChange={(open) => !open && setSpvModal(null)}>
+        <DialogContent className="sm:max-w-md">
+          {spvModal && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-sm">{spvModal.name}</DialogTitle>
+                <DialogDescription className="text-[10px] font-mono">{spvModal.theme} · {spvModal.stage}</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3 py-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Priority</span>
+                  <button
+                    onClick={() => cyclePriority(spvModal.id)}
+                    className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded cursor-pointer",
+                      spvModal.priority === "High" ? "bg-red-500/10 text-red-400" :
+                      spvModal.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
+                      "bg-secondary text-muted-foreground"
+                    )}
+                  >
+                    {spvs.find(s => s.id === spvModal.id)?.priority || spvModal.priority} (click to cycle)
+                  </button>
+                </div>
+                {spvModal.currentStatus && (
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Current Status</span>
+                    <p className="text-xs text-foreground bg-secondary/30 rounded-md p-2">{spvModal.currentStatus}</p>
+                  </div>
+                )}
+                {spvModal.nextStep && (
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Next Step</span>
+                    <p className="text-xs text-foreground bg-secondary/30 rounded-md p-2">{spvModal.nextStep}</p>
+                  </div>
+                )}
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Update Stage</span>
+                  <Select value={spvModal.stage} onValueChange={(val) => updateStage(spvModal.id, val)}>
+                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {ALL_STAGES.filter(s => s !== "All").map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="ghost" size="sm" className="text-xs" onClick={() => setSpvModal(null)}>Close</Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Distribution Detail Modal */}
+      <Dialog open={!!distModal} onOpenChange={(open) => !open && setDistModal(null)}>
+        <DialogContent className="sm:max-w-md">
+          {distModal && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-sm">{distModal.name}</DialogTitle>
+                <DialogDescription className="text-[10px] font-mono">{distModal.fund}</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3 py-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Amount</span>
+                    <span className="text-sm font-mono font-semibold text-foreground">{formatCurrency(distModal.amount)}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Date</span>
+                    <span className="text-xs font-mono text-foreground">{formatDate(distModal.date)}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Type</span>
+                    <span className="text-xs text-foreground">{distModal.type}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Method</span>
+                    <span className="text-xs text-foreground">{distModal.method}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Status</span>
+                    {DIST_STATUS_CONFIG[distModal.status] && (
+                      <StatusBadge label={DIST_STATUS_CONFIG[distModal.status].label} bg={DIST_STATUS_CONFIG[distModal.status].bg} dot={DIST_STATUS_CONFIG[distModal.status].dot} />
+                    )}
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Age</span>
+                    <span className="text-xs font-mono text-foreground">{distModal.ageDays} days</span>
+                  </div>
+                </div>
+                {distModal.notes && (
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Notes</span>
+                    <p className="text-xs text-foreground bg-secondary/30 rounded-md p-2">{distModal.notes}</p>
+                  </div>
+                )}
+              </div>
+              <DialogFooter>
+                <Button variant="ghost" size="sm" className="text-xs" onClick={() => setDistModal(null)}>Close</Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Deal Dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-sm">New Deal</DialogTitle>
+            <DialogDescription className="text-[10px] font-mono">Add a new SPV or deal to the pipeline</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label className="text-xs mb-1">Name</Label>
+              <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Deal name" className="h-8 text-xs" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs mb-1">Sector</Label>
+                <Select value={newTheme} onValueChange={setNewTheme}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ALL_THEMES_SPV.filter(t => t !== "All").map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs mb-1">Priority</Label>
+                <Select value={newPriority} onValueChange={setNewPriority}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {["Low", "Medium", "High"].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs mb-1">Stage</Label>
+              <Select value={newStage} onValueChange={setNewStage}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ALL_STAGES.filter(s => s !== "All").map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs mb-1">Notes</Label>
+              <Textarea value={newNotes} onChange={(e) => setNewNotes(e.target.value)} placeholder="Current status or notes..." className="text-xs min-h-[60px]" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button size="sm" className="text-xs" onClick={handleAddDeal}>
+              <Plus className="size-3.5 mr-1" /> Add Deal
+            </Button>
+            <Button variant="ghost" size="sm" className="text-xs" onClick={() => setAddOpen(false)}>Cancel</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
