@@ -35,8 +35,8 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   if (!authed) return null;
   return <>{children}</>;
 }
-
 function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       {/* Login / landing page is the root */}

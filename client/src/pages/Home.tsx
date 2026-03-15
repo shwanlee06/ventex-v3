@@ -99,12 +99,12 @@ export default function Home() {
   const [sectorDrawer, setSectorDrawer] = useState<string | null>(null);
   const [spvModal, setSpvModal] = useState<SPV | null>(null);
   const [taskModal, setTaskModal] = useState<Task | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
   const [confirmUncheck, setConfirmUncheck] = useState<string | null>(null);
 
   // Simulate loading
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 600);
+    const timer = setTimeout(() => setPageLoading(false), 600);
     return () => clearTimeout(timer);
   }, []);
 
@@ -155,7 +155,7 @@ export default function Home() {
       <div className="p-4 md:p-6 space-y-6">
         {/* Metrics Bar — clickable */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {loading ? (
+          {pageLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-24 rounded-lg" />
             ))
@@ -195,7 +195,7 @@ export default function Home() {
               <span className="text-[10px] font-mono text-muted-foreground">{Object.keys(VENTURES_BY_THEME).length} sectors · {METRICS.totalVentures} ventures</span>
             </div>
 
-            {loading ? (
+            {pageLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Skeleton key={i} className="h-48 rounded-lg" />

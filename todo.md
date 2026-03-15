@@ -1,17 +1,24 @@
 # Current Tasks
 
 ## Export PDF
-- [ ] Find where Export PDF button is located
-- [ ] Implement PDF generation
-- [ ] Test PDF export works
+- [x] Find where Export PDF button is located
+- [x] Implement PDF generation
+- [x] Test PDF export works
 
 ## Settings Page Tabs
-- [ ] Review current Settings tabs
-- [ ] Configure all tabs with working content
-- [ ] Ensure each tab is fully functional
+- [x] Review current Settings tabs
+- [x] Configure all tabs with working content
+- [x] Ensure each tab is fully functional
 
 ## Multi-User Tracking
-- [ ] Review current session/auth management
-- [ ] Implement operator activity tracking (login time, actions)
-- [ ] Show active operators / session log
-- [ ] Ensure each operator's session is independent
+- [x] Review current session/auth management
+- [x] Implement operator activity tracking (login time, actions)
+- [x] Show active operators / session log
+- [x] Ensure each operator's session is independent
+
+## AI Agent - Claude 4.6 Sonnet
+- [x] Upgrade project to web-db-user for backend API routes
+- [x] Create backend tRPC route for AI chat via Forge API
+- [x] Update Agent.tsx to call real Claude 4.6 Sonnet
+- [x] Fix Home.tsx duplicate loading variable after upgrade
+- [x] Add portfolio context injection for AI responses

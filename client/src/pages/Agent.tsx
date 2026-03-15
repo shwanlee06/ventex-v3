@@ -1,5 +1,5 @@
 // ============================================================================
-// AI Agent Page — Swiss Instrument — FULLY INTERACTIVE
+// AI Agent Page — Claude 4.6 Sonnet — LIVE AI RESPONSES
 // Quick actions, clickable task cards, Enter-to-send, Clear chat, Markdown
 // ============================================================================
 
@@ -28,11 +28,13 @@ import {
 import {
   Send, Bot, User, Sparkles, FileText, Mail, CalendarClock,
   CheckCircle2, XCircle, Layers3, Briefcase, ListChecks, Trash2,
-  BarChart3, Users,
+  BarChart3, Users, Cpu,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
+import { trpc } from "@/lib/trpc";
+import { logAction } from "@/lib/operatorSession";
 
 interface ChatMessage {
   id: string;
@@ -41,6 +43,7 @@ interface ChatMessage {
   timestamp: Date;
   requiresApproval?: boolean;
   approved?: boolean;
+  model?: string;
 }
 
 const QUICK_ACTIONS = [
@@ -55,144 +58,25 @@ const INITIAL_MESSAGES: ChatMessage[] = [
   {
     id: "sys-1",
     role: "assistant",
-    content: `Good afternoon. I'm your **ATLAS Venture Ops** assistant. I have context on **${VENTURES.length} ventures** across 6 sectors, **${SPVS.length} SPVs**, and **${TASKS.filter(t => t.status === "open").length} open tasks**.\n\nRecent highlights:\n- **${formatCurrency(METRICS.paidDistributions)}** in distributions paid\n- **${SPVS.filter(s => s.stage === "Active deal").length}** active SPV deals\n- **${TASKS.filter(t => t.priority === "High").length}** high-priority task(s) pending\n\nHow can I help you today?`,
+    content: `Good afternoon. I'm your **ATLAS Venture Ops** assistant, powered by **Claude 4.6 Sonnet**. I have context on **${VENTURES.length} ventures** across 6 sectors, **${SPVS.length} SPVs**, and **${TASKS.filter(t => t.status === "open").length} open tasks**.\n\nRecent highlights:\n- **${formatCurrency(METRICS.paidDistributions)}** in distributions paid\n- **${SPVS.filter(s => s.stage === "Active deal").length}** active SPV deals\n- **${TASKS.filter(t => t.priority === "High").length}** high-priority task(s) pending\n\nHow can I help you today?`,
     timestamp: new Date(),
+    model: "claude-4.6-sonnet",
   },
 ];
 
-// Simulated responses using real data
-const SIMULATED_RESPONSES: Record<string, string> = {
-  "portfolio summary": `## Portfolio Summary — Royalton Venture Holding
+// Build context string to inject with user messages
+function buildPortfolioContext(): string {
+  const venturesSummary = VENTURES.map(v => `${v.name} (${v.theme}, ${v.stage}, ${v.status}, ${v.location})`).join("; ");
+  const spvsSummary = SPVS.map(s => `${s.name} (${s.theme}, ${s.stage}, Priority: ${s.priority}${s.currentStatus ? `, Status: ${s.currentStatus}` : ""})`).join("; ");
+  const tasksSummary = TASKS.map(t => `${t.title} (${t.status}, ${t.priority}, Due: ${t.dueDate}, Assignees: ${t.assignees.join(", ") || "Unassigned"})`).join("; ");
+  const distSummary = DISTRIBUTIONS.map(d => `${d.name}: ${formatCurrency(d.amount)} (${d.status}, ${d.type})`).join("; ");
 
-### Ventures (${VENTURES.length} total)
-${Object.entries(VENTURES.reduce((acc, v) => { acc[v.theme] = (acc[v.theme] || 0) + 1; return acc; }, {} as Record<string, number>)).map(([theme, count]) => `- **${theme}:** ${count} ventures`).join('\n')}
-
-**Active Ventures:** ${VENTURES.filter(v => v.status === "In progress").length} in progress
-**Key Locations:** ${Array.from(new Set(VENTURES.map(v => v.location).filter(l => l !== "TBD"))).join(", ")}
-
-### SPVs (${SPVS.length} total)
-- Active Deals: **${SPVS.filter(s => s.stage === "Active deal").length}**
-- In Negotiation: **${SPVS.filter(s => s.stage === "In negotiation").length}**
-- Closed: **${SPVS.filter(s => s.stage === "Closed deal").length}**
-
-**High Priority SPV:** Venezuela Mining Rights — ${SPVS.find(s => s.name === "Venezuela Mining Rights")?.currentStatus || "Active"}
-
-### Distributions
-- Total: **${formatCurrency(METRICS.totalDistributions)}**
-- Paid: **${formatCurrency(METRICS.paidDistributions)}**
-${DISTRIBUTIONS.map(d => `- ${d.name}: ${formatCurrency(d.amount)} (${d.status})`).join('\n')}
-
-### Team
-**${METRICS.totalTeam} members** across operations, finance, legal, and design.
-
-**Key Partner:** Monterock International (UAE) — Nammos brand ventures.`,
-
-  "lp update": `Here's a draft LP update for your review:
-
----
-
-**Subject:** Royalton Venture Holding — Q1 2026 LP Update
-
-Dear Limited Partners,
-
-We are pleased to provide an update on the Royalton portfolio:
-
-### Portfolio Activity
-Our portfolio now comprises **${VENTURES.length} ventures** spanning Real Estate, F&B, Yacht, Entertainment, and other sectors across ${Array.from(new Set(VENTURES.map(v => v.location).filter(l => l !== "TBD"))).length} geographies.
-
-### Distributions
-- Q4 2025 Profit Share: **${formatCurrency(250000)}** — Paid via wire transfer
-- Return of Capital (SPV Alpha): **${formatCurrency(100000)}** — Paid
-- Scheduled Dividend (REIT Fund I): **${formatCurrency(40000)}** — Upcoming
-
-### Key Developments
-- **Zarka City (Oman):** Vision workshop completed, master plan finalization in progress
-- **Nammos Watson Island (USA):** Deck preparation underway
-- **Venezuela Mining Rights SPV:** Awaiting updated financials from founder
-
-We remain committed to transparent communication and disciplined capital deployment.
-
-Best regards,
-ATLAS Operations Team
-
----
-
-> **This is a draft email. Would you like me to send it?** This action requires your approval.`,
-
-  "open tasks": `## Open Tasks — Sorted by Priority
-
-| Priority | Task | Due Date | Assignee |
-|----------|------|----------|----------|
-${TASKS.filter(t => t.status === "open").sort((a, b) => {
-  const p: Record<string, number> = { High: 0, Medium: 1, Low: 2 };
-  return (p[a.priority] ?? 2) - (p[b.priority] ?? 2);
-}).map(t => `| ${t.priority} | ${t.title} | ${t.dueDate} | ${t.assignees.join(", ") || "—"} |`).join('\n')}
-
-### Summary
-- **${TASKS.filter(t => t.priority === "High" && t.status === "open").length}** high-priority tasks
-- **${TASKS.filter(t => getTaskStatusFromDate(t) === "overdue").length}** overdue tasks
-- **${TASKS.filter(t => t.status === "complete").length}** completed tasks
-
-### Recommended Actions
-1. **Immediate:** Complete Lagonissi Nammos deal structure meeting (High priority)
-2. **This week:** Advance Nammos Watson Island deck preparation
-3. **Schedule:** Zarka City vision workshop coordination`,
-
-  "spv pipeline": `## SPV Pipeline Status
-
-### Active Deals (${SPVS.filter(s => s.stage === "Active deal").length})
-${SPVS.filter(s => s.stage === "Active deal").map(s => `- **${s.name}** (${s.theme}) — Priority: ${s.priority}${s.currentStatus ? ` — ${s.currentStatus}` : ""}`).join('\n')}
-
-### In Negotiation (${SPVS.filter(s => s.stage === "In negotiation").length})
-${SPVS.filter(s => s.stage === "In negotiation").map(s => `- **${s.name}** (${s.theme}) — Priority: ${s.priority}`).join('\n')}
-
-### Closed Deals (${SPVS.filter(s => s.stage === "Closed deal").length})
-${SPVS.filter(s => s.stage === "Closed deal").map(s => `- **${s.name}** (${s.theme})`).join('\n')}
-
-### Dropped (${SPVS.filter(s => s.stage === "Dropped deal").length})
-${SPVS.filter(s => s.stage === "Dropped deal").map(s => `- **${s.name}** (${s.theme})`).join('\n')}
-
-**Key Focus:** Venezuela Mining Rights (High priority) — awaiting updated financials.`,
-
-  "team overview": `## Team Overview — ${METRICS.totalTeam} Members
-
-### Internal Team
-${[...TASKS].length && VENTURES.length ? "" : ""}${["Jimmy Frangi — Founder, Finance & Capital", "Anton Maghami — VP, Operations & Systems", "Jon Eichner — COO, Operations", "Maher Abou Chakra — Accounting, Finance", "Angie Samadi — HR, People Ops"].map(m => `- **${m}**`).join('\n')}
-
-### Advisors
-- **Carl Frangi** — Investor Relations
-- **Leonidas Kyrris** — Legal (maritime focus)
-
-### External Partners
-- **Igor** — Deck Design
-- **Sohail** — Financial Modeling
-- **Ruwaida** — Yacht Design
-
-### Key Partner Organization
-**Monterock International** (UAE) — Luxury lifestyle holding company, Nammos brand partner.`,
-};
-
-function getSimulatedResponse(input: string): { content: string; requiresApproval: boolean } {
-  const lower = input.toLowerCase();
-  if (lower.includes("summary") || lower.includes("portfolio") || lower.includes("overview")) {
-    return { content: SIMULATED_RESPONSES["portfolio summary"], requiresApproval: false };
-  }
-  if (lower.includes("email") || lower.includes("lp") || lower.includes("draft") || lower.includes("update")) {
-    return { content: SIMULATED_RESPONSES["lp update"], requiresApproval: true };
-  }
-  if (lower.includes("task") || lower.includes("open") || lower.includes("deadline") || lower.includes("priority")) {
-    return { content: SIMULATED_RESPONSES["open tasks"], requiresApproval: false };
-  }
-  if (lower.includes("spv") || lower.includes("pipeline") || lower.includes("deal")) {
-    return { content: SIMULATED_RESPONSES["spv pipeline"], requiresApproval: false };
-  }
-  if (lower.includes("team") || lower.includes("member") || lower.includes("people") || lower.includes("role")) {
-    return { content: SIMULATED_RESPONSES["team overview"], requiresApproval: false };
-  }
-  return {
-    content: `Based on the current portfolio data:\n\n- **${VENTURES.length} ventures** across 6 sectors\n- **${SPVS.filter(s => s.stage === "Active deal").length} active SPV deals** with ${SPVS.filter(s => s.stage === "In negotiation").length} in negotiation\n- **${TASKS.filter(t => t.status === "open").length} open tasks** (${TASKS.filter(t => t.priority === "High").length} high priority)\n- **${formatCurrency(METRICS.paidDistributions)}** distributed to LPs\n\nCould you be more specific? I can provide detailed breakdowns for any venture, SPV, team member, or distribution.`,
-    requiresApproval: false,
-  };
+  return `Current portfolio data:
+Ventures (${VENTURES.length}): ${venturesSummary}
+SPVs (${SPVS.length}): ${spvsSummary}
+Tasks (${TASKS.length}): ${tasksSummary}
+Distributions: ${distSummary}
+Metrics: Total Ventures=${METRICS.totalVentures}, Active=${METRICS.activeVentures}, Total SPVs=${METRICS.totalSPVs}, Active SPVs=${METRICS.activeSPVs}, Open Tasks=${METRICS.openTasks}, Total Distributions=${formatCurrency(METRICS.totalDistributions)}, Paid=${formatCurrency(METRICS.paidDistributions)}, Team=${METRICS.totalTeam}`;
 }
 
 export default function Agent() {
@@ -202,6 +86,8 @@ export default function Agent() {
   const [taskModal, setTaskModal] = useState<Task | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const chatMutation = trpc.ai.chat.useMutation();
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
@@ -213,7 +99,7 @@ export default function Agent() {
     scrollToBottom();
   }, [messages, isTyping, scrollToBottom]);
 
-  const sendMessage = useCallback((text: string) => {
+  const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || isTyping) return;
 
     const userMsg: ChatMessage = {
@@ -226,29 +112,66 @@ export default function Agent() {
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsTyping(true);
+    logAction("AI chat", text.trim().slice(0, 50));
 
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
 
-    setTimeout(() => {
-      const response = getSimulatedResponse(text);
+    try {
+      // Build message history for context (last 10 messages + portfolio context on first user msg)
+      const history = [...messages, userMsg]
+        .filter(m => m.role === "user" || m.role === "assistant")
+        .slice(-10)
+        .map(m => ({
+          role: m.role as "user" | "assistant",
+          content: m.content,
+        }));
+
+      // Inject portfolio context into the first user message
+      if (history.length > 0) {
+        const firstUserIdx = history.findIndex(m => m.role === "user");
+        if (firstUserIdx === history.length - 1) {
+          // This is the latest message, inject context
+          history[history.length - 1] = {
+            ...history[history.length - 1],
+            content: `[Portfolio Context]\n${buildPortfolioContext()}\n\n[User Question]\n${history[history.length - 1].content}`,
+          };
+        }
+      }
+
+      const result = await chatMutation.mutateAsync({ messages: history });
+
       const assistantMsg: ChatMessage = {
         id: `assistant-${Date.now()}`,
         role: "assistant",
-        content: response.content,
+        content: result.content,
         timestamp: new Date(),
-        requiresApproval: response.requiresApproval,
+        requiresApproval: result.requiresApproval,
+        model: result.model,
       };
+
       setMessages((prev) => [...prev, assistantMsg]);
+    } catch (error) {
+      console.error("[AI Chat] Error:", error);
+      const errorMsg: ChatMessage = {
+        id: `error-${Date.now()}`,
+        role: "assistant",
+        content: `I encountered an error processing your request. Please try again.\n\n> ${error instanceof Error ? error.message : "Unknown error"}`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+      toast.error("AI response failed — please try again");
+    } finally {
       setIsTyping(false);
-    }, 1500 + Math.random() * 1000);
-  }, [isTyping]);
+    }
+  }, [isTyping, messages, chatMutation]);
 
   const handleApprove = useCallback((msgId: string) => {
     setMessages((prev) =>
       prev.map((m) => (m.id === msgId ? { ...m, approved: true } : m))
     );
+    logAction("AI action approved", msgId);
     toast.success("Action approved — executing...");
   }, []);
 
@@ -256,6 +179,7 @@ export default function Agent() {
     setMessages((prev) =>
       prev.map((m) => (m.id === msgId ? { ...m, approved: false } : m))
     );
+    logAction("AI action rejected", msgId);
     toast.info("Action rejected");
   }, []);
 
@@ -277,11 +201,21 @@ export default function Agent() {
   }).slice(0, 4);
 
   return (
-    <DashboardLayout title="AI Agent" subtitle="ATLAS OPS ASSISTANT">
+    <DashboardLayout title="AI Agent" subtitle="CLAUDE 4.6 SONNET">
       <div className="flex flex-col lg:flex-row h-[calc(100vh-3.5rem)] overflow-hidden">
         {/* Left panel: Context */}
         <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-border p-4 overflow-y-auto flex-shrink-0">
           <div className="space-y-4">
+            {/* Model badge */}
+            <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/20">
+              <Cpu className="size-4 text-primary" />
+              <div>
+                <p className="text-[10px] font-mono text-primary font-semibold">CLAUDE 4.6 SONNET</p>
+                <p className="text-[10px] text-muted-foreground">Live AI · Forge API</p>
+              </div>
+              <span className="ml-auto size-2 rounded-full bg-green-400 animate-pulse" />
+            </div>
+
             <h3 className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">
               Portfolio Context
             </h3>
@@ -399,9 +333,16 @@ export default function Agent() {
                       <Streamdown>{msg.content}</Streamdown>
                     </div>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-[10px] font-mono text-muted-foreground">
-                        {msg.timestamp.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono text-muted-foreground">
+                          {msg.timestamp.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                        {msg.role === "assistant" && msg.model && (
+                          <span className="text-[9px] font-mono text-primary/60 px-1.5 py-0.5 rounded bg-primary/5 border border-primary/10">
+                            {msg.model}
+                          </span>
+                        )}
+                      </div>
 
                       {msg.requiresApproval && msg.approved === undefined && (
                         <div className="flex items-center gap-2">
@@ -453,10 +394,13 @@ export default function Agent() {
                   <Bot className="size-4 text-primary" />
                 </div>
                 <div className="bg-card border border-border rounded-lg px-4 py-3">
-                  <div className="flex gap-1">
-                    <span className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <span className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <span className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "300ms" }} />
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                      <span className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </div>
+                    <span className="text-[10px] font-mono text-muted-foreground">Claude 4.6 Sonnet is thinking...</span>
                   </div>
                 </div>
               </motion.div>
@@ -471,7 +415,7 @@ export default function Agent() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask about ventures, SPVs, tasks, distributions..."
+                placeholder="Ask Claude about ventures, SPVs, tasks, distributions..."
                 className="flex-1 min-h-[44px] max-h-[120px] resize-none bg-secondary/30 border-border text-sm"
                 rows={1}
               />
@@ -485,7 +429,7 @@ export default function Agent() {
               </Button>
             </div>
             <p className="text-[10px] text-muted-foreground mt-2 font-mono">
-              Enter to send · Shift+Enter for new line · Destructive actions require approval
+              Powered by Claude 4.6 Sonnet · Enter to send · Shift+Enter for new line · Destructive actions require approval
             </p>
           </div>
         </div>
@@ -523,7 +467,7 @@ export default function Agent() {
                   sendMessage(`Tell me about the task "${taskModal.title}" and suggest next steps.`);
                   setTaskModal(null);
                 }}>
-                  <Sparkles className="size-3.5 mr-1" /> Ask Agent
+                  <Sparkles className="size-3.5 mr-1" /> Ask Claude
                 </Button>
                 <Button variant="ghost" size="sm" className="text-xs" onClick={() => setTaskModal(null)}>Close</Button>
               </DialogFooter>
