@@ -371,8 +371,8 @@ export default function SpyOps() {
   const [loginFocused, setLoginFocused] = useState(false);
   const keyInputRef = useRef<HTMLInputElement>(null);
 
-  /* Phase 1: ATL_ cipher decode */
-  const atlasCipher = useSingleLineCipher("A T L", 400, 120);
+  /* Phase 1: ATLAS cipher decode */
+  const atlasCipher = useSingleLineCipher("A T L A S", 400, 120);
 
   /* Ambient random lines behind the cipher */
   const [ambientLines, setAmbientLines] = useState<string[]>([]);
@@ -611,7 +611,7 @@ export default function SpyOps() {
                 ))}
               </div>
 
-              {/* Center: single line cipher resolving to ATL_ */}
+              {/* Center: single line cipher resolving to ATLAS */}
               <div
                 style={{
                   position: "relative",
@@ -632,7 +632,9 @@ export default function SpyOps() {
                   }}
                 >
                   {atlasCipher.display || "\u00A0"}
-                  <span className="spyops-throb" style={{ marginLeft: 2 }}>_</span>
+                  {atlasCipher.started && !atlasCipher.done && (
+                    <span className="spyops-blink" style={{ marginLeft: 2 }}>_</span>
+                  )}
                 </div>
 
                 {/* Subtitle after decode */}

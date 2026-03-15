@@ -26,3 +26,4 @@
 ## Landing Page Updates
 - [x] Change hero logo from ATLAS to ATL_ with throbbing underscore cursor
 - [x] Simplify auth screen to ROYALTON INVESTMENTS engineered by ATLAS + password
+- [x] Revert cipher loading screen back to ATLAS, keep ATL_ only on dashboard nav
