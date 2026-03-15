@@ -178,6 +178,8 @@ const ACCESS_KEYS: Record<string, string> = {
   "ATLAS-MC-2026-ZULU0-9X7K-HOTEL-4M2N-QR8P-VICTRXX": "Maher Abou Chakra",
   "ATLAS-AS-2026-KILO0-9X7K-INDIA-4M2N-QR8P-SIERRXX": "Angie Samadi",
   "ATLAS-CF-2026-LIMA0-9X7K-JULIT-4M2N-QR8P-BRAVOXX": "Carl Frangi",
+  "ATLAS-NH-2026-ROMEO-9X7K-SIERRA-4M2N-QR8P-NOVAXX": "Najib Hanna",
+  "ATLAS-SL-2026-OSCAR-9X7K-VICTOR-4M2N-QR8P-FOXTXX": "Shwan Lee",
 };
 
 /* Single-line cipher decode hook — random chars resolve into target text */
@@ -775,6 +777,7 @@ export default function SpyOps() {
                   letterSpacing: "0.25em",
                   height: 20,
                   opacity: keyError ? 1 : 0,
+                  display: keyError ? "block" : "none",
                   transform: keyError ? "translateX(0)" : "translateX(-4px)",
                   transition: "opacity 0.3s ease, transform 0.3s ease",
                   animation: keyError ? "spyops-shake 0.5s ease" : "none",

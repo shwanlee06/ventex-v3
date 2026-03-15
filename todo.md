@@ -1,3 +1,4 @@
 # TODO
 
-- [ ] Fix: After welcome cipher decode, landing page content briefly flashes before navigating to dashboard. The overlay should stay fully opaque until navigation completes.
+- [x] Fix: After welcome cipher decode, landing page content briefly flashes before navigating to dashboard.
+- [ ] Add access key for Najib Hanna to ACCESS_KEYS in SpyOps.tsx
