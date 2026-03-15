@@ -1,26 +1,22 @@
 // ============================================================================
-// Venture Detail Page — /ventures/:slug
+// Venture Detail Page — /ventures/:slug — LIVE DB DATA
 // Sections: Key Details, Team, Files (with folders), Activity Log
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
-import {
-  VENTURES, TEAM, getThemeColor,
-  type Venture, type TeamMember,
-} from "@/lib/data";
-import { findVentureBySlug, slugify } from "@/lib/slugify";
+import { getThemeColor } from "@/lib/data";
+import { trpc } from "@/lib/trpc";
 import { useRoute, useLocation, Link } from "wouter";
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
-import { logAction } from "@/lib/operatorSession";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Edit3, Save, Plus, Trash2, FileText, Upload, MessageSquare,
-  User, Clock, File, Image, FileSpreadsheet, Download, Eye,
+  File, Image, FileSpreadsheet, Download, Eye,
   X, AlertTriangle, ZoomIn, ZoomOut, FolderPlus, Folder, FolderOpen,
-  ChevronRight, MoveRight, MoreHorizontal,
+  ChevronRight, MoveRight, MoreHorizontal, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,51 +31,18 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// ── Types ─────────────────────────────────────────────────────────────────
-
-interface AssignedMember {
-  id: string;
-  name: string;
-  role: string;
-  responsibility: string;
-}
-
-interface AttachedFile {
-  id: string;
-  name: string;
-  size: string;
-  sizeBytes: number;
-  type: string;
-  dateAdded: string;
-  dataUrl: string;
-  folderId: string; // "" = root, otherwise folder id
-}
-
-interface FileFolder {
-  id: string;
-  name: string;
-  createdAt: string;
-  color: string;
-}
-
-interface ActivityEntry {
-  id: string;
-  action: string;
-  timestamp: Date;
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────
-
+// ── Constants ────────────────────────────────────────────────────────────
 const STAGES = ["In Validation", "Active ventures", "In Fundraising", "On Hold"];
 const STATUSES = ["In progress", "On-Hold", "Completed", "Closed"];
 const SECTORS = ["Real Estate", "F&B", "Yacht", "Entertainment", "Oil & Gas", "Others"];
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
-
 const FOLDER_COLORS = [
   "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#f97316",
 ];
 
+// ── Helpers ──────────────────────────────────────────────────────────────
 function getFileIcon(name: string) {
   const ext = name.split(".").pop()?.toLowerCase();
   if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext || "")) return <Image className="size-4 text-blue-400" />;
@@ -103,10 +66,6 @@ function isImageFile(name: string): boolean {
   return ["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext || "");
 }
 
-function isPdfFile(name: string): boolean {
-  return name.split(".").pop()?.toLowerCase() === "pdf";
-}
-
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -117,294 +76,238 @@ function getInitials(name: string): string {
   return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
-// localStorage keys
-function getFilesKey(slug: string): string { return `thalora_venture_files_${slug}`; }
-function getFoldersKey(slug: string): string { return `thalora_venture_folders_${slug}`; }
-
-function loadFilesFromStorage(slug: string): AttachedFile[] {
-  try {
-    const raw = localStorage.getItem(getFilesKey(slug));
-    if (!raw) return [];
-    return JSON.parse(raw);
-  } catch { return []; }
-}
-
-function saveFilesToStorage(slug: string, files: AttachedFile[]) {
-  try { localStorage.setItem(getFilesKey(slug), JSON.stringify(files)); }
-  catch (e) { console.warn("Failed to save files:", e); }
-}
-
-function loadFoldersFromStorage(slug: string): FileFolder[] {
-  try {
-    const raw = localStorage.getItem(getFoldersKey(slug));
-    if (!raw) return [];
-    return JSON.parse(raw);
-  } catch { return []; }
-}
-
-function saveFoldersToStorage(slug: string, folders: FileFolder[]) {
-  try { localStorage.setItem(getFoldersKey(slug), JSON.stringify(folders)); }
-  catch (e) { console.warn("Failed to save folders:", e); }
-}
-
-// ── Component ─────────────────────────────────────────────────────────────
-
+// ── Component ────────────────────────────────────────────────────────────
 export default function VentureDetail() {
   const [, navigate] = useLocation();
   const [, params] = useRoute("/ventures/:slug");
   const slug = params?.slug || "";
+  const utils = trpc.useUtils();
 
-  const baseVenture = findVentureBySlug(VENTURES, slug);
+  // ── Live data queries ──────────────────────────────────────────────
+  const ventureQ = trpc.ventures.getBySlug.useQuery({ slug }, { enabled: !!slug });
+  const venture = ventureQ.data;
+  const ventureId = venture?.id;
 
-  // ── State ───────────────────────────────────────────────────────────────
-  const [venture, setVenture] = useState<Venture | null>(null);
+  const teamQ = trpc.ventures.getTeam.useQuery({ ventureId: ventureId! }, { enabled: !!ventureId });
+  const filesQ = trpc.ventures.getFiles.useQuery({ ventureId: ventureId! }, { enabled: !!ventureId });
+  const foldersQ = trpc.ventures.getFolders.useQuery({ ventureId: ventureId! }, { enabled: !!ventureId });
+  const tasksQ = trpc.ventures.getTasks.useQuery({ ventureId: ventureId! }, { enabled: !!ventureId });
+  const allTeamQ = trpc.team.list.useQuery();
+  const activityQ = trpc.activity.recent.useQuery({ limit: 20 });
+
+  const assignedTeam = teamQ.data || [];
+  const allFiles = filesQ.data || [];
+  const allFolders = foldersQ.data || [];
+  const ventureTasks = tasksQ.data || [];
+  const allTeamMembers = allTeamQ.data || [];
+  const activityLogs = (activityQ.data || []).filter(a => a.entityType === "venture" && a.entityId === ventureId);
+
+  // ── Mutations ──────────────────────────────────────────────────────
+  const updateVenture = trpc.ventures.update.useMutation({
+    onSuccess: () => { utils.ventures.getBySlug.invalidate({ slug }); utils.ventures.list.invalidate(); utils.activity.recent.invalidate(); },
+  });
+  const assignTeam = trpc.ventures.assignTeam.useMutation({
+    onSuccess: () => { utils.ventures.getTeam.invalidate({ ventureId: ventureId! }); utils.activity.recent.invalidate(); },
+  });
+  const removeTeam = trpc.ventures.removeTeam.useMutation({
+    onSuccess: () => { utils.ventures.getTeam.invalidate({ ventureId: ventureId! }); },
+  });
+  const uploadFile = trpc.ventures.uploadFile.useMutation({
+    onSuccess: () => { utils.ventures.getFiles.invalidate({ ventureId: ventureId! }); utils.activity.recent.invalidate(); },
+  });
+  const deleteFile = trpc.ventures.deleteFile.useMutation({
+    onSuccess: () => { utils.ventures.getFiles.invalidate({ ventureId: ventureId! }); },
+  });
+  const moveFile = trpc.ventures.moveFile.useMutation({
+    onSuccess: () => { utils.ventures.getFiles.invalidate({ ventureId: ventureId! }); },
+  });
+  const createFolder = trpc.ventures.createFolder.useMutation({
+    onSuccess: () => { utils.ventures.getFolders.invalidate({ ventureId: ventureId! }); },
+  });
+  const deleteFolderMut = trpc.ventures.deleteFolder.useMutation({
+    onSuccess: () => { utils.ventures.getFolders.invalidate({ ventureId: ventureId! }); utils.ventures.getFiles.invalidate({ ventureId: ventureId! }); },
+  });
+  const renameFolderMut = trpc.ventures.renameFolder.useMutation({
+    onSuccess: () => { utils.ventures.getFolders.invalidate({ ventureId: ventureId! }); },
+  });
+
+  // ── State ──────────────────────────────────────────────────────────
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
-    name: "", theme: "" as string, location: "", stage: "", status: "",
-    notes: "", dateAdded: "",
+    name: "", sector: "", location: "", stage: "", status: "", notes: "",
   });
 
   // Team
-  const [assignedMembers, setAssignedMembers] = useState<AssignedMember[]>([]);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [assignMemberId, setAssignMemberId] = useState("");
   const [assignResponsibility, setAssignResponsibility] = useState("");
 
   // Files & Folders
-  const [files, setFiles] = useState<AttachedFile[]>([]);
-  const [folders, setFolders] = useState<FileFolder[]>([]);
-  const [currentFolderId, setCurrentFolderId] = useState<string>(""); // "" = root
+  const [currentFolderId, setCurrentFolderId] = useState<number | null>(null);
   const [createFolderOpen, setCreateFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [newFolderColor, setNewFolderColor] = useState(FOLDER_COLORS[0]);
-  const [moveFileId, setMoveFileId] = useState<string | null>(null);
-  const [renameFolderId, setRenameFolderId] = useState<string | null>(null);
+  const [renameFolderIdState, setRenameFolderIdState] = useState<number | null>(null);
   const [renameFolderName, setRenameFolderName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Lightbox
-  const [lightboxFile, setLightboxFile] = useState<AttachedFile | null>(null);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [lightboxName, setLightboxName] = useState("");
   const [lightboxZoom, setLightboxZoom] = useState(1);
 
-  // Activity
-  const [activity, setActivity] = useState<ActivityEntry[]>([]);
-
-  // ── Initialize ──────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!baseVenture) return;
-    setVenture({ ...baseVenture });
+  // ── Start editing ──────────────────────────────────────────────────
+  const startEditing = useCallback(() => {
+    if (!venture) return;
     setEditForm({
-      name: baseVenture.name,
-      theme: baseVenture.theme,
-      location: baseVenture.location,
-      stage: baseVenture.stage,
-      status: baseVenture.status,
-      notes: baseVenture.currentStatus || "",
-      dateAdded: "2026-01-15",
+      name: venture.name,
+      sector: venture.sector,
+      location: venture.location,
+      stage: venture.stage,
+      status: venture.status,
+      notes: venture.currentStatus || "",
     });
-    setFiles(loadFilesFromStorage(slug));
-    setFolders(loadFoldersFromStorage(slug));
-    setCurrentFolderId("");
-    setActivity([
-      { id: "init-1", action: `Venture "${baseVenture.name}" viewed`, timestamp: new Date() },
-    ]);
-  }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Persist files & folders
-  useEffect(() => { if (slug) saveFilesToStorage(slug, files); }, [files, slug]);
-  useEffect(() => { if (slug) saveFoldersToStorage(slug, folders); }, [folders, slug]);
-
-  // ── Handlers ────────────────────────────────────────────────────────────
-
-  const addActivity = useCallback((action: string) => {
-    setActivity(prev => [
-      { id: `act-${Date.now()}-${Math.random()}`, action, timestamp: new Date() },
-      ...prev,
-    ]);
-  }, []);
+    setIsEditing(true);
+  }, [venture]);
 
   const handleSaveDetails = useCallback(() => {
     if (!venture) return;
-    setVenture(prev => prev ? {
-      ...prev,
+    updateVenture.mutate({
+      id: venture.id,
       name: editForm.name,
-      theme: editForm.theme as Venture["theme"],
+      sector: editForm.sector,
       location: editForm.location,
-      stage: editForm.stage as Venture["stage"],
+      stage: editForm.stage,
       status: editForm.status,
       currentStatus: editForm.notes,
-    } : null);
+    });
     setIsEditing(false);
-    addActivity(`Details updated — status: ${editForm.status}, stage: ${editForm.stage}`);
-    logAction("Venture edited", editForm.name);
     toast.success("Venture details saved");
-  }, [venture, editForm, addActivity]);
+  }, [venture, editForm, updateVenture]);
 
   const handleAssignMember = useCallback(() => {
-    if (!assignMemberId) { toast.error("Select a team member"); return; }
-    const member = TEAM.find(m => m.id === assignMemberId);
-    if (!member) return;
-    if (assignedMembers.find(m => m.id === member.id)) {
-      toast.error(`${member.name} is already assigned`);
+    if (!assignMemberId || !ventureId) { toast.error("Select a team member"); return; }
+    const memberId = parseInt(assignMemberId);
+    if (assignedTeam.find(m => m.memberId === memberId)) {
+      toast.error("Already assigned");
       return;
     }
-    setAssignedMembers(prev => [...prev, {
-      id: member.id, name: member.name, role: member.role,
-      responsibility: assignResponsibility || "General support",
-    }]);
+    assignTeam.mutate({ ventureId, memberId, responsibility: assignResponsibility || "General support" });
     setAssignModalOpen(false);
     setAssignMemberId("");
     setAssignResponsibility("");
-    addActivity(`${member.name} assigned — ${assignResponsibility || "General support"}`);
-    logAction("Team member assigned", member.name);
-    toast.success(`${member.name} assigned to venture`);
-  }, [assignMemberId, assignResponsibility, assignedMembers, addActivity]);
+    toast.success("Team member assigned");
+  }, [assignMemberId, assignResponsibility, ventureId, assignedTeam, assignTeam]);
 
-  const handleRemoveMember = useCallback((memberId: string) => {
-    const member = assignedMembers.find(m => m.id === memberId);
-    setAssignedMembers(prev => prev.filter(m => m.id !== memberId));
-    if (member) {
-      addActivity(`${member.name} removed from venture`);
-      toast.info(`${member.name} removed`);
-    }
-  }, [assignedMembers, addActivity]);
+  const handleRemoveMember = useCallback((memberId: number) => {
+    if (!ventureId) return;
+    removeTeam.mutate({ ventureId, memberId });
+    toast.info("Team member removed");
+  }, [ventureId, removeTeam]);
 
-  // ── File handlers ──────────────────────────────────────────────────────
-
+  // ── File handlers ──────────────────────────────────────────────────
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
-    if (!fileList) return;
+    if (!fileList || !ventureId) return;
 
     Array.from(fileList).forEach(f => {
       if (f.size > MAX_FILE_SIZE) {
-        toast.error(`${f.name} exceeds 5MB limit (${formatFileSize(f.size)})`);
+        toast.error(`${f.name} exceeds 5MB limit`);
         return;
       }
       const reader = new FileReader();
       reader.onload = () => {
         const dataUrl = reader.result as string;
-        const newFile: AttachedFile = {
-          id: `file-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-          name: f.name,
-          size: formatFileSize(f.size),
-          sizeBytes: f.size,
-          type: f.type || "application/octet-stream",
-          dateAdded: new Date().toISOString().split("T")[0],
-          dataUrl,
-          folderId: currentFolderId, // add to current folder
-        };
-        setFiles(prev => [...prev, newFile]);
-        addActivity(`File attached: ${f.name} (${formatFileSize(f.size)})${currentFolderId ? ` in folder` : ""}`);
+        const base64 = dataUrl.split(",")[1];
+        uploadFile.mutate({
+          ventureId,
+          filename: f.name,
+          fileType: f.type || "application/octet-stream",
+          fileSize: f.size,
+          fileData: base64,
+          folderId: currentFolderId || undefined,
+        });
       };
       reader.readAsDataURL(f);
     });
 
-    logAction("File attached", `${fileList.length} file(s)`);
     toast.success(`Processing ${fileList.length} file(s)...`);
     e.target.value = "";
-  }, [addActivity, currentFolderId]);
+  }, [ventureId, currentFolderId, uploadFile]);
 
-  const handleRemoveFile = useCallback((fileId: string) => {
-    const file = files.find(f => f.id === fileId);
-    setFiles(prev => prev.filter(f => f.id !== fileId));
-    if (file) {
-      addActivity(`File removed: ${file.name}`);
-      toast.info(`${file.name} removed`);
+  const handleDeleteFile = useCallback((fileId: number, fileName: string) => {
+    deleteFile.mutate({ fileId });
+    toast.info(`${fileName} removed`);
+  }, [deleteFile]);
+
+  const handleMoveFile = useCallback((fileId: number, targetFolderId: number | null) => {
+    moveFile.mutate({ fileId, folderId: targetFolderId });
+    toast.success("File moved");
+  }, [moveFile]);
+
+  const handleOpenFile = useCallback((fileUrl: string, fileName: string) => {
+    if (isImageFile(fileName)) {
+      setLightboxUrl(fileUrl);
+      setLightboxName(fileName);
+      setLightboxZoom(1);
+    } else {
+      window.open(fileUrl, "_blank");
     }
-  }, [files, addActivity]);
+  }, []);
 
-  const handleDownloadFile = useCallback((file: AttachedFile) => {
+  const handleDownloadFile = useCallback((fileUrl: string, fileName: string) => {
     const link = document.createElement("a");
-    link.href = file.dataUrl;
-    link.download = file.name;
+    link.href = fileUrl;
+    link.download = fileName;
+    link.target = "_blank";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    addActivity(`File downloaded: ${file.name}`);
-    logAction("File downloaded", file.name);
-  }, [addActivity]);
+  }, []);
 
-  const handleOpenFile = useCallback((file: AttachedFile) => {
-    if (isImageFile(file.name)) {
-      setLightboxFile(file);
-      setLightboxZoom(1);
-    } else if (isPdfFile(file.name)) {
-      const win = window.open();
-      if (win) {
-        win.document.write(`<iframe src="${file.dataUrl}" style="width:100%;height:100%;border:none;" />`);
-        win.document.title = file.name;
-      }
-    } else {
-      handleDownloadFile(file);
-    }
-    addActivity(`File opened: ${file.name}`);
-  }, [addActivity, handleDownloadFile]);
-
-  // ── Folder handlers ────────────────────────────────────────────────────
-
+  // ── Folder handlers ────────────────────────────────────────────────
   const handleCreateFolder = useCallback(() => {
     const trimmed = newFolderName.trim();
-    if (!trimmed) { toast.error("Enter a folder name"); return; }
-    if (folders.find(f => f.name.toLowerCase() === trimmed.toLowerCase())) {
-      toast.error("A folder with this name already exists");
-      return;
-    }
-    const folder: FileFolder = {
-      id: `folder-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      name: trimmed,
-      createdAt: new Date().toISOString().split("T")[0],
-      color: newFolderColor,
-    };
-    setFolders(prev => [...prev, folder]);
+    if (!trimmed || !ventureId) { toast.error("Enter a folder name"); return; }
+    createFolder.mutate({ ventureId, name: trimmed, color: newFolderColor });
     setCreateFolderOpen(false);
     setNewFolderName("");
     setNewFolderColor(FOLDER_COLORS[0]);
-    addActivity(`Folder created: ${trimmed}`);
-    logAction("Folder created", trimmed);
     toast.success(`Folder "${trimmed}" created`);
-  }, [newFolderName, newFolderColor, folders, addActivity]);
+  }, [newFolderName, newFolderColor, ventureId, createFolder]);
 
-  const handleDeleteFolder = useCallback((folderId: string) => {
-    const folder = folders.find(f => f.id === folderId);
-    // Move all files in this folder back to root
-    setFiles(prev => prev.map(f => f.folderId === folderId ? { ...f, folderId: "" } : f));
-    setFolders(prev => prev.filter(f => f.id !== folderId));
-    if (currentFolderId === folderId) setCurrentFolderId("");
-    if (folder) {
-      addActivity(`Folder deleted: ${folder.name} — files moved to root`);
-      toast.info(`"${folder.name}" deleted — files moved to root`);
-    }
-  }, [folders, currentFolderId, addActivity]);
+  const handleDeleteFolder = useCallback((folderId: number) => {
+    deleteFolderMut.mutate({ folderId });
+    if (currentFolderId === folderId) setCurrentFolderId(null);
+    toast.info("Folder deleted — files moved to root");
+  }, [currentFolderId, deleteFolderMut]);
 
   const handleRenameFolder = useCallback(() => {
-    if (!renameFolderId || !renameFolderName.trim()) return;
-    setFolders(prev => prev.map(f => f.id === renameFolderId ? { ...f, name: renameFolderName.trim() } : f));
-    addActivity(`Folder renamed to: ${renameFolderName.trim()}`);
+    if (!renameFolderIdState || !renameFolderName.trim()) return;
+    renameFolderMut.mutate({ folderId: renameFolderIdState, name: renameFolderName.trim() });
     toast.success("Folder renamed");
-    setRenameFolderId(null);
+    setRenameFolderIdState(null);
     setRenameFolderName("");
-  }, [renameFolderId, renameFolderName, addActivity]);
+  }, [renameFolderIdState, renameFolderName, renameFolderMut]);
 
-  const handleMoveFile = useCallback((fileId: string, targetFolderId: string) => {
-    const file = files.find(f => f.id === fileId);
-    const targetFolder = folders.find(f => f.id === targetFolderId);
-    setFiles(prev => prev.map(f => f.id === fileId ? { ...f, folderId: targetFolderId } : f));
-    if (file) {
-      const dest = targetFolderId ? (targetFolder?.name || "folder") : "root";
-      addActivity(`File "${file.name}" moved to ${dest}`);
-      toast.success(`Moved to ${dest}`);
-    }
-    setMoveFileId(null);
-  }, [files, folders, addActivity]);
+  // ── Computed ───────────────────────────────────────────────────────
+  const currentFiles = allFiles.filter(f => currentFolderId ? f.folderId === currentFolderId : !f.folderId);
+  const currentFolder = allFolders.find(f => f.id === currentFolderId);
 
-  // ── Computed ────────────────────────────────────────────────────────────
+  // ── Loading ────────────────────────────────────────────────────────
+  if (ventureQ.isLoading) {
+    return (
+      <DashboardLayout title="Loading..." subtitle="">
+        <div className="p-6 space-y-4">
+          <Skeleton className="h-12 w-1/3" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
-  const currentFiles = files.filter(f => f.folderId === currentFolderId);
-  const currentFolder = folders.find(f => f.id === currentFolderId);
-  const totalFileCount = files.length;
-
-  // ── 404 ─────────────────────────────────────────────────────────────────
-  if (!baseVenture) {
+  // ── 404 ────────────────────────────────────────────────────────────
+  if (!venture) {
     return (
       <DashboardLayout title="Venture Not Found" subtitle="">
         <div className="p-6 text-center">
@@ -420,11 +323,10 @@ export default function VentureDetail() {
     );
   }
 
-  const tc = getThemeColor(venture?.theme || baseVenture.theme);
-  const displayVenture = venture || baseVenture;
+  const tc = getThemeColor(venture.sector);
 
   return (
-    <DashboardLayout title={displayVenture.name} subtitle={displayVenture.theme.toUpperCase()}>
+    <DashboardLayout title={venture.name} subtitle={venture.sector.toUpperCase()}>
       <div className="p-4 md:p-6 space-y-6">
         {/* ── Header Bar ─────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -435,30 +337,30 @@ export default function VentureDetail() {
               </button>
             </Link>
             <div>
-              <h1 className="text-lg font-semibold text-foreground">{displayVenture.name}</h1>
+              <h1 className="text-lg font-semibold text-foreground">{venture.name}</h1>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <span className="text-[10px] font-medium px-2 py-0.5 rounded" style={{ backgroundColor: `${tc.color}15`, color: tc.color }}>
-                  {displayVenture.theme}
+                  {venture.sector}
                 </span>
-                <span className="text-[10px] font-mono text-muted-foreground">{displayVenture.location}</span>
+                <span className="text-[10px] font-mono text-muted-foreground">{venture.location}</span>
                 <span className="text-[10px] text-muted-foreground">·</span>
-                <span className="text-[10px] text-muted-foreground">{displayVenture.stage}</span>
+                <span className="text-[10px] text-muted-foreground">{venture.stage}</span>
                 <StatusBadge
-                  label={displayVenture.status}
-                  bg={displayVenture.status === "In progress" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : displayVenture.status === "On-Hold" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-secondary text-muted-foreground border-border"}
-                  dot={displayVenture.status === "In progress" ? "bg-emerald-400" : displayVenture.status === "On-Hold" ? "bg-amber-400" : "bg-muted-foreground"}
+                  label={venture.status}
+                  bg={venture.status === "In progress" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : venture.status === "On-Hold" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-secondary text-muted-foreground border-border"}
+                  dot={venture.status === "In progress" ? "bg-emerald-400" : venture.status === "On-Hold" ? "bg-amber-400" : "bg-muted-foreground"}
                 />
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => setIsEditing(!isEditing)}>
-              <Edit3 className="size-3.5 mr-1" /> Edit Details
+            <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => isEditing ? handleSaveDetails() : startEditing()}>
+              {isEditing ? <><Save className="size-3.5 mr-1" /> Save</> : <><Edit3 className="size-3.5 mr-1" /> Edit Details</>}
             </Button>
             <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => fileInputRef.current?.click()}>
               <Upload className="size-3.5 mr-1" /> Add File
             </Button>
-            <Button size="sm" className="text-xs h-8" onClick={() => navigate(`/agent`)}>
+            <Button size="sm" className="text-xs h-8" onClick={() => navigate("/agent")}>
               <MessageSquare className="size-3.5 mr-1" /> Chat with AI →
             </Button>
           </div>
@@ -484,18 +386,18 @@ export default function VentureDetail() {
                   {isEditing ? (
                     <Input value={editForm.name} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} className="mt-1 h-8 text-xs" />
                   ) : (
-                    <p className="text-xs text-foreground mt-1">{displayVenture.name}</p>
+                    <p className="text-xs text-foreground mt-1">{venture.name}</p>
                   )}
                 </div>
                 <div>
                   <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Sector</Label>
                   {isEditing ? (
-                    <Select value={editForm.theme} onValueChange={v => setEditForm(p => ({ ...p, theme: v }))}>
+                    <Select value={editForm.sector} onValueChange={v => setEditForm(p => ({ ...p, sector: v }))}>
                       <SelectTrigger className="mt-1 h-8 text-xs"><SelectValue /></SelectTrigger>
                       <SelectContent>{SECTORS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   ) : (
-                    <p className="text-xs mt-1" style={{ color: tc.color }}>{displayVenture.theme}</p>
+                    <p className="text-xs mt-1" style={{ color: tc.color }}>{venture.sector}</p>
                   )}
                 </div>
                 <div>
@@ -503,7 +405,7 @@ export default function VentureDetail() {
                   {isEditing ? (
                     <Input value={editForm.location} onChange={e => setEditForm(p => ({ ...p, location: e.target.value }))} className="mt-1 h-8 text-xs" />
                   ) : (
-                    <p className="text-xs text-foreground mt-1">{displayVenture.location}</p>
+                    <p className="text-xs text-foreground mt-1">{venture.location}</p>
                   )}
                 </div>
                 <div>
@@ -514,7 +416,7 @@ export default function VentureDetail() {
                       <SelectContent>{STAGES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   ) : (
-                    <p className="text-xs text-foreground mt-1">{displayVenture.stage}</p>
+                    <p className="text-xs text-foreground mt-1">{venture.stage}</p>
                   )}
                 </div>
                 <div>
@@ -525,19 +427,19 @@ export default function VentureDetail() {
                       <SelectContent>{STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   ) : (
-                    <p className="text-xs text-foreground mt-1">{displayVenture.status}</p>
+                    <p className="text-xs text-foreground mt-1">{venture.status}</p>
                   )}
                 </div>
                 <div>
-                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Date Added</Label>
-                  <p className="text-xs font-mono text-muted-foreground mt-1">{editForm.dateAdded}</p>
+                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Priority</Label>
+                  <p className="text-xs text-foreground mt-1">{venture.priority || "Medium"}</p>
                 </div>
                 <div className="sm:col-span-2">
                   <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Description / Notes</Label>
                   {isEditing ? (
                     <Textarea value={editForm.notes} onChange={e => setEditForm(p => ({ ...p, notes: e.target.value }))} className="mt-1 text-xs min-h-[80px]" />
                   ) : (
-                    <p className="text-xs text-muted-foreground mt-1 italic">{displayVenture.currentStatus || "No notes yet."}</p>
+                    <p className="text-xs text-muted-foreground mt-1 italic">{venture.currentStatus || "No notes yet."}</p>
                   )}
                 </div>
               </div>
@@ -548,7 +450,7 @@ export default function VentureDetail() {
               <div className="px-4 py-3 border-b border-border flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <h2 className="text-sm font-semibold text-foreground">Documents & Files</h2>
-                  <span className="text-[10px] font-mono text-muted-foreground">{totalFileCount} file{totalFileCount !== 1 ? "s" : ""} · {folders.length} folder{folders.length !== 1 ? "s" : ""}</span>
+                  <span className="text-[10px] font-mono text-muted-foreground">{allFiles.length} file{allFiles.length !== 1 ? "s" : ""} · {allFolders.length} folder{allFolders.length !== 1 ? "s" : ""}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-muted-foreground">Max 5MB</span>
@@ -572,7 +474,7 @@ export default function VentureDetail() {
               {/* Breadcrumb */}
               <div className="px-4 py-2 border-b border-border/50 flex items-center gap-1">
                 <button
-                  onClick={() => setCurrentFolderId("")}
+                  onClick={() => setCurrentFolderId(null)}
                   className={cn(
                     "text-[11px] font-medium px-1.5 py-0.5 rounded hover:bg-accent/50 transition-colors",
                     !currentFolderId ? "text-primary" : "text-muted-foreground hover:text-foreground"
@@ -584,7 +486,7 @@ export default function VentureDetail() {
                   <>
                     <ChevronRight className="size-3 text-muted-foreground" />
                     <span className="text-[11px] font-medium text-primary flex items-center gap-1">
-                      <Folder className="size-3" style={{ color: currentFolder.color }} />
+                      <Folder className="size-3" style={{ color: currentFolder.color || "#3b82f6" }} />
                       {currentFolder.name}
                     </span>
                   </>
@@ -592,11 +494,11 @@ export default function VentureDetail() {
               </div>
 
               {/* Folders (only show in root view) */}
-              {!currentFolderId && folders.length > 0 && (
+              {!currentFolderId && allFolders.length > 0 && (
                 <div className="px-4 py-3 border-b border-border/50">
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {folders.map(folder => {
-                      const folderFileCount = files.filter(f => f.folderId === folder.id).length;
+                    {allFolders.map(folder => {
+                      const folderFileCount = allFiles.filter(f => f.folderId === folder.id).length;
                       return (
                         <div
                           key={folder.id}
@@ -604,7 +506,7 @@ export default function VentureDetail() {
                           onClick={() => setCurrentFolderId(folder.id)}
                         >
                           <div className="flex items-start justify-between">
-                            <FolderOpen className="size-5" style={{ color: folder.color }} />
+                            <FolderOpen className="size-5" style={{ color: folder.color || "#3b82f6" }} />
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
                                 <button className="size-6 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-accent transition-all">
@@ -612,7 +514,7 @@ export default function VentureDetail() {
                                 </button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="w-36">
-                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setRenameFolderId(folder.id); setRenameFolderName(folder.name); }}>
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setRenameFolderIdState(folder.id); setRenameFolderName(folder.name); }}>
                                   <Edit3 className="size-3.5 mr-2" /> Rename
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteFolder(folder.id); }} className="text-red-400 focus:text-red-400">
@@ -644,24 +546,23 @@ export default function VentureDetail() {
                   {currentFiles.map(file => (
                     <div key={file.id} className="px-4 py-3 flex items-center justify-between group hover:bg-accent/20 transition-colors">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className={cn("size-9 rounded-md border flex items-center justify-center flex-shrink-0", getFileColor(file.name))}>
-                          {isImageFile(file.name) && file.dataUrl ? (
-                            <img src={file.dataUrl} alt={file.name} className="size-9 rounded-md object-cover" />
+                        <div className={cn("size-9 rounded-md border flex items-center justify-center flex-shrink-0", getFileColor(file.filename))}>
+                          {isImageFile(file.filename) && file.fileUrl ? (
+                            <img src={file.fileUrl} alt={file.filename} className="size-9 rounded-md object-cover" />
                           ) : (
-                            getFileIcon(file.name)
+                            getFileIcon(file.filename)
                           )}
                         </div>
                         <div className="min-w-0">
-                          <span className="text-xs font-medium text-foreground truncate block">{file.name}</span>
+                          <span className="text-xs font-medium text-foreground truncate block">{file.filename}</span>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[10px] font-mono text-muted-foreground">{file.size}</span>
-                            <span className="text-[10px] text-muted-foreground">· {file.dateAdded}</span>
+                            <span className="text-[10px] font-mono text-muted-foreground">{file.fileSize ? formatFileSize(file.fileSize) : "—"}</span>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         {/* Move to folder */}
-                        {folders.length > 0 && (
+                        {allFolders.length > 0 && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <button className="size-7 rounded-md flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors" title="Move to folder">
@@ -670,25 +571,25 @@ export default function VentureDetail() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-44">
                               {file.folderId && (
-                                <DropdownMenuItem onClick={() => handleMoveFile(file.id, "")}>
+                                <DropdownMenuItem onClick={() => handleMoveFile(file.id, null)}>
                                   <Folder className="size-3.5 mr-2 text-muted-foreground" /> Move to Root
                                 </DropdownMenuItem>
                               )}
-                              {folders.filter(f => f.id !== file.folderId).map(folder => (
+                              {allFolders.filter(f => f.id !== file.folderId).map(folder => (
                                 <DropdownMenuItem key={folder.id} onClick={() => handleMoveFile(file.id, folder.id)}>
-                                  <Folder className="size-3.5 mr-2" style={{ color: folder.color }} /> {folder.name}
+                                  <Folder className="size-3.5 mr-2" style={{ color: folder.color || "#3b82f6" }} /> {folder.name}
                                 </DropdownMenuItem>
                               ))}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         )}
-                        <button onClick={() => handleOpenFile(file)} className="size-7 rounded-md flex items-center justify-center hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors" title="Preview">
+                        <button onClick={() => handleOpenFile(file.fileUrl, file.filename)} className="size-7 rounded-md flex items-center justify-center hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors" title="Preview">
                           <Eye className="size-3.5" />
                         </button>
-                        <button onClick={() => handleDownloadFile(file)} className="size-7 rounded-md flex items-center justify-center hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 transition-colors" title="Download">
+                        <button onClick={() => handleDownloadFile(file.fileUrl, file.filename)} className="size-7 rounded-md flex items-center justify-center hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 transition-colors" title="Download">
                           <Download className="size-3.5" />
                         </button>
-                        <button onClick={() => handleRemoveFile(file.id)} className="size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors" title="Remove">
+                        <button onClick={() => handleDeleteFile(file.id, file.filename)} className="size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors" title="Remove">
                           <Trash2 className="size-3.5" />
                         </button>
                       </div>
@@ -698,23 +599,52 @@ export default function VentureDetail() {
               )}
             </motion.div>
 
-            {/* Section C — Activity Log */}
+            {/* Section C — Linked Tasks */}
+            {ventureTasks.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-card border border-border rounded-lg">
+                <div className="px-4 py-3 border-b border-border">
+                  <h2 className="text-sm font-semibold text-foreground">Linked Tasks</h2>
+                </div>
+                <div className="divide-y divide-border">
+                  {ventureTasks.map(task => (
+                    <div key={task.id} className="px-4 py-3 flex items-center justify-between">
+                      <div>
+                        <span className={cn("text-xs font-medium", task.status === "complete" ? "line-through text-muted-foreground" : "text-foreground")}>{task.title}</span>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">{task.dueDate ? `Due ${task.dueDate}` : "No due date"}</p>
+                      </div>
+                      <StatusBadge
+                        label={task.status === "complete" ? "Complete" : task.dueDate && new Date(task.dueDate) < new Date() ? "Overdue" : "Open"}
+                        bg={task.status === "complete" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : task.dueDate && new Date(task.dueDate) < new Date() ? "bg-red-500/10 text-red-400 border-red-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}
+                        dot={task.status === "complete" ? "bg-emerald-400" : task.dueDate && new Date(task.dueDate) < new Date() ? "bg-red-400" : "bg-amber-400"}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Section D — Activity Log */}
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-card border border-border rounded-lg">
               <div className="px-4 py-3 border-b border-border">
                 <h2 className="text-sm font-semibold text-foreground">Activity Log</h2>
               </div>
               <div className="divide-y divide-border max-h-[400px] overflow-y-auto">
-                {activity.map(entry => (
-                  <div key={entry.id} className="px-4 py-3 flex items-start gap-3">
-                    <div className="size-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <p className="text-xs text-foreground">{entry.action}</p>
-                      <p className="text-[10px] font-mono text-muted-foreground mt-0.5">
-                        {entry.timestamp.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-                      </p>
+                {activityLogs.length === 0 ? (
+                  <div className="p-6 text-center text-xs text-muted-foreground">No activity recorded yet.</div>
+                ) : (
+                  activityLogs.map(entry => (
+                    <div key={entry.id} className="px-4 py-3 flex items-start gap-3">
+                      <div className="size-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-xs text-foreground">{entry.action}</p>
+                        {entry.detail && <p className="text-[10px] text-muted-foreground mt-0.5">{entry.detail}</p>}
+                        <p className="text-[10px] font-mono text-muted-foreground mt-0.5">
+                          {new Date(entry.createdAt).toLocaleString()}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </motion.div>
           </div>
@@ -729,28 +659,28 @@ export default function VentureDetail() {
                   <Plus className="size-3 mr-1" /> Assign Member
                 </Button>
               </div>
-              {assignedMembers.length === 0 ? (
+              {assignedTeam.length === 0 ? (
                 <div className="p-8 text-center">
                   <p className="text-xs text-muted-foreground">No team members assigned yet.</p>
                 </div>
               ) : (
                 <div className="divide-y divide-border">
-                  {assignedMembers.map(member => (
+                  {assignedTeam.map(member => (
                     <div key={member.id} className="px-4 py-3 flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-[10px] font-semibold text-primary">{getInitials(member.name)}</span>
+                          <span className="text-[10px] font-semibold text-primary">{getInitials(member.memberName)}</span>
                         </div>
                         <div>
-                          <span className="text-xs font-medium text-foreground">{member.name}</span>
+                          <span className="text-xs font-medium text-foreground">{member.memberName}</span>
                           <div className="flex items-center gap-1 mt-0.5">
-                            <span className="text-[10px] text-muted-foreground">{member.role}</span>
+                            <span className="text-[10px] text-muted-foreground">{member.memberRole}</span>
                             <span className="text-[10px] text-muted-foreground">·</span>
-                            <span className="text-[10px] text-primary/70 italic">{member.responsibility}</span>
+                            <span className="text-[10px] text-primary/70 italic">{member.responsibility || "General support"}</span>
                           </div>
                         </div>
                       </div>
-                      <button onClick={() => handleRemoveMember(member.id)} className="size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors">
+                      <button onClick={() => handleRemoveMember(member.memberId)} className="size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors">
                         <X className="size-3.5" />
                       </button>
                     </div>
@@ -775,8 +705,8 @@ export default function VentureDetail() {
               <Select value={assignMemberId} onValueChange={setAssignMemberId}>
                 <SelectTrigger className="mt-1 h-8 text-xs"><SelectValue placeholder="Select member" /></SelectTrigger>
                 <SelectContent>
-                  {TEAM.map(m => (
-                    <SelectItem key={m.id} value={m.id}>{m.name} — {m.role}</SelectItem>
+                  {allTeamMembers.map(m => (
+                    <SelectItem key={m.id} value={String(m.id)}>{m.name} — {m.role}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -792,7 +722,7 @@ export default function VentureDetail() {
             </div>
           </div>
           <DialogFooter>
-            <Button size="sm" className="text-xs" onClick={handleAssignMember}>
+            <Button size="sm" className="text-xs" onClick={handleAssignMember} disabled={assignTeam.isPending}>
               <Plus className="size-3.5 mr-1" /> Assign
             </Button>
             <Button variant="ghost" size="sm" className="text-xs" onClick={() => setAssignModalOpen(false)}>Cancel</Button>
@@ -836,7 +766,7 @@ export default function VentureDetail() {
             </div>
           </div>
           <DialogFooter>
-            <Button size="sm" className="text-xs" onClick={handleCreateFolder}>
+            <Button size="sm" className="text-xs" onClick={handleCreateFolder} disabled={createFolder.isPending}>
               <FolderPlus className="size-3.5 mr-1" /> Create
             </Button>
             <Button variant="ghost" size="sm" className="text-xs" onClick={() => setCreateFolderOpen(false)}>Cancel</Button>
@@ -845,7 +775,7 @@ export default function VentureDetail() {
       </Dialog>
 
       {/* ── Rename Folder Modal ────────────────────────────────────────────── */}
-      <Dialog open={!!renameFolderId} onOpenChange={open => !open && setRenameFolderId(null)}>
+      <Dialog open={!!renameFolderIdState} onOpenChange={open => !open && setRenameFolderIdState(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-sm">Rename Folder</DialogTitle>
@@ -863,20 +793,20 @@ export default function VentureDetail() {
             <Button size="sm" className="text-xs" onClick={handleRenameFolder}>
               <Save className="size-3.5 mr-1" /> Save
             </Button>
-            <Button variant="ghost" size="sm" className="text-xs" onClick={() => setRenameFolderId(null)}>Cancel</Button>
+            <Button variant="ghost" size="sm" className="text-xs" onClick={() => setRenameFolderIdState(null)}>Cancel</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* ── Image Lightbox ─────────────────────────────────────────────────── */}
       <AnimatePresence>
-        {lightboxFile && (
+        {lightboxUrl && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
-            onClick={() => setLightboxFile(null)}
+            onClick={() => setLightboxUrl(null)}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -886,7 +816,7 @@ export default function VentureDetail() {
               onClick={e => e.stopPropagation()}
             >
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs text-white/70 font-mono">{lightboxFile.name}</span>
+                <span className="text-xs text-white/70 font-mono">{lightboxName}</span>
                 <button onClick={() => setLightboxZoom(z => Math.max(0.5, z - 0.25))} className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
                   <ZoomOut className="size-4" />
                 </button>
@@ -894,17 +824,17 @@ export default function VentureDetail() {
                 <button onClick={() => setLightboxZoom(z => Math.min(3, z + 0.25))} className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
                   <ZoomIn className="size-4" />
                 </button>
-                <button onClick={() => handleDownloadFile(lightboxFile)} className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
+                <button onClick={() => handleDownloadFile(lightboxUrl, lightboxName)} className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
                   <Download className="size-4" />
                 </button>
-                <button onClick={() => setLightboxFile(null)} className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
+                <button onClick={() => setLightboxUrl(null)} className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
                   <X className="size-4" />
                 </button>
               </div>
               <div className="overflow-auto max-h-[75vh] rounded-lg">
                 <img
-                  src={lightboxFile.dataUrl}
-                  alt={lightboxFile.name}
+                  src={lightboxUrl}
+                  alt={lightboxName}
                   className="rounded-lg transition-transform duration-200"
                   style={{ transform: `scale(${lightboxZoom})`, transformOrigin: "center center" }}
                 />

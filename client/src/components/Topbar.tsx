@@ -21,7 +21,8 @@ interface TopbarProps {
 }
 
 export default function Topbar({ title, subtitle }: TopbarProps) {
-  const { notifications, setNotifications, open: notifOpen, setOpen: setNotifOpen, unreadCount } = useNotifications();
+  const { unreadCount } = useNotifications();
+  const [notifOpen, setNotifOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [, navigate] = useLocation();
 
@@ -108,12 +109,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
       </header>
 
       {/* Panels */}
-      <NotificationPanel
-        open={notifOpen}
-        onOpenChange={setNotifOpen}
-        notifications={notifications}
-        setNotifications={setNotifications}
-      />
+      <NotificationPanel open={notifOpen} onOpenChange={setNotifOpen} />
       <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
     </>
   );

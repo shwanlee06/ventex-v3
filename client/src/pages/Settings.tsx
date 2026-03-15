@@ -1,34 +1,22 @@
 // ============================================================================
-// SPVs & Deals Page — Swiss Instrument — FULLY INTERACTIVE
+// SPVs & Deals Page — LIVE DB DATA
 // Row modals, priority cycling, stage updates, New Deal form, distributions
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
-import {
-  SPVS,
-  DISTRIBUTIONS,
-  MEETINGS,
-  SPV_STAGE_CONFIG,
-  DIST_STATUS_CONFIG,
-  getThemeColor,
-  formatCurrency,
-  formatDate,
-  type SPV,
-  type Distribution,
-} from "@/lib/data";
+import { trpc } from "@/lib/trpc";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { motion } from "framer-motion";
 import {
-  Briefcase, DollarSign, CalendarDays, FileText, TrendingUp, TrendingDown, Plus, X, ArrowUpDown,
+  Briefcase, DollarSign, TrendingUp, TrendingDown, Plus, X, ArrowUpDown,
 } from "lucide-react";
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
-import { logAction } from "@/lib/operatorSession";
-import { loadSPVs, saveSPVs, loadDistributions } from "@/lib/persistence";
+import { Link } from "wouter";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -42,95 +30,131 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const ALL_STAGES = ["All", "Active deal", "In negotiation", "Closed deal", "Dropped deal"];
-const ALL_THEMES_SPV = ["All", "Oil & Gas", "Yacht", "Others", "Entertainment", "TBD"];
+const ALL_SECTORS = ["All", "Oil & Gas", "Yacht", "Others", "Entertainment", "TBD", "Real Estate", "F&B"];
 const PRIORITY_CYCLE: Record<string, string> = { Low: "Medium", Medium: "High", High: "Low" };
 
+const SPV_STAGE_CONFIG: Record<string, { label: string; bg: string; dot: string }> = {
+  "Active deal": { label: "Active", bg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", dot: "bg-emerald-400" },
+  "In negotiation": { label: "Negotiating", bg: "bg-blue-500/10 text-blue-400 border-blue-500/20", dot: "bg-blue-400" },
+  "Closed deal": { label: "Closed", bg: "bg-primary/10 text-primary border-primary/20", dot: "bg-primary" },
+  "Dropped deal": { label: "Dropped", bg: "bg-red-500/10 text-red-400 border-red-500/20", dot: "bg-red-400" },
+};
+
+const DIST_STATUS_CONFIG: Record<string, { label: string; bg: string; dot: string }> = {
+  "Paid": { label: "Paid", bg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", dot: "bg-emerald-400" },
+  "Scheduled": { label: "Scheduled", bg: "bg-blue-500/10 text-blue-400 border-blue-500/20", dot: "bg-blue-400" },
+  "Cancelled": { label: "Cancelled", bg: "bg-red-500/10 text-red-400 border-red-500/20", dot: "bg-red-400" },
+  "Pending": { label: "Pending", bg: "bg-amber-500/10 text-amber-400 border-amber-500/20", dot: "bg-amber-400" },
+};
+
+const THEME_COLORS: Record<string, string> = {
+  "Real Estate": "#3b82f6",
+  "Yacht": "#06b6d4",
+  "F&B": "#f59e0b",
+  "Entertainment": "#a855f7",
+  "Oil & Gas": "#ef4444",
+  "Others": "#6b7280",
+  "TBD": "#6b7280",
+};
+
+function formatCurrency(n: number): string {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
+  return `$${n.toLocaleString()}`;
+}
+
+function formatDate(d: string | null | undefined): string {
+  if (!d) return "—";
+  const date = new Date(d);
+  return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+
 export default function SettingsPage() {
-  const [spvs, setSpvsRaw] = useState<SPV[]>(() => loadSPVs(SPVS));
-  const setSpvs = useCallback((updater: SPV[] | ((prev: SPV[]) => SPV[])) => {
-    setSpvsRaw(prev => {
-      const next = typeof updater === 'function' ? updater(prev) : updater;
-      saveSPVs(next);
-      return next;
-    });
-  }, []);
-  const [distributions] = useState<Distribution[]>(() => loadDistributions(DISTRIBUTIONS));
+  const utils = trpc.useUtils();
+
+  // ── Live data ──────────────────────────────────────────────────────
+  const spvsQ = trpc.spvs.list.useQuery();
+  const distQ = trpc.distributions.list.useQuery();
+  const distMetricsQ = trpc.distributions.metrics.useQuery();
+
+  const spvsList = spvsQ.data || [];
+  const distList = distQ.data || [];
+  const distMetrics = distMetricsQ.data || { total: 0, paid: 0, totalAmount: 0, paidAmount: 0 };
+
+  // ── Mutations ──────────────────────────────────────────────────────
+  const createSpv = trpc.spvs.create.useMutation({
+    onSuccess: () => { utils.spvs.list.invalidate(); utils.spvs.metrics.invalidate(); utils.activity.recent.invalidate(); },
+  });
+  const updateSpv = trpc.spvs.update.useMutation({
+    onSuccess: () => { utils.spvs.list.invalidate(); utils.spvs.metrics.invalidate(); utils.activity.recent.invalidate(); },
+  });
+
+  // ── State ──────────────────────────────────────────────────────────
   const [stageFilter, setStageFilter] = useState("All");
-  const [themeFilter, setThemeFilter] = useState("All");
-  const [spvModal, setSpvModal] = useState<SPV | null>(null);
-  const [distModal, setDistModal] = useState<Distribution | null>(null);
+  const [sectorFilter, setSectorFilter] = useState("All");
+  const [spvModalId, setSpvModalId] = useState<number | null>(null);
+  const [distModalId, setDistModalId] = useState<number | null>(null);
   const [addOpen, setAddOpen] = useState(false);
-  const [meetingExpanded, setMeetingExpanded] = useState<string | null>(null);
 
   // Add form
   const [newName, setNewName] = useState("");
-  const [newTheme, setNewTheme] = useState("Oil & Gas");
+  const [newSector, setNewSector] = useState("Oil & Gas");
   const [newPriority, setNewPriority] = useState("Medium");
   const [newStage, setNewStage] = useState("In negotiation");
   const [newNotes, setNewNotes] = useState("");
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
-
+  // ── Computed ───────────────────────────────────────────────────────
   const filtered = useMemo(() => {
-    return spvs.filter(s => {
+    return spvsList.filter(s => {
       if (stageFilter !== "All" && s.stage !== stageFilter) return false;
-      if (themeFilter !== "All" && s.theme !== themeFilter) return false;
+      if (sectorFilter !== "All" && s.sector !== sectorFilter) return false;
       return true;
     });
-  }, [spvs, stageFilter, themeFilter]);
+  }, [spvsList, stageFilter, sectorFilter]);
 
-  const activeSPVs = spvs.filter(s => s.stage === "Active deal").length;
-  const totalDistributed = distributions.reduce((sum, d) => sum + d.amount, 0);
-  const paidDistributed = distributions.filter(d => d.status === "Paid").reduce((sum, d) => sum + d.amount, 0);
+  const activeSPVs = spvsList.filter(s => s.stage === "Active deal").length;
+  const spvModal = spvModalId ? spvsList.find(s => s.id === spvModalId) : null;
+  const distModal = distModalId ? distList.find(d => d.id === distModalId) : null;
 
-  const cyclePriority = useCallback((id: string) => {
-    setSpvs(prev => prev.map(s => {
-      if (s.id !== id) return s;
-      const next = PRIORITY_CYCLE[s.priority] || "Medium";
-      logAction("SPV priority changed", `${s.name} → ${next}`);
-      toast.info(`Priority changed to ${next}`);
-      return { ...s, priority: next };
-    }));
-  }, []);
+  // ── Handlers ───────────────────────────────────────────────────────
+  const cyclePriority = useCallback((id: number) => {
+    const spv = spvsList.find(s => s.id === id);
+    if (!spv) return;
+    const next = PRIORITY_CYCLE[spv.priority || "Medium"] || "Medium";
+    updateSpv.mutate({ id, priority: next });
+    toast.info(`Priority changed to ${next}`);
+  }, [spvsList, updateSpv]);
 
-  const updateStage = useCallback((id: string, stage: string) => {
-    setSpvs(prev => prev.map(s => s.id === id ? { ...s, stage: stage as SPV["stage"] } : s));
-    logAction("SPV stage updated", `${id} → ${stage}`);
+  const updateStage = useCallback((id: number, stage: string) => {
+    updateSpv.mutate({ id, stage });
     toast.success(`Stage updated to ${stage}`);
-    setSpvModal(null);
-  }, []);
+    setSpvModalId(null);
+  }, [updateSpv]);
 
   const handleAddDeal = useCallback(() => {
     if (!newName.trim()) { toast.error("Name is required"); return; }
-    const nd: SPV = {
-      id: `rec_new_${Date.now()}`,
+    createSpv.mutate({
       name: newName.trim(),
-      theme: newTheme,
-      stage: newStage as SPV["stage"],
+      sector: newSector,
       priority: newPriority,
+      stage: newStage,
       currentStatus: newNotes.trim() || undefined,
-    };
-    setSpvs(prev => [nd, ...prev]);
+    });
     setAddOpen(false);
     setNewName(""); setNewNotes("");
-    logAction("Deal added", nd.name);
-    toast.success(`Deal "${nd.name}" added`);
-  }, [newName, newTheme, newPriority, newStage, newNotes]);
+    toast.success(`Deal "${newName.trim()}" added`);
+  }, [newName, newSector, newPriority, newStage, newNotes, createSpv]);
 
   return (
     <DashboardLayout title="SPVs & Deals" subtitle="DEAL PIPELINE & DISTRIBUTIONS">
       <div className="p-4 md:p-6 space-y-6">
         {/* Summary metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {loading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />) : [
+          {spvsQ.isLoading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />) : [
             { label: "Total SPVs", value: filtered.length, icon: <Briefcase className="size-4 text-blue-400" /> },
             { label: "Active Deals", value: activeSPVs, icon: <TrendingUp className="size-4 text-emerald-400" /> },
-            { label: "Total Distributed", value: formatCurrency(totalDistributed), icon: <DollarSign className="size-4 text-primary" /> },
-            { label: "Paid Out", value: formatCurrency(paidDistributed), icon: <TrendingDown className="size-4 text-amber-400" /> },
+            { label: "Total Distributed", value: formatCurrency(distMetrics.totalAmount), icon: <DollarSign className="size-4 text-primary" /> },
+            { label: "Paid Out", value: formatCurrency(distMetrics.paidAmount), icon: <TrendingDown className="size-4 text-amber-400" /> },
           ].map((m, i) => (
             <motion.div
               key={m.label}
@@ -156,14 +180,14 @@ export default function SettingsPage() {
               {ALL_STAGES.map(s => <SelectItem key={s} value={s}>{s === "All" ? "All Stages" : s}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Select value={themeFilter} onValueChange={setThemeFilter}>
+          <Select value={sectorFilter} onValueChange={setSectorFilter}>
             <SelectTrigger className="h-8 text-xs w-[140px]"><SelectValue /></SelectTrigger>
             <SelectContent>
-              {ALL_THEMES_SPV.map(t => <SelectItem key={t} value={t}>{t === "All" ? "All Sectors" : t}</SelectItem>)}
+              {ALL_SECTORS.map(t => <SelectItem key={t} value={t}>{t === "All" ? "All Sectors" : t}</SelectItem>)}
             </SelectContent>
           </Select>
-          {(stageFilter !== "All" || themeFilter !== "All") && (
-            <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => { setStageFilter("All"); setThemeFilter("All"); }}>
+          {(stageFilter !== "All" || sectorFilter !== "All") && (
+            <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => { setStageFilter("All"); setSectorFilter("All"); }}>
               <X className="size-3 mr-1" /> Clear
             </Button>
           )}
@@ -190,7 +214,7 @@ export default function SettingsPage() {
             <div className="p-12 text-center">
               <Briefcase className="size-8 text-muted-foreground mx-auto mb-3 opacity-40" />
               <p className="text-sm text-muted-foreground">No deals match the current filters.</p>
-              <Button variant="ghost" size="sm" className="text-xs mt-2" onClick={() => { setStageFilter("All"); setThemeFilter("All"); }}>Clear filters</Button>
+              <Button variant="ghost" size="sm" className="text-xs mt-2" onClick={() => { setStageFilter("All"); setSectorFilter("All"); }}>Clear filters</Button>
             </div>
           ) : (
             <Table>
@@ -206,11 +230,11 @@ export default function SettingsPage() {
               </TableHeader>
               <TableBody>
                 {filtered.map((spv) => {
-                  const tc = getThemeColor(spv.theme);
-                  const sc = SPV_STAGE_CONFIG[spv.stage];
+                  const color = THEME_COLORS[spv.sector || "Others"] || "#6b7280";
+                  const sc = SPV_STAGE_CONFIG[spv.stage || "Active deal"];
                   return (
                     <TableRow key={spv.id} className="cursor-pointer hover:bg-accent/30">
-                      <TableCell onClick={() => setSpvModal(spv)}>
+                      <TableCell onClick={() => setSpvModalId(spv.id)}>
                         <div>
                           <span className="text-xs text-foreground font-medium">{spv.name}</span>
                           {spv.currentStatus && (
@@ -218,10 +242,10 @@ export default function SettingsPage() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell onClick={() => setSpvModal(spv)}>
+                      <TableCell onClick={() => setSpvModalId(spv.id)}>
                         <div className="flex items-center gap-2">
-                          <div className="size-2 rounded-full flex-shrink-0" style={{ backgroundColor: tc.color }} />
-                          <span className="text-xs" style={{ color: tc.color }}>{spv.theme}</span>
+                          <div className="size-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                          <span className="text-xs" style={{ color }}>{spv.sector || "TBD"}</span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -236,7 +260,7 @@ export default function SettingsPage() {
                           {spv.priority}
                         </button>
                       </TableCell>
-                      <TableCell onClick={() => setSpvModal(spv)}>
+                      <TableCell onClick={() => setSpvModalId(spv.id)}>
                         {sc && <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />}
                       </TableCell>
                     </TableRow>
@@ -256,7 +280,7 @@ export default function SettingsPage() {
         >
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
             <h2 className="text-sm font-semibold text-foreground">Distributions</h2>
-            <span className="text-[10px] font-mono text-emerald-400">{formatCurrency(totalDistributed)} total</span>
+            <span className="text-[10px] font-mono text-emerald-400">{formatCurrency(distMetrics.totalAmount)} total</span>
           </div>
 
           <Table>
@@ -271,20 +295,20 @@ export default function SettingsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {distributions.map((dist) => {
-                const dc = DIST_STATUS_CONFIG[dist.status];
+              {distList.map((dist) => {
+                const dc = DIST_STATUS_CONFIG[dist.status || "Scheduled"];
                 return (
-                  <TableRow key={dist.id} className="cursor-pointer hover:bg-accent/30" onClick={() => setDistModal(dist)}>
+                  <TableRow key={dist.id} className="cursor-pointer hover:bg-accent/30" onClick={() => setDistModalId(dist.id)}>
                     <TableCell>
                       <div>
                         <span className="text-xs text-foreground font-medium">{dist.name}</span>
                         {dist.notes && <p className="text-[10px] text-muted-foreground mt-0.5 truncate max-w-[200px]">{dist.notes}</p>}
                       </div>
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{dist.fund}</TableCell>
-                    <TableCell className="text-xs font-mono text-muted-foreground">{formatDate(dist.date)}</TableCell>
-                    <TableCell className="text-xs font-mono font-medium text-foreground">{formatCurrency(dist.amount)}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{dist.type}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{dist.fund || "—"}</TableCell>
+                    <TableCell className="text-xs font-mono text-muted-foreground">{formatDate(dist.distributionDate)}</TableCell>
+                    <TableCell className="text-xs font-mono font-medium text-foreground">{formatCurrency(dist.amount || 0)}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{dist.type || "—"}</TableCell>
                     <TableCell>{dc && <StatusBadge label={dc.label} bg={dc.bg} dot={dc.dot} />}</TableCell>
                   </TableRow>
                 );
@@ -292,64 +316,16 @@ export default function SettingsPage() {
             </TableBody>
           </Table>
         </motion.div>
-
-        {/* Meetings — expandable */}
-        {MEETINGS.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.3 }}
-            className="bg-card border border-border rounded-lg"
-          >
-            <div className="px-4 py-3 border-b border-border">
-              <h2 className="text-sm font-semibold text-foreground">Recent Meetings</h2>
-            </div>
-            <div className="divide-y divide-border">
-              {MEETINGS.map((meeting) => (
-                <div key={meeting.id}>
-                  <button
-                    onClick={() => setMeetingExpanded(meetingExpanded === meeting.id ? null : meeting.id)}
-                    className="w-full text-left px-4 py-3 flex items-center justify-between hover:bg-accent/30 transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      <CalendarDays className="size-4 text-primary" />
-                      <span className="text-sm font-medium text-foreground">{meeting.name}</span>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground">{meetingExpanded === meeting.id ? "Collapse" : "Expand"}</span>
-                  </button>
-                  {meetingExpanded === meeting.id && (
-                    <div className="px-4 pb-4 space-y-3">
-                      <p className="text-xs text-muted-foreground leading-relaxed">{meeting.agenda}</p>
-                      <div className="bg-secondary/30 rounded-md p-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <FileText className="size-3.5 text-muted-foreground" />
-                          <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Meeting Summary</span>
-                        </div>
-                        <p className="text-xs text-foreground whitespace-pre-line leading-relaxed">{meeting.summary}</p>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <span className="text-[10px] text-muted-foreground">Attendees:</span>
-                        {[...meeting.thaloraAttendees, ...meeting.attendees].map((a) => (
-                          <span key={a} className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-foreground">{a}</span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
       </div>
 
       {/* SPV Detail Modal */}
-      <Dialog open={!!spvModal} onOpenChange={(open) => !open && setSpvModal(null)}>
+      <Dialog open={!!spvModal} onOpenChange={(open) => !open && setSpvModalId(null)}>
         <DialogContent className="sm:max-w-md">
           {spvModal && (
             <>
               <DialogHeader>
                 <DialogTitle className="text-sm">{spvModal.name}</DialogTitle>
-                <DialogDescription className="text-[10px] font-mono">{spvModal.theme} · {spvModal.stage}</DialogDescription>
+                <DialogDescription className="text-[10px] font-mono">{spvModal.sector} · {spvModal.stage}</DialogDescription>
               </DialogHeader>
               <div className="space-y-3 py-2">
                 <div className="flex items-center gap-2">
@@ -362,7 +338,7 @@ export default function SettingsPage() {
                       "bg-secondary text-muted-foreground"
                     )}
                   >
-                    {spvs.find(s => s.id === spvModal.id)?.priority || spvModal.priority} (click to cycle)
+                    {spvModal.priority} (click to cycle)
                   </button>
                 </div>
                 {spvModal.currentStatus && (
@@ -379,7 +355,7 @@ export default function SettingsPage() {
                 )}
                 <div>
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Update Stage</span>
-                  <Select value={spvModal.stage} onValueChange={(val) => updateStage(spvModal.id, val)}>
+                  <Select value={spvModal.stage || "Active deal"} onValueChange={(val) => updateStage(spvModal.id, val)}>
                     <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {ALL_STAGES.filter(s => s !== "All").map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -388,7 +364,10 @@ export default function SettingsPage() {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="ghost" size="sm" className="text-xs" onClick={() => setSpvModal(null)}>Close</Button>
+                <Link href={`/spvs/${spvModal.slug}`}>
+                  <Button variant="outline" size="sm" className="text-xs">View full details →</Button>
+                </Link>
+                <Button variant="ghost" size="sm" className="text-xs" onClick={() => setSpvModalId(null)}>Close</Button>
               </DialogFooter>
             </>
           )}
@@ -396,41 +375,41 @@ export default function SettingsPage() {
       </Dialog>
 
       {/* Distribution Detail Modal */}
-      <Dialog open={!!distModal} onOpenChange={(open) => !open && setDistModal(null)}>
+      <Dialog open={!!distModal} onOpenChange={(open) => !open && setDistModalId(null)}>
         <DialogContent className="sm:max-w-md">
           {distModal && (
             <>
               <DialogHeader>
                 <DialogTitle className="text-sm">{distModal.name}</DialogTitle>
-                <DialogDescription className="text-[10px] font-mono">{distModal.fund}</DialogDescription>
+                <DialogDescription className="text-[10px] font-mono">{distModal.fund || "—"}</DialogDescription>
               </DialogHeader>
               <div className="space-y-3 py-2">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Amount</span>
-                    <span className="text-sm font-mono font-semibold text-foreground">{formatCurrency(distModal.amount)}</span>
+                    <span className="text-sm font-mono font-semibold text-foreground">{formatCurrency(distModal.amount || 0)}</span>
                   </div>
                   <div>
                     <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Date</span>
-                    <span className="text-xs font-mono text-foreground">{formatDate(distModal.date)}</span>
+                    <span className="text-xs font-mono text-foreground">{formatDate(distModal.distributionDate)}</span>
                   </div>
                   <div>
                     <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Type</span>
-                    <span className="text-xs text-foreground">{distModal.type}</span>
+                    <span className="text-xs text-foreground">{distModal.type || "—"}</span>
                   </div>
                   <div>
                     <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Method</span>
-                    <span className="text-xs text-foreground">{distModal.method}</span>
+                    <span className="text-xs text-foreground">{distModal.method || "—"}</span>
                   </div>
                   <div>
                     <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Status</span>
-                    {DIST_STATUS_CONFIG[distModal.status] && (
-                      <StatusBadge label={DIST_STATUS_CONFIG[distModal.status].label} bg={DIST_STATUS_CONFIG[distModal.status].bg} dot={DIST_STATUS_CONFIG[distModal.status].dot} />
+                    {DIST_STATUS_CONFIG[distModal.status || "Scheduled"] && (
+                      <StatusBadge
+                        label={DIST_STATUS_CONFIG[distModal.status || "Scheduled"].label}
+                        bg={DIST_STATUS_CONFIG[distModal.status || "Scheduled"].bg}
+                        dot={DIST_STATUS_CONFIG[distModal.status || "Scheduled"].dot}
+                      />
                     )}
-                  </div>
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Age</span>
-                    <span className="text-xs font-mono text-foreground">{distModal.ageDays} days</span>
                   </div>
                 </div>
                 {distModal.notes && (
@@ -441,7 +420,7 @@ export default function SettingsPage() {
                 )}
               </div>
               <DialogFooter>
-                <Button variant="ghost" size="sm" className="text-xs" onClick={() => setDistModal(null)}>Close</Button>
+                <Button variant="ghost" size="sm" className="text-xs" onClick={() => setDistModalId(null)}>Close</Button>
               </DialogFooter>
             </>
           )}
@@ -463,10 +442,10 @@ export default function SettingsPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs mb-1">Sector</Label>
-                <Select value={newTheme} onValueChange={setNewTheme}>
+                <Select value={newSector} onValueChange={setNewSector}>
                   <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {ALL_THEMES_SPV.filter(t => t !== "All").map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    {ALL_SECTORS.filter(t => t !== "All").map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -495,7 +474,7 @@ export default function SettingsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button size="sm" className="text-xs" onClick={handleAddDeal}>
+            <Button size="sm" className="text-xs" onClick={handleAddDeal} disabled={createSpv.isPending}>
               <Plus className="size-3.5 mr-1" /> Add Deal
             </Button>
             <Button variant="ghost" size="sm" className="text-xs" onClick={() => setAddOpen(false)}>Cancel</Button>

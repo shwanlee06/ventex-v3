@@ -3,6 +3,14 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { aiRouter } from "./routers/ai";
+import { venturesRouter } from "./routers/ventures";
+import { tasksRouter } from "./routers/tasks";
+import { spvsRouter } from "./routers/spvs";
+import { teamRouter } from "./routers/team";
+import { distributionsRouter } from "./routers/distributions";
+import { activityRouter } from "./routers/activity";
+import { notificationsRouter } from "./routers/notifications";
+import { searchRouter } from "./routers/search";
 
 export const appRouter = router({
   system: systemRouter,
@@ -17,6 +25,14 @@ export const appRouter = router({
     }),
   }),
   ai: aiRouter,
+  ventures: venturesRouter,
+  tasks: tasksRouter,
+  spvs: spvsRouter,
+  team: teamRouter,
+  distributions: distributionsRouter,
+  activity: activityRouter,
+  notifications: notificationsRouter,
+  search: searchRouter,
 });
 
 export type AppRouter = typeof appRouter;

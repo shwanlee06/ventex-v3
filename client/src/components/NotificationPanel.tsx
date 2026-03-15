@@ -1,52 +1,56 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
 
-interface Notification {
-  id: string;
-  type: "urgent" | "warning" | "info" | "success";
-  text: string;
-  read: boolean;
-}
-
-const INITIAL_NOTIFICATIONS: Notification[] = [
-  { id: "n1", type: "urgent", text: "Crew certification overdue — M/Y Solaris, 8 days past due. Urgent.", read: false },
-  { id: "n2", type: "warning", text: "F&B license renewal due in 3 days — Nammos Lebanon, expires Mar 31", read: false },
-  { id: "n3", type: "urgent", text: "Task overdue — Nammos Watson Island deck, 17 days past due", read: false },
-  { id: "n4", type: "info", text: "AI Agent completed weekly ops report — 247 tasks automated", read: false },
-  { id: "n5", type: "success", text: "Distribution paid — $250K Q4 2025 profit share sent to LPs", read: false },
-  { id: "n6", type: "info", text: "Workshop scheduled — Zarka City vision statement, Anton coordinating", read: false },
-];
-
-const TYPE_CONFIG = {
+const TYPE_CONFIG: Record<string, { dot: string; border: string }> = {
   urgent: { dot: "bg-red-500", border: "border-red-500/20" },
   warning: { dot: "bg-amber-500", border: "border-amber-500/20" },
   info: { dot: "bg-blue-500", border: "border-blue-500/20" },
   success: { dot: "bg-emerald-500", border: "border-emerald-500/20" },
+  overdue: { dot: "bg-red-500", border: "border-red-500/20" },
+  task: { dot: "bg-amber-500", border: "border-amber-500/20" },
+  system: { dot: "bg-blue-500", border: "border-blue-500/20" },
 };
+
+function formatTimestamp(d: string | Date): string {
+  const date = new Date(d);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  if (diff < 60_000) return "Just now";
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
+  return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+}
 
 interface NotificationPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  notifications: Notification[];
-  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
 }
 
-export function NotificationPanel({ open, onOpenChange, notifications, setNotifications }: NotificationPanelProps) {
+export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps) {
+  const utils = trpc.useUtils();
+  const notifQ = trpc.notifications.list.useQuery({ limit: 50 });
+  const markReadMut = trpc.notifications.markRead.useMutation({
+    onSuccess: () => utils.notifications.list.invalidate(),
+  });
+  const markAllReadMut = trpc.notifications.markAllRead.useMutation({
+    onSuccess: () => utils.notifications.list.invalidate(),
+  });
+
+  const notifications = notifQ.data || [];
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const markAllRead = useCallback(() => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    markAllReadMut.mutate();
     toast.success("All notifications marked as read");
-  }, [setNotifications]);
+  }, [markAllReadMut]);
 
-  const markRead = useCallback((id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-    const notif = notifications.find(n => n.id === id);
-    if (notif) toast.info(notif.text);
-  }, [setNotifications, notifications]);
+  const markRead = useCallback((id: number) => {
+    markReadMut.mutate({ id });
+  }, [markReadMut]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -65,24 +69,36 @@ export function NotificationPanel({ open, onOpenChange, notifications, setNotifi
           </SheetDescription>
         </SheetHeader>
         <div className="divide-y divide-border overflow-y-auto max-h-[calc(100vh-100px)]">
-          {notifications.map((n) => {
-            const cfg = TYPE_CONFIG[n.type];
-            return (
-              <button
-                key={n.id}
-                onClick={() => markRead(n.id)}
-                className={cn(
-                  "w-full text-left px-4 py-3 flex gap-3 transition-colors hover:bg-accent/50",
-                  n.read ? "opacity-50" : ""
-                )}
-              >
-                <span className={cn("size-2 rounded-full mt-1.5 flex-shrink-0", cfg.dot)} />
-                <span className={cn("text-xs leading-relaxed", n.read ? "text-muted-foreground" : "text-foreground")}>
-                  {n.text}
-                </span>
-              </button>
-            );
-          })}
+          {notifications.length === 0 ? (
+            <div className="p-8 text-center">
+              <p className="text-xs text-muted-foreground">No notifications yet.</p>
+            </div>
+          ) : (
+            notifications.map((n) => {
+              const cfg = TYPE_CONFIG[n.type] || TYPE_CONFIG.info;
+              return (
+                <button
+                  key={n.id}
+                  onClick={() => markRead(n.id)}
+                  className={cn(
+                    "w-full text-left px-4 py-3 flex gap-3 transition-colors hover:bg-accent/50",
+                    n.read ? "opacity-50" : ""
+                  )}
+                >
+                  <span className={cn("size-2 rounded-full mt-1.5 flex-shrink-0", cfg.dot)} />
+                  <div className="flex-1 min-w-0">
+                    <span className={cn("text-xs font-medium block", n.read ? "text-muted-foreground" : "text-foreground")}>
+                      {n.title}
+                    </span>
+                    {n.message && (
+                      <span className="text-[11px] text-muted-foreground block mt-0.5 truncate">{n.message}</span>
+                    )}
+                    <span className="text-[10px] font-mono text-muted-foreground mt-1 block">{formatTimestamp(n.createdAt)}</span>
+                  </div>
+                </button>
+              );
+            })
+          )}
         </div>
       </SheetContent>
     </Sheet>
@@ -90,8 +106,8 @@ export function NotificationPanel({ open, onOpenChange, notifications, setNotifi
 }
 
 export function useNotifications() {
-  const [notifications, setNotifications] = useState<Notification[]>(INITIAL_NOTIFICATIONS);
-  const [open, setOpen] = useState(false);
+  const notifQ = trpc.notifications.list.useQuery({ limit: 50 });
+  const notifications = notifQ.data || [];
   const unreadCount = notifications.filter(n => !n.read).length;
-  return { notifications, setNotifications, open, setOpen, unreadCount };
+  return { unreadCount };
 }

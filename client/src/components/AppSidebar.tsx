@@ -17,6 +17,7 @@ import {
   Users,
   DollarSign,
   ListChecks,
+  Activity,
 } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useState } from "react";
@@ -39,6 +40,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Team", href: "/team", icon: <Users className="size-[18px]" /> },
   { label: "Tasks", href: "/tasks", icon: <ListChecks className="size-[18px]" /> },
   { label: "Distributions", href: "/distributions", icon: <DollarSign className="size-[18px]" /> },
+  { label: "Activity", href: "/activity", icon: <Activity className="size-[18px]" /> },
   { label: "Settings", href: "/settings", icon: <Shield className="size-[18px]" /> },
 ];
 

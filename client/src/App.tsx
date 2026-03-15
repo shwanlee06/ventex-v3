@@ -17,6 +17,8 @@ import SettingsPage from "./pages/SettingsPage";
 import VentureDetail from "./pages/VentureDetail";
 import TasksPage from "./pages/TasksPage";
 import TeamMemberDetail from "./pages/TeamMemberDetail";
+import SpvDetail from "./pages/SpvDetail";
+import ActivityLog from "./pages/ActivityLog";
 
 /* Auth guard — redirects to login if no operator in localStorage */
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -67,11 +69,17 @@ function Router() {
       <Route path="/team">
         <RequireAuth><Onboard /></RequireAuth>
       </Route>
+      <Route path="/spvs/:slug">
+        <RequireAuth><SpvDetail /></RequireAuth>
+      </Route>
       <Route path="/spvs">
         <RequireAuth><SpvDeals /></RequireAuth>
       </Route>
       <Route path="/distributions">
         <RequireAuth><Distributions /></RequireAuth>
+      </Route>
+      <Route path="/activity">
+        <RequireAuth><ActivityLog /></RequireAuth>
       </Route>
       <Route path="/profile">
         <RequireAuth><Profile /></RequireAuth>

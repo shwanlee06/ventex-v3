@@ -152,3 +152,63 @@
 - [x] Delete chat logs from sidebar
 - [x] Download chat logs (as text/JSON)
 - [x] View/preview chat logs in sidebar
+
+## PART 1 — Live Shared Data Architecture
+- [x] Create DB schema: ventures, venture_team, tasks, team_members, spvs, distributions, activity_log, venture_files, notifications
+- [x] Push migrations to database
+- [x] Seed all tables with existing hardcoded data (20 ventures, 10 SPVs, 9 tasks, 12 team, 4 distributions)
+- [x] Build tRPC procedures for all CRUD operations (8 routers)
+- [x] Replace all localStorage/useState data with DB reads/writes across all pages
+- [x] Venture detail: team from venture_team join table
+- [x] Venture detail: files stored in venture_files table
+- [x] Tasks page: all tasks from DB, checkbox writes to DB
+- [x] Dashboard: live counts from DB
+- [x] Team page: all data from DB
+
+## PART 2 — Venture Detail: Linked Tasks (read-only view)
+- [x] Add "Linked Tasks" section to venture detail pages
+- [x] Show tasks where venture_id matches, with checkbox to mark complete
+- [x] Add Task button pre-filled with venture
+- [x] View all in Tasks link
+
+## PART 3 — Dashboard Enhancements
+- [x] Stat cards clickable with navigation
+- [x] Pipeline Health mini-chart (horizontal bar)
+- [x] Live Recent Activity from activity_log
+- [x] Overdue Alerts banner
+- [x] Quick Actions row (New Venture, Task, SPV, Distribution)
+- [x] Venture sector cards show live data
+
+## PART 4 — SPV Detail Pages
+- [x] Route /spvs/:slug with full detail page
+- [x] SPV header, key details, linked ventures, assigned team, documents, activity log
+- [x] Make SPV rows clickable
+
+## PART 5 — Activity Log Page
+- [x] New /activity route with sidebar link
+- [x] Stats bar, filter tabs by entity type
+- [x] Chronological list from activity_log table grouped by date
+- [x] Load more pagination
+
+## PART 6 — Notifications Center
+- [x] Notifications table in DB
+- [x] Notification panel reads from DB via tRPC
+- [x] Bell icon shows unread count, click opens panel, mark read/all-read
+
+## PART 7 — Kanban View for Tasks
+- [x] Build Board view with columns (Open, In Progress, Overdue, Complete)
+- [x] Click to move between columns updates status in DB
+- [x] Task cards show venture name, assignee, due date, priority badge
+
+## PART 8 — Search Command Palette
+- [x] Press / or click search to open overlay
+- [x] Live search across all DB tables (ventures, SPVs, tasks, team)
+- [x] Results grouped by type with keyboard navigation
+- [x] Click navigates to entity detail page
+
+## Tests
+- [x] 27 vitest tests passing across 4 test files
+- [x] Ventures, tasks, SPVs, team, distributions, activity, notifications router tests
+- [x] Airtable sync endpoint tests
+- [x] Auth logout test
+- [x] AI chat test

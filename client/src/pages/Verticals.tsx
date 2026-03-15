@@ -1,5 +1,5 @@
 // ============================================================================
-// Ventures Page — Swiss Instrument — FULLY INTERACTIVE
+// Ventures Page — Swiss Instrument — LIVE DB DATA
 // Filters, clickable row drawers, Add Venture dialog, task checkboxes
 // ============================================================================
 
@@ -7,51 +7,30 @@ import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
 import {
-  VENTURES,
-  TASKS,
-  TEAM,
   STATUS_CONFIG,
   getThemeColor,
-  getTaskStatusFromDate,
   formatDate,
-  type Venture,
-  type Task,
 } from "@/lib/data";
+import { trpc } from "@/lib/trpc";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { motion } from "framer-motion";
-import { Layers3, MapPin, ListChecks, AlertTriangle, Plus, X, ArrowUpRight, CheckCircle2 } from "lucide-react";
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { Layers3, MapPin, ListChecks, AlertTriangle, Plus, X } from "lucide-react";
+import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
-import { slugify } from "@/lib/slugify";
 import { toast } from "sonner";
-import { logAction } from "@/lib/operatorSession";
-import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
-} from "@/components/ui/sheet";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 
 const ALL_THEMES = ["All", "Real Estate", "F&B", "Yacht", "Entertainment", "Oil & Gas", "Others"];
 const ALL_STAGES = ["All", "In Validation", "Active ventures", "In Fundraising", "On Hold"];
@@ -59,81 +38,64 @@ const ALL_STATUSES = ["All", "In progress", "On-Hold", "Completed"];
 
 export default function VerticalsPage() {
   const [, navigate] = useLocation();
-  const [ventures, setVentures] = useState<Venture[]>([...VENTURES]);
-  const [tasks, setTasks] = useState<Task[]>([...TASKS]);
+  const utils = trpc.useUtils();
+
+  // ── Live data ──────────────────────────────────────────────────────
+  const venturesQ = trpc.ventures.list.useQuery();
+  const tasksQ = trpc.tasks.list.useQuery();
+  const allVentures = venturesQ.data || [];
+  const allTasks = tasksQ.data || [];
+  const loading = venturesQ.isLoading;
+
+  // ── Mutations ──────────────────────────────────────────────────────
+  const createVenture = trpc.ventures.create.useMutation({
+    onSuccess: () => {
+      utils.ventures.list.invalidate();
+      utils.activity.recent.invalidate();
+      toast.success("Venture created");
+    },
+  });
+
+  // ── Filters ────────────────────────────────────────────────────────
   const [themeFilter, setThemeFilter] = useState("All");
   const [stageFilter, setStageFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [drawerVenture, setDrawerVenture] = useState<Venture | null>(null);
   const [addOpen, setAddOpen] = useState(false);
-  const [taskModal, setTaskModal] = useState<Task | null>(null);
-  const [confirmUncheck, setConfirmUncheck] = useState<string | null>(null);
-
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
 
   // Add form state
   const [newName, setNewName] = useState("");
   const [newTheme, setNewTheme] = useState("Real Estate");
   const [newLocation, setNewLocation] = useState("");
   const [newStage, setNewStage] = useState("In Validation");
+  const [newDescription, setNewDescription] = useState("");
 
   const filtered = useMemo(() => {
-    return ventures.filter(v => {
-      if (v.name === "Unknown Venture") return false;
-      if (themeFilter !== "All" && v.theme !== themeFilter) return false;
+    return allVentures.filter(v => {
+      if (themeFilter !== "All" && v.sector !== themeFilter) return false;
       if (stageFilter !== "All" && v.stage !== stageFilter) return false;
       if (statusFilter !== "All" && v.status !== statusFilter) return false;
       return true;
     });
-  }, [ventures, themeFilter, stageFilter, statusFilter]);
+  }, [allVentures, themeFilter, stageFilter, statusFilter]);
 
-  const activeVentures = ventures.filter(v => v.status === "In progress").length;
-  const openTasks = tasks.filter(t => t.status === "open").length;
-  const overdueTasks = tasks.filter(t => getTaskStatusFromDate(t) === "overdue").length;
+  const now = new Date();
+  const activeVentures = allVentures.filter(v => v.status === "In progress").length;
+  const openTasks = allTasks.filter(t => t.status !== "complete").length;
+  const overdueTasks = allTasks.filter(t => t.status !== "complete" && t.dueDate && new Date(t.dueDate) < now).length;
 
-  const handleAddVenture = useCallback(() => {
+  const handleAddVenture = () => {
     if (!newName.trim()) { toast.error("Name is required"); return; }
-    const nv: Venture = {
-      id: `rec_new_${Date.now()}`,
+    createVenture.mutate({
       name: newName.trim(),
-      theme: newTheme as Venture["theme"],
-      stage: newStage as Venture["stage"],
-      status: "In progress",
+      sector: newTheme,
       location: newLocation.trim() || "TBD",
-    };
-    setVentures(prev => [nv, ...prev]);
+      stage: newStage,
+      status: "In progress",
+      description: newDescription.trim() || undefined,
+    });
     setAddOpen(false);
-    setNewName(""); setNewLocation("");
-    logAction("Venture added", nv.name);
-    toast.success(`Venture "${nv.name}" added`);
-  }, [newName, newTheme, newStage, newLocation]);
-
-  const handleTaskToggle = useCallback((taskId: string) => {
-    const task = tasks.find(t => t.id === taskId);
-    if (!task) return;
-    if (task.status === "complete") {
-      setConfirmUncheck(taskId);
-    } else {
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: "complete" as const } : t));
-      toast.success("Task marked complete");
-    }
-  }, [tasks]);
-
-  const confirmUncomplete = useCallback(() => {
-    if (!confirmUncheck) return;
-    setTasks(prev => prev.map(t => t.id === confirmUncheck ? { ...t, status: "open" as const } : t));
-    toast.info("Task marked incomplete");
-    setConfirmUncheck(null);
-  }, [confirmUncheck]);
-
-  const ventureRelatedTasks = drawerVenture
-    ? tasks.filter(t => t.ventureLink && drawerVenture.name.includes(t.ventureLink.split(" - ")[0]))
-    : [];
+    setNewName(""); setNewLocation(""); setNewDescription("");
+  };
 
   const summaryMetrics = [
     { label: "Total Ventures", value: filtered.length, icon: <Layers3 className="size-4 text-blue-400" /> },
@@ -229,7 +191,7 @@ export default function VerticalsPage() {
               </TableHeader>
               <TableBody>
                 {filtered.map((venture) => {
-                  const tc = getThemeColor(venture.theme);
+                  const tc = getThemeColor(venture.sector);
                   const isActive = venture.status === "In progress";
                   const isCompleted = venture.status === "Completed";
                   const isOnHold = venture.status === "On-Hold";
@@ -237,7 +199,7 @@ export default function VerticalsPage() {
                     <TableRow
                       key={venture.id}
                       className="cursor-pointer hover:bg-accent/30"
-                      onClick={() => navigate(`/ventures/${slugify(venture.name)}`)}
+                      onClick={() => navigate(`/ventures/${venture.slug}`)}
                     >
                       <TableCell>
                         <div>
@@ -250,7 +212,7 @@ export default function VerticalsPage() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div className="size-2 rounded-full flex-shrink-0" style={{ backgroundColor: tc.color }} />
-                          <span className="text-xs font-medium" style={{ color: tc.color }}>{venture.theme}</span>
+                          <span className="text-xs font-medium" style={{ color: tc.color }}>{venture.sector}</span>
                         </div>
                       </TableCell>
                       <TableCell className="text-xs font-mono text-muted-foreground">{venture.location}</TableCell>
@@ -269,162 +231,7 @@ export default function VerticalsPage() {
             </Table>
           )}
         </motion.div>
-
-        {/* All Tasks — with checkboxes */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.3 }}
-          className="bg-card border border-border rounded-lg overflow-hidden"
-        >
-          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-foreground">All Tasks</h2>
-            <span className="text-[10px] font-mono text-muted-foreground">{tasks.length} tasks</span>
-          </div>
-
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="w-8"></TableHead>
-                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Task</TableHead>
-                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Due Date</TableHead>
-                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Priority</TableHead>
-                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Assignees</TableHead>
-                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tasks.map((task) => {
-                const resolvedStatus = getTaskStatusFromDate(task);
-                const sc = STATUS_CONFIG[resolvedStatus];
-                return (
-                  <TableRow key={task.id} className={cn(task.status === "complete" && "opacity-50")}>
-                    <TableCell>
-                      <Checkbox
-                        checked={task.status === "complete"}
-                        onCheckedChange={() => handleTaskToggle(task.id)}
-                        className="size-3.5"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <button onClick={() => setTaskModal(task)} className="text-left">
-                        <span className={cn("text-xs text-foreground font-medium hover:text-primary transition-colors", task.status === "complete" && "line-through")}>{task.title}</span>
-                        {task.ventureLink && (
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{task.ventureLink}</p>
-                        )}
-                      </button>
-                    </TableCell>
-                    <TableCell className="text-xs font-mono text-muted-foreground">{formatDate(task.dueDate)}</TableCell>
-                    <TableCell>
-                      <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded", task.priority === "High" ? "bg-red-500/10 text-red-400" : task.priority === "Medium" ? "bg-amber-500/10 text-amber-400" : "bg-secondary text-muted-foreground")}>
-                        {task.priority}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {task.assignees.length > 0 ? task.assignees.join(", ") : "—"}
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </motion.div>
       </div>
-
-      {/* Venture Detail Drawer */}
-      <Sheet open={!!drawerVenture} onOpenChange={(open) => !open && setDrawerVenture(null)}>
-        <SheetContent side="right" className="w-[420px] sm:max-w-[420px] bg-card border-border p-0">
-          {drawerVenture && (
-            <>
-              <SheetHeader className="px-4 pt-4 pb-3 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <div className="size-2 rounded-full" style={{ backgroundColor: getThemeColor(drawerVenture.theme).color }} />
-                  <SheetTitle className="text-sm font-semibold">{drawerVenture.name}</SheetTitle>
-                </div>
-                <SheetDescription className="text-[10px] font-mono text-muted-foreground">
-                  {drawerVenture.theme} · {drawerVenture.location} · {drawerVenture.stage}
-                </SheetDescription>
-              </SheetHeader>
-              <ScrollArea className="h-[calc(100vh-140px)]">
-                <div className="p-4 space-y-4">
-                  {/* Status */}
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Status</span>
-                    <span className={cn(
-                      "text-xs font-medium px-2 py-1 rounded",
-                      drawerVenture.status === "In progress" ? "bg-emerald-500/10 text-emerald-400" :
-                      drawerVenture.status === "On-Hold" ? "bg-amber-500/10 text-amber-400" :
-                      drawerVenture.status === "Completed" ? "bg-blue-500/10 text-blue-400" :
-                      "bg-secondary text-muted-foreground"
-                    )}>
-                      {drawerVenture.status}
-                    </span>
-                  </div>
-
-                  {drawerVenture.currentStatus && (
-                    <div>
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Current Status</span>
-                      <p className="text-xs text-foreground bg-secondary/30 rounded-md p-2">{drawerVenture.currentStatus}</p>
-                    </div>
-                  )}
-
-                  {drawerVenture.nextStep && (
-                    <div>
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Next Step</span>
-                      <p className="text-xs text-foreground bg-secondary/30 rounded-md p-2">{drawerVenture.nextStep}</p>
-                    </div>
-                  )}
-
-                  {drawerVenture.nextMilestone && (
-                    <div>
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Next Milestone</span>
-                      <p className="text-xs font-mono text-foreground">{formatDate(drawerVenture.nextMilestone)}</p>
-                    </div>
-                  )}
-
-                  {drawerVenture.priority && (
-                    <div>
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Priority</span>
-                      <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded", drawerVenture.priority === "High" ? "bg-red-500/10 text-red-400" : drawerVenture.priority === "Medium" ? "bg-amber-500/10 text-amber-400" : "bg-secondary text-muted-foreground")}>
-                        {drawerVenture.priority}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Related Tasks */}
-                  {ventureRelatedTasks.length > 0 && (
-                    <div>
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-2">Related Tasks</span>
-                      <div className="space-y-2">
-                        {ventureRelatedTasks.map(t => {
-                          const rs = getTaskStatusFromDate(t);
-                          const sc = STATUS_CONFIG[rs];
-                          return (
-                            <div key={t.id} className="flex items-center justify-between bg-secondary/20 rounded-md p-2">
-                              <div className="flex items-center gap-2">
-                                <Checkbox
-                                  checked={t.status === "complete"}
-                                  onCheckedChange={() => handleTaskToggle(t.id)}
-                                  className="size-3"
-                                />
-                                <span className={cn("text-xs", t.status === "complete" ? "line-through text-muted-foreground" : "text-foreground")}>{t.title}</span>
-                              </div>
-                              <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
 
       {/* Add Venture Dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
@@ -460,10 +267,14 @@ export default function VerticalsPage() {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Label className="text-xs mb-1">Description</Label>
+              <Textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} placeholder="Brief description..." className="text-xs min-h-[60px]" />
+            </div>
           </div>
           <DialogFooter>
-            <Button size="sm" className="text-xs" onClick={handleAddVenture}>
-              <Plus className="size-3.5 mr-1" /> Add Venture
+            <Button size="sm" className="text-xs" onClick={handleAddVenture} disabled={createVenture.isPending}>
+              <Plus className="size-3.5 mr-1" /> {createVenture.isPending ? "Adding..." : "Add Venture"}
             </Button>
             <Button variant="ghost" size="sm" className="text-xs" onClick={() => setAddOpen(false)}>
               Cancel
@@ -471,75 +282,6 @@ export default function VerticalsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Task Detail Modal */}
-      <Dialog open={!!taskModal} onOpenChange={(open) => !open && setTaskModal(null)}>
-        <DialogContent className="sm:max-w-md">
-          {taskModal && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-sm">{taskModal.title}</DialogTitle>
-                <DialogDescription className="text-[10px] font-mono">
-                  Due {formatDate(taskModal.dueDate)} · {taskModal.priority} priority
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-3 py-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Status</span>
-                  {(() => { const rs = getTaskStatusFromDate(taskModal); const sc = STATUS_CONFIG[rs]; return <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />; })()}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Assignees</span>
-                  <span className="text-xs text-foreground">{taskModal.assignees.join(", ") || "Unassigned"}</span>
-                </div>
-                {taskModal.ventureLink && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Venture</span>
-                    <span className="text-xs text-primary">{taskModal.ventureLink}</span>
-                  </div>
-                )}
-                <div>
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Reassign</span>
-                  <Select onValueChange={(val) => {
-                    setTasks(prev => prev.map(t => t.id === taskModal.id ? { ...t, assignees: [val] } : t));
-                    toast.success(`Task reassigned to ${val}`);
-                    setTaskModal(null);
-                  }}>
-                    <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select team member" /></SelectTrigger>
-                    <SelectContent>
-                      {TEAM.map(m => <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button size="sm" className="text-xs" onClick={() => { handleTaskToggle(taskModal.id); setTaskModal(null); }}>
-                  <CheckCircle2 className="size-3.5 mr-1" /> {taskModal.status === "complete" ? "Reopen Task" : "Mark Complete"}
-                </Button>
-                <Button variant="ghost" size="sm" className="text-xs" onClick={() => setTaskModal(null)}>Close</Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Confirm Uncomplete Dialog */}
-      <AlertDialog open={!!confirmUncheck} onOpenChange={(open) => !open && setConfirmUncheck(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">Reopen this task?</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs text-muted-foreground">
-              Are you sure you want to mark this task as incomplete? It will be moved back to your open tasks list.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="text-xs h-8">Cancel</AlertDialogCancel>
-            <AlertDialogAction className="text-xs h-8 bg-amber-600 hover:bg-amber-700" onClick={confirmUncomplete}>
-              Yes, reopen task
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </DashboardLayout>
   );
 }
