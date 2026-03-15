@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { NotificationPanel, useNotifications } from "@/components/NotificationPanel";
 import CommandPalette from "@/components/CommandPalette";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 
@@ -24,7 +24,13 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
   const [cmdOpen, setCmdOpen] = useState(false);
   const [, navigate] = useLocation();
 
+  const operatorName = useMemo(() => {
+    try { return localStorage.getItem("atlas_operator") || "ATLAS Admin"; } catch { return "ATLAS Admin"; }
+  }, []);
+  const initials = operatorName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+
   const handleSignOut = useCallback(() => {
+    localStorage.removeItem("atlas_operator");
     toast.info("Signed out — redirecting to landing");
     setTimeout(() => navigate("/landing"), 600);
   }, [navigate]);
@@ -70,11 +76,11 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
                 <button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                   <Avatar className="size-7">
                     <AvatarFallback className="bg-primary/20 text-primary text-[10px] font-semibold">
-                      AT
+                      {initials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden sm:flex flex-col text-left">
-                    <span className="text-xs font-medium text-foreground leading-tight">ATLAS Admin</span>
+                    <span className="text-xs font-medium text-foreground leading-tight">{operatorName}</span>
                     <span className="text-[10px] text-muted-foreground font-mono">ops@atlas.vc</span>
                   </div>
                 </button>

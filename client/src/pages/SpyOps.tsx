@@ -166,88 +166,77 @@ const COORDS = [
   },
 ];
 
-const LOADER_MSGS = [
-  "INITIALIZING SECURE CHANNEL_",
-  "AUTHENTICATING OPERATOR_",
-  "LOADING ASSET REGISTRY_",
-  "ACCESS GRANTED_",
-];
-
 /* cipher characters for the decode effect */
 const CIPHER_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*!?<>{}[]=/+~^|";
-const TARGET_WORD = "ATLAS";
-const CIPHER_GRID_ROWS = 12;
-const CIPHER_GRID_COLS = 24;
+const LINE_LENGTH = 36; // characters per cipher line
 
-function useCipherDecode() {
-  const [grid, setGrid] = useState<string[][]>([]);
-  const [phase, setPhase] = useState<"scramble" | "converge" | "reveal" | "done">("scramble");
-  const [revealedLetters, setRevealedLetters] = useState(0);
-  const frameRef = useRef<number>(0);
-  const startRef = useRef(0);
+/* Login keys — each exactly 48 characters */
+const ACCESS_KEYS: Record<string, string> = {
+  "ATLAS-JF-2026-ALPHA-9X7K-BRAVO-4M2N-QR8P-DELTAXX": "Jimmy Frangi",
+  "ATLAS-AM-2026-SIGMA-9X7K-FOXTR-4M2N-QR8P-ECHO0XX": "Anton Maghami",
+  "ATLAS-JE-2026-OMEGA-9X7K-GOLF0-4M2N-QR8P-TANGOXX": "Jon Eichner",
+  "ATLAS-MC-2026-ZULU0-9X7K-HOTEL-4M2N-QR8P-VICTRXX": "Maher Abou Chakra",
+  "ATLAS-AS-2026-KILO0-9X7K-INDIA-4M2N-QR8P-SIERRXX": "Angie Samadi",
+  "ATLAS-CF-2026-LIMA0-9X7K-JULIT-4M2N-QR8P-BRAVOXX": "Carl Frangi",
+};
+
+/* Single-line cipher decode hook — random chars resolve into target text */
+function useSingleLineCipher(target: string, startDelay = 0, charDelay = 80) {
+  const [display, setDisplay] = useState("");
+  const [done, setDone] = useState(false);
+  const [started, setStarted] = useState(false);
 
   useEffect(() => {
-    // Initialize random grid
-    const initGrid = () => {
-      const g: string[][] = [];
-      for (let r = 0; r < CIPHER_GRID_ROWS; r++) {
-        const row: string[] = [];
-        for (let c = 0; c < CIPHER_GRID_COLS; c++) {
-          row.push(CIPHER_CHARS[Math.floor(Math.random() * CIPHER_CHARS.length)]);
-        }
-        g.push(row);
-      }
-      return g;
-    };
+    const t = setTimeout(() => setStarted(true), startDelay);
+    return () => clearTimeout(t);
+  }, [startDelay]);
 
-    setGrid(initGrid());
-    startRef.current = performance.now();
-
-    // Phase 1: Random scramble (0-1500ms) — characters keep changing randomly
-    const scrambleInterval = setInterval(() => {
-      setGrid(prev => prev.map(row =>
-        row.map(() => CIPHER_CHARS[Math.floor(Math.random() * CIPHER_CHARS.length)])
-      ));
-    }, 50);
-
-    // Phase 2: Converge (1500ms) — grid starts collapsing toward center
-    const t1 = setTimeout(() => {
-      setPhase("converge");
-      clearInterval(scrambleInterval);
-    }, 1500);
-
-    // Phase 3: Reveal ATLAS letter by letter (2200ms)
-    const t2 = setTimeout(() => {
-      setPhase("reveal");
-    }, 2200);
-
-    // Reveal each letter with delay
-    const letterTimers = TARGET_WORD.split("").map((_, i) =>
-      setTimeout(() => setRevealedLetters(i + 1), 2200 + i * 250)
+  useEffect(() => {
+    if (!started) return;
+    const len = target.length;
+    let resolved = 0;
+    // Start with full random line
+    setDisplay(
+      Array.from({ length: len }, () =>
+        CIPHER_CHARS[Math.floor(Math.random() * CIPHER_CHARS.length)]
+      ).join("")
     );
 
-    // Phase 4: Done (3700ms)
-    const t3 = setTimeout(() => setPhase("done"), 3700);
+    // Scramble interval — rapidly change unresolved chars
+    const scrambleIv = setInterval(() => {
+      setDisplay((prev) => {
+        const arr = prev.split("");
+        for (let i = resolved; i < len; i++) {
+          arr[i] = CIPHER_CHARS[Math.floor(Math.random() * CIPHER_CHARS.length)];
+        }
+        return arr.join("");
+      });
+    }, 40);
+
+    // Resolve one letter at a time
+    const resolveIv = setInterval(() => {
+      if (resolved >= len) {
+        clearInterval(resolveIv);
+        clearInterval(scrambleIv);
+        setDisplay(target);
+        setDone(true);
+        return;
+      }
+      resolved++;
+      setDisplay((prev) => {
+        const arr = prev.split("");
+        arr[resolved - 1] = target[resolved - 1];
+        return arr.join("");
+      });
+    }, charDelay);
 
     return () => {
-      clearInterval(scrambleInterval);
-      [t1, t2, t3, ...letterTimers].forEach(clearTimeout);
-      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+      clearInterval(scrambleIv);
+      clearInterval(resolveIv);
     };
-  }, []);
+  }, [started, target, charDelay]);
 
-  // During converge phase, keep scrambling but fade chars
-  useEffect(() => {
-    if (phase !== "converge") return;
-    const iv = setInterval(() => {
-      setGrid(prev => prev.map(row =>
-        row.map(() => CIPHER_CHARS[Math.floor(Math.random() * CIPHER_CHARS.length)])
-      ));
-    }, 60);
-    return () => clearInterval(iv);
-  }, [phase]);
-
-  return { grid, phase, revealedLetters };
+  return { display, done, started };
 }
 
 const HERO_READOUTS = [
@@ -366,12 +355,93 @@ function Section({
    ═══════════════════════════════════════════════════════════════ */
 export default function SpyOps() {
   const [, navigate] = useLocation();
-  /* ─── state ─── */
-  const [loading, setLoading] = useState(true);
-  const [loaderStep, setLoaderStep] = useState(0); // 0-4
-  const [loaderMsg, setLoaderMsg] = useState(0);
-  const [loaderBar, setLoaderBar] = useState(0);
-  const cipher = useCipherDecode();
+
+  /* ─── 4-phase flow: cipher → login → welcome → transition ─── */
+  type FlowPhase = "cipher" | "login" | "welcome" | "transition" | "page";
+  const [flowPhase, setFlowPhase] = useState<FlowPhase>("cipher");
+  const [operatorName, setOperatorName] = useState("");
+  const [keyInput, setKeyInput] = useState("");
+  const [keyError, setKeyError] = useState(false);
+  const [loginFocused, setLoginFocused] = useState(false);
+  const keyInputRef = useRef<HTMLInputElement>(null);
+
+  /* Phase 1: ATLAS cipher decode */
+  const atlasCipher = useSingleLineCipher("A T L A S", 400, 120);
+
+  /* Ambient random lines behind the cipher */
+  const [ambientLines, setAmbientLines] = useState<string[]>([]);
+  useEffect(() => {
+    if (flowPhase !== "cipher") return;
+    const generateLine = () =>
+      Array.from({ length: LINE_LENGTH }, () =>
+        CIPHER_CHARS[Math.floor(Math.random() * CIPHER_CHARS.length)]
+      ).join("");
+    // Initialize 14 lines
+    setAmbientLines(Array.from({ length: 14 }, generateLine));
+    const iv = setInterval(() => {
+      setAmbientLines((prev) =>
+        prev.map(() => generateLine())
+      );
+    }, 60);
+    return () => clearInterval(iv);
+  }, [flowPhase]);
+
+  /* Auto-advance from cipher to login after decode completes */
+  useEffect(() => {
+    if (flowPhase === "cipher" && atlasCipher.done) {
+      const t = setTimeout(() => setFlowPhase("login"), 1200);
+      return () => clearTimeout(t);
+    }
+  }, [flowPhase, atlasCipher.done]);
+
+  /* Focus key input when login phase starts */
+  useEffect(() => {
+    if (flowPhase === "login") {
+      const t = setTimeout(() => keyInputRef.current?.focus(), 600);
+      return () => clearTimeout(t);
+    }
+  }, [flowPhase]);
+
+  /* Phase 3: Welcome cipher decode */
+  const welcomeTarget = operatorName ? `WELCOME, ${operatorName.toUpperCase()}` : "";
+  const welcomeCipher = useSingleLineCipher(
+    welcomeTarget,
+    300,
+    100
+  );
+
+  /* Auto-advance from welcome to transition after decode completes */
+  useEffect(() => {
+    if (flowPhase === "welcome" && welcomeCipher.done) {
+      const t = setTimeout(() => setFlowPhase("transition"), 1800);
+      return () => clearTimeout(t);
+    }
+  }, [flowPhase, welcomeCipher.done]);
+
+  /* Phase 4: Smooth transition → navigate to dashboard */
+  useEffect(() => {
+    if (flowPhase === "transition") {
+      const t = setTimeout(() => navigate("/"), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [flowPhase, navigate]);
+
+  /* Handle key submission */
+  const handleKeySubmit = () => {
+    const trimmed = keyInput.trim();
+    const name = ACCESS_KEYS[trimmed];
+    if (name) {
+      setOperatorName(name);
+      localStorage.setItem("atlas_operator", name);
+      setKeyError(false);
+      setFlowPhase("welcome");
+    } else {
+      setKeyError(true);
+      setTimeout(() => setKeyError(false), 3500);
+    }
+  };
+
+  /* ─── page state (after transition) ─── */
   const [clock, setClock] = useState(fmtClock(estNow()));
   const [scrollY, setScrollY] = useState(0);
   const [scrollPct, setScrollPct] = useState(0);
@@ -383,43 +453,6 @@ export default function SpyOps() {
   const [ringPos, setRingPos] = useState({ x: -100, y: -100 });
   const [cursorHover, setCursorHover] = useState(false);
   const ringRef = useRef({ x: -100, y: -100 });
-
-  /* ─── loader sequence ─── */
-  useEffect(() => {
-    const t1 = setTimeout(() => setLoaderStep(1), 300);
-    const t2 = setTimeout(() => setLoaderStep(2), 900);
-    const t3 = setTimeout(() => setLoaderStep(3), 1100);
-    const t4 = setTimeout(() => setLoaderStep(4), 1600);
-    // progress bar: 1600ms start, 1800ms duration
-    let barStart: number;
-    let barFrame: number;
-    const t5 = setTimeout(() => {
-      barStart = performance.now();
-      const animate = (now: number) => {
-        const pct = Math.min(1, (now - barStart) / 1800);
-        setLoaderBar(pct * 100);
-        if (pct < 1) barFrame = requestAnimationFrame(animate);
-      };
-      barFrame = requestAnimationFrame(animate);
-    }, 1600);
-    const t6 = setTimeout(() => setLoading(false), 3500);
-    return () => {
-      [t1, t2, t3, t4, t5, t6].forEach(clearTimeout);
-      if (barFrame) cancelAnimationFrame(barFrame);
-    };
-  }, []);
-
-  /* loader message cycling */
-  useEffect(() => {
-    if (loaderStep < 4) return;
-    let i = 0;
-    const iv = setInterval(() => {
-      i++;
-      if (i < LOADER_MSGS.length) setLoaderMsg(i);
-      else clearInterval(iv);
-    }, 600);
-    return () => clearInterval(iv);
-  }, [loaderStep]);
 
   /* ─── live clock ─── */
   useEffect(() => {
@@ -527,8 +560,8 @@ export default function SpyOps() {
         }}
       />
 
-      {/* ═══ SECTION 1 — CIPHER DECODE LOADING SCREEN ═══ */}
-      {loading && (
+      {/* ═══ FULL-SCREEN FLOW: CIPHER → LOGIN → WELCOME → TRANSITION ═══ */}
+      {flowPhase !== "page" && (
         <div
           style={{
             position: "fixed",
@@ -541,147 +574,306 @@ export default function SpyOps() {
             justifyContent: "center",
             cursor: "none",
             overflow: "hidden",
+            opacity: flowPhase === "transition" ? 0 : 1,
+            transition: "opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)",
           }}
         >
-          {/* Background cipher grid — random characters filling the screen */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              fontFamily: "'Share Tech Mono', monospace",
-              fontSize: "clamp(12px, 1.5vw, 18px)",
-              lineHeight: 1.8,
-              letterSpacing: "0.5em",
-              color: cipher.phase === "converge" ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.15)",
-              transition: "color 0.5s, opacity 0.5s",
-              opacity: cipher.phase === "reveal" || cipher.phase === "done" ? 0 : 1,
-              pointerEvents: "none",
-            }}
-          >
-            {cipher.grid.map((row, ri) => (
-              <div key={ri} style={{ whiteSpace: "nowrap" }}>
-                {row.map((ch, ci) => (
-                  <span key={ci}>{ch}</span>
+          {/* ── PHASE 1: CIPHER DECODE ── */}
+          {flowPhase === "cipher" && (
+            <>
+              {/* Ambient random lines */}
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: 11,
+                  lineHeight: 2.2,
+                  letterSpacing: "0.3em",
+                  color: "rgba(255,255,255,0.06)",
+                  pointerEvents: "none",
+                  opacity: atlasCipher.done ? 0 : 1,
+                  transition: "opacity 0.8s",
+                }}
+              >
+                {ambientLines.map((line, i) => (
+                  <div key={i} style={{ whiteSpace: "nowrap" }}>{line}</div>
                 ))}
               </div>
-            ))}
-          </div>
 
-          {/* Center: ATLAS reveal */}
-          <div
-            style={{
-              position: "relative",
-              zIndex: 2,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 0,
-            }}
-          >
-            {/* The ATLAS letters */}
+              {/* Center: single line cipher resolving to ATLAS */}
+              <div
+                style={{
+                  position: "relative",
+                  zIndex: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "'Share Tech Mono', monospace",
+                    fontSize: "clamp(18px, 3vw, 32px)",
+                    letterSpacing: "0.5em",
+                    color: "#fff",
+                    minHeight: 40,
+                    textAlign: "center",
+                  }}
+                >
+                  {atlasCipher.display || "\u00A0"}
+                  {atlasCipher.started && !atlasCipher.done && (
+                    <span className="spyops-blink" style={{ marginLeft: 2 }}>_</span>
+                  )}
+                </div>
+
+                {/* Subtitle after decode */}
+                <div
+                  style={{
+                    fontFamily: "'Share Tech Mono', monospace",
+                    fontSize: 10,
+                    letterSpacing: "0.4em",
+                    color: "#444",
+                    marginTop: 20,
+                    opacity: atlasCipher.done ? 1 : 0,
+                    transform: atlasCipher.done ? "translateY(0)" : "translateY(8px)",
+                    transition: "opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s",
+                    textAlign: "center",
+                  }}
+                >
+                  VENTURE INTELLIGENCE OPERATIONS
+                </div>
+              </div>
+
+              {/* Bottom coordinates */}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 40,
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: 10,
+                  color: "#222",
+                  textAlign: "center",
+                  opacity: atlasCipher.done ? 1 : 0,
+                  transition: "opacity 0.5s ease 0.3s",
+                }}
+              >
+                N 40.712800 // W 074.006000 // EST NEW YORK
+              </div>
+            </>
+          )}
+
+          {/* ── PHASE 2: LOGIN ── */}
+          {flowPhase === "login" && (
             <div
               style={{
                 display: "flex",
-                gap: "clamp(8px, 2vw, 24px)",
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: "clamp(80px, 18vw, 220px)",
-                letterSpacing: "0.1em",
-                lineHeight: 1,
-                color: "#fff",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 0,
+                animation: "spyops-fadeIn 0.6s ease",
               }}
             >
-              {TARGET_WORD.split("").map((letter, i) => {
-                const isRevealed = cipher.revealedLetters > i;
-                const isScrambling = cipher.phase === "scramble" || cipher.phase === "converge";
-                return (
-                  <span
-                    key={i}
-                    style={{
-                      display: "inline-block",
-                      opacity: isRevealed ? 1 : isScrambling ? 0 : 0.3,
-                      transform: isRevealed ? "translateY(0) scale(1)" : "translateY(20px) scale(0.8)",
-                      transition: "opacity 0.3s ease, transform 0.4s ease",
-                      textShadow: isRevealed ? "0 0 40px rgba(255,255,255,0.3)" : "none",
-                    }}
-                  >
-                    {isRevealed ? letter : CIPHER_CHARS[Math.floor(Math.random() * CIPHER_CHARS.length)]}
-                  </span>
-                );
-              })}
-            </div>
+              {/* ATLAS header */}
+              <div
+                style={{
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: "clamp(18px, 3vw, 28px)",
+                  letterSpacing: "0.5em",
+                  color: "#fff",
+                  marginBottom: 8,
+                }}
+              >
+                A T L A S
+              </div>
+              <div
+                style={{
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: 10,
+                  letterSpacing: "0.3em",
+                  color: "#444",
+                  marginBottom: 48,
+                }}
+              >
+                SECURE OPERATOR AUTHENTICATION
+              </div>
 
-            {/* Subtitle — appears after ATLAS is revealed */}
+              {/* Key input label */}
+              <div
+                style={{
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: 10,
+                  letterSpacing: "0.2em",
+                  color: "#666",
+                  marginBottom: 12,
+                  alignSelf: "flex-start",
+                }}
+              >
+                ENTER 48-CHARACTER ACCESS KEY
+              </div>
+
+              {/* Key input field */}
+              <div
+                style={{
+                  position: "relative",
+                  width: "min(560px, 85vw)",
+                }}
+              >
+                <input
+                  ref={keyInputRef}
+                  type="text"
+                  value={keyInput}
+                  onChange={(e) => setKeyInput(e.target.value)}
+                  onFocus={() => setLoginFocused(true)}
+                  onBlur={() => setLoginFocused(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleKeySubmit();
+                  }}
+                  maxLength={48}
+                  placeholder="ATLAS-XX-2026-XXXXX-XXXX-XXXXX-XXXX-XXXX-XXXXXXX"
+                  autoComplete="off"
+                  spellCheck={false}
+                  style={{
+                    width: "100%",
+                    fontFamily: "'Share Tech Mono', monospace",
+                    fontSize: 13,
+                    letterSpacing: "0.08em",
+                    color: keyError ? "#ff3333" : "#fff",
+                    background: "transparent",
+                    border: "none",
+                    borderBottom: `1px solid ${keyError ? "#ff3333" : loginFocused ? "#fff" : "#333"}`,
+                    padding: "12px 0",
+                    outline: "none",
+                    cursor: "none",
+                    transition: "border-color 0.3s, color 0.3s",
+                  }}
+                />
+                {/* Character count */}
+                <div
+                  style={{
+                    position: "absolute",
+                    right: 0,
+                    bottom: -24,
+                    fontFamily: "'Share Tech Mono', monospace",
+                    fontSize: 10,
+                    color: keyInput.length === 48 ? "#fff" : "#444",
+                  }}
+                >
+                  {keyInput.length}/48
+                </div>
+              </div>
+
+              {/* Error message */}
+              <div
+                style={{
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: 12,
+                  color: "#ff3333",
+                  marginTop: 24,
+                  letterSpacing: "0.25em",
+                  height: 20,
+                  opacity: keyError ? 1 : 0,
+                  transform: keyError ? "translateX(0)" : "translateX(-4px)",
+                  transition: "opacity 0.3s ease, transform 0.3s ease",
+                  animation: keyError ? "spyops-shake 0.5s ease" : "none",
+                }}
+              >
+                ✕ ACCESS DENIED — INVALID KEY
+              </div>
+
+              {/* Submit button */}
+              <button
+                onClick={handleKeySubmit}
+                className="spyops-btn-primary"
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 11,
+                  letterSpacing: "0.15em",
+                  background: "#fff",
+                  color: "#000",
+                  border: "none",
+                  padding: "12px 32px",
+                  marginTop: 48,
+                  cursor: "none",
+                }}
+              >
+                AUTHENTICATE ▶
+              </button>
+
+              {/* Bottom hint */}
+              <div
+                style={{
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: 10,
+                  color: "#333",
+                  marginTop: 48,
+                  textAlign: "center",
+                  lineHeight: 1.8,
+                }}
+              >
+                CLASSIFICATION: CONFIDENTIAL // AUTHORIZED PERSONNEL ONLY
+              </div>
+            </div>
+          )}
+
+          {/* ── PHASE 3: WELCOME ── */}
+          {flowPhase === "welcome" && (
             <div
               style={{
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: 11,
-                letterSpacing: "0.4em",
-                color: "#555",
-                marginTop: 24,
-                opacity: cipher.phase === "done" ? 1 : 0,
-                transform: cipher.phase === "done" ? "translateY(0)" : "translateY(10px)",
-                transition: "opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s",
-                textAlign: "center",
-              }}
-            >
-              VENTURE INTELLIGENCE OPERATIONS
-            </div>
-
-            {/* Progress bar */}
-            <div
-              style={{
-                marginTop: 32,
-                width: 280,
-                height: 1,
-                background: "#222",
-                opacity: loaderStep >= 4 ? 1 : 0,
-                transition: "opacity 0.3s",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                animation: "spyops-fadeIn 0.4s ease",
               }}
             >
               <div
                 style={{
-                  width: `${loaderBar}%`,
-                  height: "100%",
-                  background: "#fff",
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: "clamp(16px, 2.5vw, 28px)",
+                  letterSpacing: "0.4em",
+                  color: "#fff",
+                  minHeight: 40,
+                  textAlign: "center",
                 }}
-              />
+              >
+                {welcomeCipher.display || "\u00A0"}
+                {welcomeCipher.started && !welcomeCipher.done && (
+                  <span className="spyops-blink" style={{ marginLeft: 2 }}>_</span>
+                )}
+              </div>
+              <div
+                style={{
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: 10,
+                  letterSpacing: "0.3em",
+                  color: "#444",
+                  marginTop: 16,
+                  opacity: welcomeCipher.done ? 1 : 0,
+                  transition: "opacity 0.5s ease 0.2s",
+                }}
+              >
+                INITIALIZING COMMAND CENTER...
+              </div>
             </div>
+          )}
 
-            {/* Status text */}
+          {/* ── PHASE 4: TRANSITION (just fading out) ── */}
+          {flowPhase === "transition" && (
             <div
               style={{
-                marginTop: 12,
                 fontFamily: "'Share Tech Mono', monospace",
                 fontSize: 10,
-                color: "#555",
-                opacity: loaderStep >= 4 ? 1 : 0,
-                transition: "opacity 0.3s",
-                textAlign: "center",
+                letterSpacing: "0.3em",
+                color: "#666",
               }}
             >
-              {LOADER_MSGS[loaderMsg]}
+              LOADING OPERATIONAL DASHBOARD...
             </div>
-          </div>
-
-          {/* Bottom coordinates */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: 40,
-              fontFamily: "'Share Tech Mono', monospace",
-              fontSize: 10,
-              color: "#333",
-              textAlign: "center",
-              opacity: cipher.phase === "done" ? 1 : 0,
-              transition: "opacity 0.5s ease 0.3s",
-            }}
-          >
-            N 40.712800 // W 074.006000 // EST NEW YORK
-          </div>
+          )}
         </div>
       )}
 
@@ -1696,6 +1888,25 @@ export default function SpyOps() {
       <style>{`
         .spyops-root * { box-sizing: border-box; }
         .spyops-root ::selection { background: #fff; color: #000; }
+
+        @keyframes spyops-fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spyops-shake {
+          0%, 100% { transform: translateX(0); }
+          20% { transform: translateX(-6px); }
+          40% { transform: translateX(6px); }
+          60% { transform: translateX(-4px); }
+          80% { transform: translateX(4px); }
+        }
+
+        .spyops-root input::placeholder {
+          color: #333;
+          font-family: 'Share Tech Mono', monospace;
+          letter-spacing: 0.08em;
+        }
 
         @keyframes spyops-blink {
           0%, 100% { opacity: 1; }
