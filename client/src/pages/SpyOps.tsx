@@ -418,11 +418,10 @@ export default function SpyOps() {
     }
   }, [flowPhase, welcomeCipher.done]);
 
-  /* Phase 4: Smooth transition → navigate to dashboard */
+  /* Phase 4: Navigate to dashboard immediately */
   useEffect(() => {
     if (flowPhase === "transition") {
-      const t = setTimeout(() => navigate("/"), 1500);
-      return () => clearTimeout(t);
+      navigate("/");
     }
   }, [flowPhase, navigate]);
 
@@ -574,8 +573,7 @@ export default function SpyOps() {
             justifyContent: "center",
             cursor: "none",
             overflow: "hidden",
-            opacity: flowPhase === "transition" ? 0 : 1,
-            transition: "opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)",
+            opacity: 1,
           }}
         >
           {/* ── PHASE 1: CIPHER DECODE ── */}
