@@ -114,3 +114,31 @@
 - [x] Build profile page: header, about/bio, expertise tags, roles, contact, ventures, tasks, activity
 - [x] Photo upload with localStorage persistence
 - [x] Edit mode for all sections
+
+## Folder Organization in Venture Files
+- [x] Add "Create Folder" button next to file attach button
+- [x] Allow naming folders and organizing files into them
+- [x] Show folder tree with expand/collapse
+- [x] Persist folder structure to localStorage per venture
+- [x] Allow drag or move files between folders
+
+## Data Persistence — Never Remove Data
+- [x] Persist all dashboard data changes to localStorage
+- [x] Tasks: persist completions, additions, reassignments
+- [x] Ventures: persist edits, status changes
+- [x] Distributions: persist new entries
+- [x] Team: persist additions and edits
+- [x] Prevent accidental data deletion with confirmation dialogs
+
+## Airtable Sync
+- [x] Connect to Airtable via MCP server
+- [x] Discover base and table structure
+- [x] Create backend API routes for sync (ventures, tasks, people, SPVs)
+- [x] Sync new/updated tasks to Airtable
+- [x] Sync new/updated ventures to Airtable
+- [x] Sync new/updated team members to Airtable
+- [x] Sync SPVs/deals to Airtable
+- [x] Add "Sync All to Airtable" button in Settings General tab
+- [x] Wire auto-sync into persistence layer (debounced 5s)
+- [x] Add data summary counts in sync card
+- [x] Write vitest tests for all sync endpoints (8 tests passing)

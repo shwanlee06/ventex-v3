@@ -11,6 +11,7 @@ import {
   formatDate, type Task, type TaskStatus,
 } from "@/lib/data";
 import { logAction } from "@/lib/operatorSession";
+import { loadTasks, saveTasks } from "@/lib/persistence";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ListChecks, Plus, Filter, CheckCircle2, Clock, AlertTriangle,
@@ -43,7 +44,14 @@ const ALL_ASSIGNEES = ["All", ...Array.from(new Set(TASKS.flatMap(t => t.assigne
 
 export default function TasksPage() {
   const [, navigate] = useLocation();
-  const [tasks, setTasks] = useState<Task[]>([...TASKS]);
+  const [tasks, setTasksRaw] = useState<Task[]>(() => loadTasks(TASKS));
+  const setTasks = useCallback((updater: Task[] | ((prev: Task[]) => Task[])) => {
+    setTasksRaw(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      saveTasks(next);
+      return next;
+    });
+  }, []);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");

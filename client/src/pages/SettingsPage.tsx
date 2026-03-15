@@ -36,6 +36,8 @@ import {
 } from "@/lib/operatorSession";
 import { exportAllDistributionsPdf } from "@/lib/exportPdf";
 import { DISTRIBUTIONS, SPVS, TASKS, VENTURES, TEAM } from "@/lib/data";
+import { syncAll } from "@/lib/airtableSync";
+import { getStorageSummary } from "@/lib/persistence";
 
 const SOC2_ITEMS = [
   { id: "encryption", label: "AES-256 encryption at rest", done: true },
@@ -267,6 +269,11 @@ export default function SettingsConfigPage() {
                     ))}
                   </div>
                 </Card>
+              </motion.div>
+
+              {/* Airtable Sync */}
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+                <AirtableSyncCard />
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
@@ -737,4 +744,109 @@ function downloadCsv(content: string, filename: string) {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// ── Airtable Sync Card ───────────────────────────────────────────────────
+function AirtableSyncCard() {
+  const [syncing, setSyncing] = useState(false);
+  const [lastSync, setLastSync] = useState<string | null>(() => {
+    try { return localStorage.getItem("thalora_last_airtable_sync"); } catch { return null; }
+  });
+  const [syncResults, setSyncResults] = useState<Record<string, unknown> | null>(null);
+
+  const storageSummary = useMemo(() => getStorageSummary(), []);
+
+  const handleFullSync = useCallback(async () => {
+    setSyncing(true);
+    setSyncResults(null);
+    try {
+      const result = await syncAll({
+        ventures: VENTURES,
+        tasks: TASKS,
+        team: TEAM,
+        spvs: SPVS,
+      });
+      if (result.success) {
+        const now = new Date().toISOString();
+        localStorage.setItem("thalora_last_airtable_sync", now);
+        setLastSync(now);
+        setSyncResults(result.results);
+        logAction("Airtable sync", "Full sync completed");
+        toast.success("Airtable sync complete", { description: "All data pushed to Airtable" });
+      } else {
+        toast.error("Sync failed", { description: String((result.results as any)?.error || "Unknown error") });
+      }
+    } catch (err: any) {
+      toast.error("Sync error", { description: err.message });
+    } finally {
+      setSyncing(false);
+    }
+  }, []);
+
+  return (
+    <Card className="p-6 bg-card border-border">
+      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
+        <Database className="size-4 text-primary" />
+        Airtable Synchronization
+      </h3>
+      <p className="text-xs text-muted-foreground mb-4">
+        Push all dashboard data to Airtable for external access and backup. Changes are also auto-synced when you edit data in the dashboard.
+      </p>
+
+      {/* Data Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+        {Object.entries(storageSummary).map(([key, count]) => (
+          <div key={key} className="p-3 rounded-lg bg-secondary/30 border border-border">
+            <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">{key}</p>
+            <p className="text-lg font-semibold text-foreground font-mono">{count}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-3">
+        <Button
+          size="sm"
+          className="text-xs"
+          onClick={handleFullSync}
+          disabled={syncing}
+        >
+          {syncing ? (
+            <>
+              <RefreshCw className="size-3.5 mr-1 animate-spin" />
+              Syncing...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="size-3.5 mr-1" />
+              Sync All to Airtable
+            </>
+          )}
+        </Button>
+        {lastSync && (
+          <span className="text-[10px] font-mono text-muted-foreground flex items-center gap-1">
+            <CheckCircle2 className="size-3 text-emerald-400" />
+            Last sync: {new Date(lastSync).toLocaleString()}
+          </span>
+        )}
+      </div>
+
+      {/* Sync Results */}
+      {syncResults && (
+        <div className="mt-4 p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
+          <p className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider mb-2">Sync Results</p>
+          <div className="space-y-1">
+            {Object.entries(syncResults).map(([table, result]) => (
+              <div key={table} className="flex items-center gap-2">
+                <CheckCircle2 className="size-3 text-emerald-400" />
+                <span className="text-xs text-foreground capitalize">{table}</span>
+                <span className="text-[10px] font-mono text-muted-foreground">
+                  {(result as any)?.success ? "synced" : "error"}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </Card>
+  );
 }

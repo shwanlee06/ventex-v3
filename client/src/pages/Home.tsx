@@ -47,6 +47,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { logAction } from "@/lib/operatorSession";
+import { loadTasks, saveTasks } from "@/lib/persistence";
 import {
   Sheet,
   SheetContent,
@@ -95,7 +96,14 @@ const THEME_ICONS: Record<string, React.ReactNode> = {
 
 export default function Home() {
   const [, navigate] = useLocation();
-  const [tasks, setTasks] = useState<Task[]>([...TASKS]);
+  const [tasks, setTasksRaw] = useState<Task[]>(() => loadTasks(TASKS));
+  const setTasks = useCallback((updater: Task[] | ((prev: Task[]) => Task[])) => {
+    setTasksRaw(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      saveTasks(next);
+      return next;
+    });
+  }, []);
   const [sectorDrawer, setSectorDrawer] = useState<string | null>(null);
   const [spvModal, setSpvModal] = useState<SPV | null>(null);
   const [taskModal, setTaskModal] = useState<Task | null>(null);

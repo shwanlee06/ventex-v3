@@ -1,6 +1,6 @@
 // ============================================================================
 // Venture Detail Page — /ventures/:slug
-// Sections: Key Details, Team, Files (downloadable), Activity Log
+// Sections: Key Details, Team, Files (with folders), Activity Log
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
@@ -19,7 +19,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Edit3, Save, Plus, Trash2, FileText, Upload, MessageSquare,
   User, Clock, File, Image, FileSpreadsheet, Download, Eye,
-  X, AlertTriangle, ZoomIn, ZoomOut,
+  X, AlertTriangle, ZoomIn, ZoomOut, FolderPlus, Folder, FolderOpen,
+  ChevronRight, MoveRight, MoreHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,9 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -48,7 +52,15 @@ interface AttachedFile {
   sizeBytes: number;
   type: string;
   dateAdded: string;
-  dataUrl: string; // base64 data URL for download/preview
+  dataUrl: string;
+  folderId: string; // "" = root, otherwise folder id
+}
+
+interface FileFolder {
+  id: string;
+  name: string;
+  createdAt: string;
+  color: string;
 }
 
 interface ActivityEntry {
@@ -62,7 +74,11 @@ interface ActivityEntry {
 const STAGES = ["In Validation", "Active ventures", "In Fundraising", "On Hold"];
 const STATUSES = ["In progress", "On-Hold", "Completed", "Closed"];
 const SECTORS = ["Real Estate", "F&B", "Yacht", "Entertainment", "Oil & Gas", "Others"];
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+const FOLDER_COLORS = [
+  "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#f97316",
+];
 
 function getFileIcon(name: string) {
   const ext = name.split(".").pop()?.toLowerCase();
@@ -101,25 +117,34 @@ function getInitials(name: string): string {
   return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
-// localStorage key per venture
-function getStorageKey(slug: string): string {
-  return `thalora_venture_files_${slug}`;
-}
+// localStorage keys
+function getFilesKey(slug: string): string { return `thalora_venture_files_${slug}`; }
+function getFoldersKey(slug: string): string { return `thalora_venture_folders_${slug}`; }
 
 function loadFilesFromStorage(slug: string): AttachedFile[] {
   try {
-    const raw = localStorage.getItem(getStorageKey(slug));
+    const raw = localStorage.getItem(getFilesKey(slug));
     if (!raw) return [];
     return JSON.parse(raw);
   } catch { return []; }
 }
 
 function saveFilesToStorage(slug: string, files: AttachedFile[]) {
+  try { localStorage.setItem(getFilesKey(slug), JSON.stringify(files)); }
+  catch (e) { console.warn("Failed to save files:", e); }
+}
+
+function loadFoldersFromStorage(slug: string): FileFolder[] {
   try {
-    localStorage.setItem(getStorageKey(slug), JSON.stringify(files));
-  } catch (e) {
-    console.warn("Failed to save files to localStorage:", e);
-  }
+    const raw = localStorage.getItem(getFoldersKey(slug));
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch { return []; }
+}
+
+function saveFoldersToStorage(slug: string, folders: FileFolder[]) {
+  try { localStorage.setItem(getFoldersKey(slug), JSON.stringify(folders)); }
+  catch (e) { console.warn("Failed to save folders:", e); }
 }
 
 // ── Component ─────────────────────────────────────────────────────────────
@@ -129,7 +154,6 @@ export default function VentureDetail() {
   const [, params] = useRoute("/ventures/:slug");
   const slug = params?.slug || "";
 
-  // Find venture
   const baseVenture = findVentureBySlug(VENTURES, slug);
 
   // ── State ───────────────────────────────────────────────────────────────
@@ -146,8 +170,16 @@ export default function VentureDetail() {
   const [assignMemberId, setAssignMemberId] = useState("");
   const [assignResponsibility, setAssignResponsibility] = useState("");
 
-  // Files — persisted to localStorage
+  // Files & Folders
   const [files, setFiles] = useState<AttachedFile[]>([]);
+  const [folders, setFolders] = useState<FileFolder[]>([]);
+  const [currentFolderId, setCurrentFolderId] = useState<string>(""); // "" = root
+  const [createFolderOpen, setCreateFolderOpen] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+  const [newFolderColor, setNewFolderColor] = useState(FOLDER_COLORS[0]);
+  const [moveFileId, setMoveFileId] = useState<string | null>(null);
+  const [renameFolderId, setRenameFolderId] = useState<string | null>(null);
+  const [renameFolderName, setRenameFolderName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Lightbox
@@ -157,7 +189,7 @@ export default function VentureDetail() {
   // Activity
   const [activity, setActivity] = useState<ActivityEntry[]>([]);
 
-  // ── Initialize from data ────────────────────────────────────────────────
+  // ── Initialize ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!baseVenture) return;
     setVenture({ ...baseVenture });
@@ -170,34 +202,17 @@ export default function VentureDetail() {
       notes: baseVenture.currentStatus || "",
       dateAdded: "2026-01-15",
     });
-
-    // Load persisted files from localStorage
     setFiles(loadFilesFromStorage(slug));
-
-    // Pre-populate team from task assignees
-    const assignees = new Set<string>();
-    const preAssigned: AssignedMember[] = [];
-    assignees.forEach(name => {
-      const member = TEAM.find(m => m.name === name);
-      if (member) {
-        preAssigned.push({
-          id: member.id, name: member.name, role: member.role,
-          responsibility: `Working on ${baseVenture.name}`,
-        });
-      }
-    });
-    setAssignedMembers(preAssigned);
-
-    // Initial activity
+    setFolders(loadFoldersFromStorage(slug));
+    setCurrentFolderId("");
     setActivity([
       { id: "init-1", action: `Venture "${baseVenture.name}" viewed`, timestamp: new Date() },
     ]);
   }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Persist files to localStorage whenever they change
-  useEffect(() => {
-    if (slug) saveFilesToStorage(slug, files);
-  }, [files, slug]);
+  // Persist files & folders
+  useEffect(() => { if (slug) saveFilesToStorage(slug, files); }, [files, slug]);
+  useEffect(() => { if (slug) saveFoldersToStorage(slug, folders); }, [folders, slug]);
 
   // ── Handlers ────────────────────────────────────────────────────────────
 
@@ -254,18 +269,17 @@ export default function VentureDetail() {
     }
   }, [assignedMembers, addActivity]);
 
+  // ── File handlers ──────────────────────────────────────────────────────
+
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
     if (!fileList) return;
 
-    let addedCount = 0;
     Array.from(fileList).forEach(f => {
-      // 5MB size limit
       if (f.size > MAX_FILE_SIZE) {
         toast.error(`${f.name} exceeds 5MB limit (${formatFileSize(f.size)})`);
         return;
       }
-
       const reader = new FileReader();
       reader.onload = () => {
         const dataUrl = reader.result as string;
@@ -277,20 +291,18 @@ export default function VentureDetail() {
           type: f.type || "application/octet-stream",
           dateAdded: new Date().toISOString().split("T")[0],
           dataUrl,
+          folderId: currentFolderId, // add to current folder
         };
         setFiles(prev => [...prev, newFile]);
-        addActivity(`File attached: ${f.name} (${formatFileSize(f.size)})`);
-        addedCount++;
+        addActivity(`File attached: ${f.name} (${formatFileSize(f.size)})${currentFolderId ? ` in folder` : ""}`);
       };
       reader.readAsDataURL(f);
     });
 
     logAction("File attached", `${fileList.length} file(s)`);
-    if (addedCount > 0 || fileList.length > 0) {
-      toast.success(`Processing ${fileList.length} file(s)...`);
-    }
+    toast.success(`Processing ${fileList.length} file(s)...`);
     e.target.value = "";
-  }, [addActivity]);
+  }, [addActivity, currentFolderId]);
 
   const handleRemoveFile = useCallback((fileId: string) => {
     const file = files.find(f => f.id === fileId);
@@ -314,22 +326,82 @@ export default function VentureDetail() {
 
   const handleOpenFile = useCallback((file: AttachedFile) => {
     if (isImageFile(file.name)) {
-      // Open lightbox for images
       setLightboxFile(file);
       setLightboxZoom(1);
     } else if (isPdfFile(file.name)) {
-      // Open PDF in new tab
       const win = window.open();
       if (win) {
         win.document.write(`<iframe src="${file.dataUrl}" style="width:100%;height:100%;border:none;" />`);
         win.document.title = file.name;
       }
     } else {
-      // Download for other types
       handleDownloadFile(file);
     }
     addActivity(`File opened: ${file.name}`);
   }, [addActivity, handleDownloadFile]);
+
+  // ── Folder handlers ────────────────────────────────────────────────────
+
+  const handleCreateFolder = useCallback(() => {
+    const trimmed = newFolderName.trim();
+    if (!trimmed) { toast.error("Enter a folder name"); return; }
+    if (folders.find(f => f.name.toLowerCase() === trimmed.toLowerCase())) {
+      toast.error("A folder with this name already exists");
+      return;
+    }
+    const folder: FileFolder = {
+      id: `folder-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      name: trimmed,
+      createdAt: new Date().toISOString().split("T")[0],
+      color: newFolderColor,
+    };
+    setFolders(prev => [...prev, folder]);
+    setCreateFolderOpen(false);
+    setNewFolderName("");
+    setNewFolderColor(FOLDER_COLORS[0]);
+    addActivity(`Folder created: ${trimmed}`);
+    logAction("Folder created", trimmed);
+    toast.success(`Folder "${trimmed}" created`);
+  }, [newFolderName, newFolderColor, folders, addActivity]);
+
+  const handleDeleteFolder = useCallback((folderId: string) => {
+    const folder = folders.find(f => f.id === folderId);
+    // Move all files in this folder back to root
+    setFiles(prev => prev.map(f => f.folderId === folderId ? { ...f, folderId: "" } : f));
+    setFolders(prev => prev.filter(f => f.id !== folderId));
+    if (currentFolderId === folderId) setCurrentFolderId("");
+    if (folder) {
+      addActivity(`Folder deleted: ${folder.name} — files moved to root`);
+      toast.info(`"${folder.name}" deleted — files moved to root`);
+    }
+  }, [folders, currentFolderId, addActivity]);
+
+  const handleRenameFolder = useCallback(() => {
+    if (!renameFolderId || !renameFolderName.trim()) return;
+    setFolders(prev => prev.map(f => f.id === renameFolderId ? { ...f, name: renameFolderName.trim() } : f));
+    addActivity(`Folder renamed to: ${renameFolderName.trim()}`);
+    toast.success("Folder renamed");
+    setRenameFolderId(null);
+    setRenameFolderName("");
+  }, [renameFolderId, renameFolderName, addActivity]);
+
+  const handleMoveFile = useCallback((fileId: string, targetFolderId: string) => {
+    const file = files.find(f => f.id === fileId);
+    const targetFolder = folders.find(f => f.id === targetFolderId);
+    setFiles(prev => prev.map(f => f.id === fileId ? { ...f, folderId: targetFolderId } : f));
+    if (file) {
+      const dest = targetFolderId ? (targetFolder?.name || "folder") : "root";
+      addActivity(`File "${file.name}" moved to ${dest}`);
+      toast.success(`Moved to ${dest}`);
+    }
+    setMoveFileId(null);
+  }, [files, folders, addActivity]);
+
+  // ── Computed ────────────────────────────────────────────────────────────
+
+  const currentFiles = files.filter(f => f.folderId === currentFolderId);
+  const currentFolder = folders.find(f => f.id === currentFolderId);
+  const totalFileCount = files.length;
 
   // ── 404 ─────────────────────────────────────────────────────────────────
   if (!baseVenture) {
@@ -471,15 +543,18 @@ export default function VentureDetail() {
               </div>
             </motion.div>
 
-            {/* Section B — Attached Files (downloadable) */}
+            {/* Section B — Files with Folders */}
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card border border-border rounded-lg">
               <div className="px-4 py-3 border-b border-border flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-semibold text-foreground">Attached Files</h2>
-                  <span className="text-[10px] font-mono text-muted-foreground">{files.length} file{files.length !== 1 ? "s" : ""}</span>
+                  <h2 className="text-sm font-semibold text-foreground">Documents & Files</h2>
+                  <span className="text-[10px] font-mono text-muted-foreground">{totalFileCount} file{totalFileCount !== 1 ? "s" : ""} · {folders.length} folder{folders.length !== 1 ? "s" : ""}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-muted-foreground">Max 5MB per file</span>
+                  <span className="text-[10px] text-muted-foreground">Max 5MB</span>
+                  <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setCreateFolderOpen(true)}>
+                    <FolderPlus className="size-3 mr-1" /> New Folder
+                  </Button>
                   <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => fileInputRef.current?.click()}>
                     <Plus className="size-3 mr-1" /> Attach File
                   </Button>
@@ -493,18 +568,82 @@ export default function VentureDetail() {
                   accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip,.pptx,.ppt"
                 />
               </div>
-              {files.length === 0 ? (
+
+              {/* Breadcrumb */}
+              <div className="px-4 py-2 border-b border-border/50 flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentFolderId("")}
+                  className={cn(
+                    "text-[11px] font-medium px-1.5 py-0.5 rounded hover:bg-accent/50 transition-colors",
+                    !currentFolderId ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  All Files
+                </button>
+                {currentFolder && (
+                  <>
+                    <ChevronRight className="size-3 text-muted-foreground" />
+                    <span className="text-[11px] font-medium text-primary flex items-center gap-1">
+                      <Folder className="size-3" style={{ color: currentFolder.color }} />
+                      {currentFolder.name}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {/* Folders (only show in root view) */}
+              {!currentFolderId && folders.length > 0 && (
+                <div className="px-4 py-3 border-b border-border/50">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {folders.map(folder => {
+                      const folderFileCount = files.filter(f => f.folderId === folder.id).length;
+                      return (
+                        <div
+                          key={folder.id}
+                          className="group relative rounded-lg border border-border p-3 cursor-pointer hover:border-primary/30 hover:bg-accent/20 transition-all"
+                          onClick={() => setCurrentFolderId(folder.id)}
+                        >
+                          <div className="flex items-start justify-between">
+                            <FolderOpen className="size-5" style={{ color: folder.color }} />
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
+                                <button className="size-6 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-accent transition-all">
+                                  <MoreHorizontal className="size-3.5 text-muted-foreground" />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-36">
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setRenameFolderId(folder.id); setRenameFolderName(folder.name); }}>
+                                  <Edit3 className="size-3.5 mr-2" /> Rename
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteFolder(folder.id); }} className="text-red-400 focus:text-red-400">
+                                  <Trash2 className="size-3.5 mr-2" /> Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                          <p className="text-xs font-medium text-foreground mt-2 truncate">{folder.name}</p>
+                          <p className="text-[10px] font-mono text-muted-foreground mt-0.5">{folderFileCount} file{folderFileCount !== 1 ? "s" : ""}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Files in current view */}
+              {currentFiles.length === 0 ? (
                 <div className="p-10 text-center">
                   <Upload className="size-8 text-muted-foreground/30 mx-auto mb-3" />
-                  <p className="text-xs text-muted-foreground mb-1">No files attached yet.</p>
-                  <p className="text-[10px] text-muted-foreground/60">Drag & drop or click "Attach File" to upload documents, images, and spreadsheets.</p>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {currentFolderId ? "This folder is empty." : "No files attached yet."}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground/60">Click "Attach File" to upload documents, images, and spreadsheets.</p>
                 </div>
               ) : (
                 <div className="divide-y divide-border">
-                  {files.map(file => (
+                  {currentFiles.map(file => (
                     <div key={file.id} className="px-4 py-3 flex items-center justify-between group hover:bg-accent/20 transition-colors">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        {/* File icon with color background */}
                         <div className={cn("size-9 rounded-md border flex items-center justify-center flex-shrink-0", getFileColor(file.name))}>
                           {isImageFile(file.name) && file.dataUrl ? (
                             <img src={file.dataUrl} alt={file.name} className="size-9 rounded-md object-cover" />
@@ -521,28 +660,35 @@ export default function VentureDetail() {
                         </div>
                       </div>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {/* Open / Preview */}
-                        <button
-                          onClick={() => handleOpenFile(file)}
-                          className="size-7 rounded-md flex items-center justify-center hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
-                          title={isImageFile(file.name) ? "Preview" : isPdfFile(file.name) ? "Open PDF" : "Open"}
-                        >
+                        {/* Move to folder */}
+                        {folders.length > 0 && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button className="size-7 rounded-md flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors" title="Move to folder">
+                                <MoveRight className="size-3.5" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-44">
+                              {file.folderId && (
+                                <DropdownMenuItem onClick={() => handleMoveFile(file.id, "")}>
+                                  <Folder className="size-3.5 mr-2 text-muted-foreground" /> Move to Root
+                                </DropdownMenuItem>
+                              )}
+                              {folders.filter(f => f.id !== file.folderId).map(folder => (
+                                <DropdownMenuItem key={folder.id} onClick={() => handleMoveFile(file.id, folder.id)}>
+                                  <Folder className="size-3.5 mr-2" style={{ color: folder.color }} /> {folder.name}
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                        <button onClick={() => handleOpenFile(file)} className="size-7 rounded-md flex items-center justify-center hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors" title="Preview">
                           <Eye className="size-3.5" />
                         </button>
-                        {/* Download */}
-                        <button
-                          onClick={() => handleDownloadFile(file)}
-                          className="size-7 rounded-md flex items-center justify-center hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 transition-colors"
-                          title="Download"
-                        >
+                        <button onClick={() => handleDownloadFile(file)} className="size-7 rounded-md flex items-center justify-center hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 transition-colors" title="Download">
                           <Download className="size-3.5" />
                         </button>
-                        {/* Remove */}
-                        <button
-                          onClick={() => handleRemoveFile(file.id)}
-                          className="size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors"
-                          title="Remove"
-                        >
+                        <button onClick={() => handleRemoveFile(file.id)} className="size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors" title="Remove">
                           <Trash2 className="size-3.5" />
                         </button>
                       </div>
@@ -654,6 +800,74 @@ export default function VentureDetail() {
         </DialogContent>
       </Dialog>
 
+      {/* ── Create Folder Modal ────────────────────────────────────────────── */}
+      <Dialog open={createFolderOpen} onOpenChange={setCreateFolderOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Create Folder</DialogTitle>
+            <DialogDescription className="text-[10px] font-mono">Organize documents into folders</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Folder Name</Label>
+              <Input
+                value={newFolderName}
+                onChange={e => setNewFolderName(e.target.value)}
+                placeholder="e.g. Legal Documents, Financial Reports"
+                className="mt-1 h-8 text-xs"
+                onKeyDown={e => e.key === "Enter" && handleCreateFolder()}
+              />
+            </div>
+            <div>
+              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2 block">Folder Color</Label>
+              <div className="flex items-center gap-2">
+                {FOLDER_COLORS.map(color => (
+                  <button
+                    key={color}
+                    onClick={() => setNewFolderColor(color)}
+                    className={cn(
+                      "size-6 rounded-full border-2 transition-all",
+                      newFolderColor === color ? "border-white scale-110" : "border-transparent hover:scale-105"
+                    )}
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button size="sm" className="text-xs" onClick={handleCreateFolder}>
+              <FolderPlus className="size-3.5 mr-1" /> Create
+            </Button>
+            <Button variant="ghost" size="sm" className="text-xs" onClick={() => setCreateFolderOpen(false)}>Cancel</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Rename Folder Modal ────────────────────────────────────────────── */}
+      <Dialog open={!!renameFolderId} onOpenChange={open => !open && setRenameFolderId(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Rename Folder</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">New Name</Label>
+            <Input
+              value={renameFolderName}
+              onChange={e => setRenameFolderName(e.target.value)}
+              className="mt-1 h-8 text-xs"
+              onKeyDown={e => e.key === "Enter" && handleRenameFolder()}
+            />
+          </div>
+          <DialogFooter>
+            <Button size="sm" className="text-xs" onClick={handleRenameFolder}>
+              <Save className="size-3.5 mr-1" /> Save
+            </Button>
+            <Button variant="ghost" size="sm" className="text-xs" onClick={() => setRenameFolderId(null)}>Cancel</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* ── Image Lightbox ─────────────────────────────────────────────────── */}
       <AnimatePresence>
         {lightboxFile && (
@@ -671,36 +885,22 @@ export default function VentureDetail() {
               className="relative max-w-4xl max-h-[85vh] flex flex-col items-center"
               onClick={e => e.stopPropagation()}
             >
-              {/* Controls */}
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-xs text-white/70 font-mono">{lightboxFile.name}</span>
-                <button
-                  onClick={() => setLightboxZoom(z => Math.max(0.5, z - 0.25))}
-                  className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-                >
+                <button onClick={() => setLightboxZoom(z => Math.max(0.5, z - 0.25))} className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
                   <ZoomOut className="size-4" />
                 </button>
                 <span className="text-[10px] text-white/50 font-mono w-12 text-center">{Math.round(lightboxZoom * 100)}%</span>
-                <button
-                  onClick={() => setLightboxZoom(z => Math.min(3, z + 0.25))}
-                  className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-                >
+                <button onClick={() => setLightboxZoom(z => Math.min(3, z + 0.25))} className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
                   <ZoomIn className="size-4" />
                 </button>
-                <button
-                  onClick={() => handleDownloadFile(lightboxFile)}
-                  className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-                >
+                <button onClick={() => handleDownloadFile(lightboxFile)} className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
                   <Download className="size-4" />
                 </button>
-                <button
-                  onClick={() => setLightboxFile(null)}
-                  className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-                >
+                <button onClick={() => setLightboxFile(null)} className="size-8 rounded-md bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors">
                   <X className="size-4" />
                 </button>
               </div>
-              {/* Image */}
               <div className="overflow-auto max-h-[75vh] rounded-lg">
                 <img
                   src={lightboxFile.dataUrl}

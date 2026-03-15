@@ -8,6 +8,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { aiStreamRouter } from "../routes/aiStream";
+import airtableSyncRouter from "../routes/airtableSync";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -38,6 +39,8 @@ async function startServer() {
   registerOAuthRoutes(app);
   // AI streaming endpoint (SSE)
   app.use(aiStreamRouter);
+  // Airtable sync endpoint
+  app.use("/api/airtable", airtableSyncRouter);
   // tRPC API
   app.use(
     "/api/trpc",

@@ -30,9 +30,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { exportDistributionPdf, exportAllDistributionsPdf } from "@/lib/exportPdf";
 import { logAction } from "@/lib/operatorSession";
+import { loadDistributions, saveDistributions } from "@/lib/persistence";
 
 export default function DistributionsPage() {
-  const [distributions, setDistributions] = useState<Distribution[]>([...DISTRIBUTIONS]);
+  const [distributions, setDistributionsRaw] = useState<Distribution[]>(() => loadDistributions(DISTRIBUTIONS));
+  const setDistributions = useCallback((updater: Distribution[] | ((prev: Distribution[]) => Distribution[])) => {
+    setDistributionsRaw(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      saveDistributions(next);
+      return next;
+    });
+  }, []);
   const [distModal, setDistModal] = useState<Distribution | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [loading, setLoading] = useState(true);

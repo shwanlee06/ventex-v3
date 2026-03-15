@@ -28,6 +28,7 @@ import {
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import { logAction } from "@/lib/operatorSession";
+import { loadSPVs, saveSPVs, loadDistributions } from "@/lib/persistence";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -45,8 +46,15 @@ const ALL_THEMES_SPV = ["All", "Oil & Gas", "Yacht", "Others", "Entertainment", 
 const PRIORITY_CYCLE: Record<string, string> = { Low: "Medium", Medium: "High", High: "Low" };
 
 export default function SettingsPage() {
-  const [spvs, setSpvs] = useState<SPV[]>([...SPVS]);
-  const [distributions] = useState<Distribution[]>([...DISTRIBUTIONS]);
+  const [spvs, setSpvsRaw] = useState<SPV[]>(() => loadSPVs(SPVS));
+  const setSpvs = useCallback((updater: SPV[] | ((prev: SPV[]) => SPV[])) => {
+    setSpvsRaw(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      saveSPVs(next);
+      return next;
+    });
+  }, []);
+  const [distributions] = useState<Distribution[]>(() => loadDistributions(DISTRIBUTIONS));
   const [stageFilter, setStageFilter] = useState("All");
   const [themeFilter, setThemeFilter] = useState("All");
   const [spvModal, setSpvModal] = useState<SPV | null>(null);
