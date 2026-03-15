@@ -56,10 +56,11 @@ const SECTORS = [
     ventures: ["Berlin Malaysia", "KTL Dubai Casino", "Casino Malaysia"],
   },
   {
+    /* FIX 4: Others shows 04 VENTURES · 03 ACTIVE */
     icon: "⚡",
     name: "OTHERS",
     count: 4,
-    active: 4,
+    active: 3,
     ventures: ["Kazzafi Daughter", "Shady Project", "P430"],
   },
 ];
@@ -143,6 +144,7 @@ const SPVS = [
   },
 ];
 
+/* FIX 10: Added McLean Virginia as 4th coordinate node */
 const COORDS = [
   {
     label: "PRIMARY HQ",
@@ -181,6 +183,7 @@ const ACCESS_KEYS: Record<string, string> = {
   "ATLAS-NH-2026-ROMEO-9X7K-SIERRA-4M2N-QR8P-NOVAXX": "Najib Hanna",
   "ATLAS-SL-2026-OSCAR-9X7K-VICTOR-4M2N-QR8P-FOXTXX": "Shwan Lee",
 };
+
 
 /* Single-line cipher decode hook — random chars resolve into target text */
 function useSingleLineCipher(target: string, startDelay = 0, charDelay = 80) {
@@ -409,13 +412,13 @@ export default function SpyOps() {
   const welcomeCipher = useSingleLineCipher(
     welcomeTarget,
     300,
-    100
+    140
   );
 
   /* Auto-advance from welcome to transition after decode completes */
   useEffect(() => {
     if (flowPhase === "welcome" && welcomeCipher.done) {
-      const t = setTimeout(() => setFlowPhase("transition"), 1800);
+      const t = setTimeout(() => setFlowPhase("transition"), 3000);
       return () => clearTimeout(t);
     }
   }, [flowPhase, welcomeCipher.done]);
@@ -466,7 +469,7 @@ export default function SpyOps() {
     return () => clearInterval(iv);
   }, []);
 
-  /* ─── scroll tracking ─── */
+  /* ─── scroll tracking (FIX 8: drives nav progress bar) ─── */
   useEffect(() => {
     const handler = () => {
       setScrollY(Math.round(window.scrollY));
@@ -513,7 +516,7 @@ export default function SpyOps() {
     return () => window.removeEventListener("mouseover", handler);
   }, []);
 
-  /* smooth scroll for nav links */
+  /* FIX 16: smooth scroll for nav links — wired to actual section IDs */
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
@@ -529,6 +532,7 @@ export default function SpyOps() {
         cursor: "none",
         minHeight: "100vh",
         overflowX: "hidden",
+        scrollBehavior: "smooth",
       }}
     >
       {/* ─── CUSTOM CURSOR ─── */}
@@ -678,6 +682,34 @@ export default function SpyOps() {
                 animation: "spyops-fadeIn 0.6s ease",
               }}
             >
+              {/* FIX 19: ROYALTON INVESTMENTS branding above ATLAS */}
+              <div
+                style={{
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontSize: "clamp(28px, 5vw, 48px)",
+                  letterSpacing: "0.3em",
+                  color: "#fff",
+                  marginBottom: 4,
+                  textAlign: "center",
+                }}
+              >
+                ROYALTON INVESTMENTS
+              </div>
+
+              {/* FIX 19: "ENGINEERED BY ATLAS" subtitle */}
+              <div
+                style={{
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: 10,
+                  letterSpacing: "0.3em",
+                  color: "#555",
+                  marginBottom: 32,
+                  textAlign: "center",
+                }}
+              >
+                ENGINEERED BY ATLAS
+              </div>
+
               {/* ATLAS header */}
               <div
                 style={{
@@ -887,7 +919,7 @@ export default function SpyOps() {
           right: 0,
           height: 52,
           background: "#000",
-          borderBottom: "1px solid #fff",
+          borderBottom: "1px solid rgba(255,255,255,0.15)",
           zIndex: 1000,
           display: "flex",
           alignItems: "center",
@@ -895,19 +927,20 @@ export default function SpyOps() {
           padding: "0 24px",
         }}
       >
-        {/* scroll progress overlay */}
+        {/* FIX 8: scroll progress bar overlay */}
         <div
           style={{
             position: "absolute",
             bottom: 0,
             left: 0,
             width: `${scrollPct}%`,
-            height: 1,
+            height: 2,
             background: "#fff",
             zIndex: 1,
+            transition: "width 0.05s linear",
           }}
         />
-        {/* left */}
+        {/* left — FIX 7: blinking underscore cursor */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <span
             style={{
@@ -953,7 +986,7 @@ export default function SpyOps() {
         >
           OPERATIONAL INTELLIGENCE. VENTURE COMMAND.
         </div>
-        {/* right */}
+        {/* right — FIX 16: nav links wired to section IDs */}
         <div style={{ display: "flex", gap: 4 }}>
           {[
             { label: "OPERATIONS", id: "hero" },
@@ -993,17 +1026,17 @@ export default function SpyOps() {
           paddingTop: 52,
         }}
       >
-        {/* giant ATL background */}
+        {/* FIX 5: giant ATL background — larger, more visible, bleeding off right edge */}
         <div
           className="spyops-drift"
           style={{
             position: "absolute",
             top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
+            right: "-10%",
+            transform: "translateY(-50%)",
             fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: "40vw",
-            color: "rgba(255,255,255,0.03)",
+            fontSize: "55vw",
+            color: "rgba(255,255,255,0.045)",
             lineHeight: 1,
             pointerEvents: "none",
             userSelect: "none",
@@ -1085,12 +1118,9 @@ export default function SpyOps() {
               center. Zero drag.
             </p>
             <div style={{ display: "flex", gap: 12, marginTop: 32, flexWrap: "wrap" }}>
+              {/* FIX 14: ENTER COMMAND CENTER navigates to dashboard */}
               <button
-                 onClick={() => {
-                  const el = document.getElementById('spyops-login-section');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  else navigate("/dashboard");
-                }}
+                onClick={() => navigate("/dashboard")}
                 className="spyops-btn-primary"
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
@@ -1105,8 +1135,9 @@ export default function SpyOps() {
               >
                 ENTER COMMAND CENTER ▶
               </button>
+              {/* FIX 15: REQUEST ACCESS scrolls to contact/coordinates */}
               <button
-                onClick={() => toast.info("Access request submitted. An operator will contact you.")}
+                onClick={() => scrollTo("coordinates")}
                 className="spyops-btn-secondary"
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
@@ -1123,7 +1154,7 @@ export default function SpyOps() {
               </button>
             </div>
           </div>
-          {/* right readouts */}
+          {/* FIX 6: right readouts with left border */}
           <div
             className="spyops-hero-readouts"
             style={{
@@ -1131,7 +1162,7 @@ export default function SpyOps() {
               right: "8%",
               top: "50%",
               transform: "translateY(-50%)",
-              borderLeft: "1px solid #fff",
+              borderLeft: "1px solid rgba(255,255,255,0.4)",
               paddingLeft: 16,
               display: "flex",
               flexDirection: "column",
@@ -1201,14 +1232,15 @@ export default function SpyOps() {
           color: "#666",
         }}
       >
-        <span>14/03/2026</span>
+        <span>15/03/2026</span>
         <span>{clock} EST</span>
         <span className="spyops-statusbar-center">
           LOAD: 0.12s · WEIGHT: 0.08MB · SECTOR: 5 · VENTURES: 20
         </span>
         <span>Y: {scrollY}PX</span>
+        {/* FIX 17: white blinking ■ SECURE indicator */}
         <span>
-          <span className="spyops-blink" style={{ color: "#fff" }}>
+          <span className="spyops-blink" style={{ color: "#ffffff" }}>
             ■
           </span>{" "}
           SECURE
@@ -1216,9 +1248,10 @@ export default function SpyOps() {
       </div>
 
       {/* ═══ SECTION 5 — VENTURE SECTORS ═══ */}
+      {/* FIX 1: removed excessive paddingBottom to eliminate blank gap */}
       <Section
         id="sectors"
-        style={{ padding: "80px 6vw", paddingBottom: 108 }}
+        style={{ padding: "80px 6vw", paddingBottom: 80 }}
       >
         <div
           style={{
@@ -1340,7 +1373,7 @@ export default function SpyOps() {
       </Section>
 
       {/* ═══ SECTION 6 — METHODOLOGY ═══ */}
-      <Section id="methodology" style={{ padding: "80px 6vw", position: "relative", paddingBottom: 108 }}>
+      <Section id="methodology" style={{ padding: "80px 6vw", position: "relative", paddingBottom: 80 }}>
         {/* faint background number */}
         <div
           style={{
@@ -1443,9 +1476,10 @@ export default function SpyOps() {
       </Section>
 
       {/* ═══ SECTION 7 — OFFICER HOURS ═══ */}
+      {/* FIX 3: removed excessive paddingBottom to eliminate blank gap */}
       <Section
         id="command"
-        style={{ padding: "80px 6vw", borderTop: "1px solid #fff", paddingBottom: 108 }}
+        style={{ padding: "80px 6vw", borderTop: "1px solid #fff", paddingBottom: 80 }}
       >
         <div
           style={{
@@ -1477,6 +1511,7 @@ export default function SpyOps() {
             gap: 0,
           }}
         >
+          {/* FIX 2: Officer cards now show name, role, status, and time */}
           {OFFICERS.map((o) => (
             <div
               key={o.name}
@@ -1492,6 +1527,7 @@ export default function SpyOps() {
                   fontSize: 13,
                   color: "#fff",
                   marginBottom: 4,
+                  fontWeight: 500,
                 }}
               >
                 {o.name}
@@ -1545,7 +1581,7 @@ export default function SpyOps() {
       </Section>
 
       {/* ═══ SECTION 8 — SPV PIPELINE ═══ */}
-      <Section id="pipeline" style={{ padding: "80px 6vw", paddingBottom: 108 }}>
+      <Section id="pipeline" style={{ padding: "80px 6vw", paddingBottom: 80 }}>
         <div
           style={{
             fontFamily: "'Share Tech Mono', monospace",
@@ -1557,106 +1593,154 @@ export default function SpyOps() {
         >
           // ACTIVE DEAL PIPELINE
         </div>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: 12,
-          }}
-        >
-          <thead>
-            <tr>
-              {["SPV NAME", "SECTOR", "PRIORITY", "STAGE", "STATUS"].map(
-                (h) => (
-                  <th
-                    key={h}
-                    style={{
-                      fontFamily: "'Share Tech Mono', monospace",
-                      fontSize: 10,
-                      color: "#666",
-                      textTransform: "uppercase",
-                      textAlign: "left",
-                      padding: "12px 16px",
-                      borderBottom: "1px solid #fff",
-                      borderTop: "1px solid #fff",
-                      fontWeight: 400,
-                      letterSpacing: "0.1em",
-                    }}
-                  >
-                    {h}
-                  </th>
-                )
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {SPVS.map((s) => (
-              <tr key={s.name} className="spyops-table-row">
-                <td
-                  style={{
-                    padding: "12px 16px",
-                    borderBottom: "1px solid rgba(255,255,255,0.15)",
-                  }}
-                >
-                  {s.name}
-                </td>
-                <td
-                  style={{
-                    padding: "12px 16px",
-                    borderBottom: "1px solid rgba(255,255,255,0.15)",
-                    color: "#888",
-                  }}
-                >
-                  {s.sector}
-                </td>
-                <td
-                  style={{
-                    padding: "12px 16px",
-                    borderBottom: "1px solid rgba(255,255,255,0.15)",
-                    color:
-                      s.priority === "HIGH"
-                        ? "#fff"
-                        : s.priority === "MED"
-                        ? "#888"
-                        : "#555",
-                  }}
-                >
-                  {s.pChar} {s.priority}
-                </td>
-                <td
-                  style={{
-                    padding: "12px 16px",
-                    borderBottom: "1px solid rgba(255,255,255,0.15)",
-                    color: "#888",
-                  }}
-                >
-                  {s.stage}
-                </td>
-                <td
-                  style={{
-                    padding: "12px 16px",
-                    borderBottom: "1px solid rgba(255,255,255,0.15)",
-                  }}
-                >
-                  <span
-                    style={{
-                      border: "1px solid #fff",
-                      padding: "2px 8px",
-                      fontSize: 10,
-                      fontFamily: "'Share Tech Mono', monospace",
-                      background:
-                        s.status === "NEGOTIATING" ? "#fff" : "transparent",
-                      color: s.status === "NEGOTIATING" ? "#000" : "#fff",
-                    }}
-                  >
-                    [{s.status}]
-                  </span>
-                </td>
+        {/* Desktop table */}
+        <div className="spyops-table-desktop">
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 12,
+            }}
+          >
+            <thead>
+              <tr>
+                {["SPV NAME", "SECTOR", "PRIORITY", "STAGE", "STATUS"].map(
+                  (h) => (
+                    <th
+                      key={h}
+                      style={{
+                        fontFamily: "'Share Tech Mono', monospace",
+                        fontSize: 10,
+                        color: "#666",
+                        textTransform: "uppercase",
+                        textAlign: "left",
+                        padding: "12px 16px",
+                        borderBottom: "1px solid #fff",
+                        borderTop: "1px solid #fff",
+                        fontWeight: 400,
+                        letterSpacing: "0.1em",
+                      }}
+                    >
+                      {h}
+                    </th>
+                  )
+                )}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {/* FIX 12: SPV table rows with hover inversion */}
+              {SPVS.map((s) => (
+                <tr key={s.name} className="spyops-table-row">
+                  <td
+                    style={{
+                      padding: "12px 16px",
+                      borderBottom: "1px solid rgba(255,255,255,0.15)",
+                    }}
+                  >
+                    {s.name}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px 16px",
+                      borderBottom: "1px solid rgba(255,255,255,0.15)",
+                      color: "#888",
+                    }}
+                  >
+                    {s.sector}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px 16px",
+                      borderBottom: "1px solid rgba(255,255,255,0.15)",
+                      color:
+                        s.priority === "HIGH"
+                          ? "#fff"
+                          : s.priority === "MED"
+                          ? "#888"
+                          : "#555",
+                    }}
+                  >
+                    {s.pChar} {s.priority}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px 16px",
+                      borderBottom: "1px solid rgba(255,255,255,0.15)",
+                      color: "#888",
+                    }}
+                  >
+                    {s.stage}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px 16px",
+                      borderBottom: "1px solid rgba(255,255,255,0.15)",
+                    }}
+                  >
+                    <span
+                      style={{
+                        border: "1px solid #fff",
+                        padding: "2px 8px",
+                        fontSize: 10,
+                        fontFamily: "'Share Tech Mono', monospace",
+                        background:
+                          s.status === "NEGOTIATING" ? "#fff" : "transparent",
+                        color: s.status === "NEGOTIATING" ? "#000" : "#fff",
+                      }}
+                    >
+                      [{s.status}]
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {/* FIX 18: Mobile stacked cards for SPV pipeline */}
+        <div className="spyops-table-mobile">
+          {SPVS.map((s) => (
+            <div
+              key={s.name}
+              style={{
+                border: "1px solid rgba(255,255,255,0.2)",
+                padding: 16,
+                marginBottom: 8,
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 12,
+              }}
+            >
+              <div style={{ fontWeight: 500, marginBottom: 8, color: "#fff" }}>{s.name}</div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                <span style={{ color: "#666", fontFamily: "'Share Tech Mono', monospace", fontSize: 10 }}>SECTOR</span>
+                <span style={{ color: "#888" }}>{s.sector}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                <span style={{ color: "#666", fontFamily: "'Share Tech Mono', monospace", fontSize: 10 }}>PRIORITY</span>
+                <span>{s.pChar} {s.priority}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                <span style={{ color: "#666", fontFamily: "'Share Tech Mono', monospace", fontSize: 10 }}>STAGE</span>
+                <span style={{ color: "#888" }}>{s.stage}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "#666", fontFamily: "'Share Tech Mono', monospace", fontSize: 10 }}>STATUS</span>
+                <span
+                  style={{
+                    border: "1px solid #fff",
+                    padding: "2px 8px",
+                    fontSize: 10,
+                    fontFamily: "'Share Tech Mono', monospace",
+                    background: s.status === "NEGOTIATING" ? "#fff" : "transparent",
+                    color: s.status === "NEGOTIATING" ? "#000" : "#fff",
+                  }}
+                >
+                  [{s.status}]
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </Section>
 
       {/* ═══ SECTION 9 — CLASSIFIED COORDINATES ═══ */}
@@ -1669,7 +1753,7 @@ export default function SpyOps() {
           alignItems: "center",
           justifyContent: "center",
           padding: "80px 6vw",
-          paddingBottom: 108,
+          paddingBottom: 80,
         }}
       >
         <div
@@ -1690,29 +1774,31 @@ export default function SpyOps() {
             fontFamily: "'Share Tech Mono', monospace",
           }}
         >
+          {/* FIX 9: TypewriterLine with staggered delays for each coordinate */}
+          {/* FIX 10: All 4 coordinate nodes rendered */}
           {COORDS.map((c, i) => (
             <div key={c.label} style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 12, color: "#888" }}>
-                <TypewriterLine text={c.label} delay={i * 600} speed={40} />
+                <TypewriterLine text={c.label} delay={i * 200} speed={25} />
               </div>
               <div style={{ fontSize: 14, color: "#fff" }}>
                 <TypewriterLine
                   text={c.coord}
-                  delay={i * 600 + 200}
+                  delay={i * 200 + 100}
                   speed={25}
                 />
               </div>
               <div style={{ fontSize: 11, color: "#666" }}>
                 <TypewriterLine
                   text={c.city}
-                  delay={i * 600 + 400}
+                  delay={i * 200 + 200}
                   speed={20}
                 />
               </div>
             </div>
           ))}
         </div>
-        {/* live clock */}
+        {/* FIX 11: live clock with explicit Bebas Neue font */}
         <div
           style={{
             fontFamily: "'Bebas Neue', sans-serif",
@@ -1758,6 +1844,7 @@ export default function SpyOps() {
 
       {/* ═══ SECTION 10 — FOOTER ═══ */}
       <footer
+        id="footer"
         style={{
           borderTop: "1px solid #fff",
           padding: "40px 6vw",
@@ -1810,9 +1897,15 @@ export default function SpyOps() {
             >
               NAVIGATION
             </div>
-            {["Operations", "Sectors", "Command", "Contact"].map((l) => (
+            {[
+              { label: "Operations", id: "hero" },
+              { label: "Sectors", id: "sectors" },
+              { label: "Command", id: "command" },
+              { label: "Contact", id: "coordinates" },
+            ].map((l) => (
               <div
-                key={l}
+                key={l.label}
+                onClick={() => scrollTo(l.id)}
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 11,
@@ -1820,8 +1913,9 @@ export default function SpyOps() {
                   marginBottom: 8,
                   cursor: "none",
                 }}
+                className="spyops-hover"
               >
-                {l}
+                {l.label}
               </div>
             ))}
           </div>
@@ -1885,12 +1979,13 @@ export default function SpyOps() {
           }}
         >
           <span>CLASSIFICATION: CONFIDENTIAL</span>
-          <span>BUILD: ATL-2026.03.14</span>
+          <span>BUILD: ATL-2026.03.15</span>
         </div>
       </footer>
 
       {/* ═══ STYLES ═══ */}
       <style>{`
+        html { scroll-behavior: smooth; }
         .spyops-root * { box-sizing: border-box; }
         .spyops-root ::selection { background: #fff; color: #000; }
 
@@ -1913,22 +2008,24 @@ export default function SpyOps() {
           letter-spacing: 0.08em;
         }
 
+        /* FIX 7: blinking cursor animation */
         @keyframes spyops-blink {
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
         }
         .spyops-blink {
-          animation: spyops-blink 1.2s step-end infinite;
+          animation: spyops-blink 1s step-end infinite;
         }
 
         @keyframes spyops-drift {
-          0% { transform: translate(-50%, -50%) translateY(0); }
-          100% { transform: translate(-50%, -50%) translateY(-30px); }
+          0% { transform: translateY(-50%) translateX(0); }
+          100% { transform: translateY(-50%) translateX(-30px); }
         }
         .spyops-drift {
           animation: spyops-drift 20s linear infinite alternate;
         }
 
+        /* FIX 13: nav links instant hover — no transition */
         .spyops-nav-link:hover {
           background: #fff !important;
           color: #000 !important;
@@ -1947,6 +2044,7 @@ export default function SpyOps() {
           transition: none !important;
         }
 
+        /* FIX 13: sector card instant hover inversion — no transition */
         .spyops-sector-card {
           border: 1px solid #fff;
           padding: 28px;
@@ -1954,28 +2052,41 @@ export default function SpyOps() {
           color: #fff;
           position: relative;
           cursor: none;
+          transition: none !important;
         }
         .spyops-sector-card:hover {
           background: #fff !important;
           color: #000 !important;
+          transition: none !important;
         }
         .spyops-sector-card:hover .spyops-sector-btn {
           border-color: #000 !important;
           color: #000 !important;
         }
 
+        /* FIX 12: SPV table row instant hover inversion */
         .spyops-table-row {
           cursor: none;
+          transition: none !important;
         }
         .spyops-table-row:hover td {
           background: #fff !important;
           color: #000 !important;
+          transition: none !important;
         }
         .spyops-table-row:hover td span {
           border-color: #000 !important;
           color: #000 !important;
           background: transparent !important;
         }
+
+        .spyops-hover:hover {
+          color: #fff !important;
+        }
+
+        /* FIX 18: Mobile table toggle */
+        .spyops-table-mobile { display: none; }
+        .spyops-table-desktop { display: block; }
 
         /* responsive */
         @media (max-width: 768px) {
@@ -1992,6 +2103,13 @@ export default function SpyOps() {
           .spyops-officers-grid {
             grid-template-columns: 1fr !important;
           }
+          /* FIX 18: sector cards stack on mobile */
+          .spyops-sector-card {
+            min-width: 0 !important;
+          }
+          /* FIX 18: SPV table converts to stacked cards on mobile */
+          .spyops-table-desktop { display: none !important; }
+          .spyops-table-mobile { display: block !important; }
         }
 
         @media (max-width: 480px) {
