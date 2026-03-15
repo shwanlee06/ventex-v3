@@ -31,7 +31,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", href: "/", icon: <LayoutDashboard className="size-[18px]" /> },
+  { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="size-[18px]" /> },
   { label: "AI Agent", href: "/agent", icon: <Bot className="size-[18px]" /> },
   { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-[18px]" /> },
   { label: "SPVs & Deals", href: "/spvs", icon: <Briefcase className="size-[18px]" /> },
@@ -86,7 +86,7 @@ export default function AppSidebar() {
         {/* Nav items */}
         <nav className="flex-1 flex flex-col gap-1 px-2 py-3">
           {NAV_ITEMS.map((item) => {
-            const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+            const isActive = location === item.href || (item.href !== "/dashboard" && location.startsWith(item.href));
             return (
               <Tooltip key={item.href}>
                 <TooltipTrigger asChild>
@@ -184,7 +184,7 @@ export default function AppSidebar() {
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-sidebar border-t border-border flex items-center justify-around h-14 px-2">
         {NAV_ITEMS.slice(0, 5).map((item) => {
-          const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+          const isActive = location === item.href || (item.href !== "/dashboard" && location.startsWith(item.href));
           return (
             <Link key={item.href} href={item.href}>
               <div

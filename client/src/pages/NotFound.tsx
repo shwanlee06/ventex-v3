@@ -11,7 +11,7 @@ export default function NotFound() {
         <p className="text-sm text-muted-foreground max-w-xs mx-auto">
           The page you're looking for doesn't exist or has been moved.
         </p>
-        <Link href="/">
+        <Link href="/dashboard">
           <Button variant="outline" size="sm" className="gap-2 mt-2">
             <ArrowLeft className="size-3.5" />
             Back to Dashboard

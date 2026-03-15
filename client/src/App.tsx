@@ -1,7 +1,8 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, Redirect, useLocation } from "wouter";
+import { useEffect, useState } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
@@ -14,20 +15,59 @@ import SpyOps from "./pages/SpyOps";
 import Profile from "./pages/Profile";
 import SettingsPage from "./pages/SettingsPage";
 
+/* Auth guard — redirects to login if no operator in localStorage */
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  const [, navigate] = useLocation();
+  const [checked, setChecked] = useState(false);
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    const op = localStorage.getItem("atlas_operator");
+    if (op) {
+      setAuthed(true);
+    } else {
+      navigate("/", { replace: true });
+    }
+    setChecked(true);
+  }, [navigate]);
+
+  if (!checked) return null;
+  if (!authed) return null;
+  return <>{children}</>;
+}
+
 function Router() {
   return (
     <Switch>
-      {/* Landing page is the entry point */}
-      <Route path="/landing" component={SpyOps} />
-      {/* Dashboard pages */}
-      <Route path="/" component={Home} />
-      <Route path="/agent" component={Agent} />
-      <Route path="/ventures" component={Verticals} />
-      <Route path="/team" component={Onboard} />
-      <Route path="/spvs" component={SpvDeals} />
-      <Route path="/distributions" component={Distributions} />
-      <Route path="/profile" component={Profile} />
-      <Route path="/settings" component={SettingsPage} />
+      {/* Login / landing page is the root */}
+      <Route path="/" component={SpyOps} />
+
+      {/* Protected dashboard pages */}
+      <Route path="/dashboard">
+        <RequireAuth><Home /></RequireAuth>
+      </Route>
+      <Route path="/agent">
+        <RequireAuth><Agent /></RequireAuth>
+      </Route>
+      <Route path="/ventures">
+        <RequireAuth><Verticals /></RequireAuth>
+      </Route>
+      <Route path="/team">
+        <RequireAuth><Onboard /></RequireAuth>
+      </Route>
+      <Route path="/spvs">
+        <RequireAuth><SpvDeals /></RequireAuth>
+      </Route>
+      <Route path="/distributions">
+        <RequireAuth><Distributions /></RequireAuth>
+      </Route>
+      <Route path="/profile">
+        <RequireAuth><Profile /></RequireAuth>
+      </Route>
+      <Route path="/settings">
+        <RequireAuth><SettingsPage /></RequireAuth>
+      </Route>
+
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

@@ -46,7 +46,8 @@ export default function ProfilePage() {
 
   const handleLogout = useCallback(() => {
     toast.info("Signed out — redirecting to landing page");
-    setTimeout(() => navigate("/landing"), 600);
+    localStorage.removeItem("atlas_operator");
+    setTimeout(() => navigate("/"), 600);
   }, [navigate]);
 
   return (

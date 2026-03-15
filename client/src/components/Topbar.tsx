@@ -32,7 +32,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
   const handleSignOut = useCallback(() => {
     localStorage.removeItem("atlas_operator");
     toast.info("Signed out — redirecting to landing");
-    setTimeout(() => navigate("/landing"), 600);
+    setTimeout(() => navigate("/"), 600);
   }, [navigate]);
 
   return (

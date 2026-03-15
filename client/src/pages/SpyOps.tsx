@@ -421,7 +421,7 @@ export default function SpyOps() {
   /* Phase 4: Navigate to dashboard immediately */
   useEffect(() => {
     if (flowPhase === "transition") {
-      navigate("/");
+      navigate("/dashboard");
     }
   }, [flowPhase, navigate]);
 
@@ -1083,7 +1083,11 @@ export default function SpyOps() {
             </p>
             <div style={{ display: "flex", gap: 12, marginTop: 32, flexWrap: "wrap" }}>
               <button
-                onClick={() => navigate("/")}
+                 onClick={() => {
+                  const el = document.getElementById('spyops-login-section');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  else navigate("/dashboard");
+                }}
                 className="spyops-btn-primary"
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",

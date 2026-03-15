@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 const PAGES = [
-  { name: "Dashboard", href: "/", icon: <LayoutDashboard className="size-4 text-muted-foreground" /> },
+  { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="size-4 text-muted-foreground" /> },
   { name: "AI Agent", href: "/agent", icon: <Bot className="size-4 text-muted-foreground" /> },
   { name: "Ventures", href: "/ventures", icon: <Layers3 className="size-4 text-muted-foreground" /> },
   { name: "SPVs & Deals", href: "/spvs", icon: <Briefcase className="size-4 text-muted-foreground" /> },
