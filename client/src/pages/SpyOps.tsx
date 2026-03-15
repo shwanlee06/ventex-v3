@@ -371,8 +371,8 @@ export default function SpyOps() {
   const [loginFocused, setLoginFocused] = useState(false);
   const keyInputRef = useRef<HTMLInputElement>(null);
 
-  /* Phase 1: ATLAS cipher decode */
-  const atlasCipher = useSingleLineCipher("A T L A S", 400, 120);
+  /* Phase 1: ATL_ cipher decode */
+  const atlasCipher = useSingleLineCipher("A T L", 400, 120);
 
   /* Ambient random lines behind the cipher */
   const [ambientLines, setAmbientLines] = useState<string[]>([]);
@@ -611,7 +611,7 @@ export default function SpyOps() {
                 ))}
               </div>
 
-              {/* Center: single line cipher resolving to ATLAS */}
+              {/* Center: single line cipher resolving to ATL_ */}
               <div
                 style={{
                   position: "relative",
@@ -632,9 +632,7 @@ export default function SpyOps() {
                   }}
                 >
                   {atlasCipher.display || "\u00A0"}
-                  {atlasCipher.started && !atlasCipher.done && (
-                    <span className="spyops-blink" style={{ marginLeft: 2 }}>_</span>
-                  )}
+                  <span className="spyops-throb" style={{ marginLeft: 2 }}>_</span>
                 </div>
 
                 {/* Subtitle after decode */}
@@ -684,59 +682,35 @@ export default function SpyOps() {
                 animation: "spyops-fadeIn 0.6s ease",
               }}
             >
-              {/* FIX 19: ROYALTON INVESTMENTS branding above ATLAS */}
+              {/* ROYALTON INVESTMENTS */}
               <div
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
                   fontSize: "clamp(28px, 5vw, 48px)",
                   letterSpacing: "0.3em",
                   color: "#fff",
-                  marginBottom: 4,
+                  marginBottom: 8,
                   textAlign: "center",
                 }}
               >
                 ROYALTON INVESTMENTS
               </div>
 
-              {/* FIX 19: "ENGINEERED BY ATLAS" subtitle */}
+              {/* engineered by ATLAS */}
               <div
                 style={{
                   fontFamily: "'Share Tech Mono', monospace",
                   fontSize: 10,
                   letterSpacing: "0.3em",
                   color: "#555",
-                  marginBottom: 32,
+                  marginBottom: 48,
                   textAlign: "center",
                 }}
               >
                 ENGINEERED BY ATLAS
               </div>
 
-              {/* ATLAS header */}
-              <div
-                style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: "clamp(18px, 3vw, 28px)",
-                  letterSpacing: "0.5em",
-                  color: "#fff",
-                  marginBottom: 8,
-                }}
-              >
-                A T L A S
-              </div>
-              <div
-                style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: 10,
-                  letterSpacing: "0.3em",
-                  color: "#444",
-                  marginBottom: 48,
-                }}
-              >
-                SECURE OPERATOR AUTHENTICATION
-              </div>
-
-              {/* Key input label */}
+              {/* Password label */}
               <div
                 style={{
                   fontFamily: "'Share Tech Mono', monospace",
@@ -747,7 +721,7 @@ export default function SpyOps() {
                   alignSelf: "flex-start",
                 }}
               >
-                ENTER 48-CHARACTER ACCESS KEY
+                PASSWORD
               </div>
 
               {/* Key input field */}
@@ -759,7 +733,7 @@ export default function SpyOps() {
               >
                 <input
                   ref={keyInputRef}
-                  type="text"
+                  type="password"
                   value={keyInput}
                   onChange={(e) => setKeyInput(e.target.value)}
                   onFocus={() => setLoginFocused(true)}
@@ -768,7 +742,7 @@ export default function SpyOps() {
                     if (e.key === "Enter") handleKeySubmit();
                   }}
                   maxLength={48}
-                  placeholder="ATLAS-XX-2026-XXXXX-XXXX-XXXXX-XXXX-XXXX-XXXXXXX"
+                  placeholder="ENTER ACCESS KEY"
                   autoComplete="off"
                   spellCheck={false}
                   style={{
@@ -797,7 +771,7 @@ export default function SpyOps() {
                     color: keyInput.length === 48 ? "#fff" : "#444",
                   }}
                 >
-                  {keyInput.length}/48
+                  {keyInput.length > 0 ? `${keyInput.length} CHARS` : ""}
                 </div>
               </div>
 
@@ -2017,6 +1991,15 @@ export default function SpyOps() {
         }
         .spyops-blink {
           animation: spyops-blink 1s step-end infinite;
+        }
+
+        /* Throbbing underscore — smooth pulse */
+        @keyframes spyops-throb {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.15; }
+        }
+        .spyops-throb {
+          animation: spyops-throb 1.2s ease-in-out infinite;
         }
 
         @keyframes spyops-drift {

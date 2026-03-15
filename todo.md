@@ -22,3 +22,7 @@
 - [x] Update Agent.tsx to call real Claude 4.6 Sonnet
 - [x] Fix Home.tsx duplicate loading variable after upgrade
 - [x] Add portfolio context injection for AI responses
+
+## Landing Page Updates
+- [x] Change hero logo from ATLAS to ATL_ with throbbing underscore cursor
+- [x] Simplify auth screen to ROYALTON INVESTMENTS engineered by ATLAS + password
