@@ -434,3 +434,8 @@ export function getTaskStatusFromDate(task: Task): TaskStatus {
   if (due < now) return "overdue";
   return "open";
 }
+
+// Map of original task statuses for undo confirmation
+export const ORIGINAL_TASK_STATUS: Record<string, TaskStatus> = Object.fromEntries(
+  TASKS.map(t => [t.id, t.status])
+);

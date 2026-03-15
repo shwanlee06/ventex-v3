@@ -61,6 +61,16 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -89,6 +99,7 @@ export default function Home() {
   const [spvModal, setSpvModal] = useState<SPV | null>(null);
   const [taskModal, setTaskModal] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
+  const [confirmUncheck, setConfirmUncheck] = useState<string | null>(null);
 
   // Simulate loading
   useEffect(() => {
@@ -100,9 +111,24 @@ export default function Home() {
   const completedCount = tasks.filter(t => t.status === "complete").length;
 
   const handleTaskToggle = useCallback((taskId: string) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: "complete" as const } : t));
-    toast.success("Task marked complete");
-  }, []);
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    if (task.status === "complete") {
+      // Unmarking — ask for confirmation
+      setConfirmUncheck(taskId);
+    } else {
+      // Marking complete
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: "complete" as const } : t));
+      toast.success("Task marked complete");
+    }
+  }, [tasks]);
+
+  const confirmUncomplete = useCallback(() => {
+    if (!confirmUncheck) return;
+    setTasks(prev => prev.map(t => t.id === confirmUncheck ? { ...t, status: "open" as const } : t));
+    toast.info("Task marked incomplete");
+    setConfirmUncheck(null);
+  }, [confirmUncheck]);
 
   const handleReassign = useCallback((taskId: string, assignee: string) => {
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, assignees: [assignee] } : t));
@@ -303,14 +329,14 @@ export default function Home() {
               })}
             </div>
 
-            {/* Open Tasks — with checkboxes and click-to-open modal */}
+            {/* Tasks — with checkboxes and click-to-open modal */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-foreground">Open Tasks</h2>
-                <span className="text-[10px] font-mono text-muted-foreground">{openTasks.length} open</span>
+                <h2 className="text-sm font-semibold text-foreground">Tasks</h2>
+                <span className="text-[10px] font-mono text-muted-foreground">{openTasks.length} open · {completedCount} done</span>
               </div>
               <div className="bg-card border border-border rounded-lg divide-y divide-border">
-                {tasks.filter(t => t.status !== "complete").slice(0, 5).map((task) => {
+                {[...tasks].sort((a, b) => (a.status === "complete" ? 1 : 0) - (b.status === "complete" ? 1 : 0)).slice(0, 8).map((task) => {
                   const resolvedStatus = getTaskStatusFromDate(task);
                   const sc = STATUS_CONFIG[resolvedStatus];
                   return (
@@ -536,7 +562,7 @@ export default function Home() {
               <DialogFooter>
                 <Button size="sm" className="text-xs" onClick={() => { handleTaskToggle(taskModal.id); setTaskModal(null); }}>
                   <CheckCircle2 className="size-3.5 mr-1" />
-                  Mark Complete
+                  {taskModal.status === "complete" ? "Reopen Task" : "Mark Complete"}
                 </Button>
                 <Button variant="ghost" size="sm" className="text-xs" onClick={() => setTaskModal(null)}>
                   Close
@@ -546,6 +572,23 @@ export default function Home() {
           )}
         </DialogContent>
       </Dialog>
+      {/* Confirm Uncomplete Dialog */}
+      <AlertDialog open={!!confirmUncheck} onOpenChange={(open) => !open && setConfirmUncheck(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-sm">Reopen this task?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to mark this task as incomplete? It will be moved back to your open tasks list.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-xs h-8">Cancel</AlertDialogCancel>
+            <AlertDialogAction className="text-xs h-8 bg-amber-600 hover:bg-amber-700" onClick={confirmUncomplete}>
+              Yes, reopen task
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

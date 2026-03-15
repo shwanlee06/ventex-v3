@@ -31,6 +31,16 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
+import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -53,6 +63,7 @@ export default function VerticalsPage() {
   const [drawerVenture, setDrawerVenture] = useState<Venture | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [taskModal, setTaskModal] = useState<Task | null>(null);
+  const [confirmUncheck, setConfirmUncheck] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
 
@@ -98,9 +109,22 @@ export default function VerticalsPage() {
   }, [newName, newTheme, newStage, newLocation]);
 
   const handleTaskToggle = useCallback((taskId: string) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: "complete" as const } : t));
-    toast.success("Task marked complete");
-  }, []);
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    if (task.status === "complete") {
+      setConfirmUncheck(taskId);
+    } else {
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: "complete" as const } : t));
+      toast.success("Task marked complete");
+    }
+  }, [tasks]);
+
+  const confirmUncomplete = useCallback(() => {
+    if (!confirmUncheck) return;
+    setTasks(prev => prev.map(t => t.id === confirmUncheck ? { ...t, status: "open" as const } : t));
+    toast.info("Task marked incomplete");
+    setConfirmUncheck(null);
+  }, [confirmUncheck]);
 
   const ventureRelatedTasks = drawerVenture
     ? tasks.filter(t => t.ventureLink && drawerVenture.name.includes(t.ventureLink.split(" - ")[0]))
@@ -485,7 +509,7 @@ export default function VerticalsPage() {
               </div>
               <DialogFooter>
                 <Button size="sm" className="text-xs" onClick={() => { handleTaskToggle(taskModal.id); setTaskModal(null); }}>
-                  <CheckCircle2 className="size-3.5 mr-1" /> Mark Complete
+                  <CheckCircle2 className="size-3.5 mr-1" /> {taskModal.status === "complete" ? "Reopen Task" : "Mark Complete"}
                 </Button>
                 <Button variant="ghost" size="sm" className="text-xs" onClick={() => setTaskModal(null)}>Close</Button>
               </DialogFooter>
@@ -493,6 +517,24 @@ export default function VerticalsPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Confirm Uncomplete Dialog */}
+      <AlertDialog open={!!confirmUncheck} onOpenChange={(open) => !open && setConfirmUncheck(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-sm">Reopen this task?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to mark this task as incomplete? It will be moved back to your open tasks list.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-xs h-8">Cancel</AlertDialogCancel>
+            <AlertDialogAction className="text-xs h-8 bg-amber-600 hover:bg-amber-700" onClick={confirmUncomplete}>
+              Yes, reopen task
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }
