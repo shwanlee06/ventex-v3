@@ -142,3 +142,13 @@
 - [x] Wire auto-sync into persistence layer (debounced 5s)
 - [x] Add data summary counts in sync card
 - [x] Write vitest tests for all sync endpoints (8 tests passing)
+
+## AI Agent — ChatGPT-style Conversation History
+- [x] Auto-generate title for each chat log based on first user message
+- [x] Save each conversation as a separate chat log in localStorage
+- [x] Show chat history list in Recent Context sidebar with titles and timestamps
+- [x] Create "New Chat" button to start fresh conversation
+- [x] Switch between saved chat logs by clicking them
+- [x] Delete chat logs from sidebar
+- [x] Download chat logs (as text/JSON)
+- [x] View/preview chat logs in sidebar

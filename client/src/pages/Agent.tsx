@@ -1,8 +1,9 @@
 // ============================================================================
-// AI Agent Page — Claude 4.6 Sonnet — STREAMING + PERSISTENT HISTORY + ATTACHMENTS
+// AI Agent Page — Claude 4.6 Sonnet — STREAMING + MULTI-CHAT HISTORY
+// ChatGPT-style: auto-titled conversations, new chat, switch, delete, download, view
 // ============================================================================
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
 import {
@@ -16,10 +17,14 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Send, Bot, User, Sparkles, FileText, Mail, CalendarClock,
   CheckCircle2, XCircle, Layers3, Briefcase, ListChecks, Trash2,
   BarChart3, Users, Cpu, AlertTriangle, Search, Activity,
   MessageSquare, Paperclip, X, Download, Image, FileSpreadsheet,
+  Plus, MoreHorizontal, Eye, PenLine,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -37,17 +42,6 @@ interface Attachment {
   isImage: boolean;
 }
 
-interface StoredMessage {
-  id: string;
-  role: "user" | "assistant" | "system";
-  content: string;
-  timestamp: string; // ISO string for localStorage
-  model?: string;
-  requiresApproval?: boolean;
-  approved?: boolean;
-  attachments?: Attachment[];
-}
-
 interface ChatMessage {
   id: string;
   role: "user" | "assistant" | "system";
@@ -60,12 +54,55 @@ interface ChatMessage {
   attachments?: Attachment[];
 }
 
-const STORAGE_KEY = "atlas_chat_history";
+interface StoredMessage {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  timestamp: string;
+  model?: string;
+  requiresApproval?: boolean;
+  approved?: boolean;
+  attachments?: Attachment[];
+}
+
+interface ChatLog {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  messages: StoredMessage[];
+}
+
+// ── Constants ────────────────────────────────────────────────────────────
+
+const CHATS_INDEX_KEY = "atlas_chat_index";
+const CHAT_PREFIX = "atlas_chat_";
 const MAX_MESSAGES = 50;
 
-// ── Helpers ──────────────────────────────────────────────────────────────
+// ── Storage helpers ─────────────────────────────────────────────────────
 
-function saveToStorage(messages: ChatMessage[]) {
+function loadChatIndex(): { id: string; title: string; createdAt: string; updatedAt: string }[] {
+  try {
+    const raw = localStorage.getItem(CHATS_INDEX_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch { return []; }
+}
+
+function saveChatIndex(index: { id: string; title: string; createdAt: string; updatedAt: string }[]) {
+  try { localStorage.setItem(CHATS_INDEX_KEY, JSON.stringify(index)); } catch { /* full */ }
+}
+
+function loadChatMessages(chatId: string): ChatMessage[] {
+  try {
+    const raw = localStorage.getItem(CHAT_PREFIX + chatId);
+    if (!raw) return [];
+    const stored: StoredMessage[] = JSON.parse(raw);
+    return stored.map(m => ({ ...m, timestamp: new Date(m.timestamp) }));
+  } catch { return []; }
+}
+
+function saveChatMessages(chatId: string, messages: ChatMessage[]) {
   try {
     const stored: StoredMessage[] = messages
       .filter(m => !m.isStreaming)
@@ -80,31 +117,54 @@ function saveToStorage(messages: ChatMessage[]) {
         approved: m.approved,
         attachments: m.attachments,
       }));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
-  } catch {
-    // localStorage full — silently fail
-  }
+    localStorage.setItem(CHAT_PREFIX + chatId, JSON.stringify(stored));
+  } catch { /* full */ }
 }
 
-function loadFromStorage(): ChatMessage[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const stored: StoredMessage[] = JSON.parse(raw);
-    return stored.map(m => ({
-      ...m,
-      timestamp: new Date(m.timestamp),
-    }));
-  } catch {
-    return [];
-  }
+function deleteChatStorage(chatId: string) {
+  localStorage.removeItem(CHAT_PREFIX + chatId);
 }
+
+// Migrate old single-chat format to new multi-chat format
+function migrateOldStorage(): string | null {
+  try {
+    const oldKey = "atlas_chat_history";
+    const raw = localStorage.getItem(oldKey);
+    if (!raw) return null;
+    const stored: StoredMessage[] = JSON.parse(raw);
+    if (stored.length === 0) return null;
+
+    const chatId = `chat-${Date.now()}`;
+    const firstUserMsg = stored.find(m => m.role === "user");
+    const title = firstUserMsg
+      ? firstUserMsg.content.slice(0, 40).replace(/\n/g, " ") + (firstUserMsg.content.length > 40 ? "..." : "")
+      : "Previous conversation";
+    const now = new Date().toISOString();
+
+    localStorage.setItem(CHAT_PREFIX + chatId, raw);
+    saveChatIndex([{ id: chatId, title, createdAt: stored[0]?.timestamp || now, updatedAt: stored[stored.length - 1]?.timestamp || now }]);
+    localStorage.removeItem(oldKey);
+    return chatId;
+  } catch { return null; }
+}
+
+function generateTitle(firstMessage: string): string {
+  // Strip attachment indicators and trim
+  const clean = firstMessage.replace(/📎[\s\S]*$/, "").trim();
+  if (!clean) return "New conversation";
+  // Take first ~40 chars, break at word boundary
+  if (clean.length <= 40) return clean;
+  const truncated = clean.slice(0, 40);
+  const lastSpace = truncated.lastIndexOf(" ");
+  return (lastSpace > 20 ? truncated.slice(0, lastSpace) : truncated) + "...";
+}
+
+// ── Formatting helpers ──────────────────────────────────────────────────
 
 function formatSessionDate(date: Date): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
   const dayMs = 86400000;
-
   if (diff < dayMs && now.getDate() === date.getDate()) {
     return date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
   }
@@ -114,9 +174,22 @@ function formatSessionDate(date: Date): string {
   return `${date.toLocaleDateString("en-GB", { month: "short", day: "numeric" })} · ${date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`;
 }
 
-function isFromPreviousSession(date: Date): boolean {
+function formatRelativeDate(dateStr: string): string {
+  const date = new Date(dateStr);
   const now = new Date();
-  return now.getTime() - date.getTime() > 300000; // 5 min threshold
+  const diff = now.getTime() - date.getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString("en-GB", { month: "short", day: "numeric" });
+}
+
+function isFromPreviousSession(date: Date): boolean {
+  return new Date().getTime() - date.getTime() > 300000;
 }
 
 function formatFileSize(bytes: number): string {
@@ -135,7 +208,8 @@ function getFileIcon(type: string) {
   return <FileText className="size-3.5 text-muted-foreground" />;
 }
 
-// ── Quick action pills ───────────────────────────────────────────────────
+// ── Quick actions ───────────────────────────────────────────────────────
+
 const QUICK_ACTIONS = [
   { label: "Portfolio summary", icon: <FileText className="size-3.5" />, prompt: "Give me a portfolio summary across all ventures and SPVs." },
   { label: "Draft LP update", icon: <Mail className="size-3.5" />, prompt: "Draft a professional LP update email covering recent distributions and venture progress." },
@@ -168,7 +242,8 @@ function buildPortfolioContext(): string {
   return `Current portfolio data:\nVentures (${VENTURES.length}): ${venturesSummary}\nSPVs (${SPVS.length}): ${spvsSummary}\nTasks (${TASKS.length}): ${tasksSummary}\nDistributions: ${distSummary}\nMetrics: Total Ventures=${METRICS.totalVentures}, Active=${METRICS.activeVentures}, Total SPVs=${METRICS.totalSPVs}, Active SPVs=${METRICS.activeSPVs}, Open Tasks=${METRICS.openTasks}, Total Distributions=${formatCurrency(METRICS.totalDistributions)}, Paid=${formatCurrency(METRICS.paidDistributions)}, Team=${METRICS.totalTeam}`;
 }
 
-// ── Stream AI response via SSE ───────────────────────────────────────────
+// ── Stream AI response via SSE ──────────────────────────────────────────
+
 async function streamChat(
   messages: { role: string; content: string | Array<unknown> }[],
   onChunk: (text: string) => void,
@@ -208,39 +283,169 @@ async function streamChat(
   }
 }
 
-// ── Component ────────────────────────────────────────────────────────────
+// ── Component ───────────────────────────────────────────────────────────
 
 export default function Agent() {
-  const [messages, setMessages] = useState<ChatMessage[]>(() => {
-    const stored = loadFromStorage();
-    return stored.length > 0 ? stored : [WELCOME_MSG];
+  // ── Multi-chat state ──────────────────────────────────────────────────
+  const [chatIndex, setChatIndex] = useState<{ id: string; title: string; createdAt: string; updatedAt: string }[]>(() => {
+    const existing = loadChatIndex();
+    if (existing.length > 0) return existing;
+    // Try migrating old format
+    const migratedId = migrateOldStorage();
+    if (migratedId) return loadChatIndex();
+    return [];
   });
+
+  const [activeChatId, setActiveChatId] = useState<string | null>(() => {
+    const idx = loadChatIndex();
+    return idx.length > 0 ? idx[0].id : null;
+  });
+
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const idx = loadChatIndex();
+    if (idx.length > 0) {
+      const loaded = loadChatMessages(idx[0].id);
+      return loaded.length > 0 ? loaded : [WELCOME_MSG];
+    }
+    return [WELCOME_MSG];
+  });
+
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [clearConfirm, setClearConfirm] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [viewingChatId, setViewingChatId] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [renamingChatId, setRenamingChatId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const streamMsgIdRef = useRef<string>("");
 
-  // Persist messages to localStorage whenever they change (skip streaming)
-  useEffect(() => {
-    if (!isStreaming) {
-      saveToStorage(messages);
-    }
-  }, [messages, isStreaming]);
+  // ── Persist messages ──────────────────────────────────────────────────
 
-  const recentConversations = messages
-    .filter(m => m.role === "user")
-    .slice(-3)
-    .reverse()
-    .map(m => ({
-      id: m.id,
-      preview: m.content.slice(0, 30) + (m.content.length > 30 ? "..." : ""),
-      timestamp: m.timestamp,
-    }));
+  useEffect(() => {
+    if (!isStreaming && activeChatId) {
+      saveChatMessages(activeChatId, messages);
+      // Update index timestamp
+      setChatIndex(prev => {
+        const updated = prev.map(c =>
+          c.id === activeChatId ? { ...c, updatedAt: new Date().toISOString() } : c
+        );
+        saveChatIndex(updated);
+        return updated;
+      });
+    }
+  }, [messages, isStreaming, activeChatId]);
+
+  // ── Viewing chat messages (read-only preview) ─────────────────────────
+
+  const viewingMessages = useMemo(() => {
+    if (!viewingChatId) return [];
+    return loadChatMessages(viewingChatId);
+  }, [viewingChatId]);
+
+  const activeChat = chatIndex.find(c => c.id === activeChatId);
+
+  // ── Chat management ───────────────────────────────────────────────────
+
+  const createNewChat = useCallback(() => {
+    if (isStreaming) return;
+    const chatId = `chat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const now = new Date().toISOString();
+    const newEntry = { id: chatId, title: "New conversation", createdAt: now, updatedAt: now };
+
+    setChatIndex(prev => {
+      const updated = [newEntry, ...prev];
+      saveChatIndex(updated);
+      return updated;
+    });
+    setActiveChatId(chatId);
+    setMessages([{ ...WELCOME_MSG, timestamp: new Date() }]);
+    saveChatMessages(chatId, [{ ...WELCOME_MSG, timestamp: new Date() }]);
+    setInput("");
+    setAttachments([]);
+    toast.success("New conversation started");
+    logAction("New chat", "Created new conversation");
+  }, [isStreaming]);
+
+  const switchChat = useCallback((chatId: string) => {
+    if (isStreaming) {
+      toast.error("Wait for the current response to finish");
+      return;
+    }
+    if (chatId === activeChatId) return;
+    const loaded = loadChatMessages(chatId);
+    setActiveChatId(chatId);
+    setMessages(loaded.length > 0 ? loaded : [WELCOME_MSG]);
+    setInput("");
+    setAttachments([]);
+    setViewingChatId(null);
+  }, [isStreaming, activeChatId]);
+
+  const deleteChat = useCallback((chatId: string) => {
+    deleteChatStorage(chatId);
+    setChatIndex(prev => {
+      const updated = prev.filter(c => c.id !== chatId);
+      saveChatIndex(updated);
+
+      // If we deleted the active chat, switch to next available or create new
+      if (chatId === activeChatId) {
+        if (updated.length > 0) {
+          const nextId = updated[0].id;
+          const loaded = loadChatMessages(nextId);
+          setActiveChatId(nextId);
+          setMessages(loaded.length > 0 ? loaded : [WELCOME_MSG]);
+        } else {
+          setActiveChatId(null);
+          setMessages([WELCOME_MSG]);
+        }
+      }
+      return updated;
+    });
+    setDeleteConfirm(null);
+    toast.info("Conversation deleted");
+    logAction("Chat deleted", chatId);
+  }, [activeChatId]);
+
+  const downloadChat = useCallback((chatId: string) => {
+    const entry = chatIndex.find(c => c.id === chatId);
+    const msgs = loadChatMessages(chatId);
+    if (msgs.length === 0) { toast.error("No messages to download"); return; }
+
+    const lines = msgs.map(m => {
+      const time = m.timestamp.toLocaleString();
+      const role = m.role === "user" ? "You" : m.role === "assistant" ? "ATLAS AI" : "System";
+      return `[${time}] ${role}:\n${m.content}\n`;
+    });
+
+    const content = `# ${entry?.title || "Conversation"}\n# Exported: ${new Date().toLocaleString()}\n\n${lines.join("\n---\n\n")}`;
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `atlas-chat-${entry?.title?.replace(/[^a-zA-Z0-9]/g, "-").slice(0, 30) || chatId}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Chat log downloaded");
+    logAction("Chat downloaded", entry?.title || chatId);
+  }, [chatIndex]);
+
+  const renameChat = useCallback((chatId: string, newTitle: string) => {
+    const trimmed = newTitle.trim();
+    if (!trimmed) return;
+    setChatIndex(prev => {
+      const updated = prev.map(c => c.id === chatId ? { ...c, title: trimmed } : c);
+      saveChatIndex(updated);
+      return updated;
+    });
+    setRenamingChatId(null);
+    setRenameValue("");
+    toast.success("Chat renamed");
+  }, []);
+
+  // ── Scroll ────────────────────────────────────────────────────────────
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -248,38 +453,27 @@ export default function Agent() {
 
   useEffect(() => { scrollToBottom(); }, [messages, isStreaming, scrollToBottom]);
 
-  // ── File handling ──────────────────────────────────────────────────────
+  // ── File handling ─────────────────────────────────────────────────────
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-
     Array.from(files).forEach(file => {
       if (file.size > 5 * 1024 * 1024) {
         toast.error(`File too large — max 5MB per file (${file.name})`);
         return;
       }
-
       const reader = new FileReader();
       reader.onload = () => {
         const dataUrl = reader.result as string;
         const isImage = file.type.startsWith("image/");
         setAttachments(prev => [
           ...prev,
-          {
-            id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            dataUrl,
-            isImage,
-          },
+          { id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, name: file.name, size: file.size, type: file.type, dataUrl, isImage },
         ]);
       };
       reader.readAsDataURL(file);
     });
-
-    // Reset input so same file can be re-selected
     e.target.value = "";
   }, []);
 
@@ -287,22 +481,32 @@ export default function Agent() {
     setAttachments(prev => prev.filter(a => a.id !== id));
   }, []);
 
-  // ── Send message ───────────────────────────────────────────────────────
+  // ── Send message ──────────────────────────────────────────────────────
 
   const sendMessage = useCallback(async (text: string) => {
     if ((!text.trim() && attachments.length === 0) || isStreaming) return;
 
-    const currentAttachments = [...attachments];
+    // If no active chat, create one
+    let currentChatId = activeChatId;
+    if (!currentChatId) {
+      const chatId = `chat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+      const now = new Date().toISOString();
+      const title = generateTitle(text);
+      const newEntry = { id: chatId, title, createdAt: now, updatedAt: now };
+      setChatIndex(prev => {
+        const updated = [newEntry, ...prev];
+        saveChatIndex(updated);
+        return updated;
+      });
+      setActiveChatId(chatId);
+      currentChatId = chatId;
+    }
 
-    // Build display content
+    const currentAttachments = [...attachments];
     let displayContent = text.trim();
     if (currentAttachments.length > 0) {
       const fileNames = currentAttachments.map(a => a.name).join(", ");
-      if (displayContent) {
-        displayContent += `\n\n📎 ${fileNames}`;
-      } else {
-        displayContent = `📎 ${fileNames}`;
-      }
+      displayContent += displayContent ? `\n\n📎 ${fileNames}` : `📎 ${fileNames}`;
     }
 
     const userMsg: ChatMessage = {
@@ -312,6 +516,17 @@ export default function Agent() {
       timestamp: new Date(),
       attachments: currentAttachments.length > 0 ? currentAttachments : undefined,
     };
+
+    // Auto-title: if this is the first user message in a "New conversation", generate title
+    const isFirstUserMsg = messages.filter(m => m.role === "user").length === 0;
+    if (isFirstUserMsg && currentChatId) {
+      const title = generateTitle(text);
+      setChatIndex(prev => {
+        const updated = prev.map(c => c.id === currentChatId ? { ...c, title } : c);
+        saveChatIndex(updated);
+        return updated;
+      });
+    }
 
     const assistantMsgId = `assistant-${Date.now()}`;
     streamMsgIdRef.current = assistantMsgId;
@@ -339,45 +554,30 @@ export default function Agent() {
       .filter(m => m.role === "user" || m.role === "assistant")
       .slice(-10)
       .map(m => {
-        // Check if this message has image attachments
         const imgAttachments = m.attachments?.filter(a => a.isImage) || [];
         const docAttachments = m.attachments?.filter(a => !a.isImage) || [];
-
         let textContent = m.content;
-        // Add document references
         if (docAttachments.length > 0) {
           textContent += "\n" + docAttachments.map(a => `[Attached: ${a.name}]`).join("\n");
         }
-
-        // If there are image attachments, use multimodal content blocks
         if (imgAttachments.length > 0 && m.role === "user") {
-          const contentBlocks: Array<unknown> = [
-            { type: "text", text: textContent },
-          ];
+          const contentBlocks: Array<unknown> = [{ type: "text", text: textContent }];
           for (const img of imgAttachments) {
             const base64Data = img.dataUrl.split(",")[1];
             const mimeType = img.type || "image/png";
-            contentBlocks.push({
-              type: "image_url",
-              image_url: { url: `data:${mimeType};base64,${base64Data}` },
-            });
+            contentBlocks.push({ type: "image_url", image_url: { url: `data:${mimeType};base64,${base64Data}` } });
           }
           return { role: m.role as string, content: contentBlocks };
         }
-
         return { role: m.role as string, content: textContent };
       });
 
-    // Inject portfolio context into the latest user message
+    // Inject portfolio context
     if (history.length > 0) {
       const last = history[history.length - 1];
       if (typeof last.content === "string") {
-        history[history.length - 1] = {
-          ...last,
-          content: `[Portfolio Context]\n${buildPortfolioContext()}\n\n[User Question]\n${last.content}`,
-        };
+        history[history.length - 1] = { ...last, content: `[Portfolio Context]\n${buildPortfolioContext()}\n\n[User Question]\n${last.content}` };
       } else if (Array.isArray(last.content)) {
-        // Multimodal — prepend context to the text block
         const blocks = last.content as Array<{ type: string; text?: string }>;
         const textBlock = blocks.find(b => b.type === "text");
         if (textBlock && textBlock.text) {
@@ -393,37 +593,20 @@ export default function Agent() {
       await streamChat(
         history as { role: string; content: string | Array<unknown> }[],
         (chunk) => {
-          setMessages(prev =>
-            prev.map(m => m.id === assistantMsgId ? { ...m, content: m.content + chunk } : m)
-          );
+          setMessages(prev => prev.map(m => m.id === assistantMsgId ? { ...m, content: m.content + chunk } : m));
         },
         (model) => {
-          setMessages(prev =>
-            prev.map(m =>
-              m.id === assistantMsgId
-                ? {
-                    ...m,
-                    isStreaming: false,
-                    model,
-                    requiresApproval:
-                      m.content.toLowerCase().includes("draft") &&
-                      (m.content.toLowerCase().includes("email") ||
-                        m.content.toLowerCase().includes("memo") ||
-                        m.content.toLowerCase().includes("letter")),
-                  }
-                : m
-            )
-          );
+          setMessages(prev => prev.map(m =>
+            m.id === assistantMsgId
+              ? { ...m, isStreaming: false, model, requiresApproval: m.content.toLowerCase().includes("draft") && (m.content.toLowerCase().includes("email") || m.content.toLowerCase().includes("memo") || m.content.toLowerCase().includes("letter")) }
+              : m
+          ));
           setIsStreaming(false);
         },
         (error) => {
-          setMessages(prev =>
-            prev.map(m =>
-              m.id === assistantMsgId
-                ? { ...m, content: `I encountered an error. Please try again.\n\n> ${error}`, isStreaming: false }
-                : m
-            )
-          );
+          setMessages(prev => prev.map(m =>
+            m.id === assistantMsgId ? { ...m, content: `I encountered an error. Please try again.\n\n> ${error}`, isStreaming: false } : m
+          ));
           setIsStreaming(false);
           toast.error("AI response failed");
         },
@@ -432,17 +615,15 @@ export default function Agent() {
     } catch (error) {
       if ((error as Error).name === "AbortError") return;
       console.error("[AI Stream] Error:", error);
-      setMessages(prev =>
-        prev.map(m =>
-          m.id === assistantMsgId
-            ? { ...m, content: `I encountered an error processing your request. Please try again.\n\n> ${error instanceof Error ? error.message : "Unknown error"}`, isStreaming: false }
-            : m
-        )
-      );
+      setMessages(prev => prev.map(m =>
+        m.id === assistantMsgId
+          ? { ...m, content: `I encountered an error processing your request. Please try again.\n\n> ${error instanceof Error ? error.message : "Unknown error"}`, isStreaming: false }
+          : m
+      ));
       setIsStreaming(false);
       toast.error("AI response failed — please try again");
     }
-  }, [isStreaming, messages, attachments]);
+  }, [isStreaming, messages, attachments, activeChatId]);
 
   const stopStreaming = useCallback(() => {
     if (abortRef.current) { abortRef.current.abort(); abortRef.current = null; }
@@ -462,14 +643,6 @@ export default function Agent() {
     toast.info("Action rejected");
   }, []);
 
-  const clearChat = useCallback(() => {
-    if (isStreaming) stopStreaming();
-    localStorage.removeItem(STORAGE_KEY);
-    setMessages([{ ...WELCOME_MSG, timestamp: new Date() }]);
-    setClearConfirm(false);
-    toast.info("Chat cleared");
-  }, [isStreaming, stopStreaming]);
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -477,7 +650,7 @@ export default function Agent() {
     }
   };
 
-  // ── Date separator logic ───────────────────────────────────────────────
+  // ── Date separator logic ──────────────────────────────────────────────
   let lastDateLabel = "";
 
   return (
@@ -522,22 +695,90 @@ export default function Agent() {
               </div>
             </div>
 
+            {/* ── Chat History (ChatGPT-style) ───────────────────────────── */}
             <div>
-              <h3 className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-2">Recent Context</h3>
-              {recentConversations.length === 0 ? (
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Conversations</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-[10px] text-muted-foreground hover:text-foreground"
+                  onClick={createNewChat}
+                  disabled={isStreaming}
+                >
+                  <Plus className="size-3 mr-1" />
+                  New Chat
+                </Button>
+              </div>
+
+              {chatIndex.length === 0 ? (
                 <div className="bg-card border border-border rounded-md p-3">
-                  <p className="text-[10px] text-muted-foreground italic">No conversations yet. Start by asking a question.</p>
+                  <p className="text-[10px] text-muted-foreground italic">No conversations yet. Start by asking a question or click "New Chat".</p>
                 </div>
               ) : (
-                <div className="space-y-1.5">
-                  {recentConversations.map(conv => (
-                    <button key={conv.id} className="w-full text-left bg-card border border-border rounded-md p-2.5 hover:bg-accent/30 transition-colors">
-                      <div className="flex items-center gap-2">
-                        <MessageSquare className="size-3 text-muted-foreground flex-shrink-0" />
-                        <span className="text-xs text-foreground truncate">{conv.preview}</span>
+                <div className="space-y-1 max-h-[280px] overflow-y-auto">
+                  {chatIndex.map(chat => (
+                    <div
+                      key={chat.id}
+                      className={cn(
+                        "group relative rounded-md border p-2.5 cursor-pointer transition-all",
+                        chat.id === activeChatId
+                          ? "bg-primary/5 border-primary/30 text-foreground"
+                          : "bg-card border-border hover:bg-accent/30 hover:border-primary/20"
+                      )}
+                      onClick={() => switchChat(chat.id)}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <MessageSquare className={cn("size-3 flex-shrink-0", chat.id === activeChatId ? "text-primary" : "text-muted-foreground")} />
+                          {renamingChatId === chat.id ? (
+                            <input
+                              autoFocus
+                              value={renameValue}
+                              onChange={e => setRenameValue(e.target.value)}
+                              onKeyDown={e => {
+                                if (e.key === "Enter") renameChat(chat.id, renameValue);
+                                if (e.key === "Escape") { setRenamingChatId(null); setRenameValue(""); }
+                              }}
+                              onBlur={() => { renameChat(chat.id, renameValue); }}
+                              onClick={e => e.stopPropagation()}
+                              className="text-xs bg-transparent border-b border-primary/40 outline-none text-foreground w-full py-0"
+                            />
+                          ) : (
+                            <span className="text-xs text-foreground truncate">{chat.title}</span>
+                          )}
+                        </div>
+
+                        {/* Actions dropdown */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
+                            <button className="size-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-accent transition-all flex-shrink-0">
+                              <MoreHorizontal className="size-3 text-muted-foreground" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-36">
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setViewingChatId(chat.id); }}>
+                              <Eye className="size-3.5 mr-2" /> View
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setRenamingChatId(chat.id); setRenameValue(chat.title); }}>
+                              <PenLine className="size-3.5 mr-2" /> Rename
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); downloadChat(chat.id); }}>
+                              <Download className="size-3.5 mr-2" /> Download
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={(e) => { e.stopPropagation(); setDeleteConfirm(chat.id); }}
+                              className="text-red-400 focus:text-red-400"
+                            >
+                              <Trash2 className="size-3.5 mr-2" /> Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
-                      <span className="text-[9px] font-mono text-muted-foreground ml-5">{formatSessionDate(conv.timestamp)}</span>
-                    </button>
+                      <span className="text-[9px] font-mono text-muted-foreground ml-5 block mt-0.5">
+                        {formatRelativeDate(chat.updatedAt)}
+                      </span>
+                    </div>
                   ))}
                 </div>
               )}
@@ -566,7 +807,7 @@ export default function Agent() {
 
         {/* ── Right Panel: Chat ────────────────────────────────────────── */}
         <div className="flex-1 flex flex-col min-h-0">
-          {/* Quick actions + Clear */}
+          {/* Quick actions + active chat title */}
           <div className="flex items-center gap-2 px-4 py-3 border-b border-border overflow-x-auto">
             <Sparkles className="size-3.5 text-primary flex-shrink-0" />
             {QUICK_ACTIONS.map(action => (
@@ -580,14 +821,12 @@ export default function Agent() {
                 {action.label}
               </button>
             ))}
-            <div className="ml-auto flex-shrink-0">
-              <button
-                onClick={() => setClearConfirm(true)}
-                className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[10px] text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
-              >
-                <Trash2 className="size-3" />
-                Clear
-              </button>
+            <div className="ml-auto flex-shrink-0 flex items-center gap-1">
+              {activeChat && (
+                <span className="text-[10px] font-mono text-muted-foreground/60 truncate max-w-[120px] hidden xl:block">
+                  {activeChat.title}
+                </span>
+              )}
             </div>
           </div>
 
@@ -595,7 +834,6 @@ export default function Agent() {
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
             <AnimatePresence initial={false}>
               {messages.map((msg) => {
-                // Date separator for previous sessions
                 let dateSeparator: React.ReactNode = null;
                 if (isFromPreviousSession(msg.timestamp)) {
                   const dateLabel = formatSessionDate(msg.timestamp).split(" · ")[0] || formatSessionDate(msg.timestamp);
@@ -630,7 +868,6 @@ export default function Agent() {
                         "max-w-[85%] lg:max-w-[70%] rounded-lg px-4 py-3",
                         msg.role === "user" ? "bg-primary/10 text-foreground" : "bg-card border border-border text-foreground"
                       )}>
-                        {/* Inline attachment thumbnails for user messages */}
                         {msg.attachments && msg.attachments.length > 0 && (
                           <div className="flex flex-wrap gap-2 mb-2">
                             {msg.attachments.map(att => (
@@ -737,7 +974,6 @@ export default function Agent() {
           {/* Input area */}
           <div className="border-t border-border p-4">
             <div className="flex items-end gap-2">
-              {/* Hidden file input */}
               <input
                 ref={fileInputRef}
                 type="file"
@@ -746,7 +982,6 @@ export default function Agent() {
                 className="hidden"
                 onChange={handleFileSelect}
               />
-              {/* Paperclip button */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -781,20 +1016,85 @@ export default function Agent() {
         </div>
       </div>
 
-      {/* ── Clear Confirmation Dialog ──────────────────────────────────── */}
-      <AlertDialog open={clearConfirm} onOpenChange={setClearConfirm}>
+      {/* ── Delete Confirmation Dialog ────────────────────────────────── */}
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">Clear conversation history?</AlertDialogTitle>
+            <AlertDialogTitle className="text-sm">Delete this conversation?</AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-muted-foreground">
-              This cannot be undone. All messages in the current conversation will be permanently removed.
+              This cannot be undone. All messages in "{chatIndex.find(c => c.id === deleteConfirm)?.title}" will be permanently removed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="text-xs h-8">Cancel</AlertDialogCancel>
-            <AlertDialogAction className="text-xs h-8 bg-red-600 hover:bg-red-700" onClick={clearChat}>
-              Yes, clear conversation
+            <AlertDialogAction className="text-xs h-8 bg-red-600 hover:bg-red-700" onClick={() => deleteConfirm && deleteChat(deleteConfirm)}>
+              Yes, delete conversation
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ── View Chat Preview Dialog ─────────────────────────────────── */}
+      <AlertDialog open={!!viewingChatId} onOpenChange={(open) => !open && setViewingChatId(null)}>
+        <AlertDialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-sm flex items-center gap-2">
+              <Eye className="size-4 text-primary" />
+              {chatIndex.find(c => c.id === viewingChatId)?.title || "Conversation"}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-[10px] font-mono text-muted-foreground">
+              {viewingMessages.length} messages · {chatIndex.find(c => c.id === viewingChatId)?.createdAt
+                ? formatRelativeDate(chatIndex.find(c => c.id === viewingChatId)!.createdAt)
+                : ""}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex-1 overflow-y-auto space-y-3 py-2 max-h-[50vh]">
+            {viewingMessages.map(msg => (
+              <div key={msg.id} className={cn("flex gap-2", msg.role === "user" ? "justify-end" : "justify-start")}>
+                {msg.role === "assistant" && (
+                  <div className="flex-shrink-0 size-6 rounded-md bg-primary/10 flex items-center justify-center mt-0.5">
+                    <Bot className="size-3 text-primary" />
+                  </div>
+                )}
+                <div className={cn(
+                  "max-w-[80%] rounded-lg px-3 py-2",
+                  msg.role === "user" ? "bg-primary/10" : "bg-card border border-border"
+                )}>
+                  <div className="text-xs leading-relaxed text-foreground line-clamp-6">
+                    <Streamdown>{msg.content}</Streamdown>
+                  </div>
+                  <span className="text-[9px] font-mono text-muted-foreground mt-1 block">
+                    {formatSessionDate(msg.timestamp)}
+                  </span>
+                </div>
+                {msg.role === "user" && (
+                  <div className="flex-shrink-0 size-6 rounded-md bg-secondary flex items-center justify-center mt-0.5">
+                    <User className="size-3 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-xs h-8">Close</AlertDialogCancel>
+            {viewingChatId && viewingChatId !== activeChatId && (
+              <AlertDialogAction
+                className="text-xs h-8"
+                onClick={() => { if (viewingChatId) { switchChat(viewingChatId); setViewingChatId(null); } }}
+              >
+                Open this conversation
+              </AlertDialogAction>
+            )}
+            {viewingChatId && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs h-8"
+                onClick={() => { if (viewingChatId) downloadChat(viewingChatId); }}
+              >
+                <Download className="size-3 mr-1" /> Download
+              </Button>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
