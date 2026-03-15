@@ -14,6 +14,8 @@ import Distributions from "./pages/Distributions";
 import SpyOps from "./pages/SpyOps";
 import Profile from "./pages/Profile";
 import SettingsPage from "./pages/SettingsPage";
+import VentureDetail from "./pages/VentureDetail";
+import TasksPage from "./pages/TasksPage";
 
 /* Auth guard — redirects to login if no operator in localStorage */
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -49,8 +51,14 @@ function Router() {
       <Route path="/agent">
         <RequireAuth><Agent /></RequireAuth>
       </Route>
+      <Route path="/ventures/:slug">
+        <RequireAuth><VentureDetail /></RequireAuth>
+      </Route>
       <Route path="/ventures">
         <RequireAuth><Verticals /></RequireAuth>
+      </Route>
+      <Route path="/tasks">
+        <RequireAuth><TasksPage /></RequireAuth>
       </Route>
       <Route path="/team">
         <RequireAuth><Onboard /></RequireAuth>

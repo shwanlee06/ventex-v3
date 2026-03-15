@@ -1,6 +1,6 @@
 // ============================================================================
-// AI Agent Page — Claude 4.6 Sonnet — STREAMING RESPONSES
-// Quick actions, clickable task cards, Enter-to-send, Clear chat, Markdown
+// AI Agent Page — Claude 4.6 Sonnet — STREAMING RESPONSES — REDESIGNED
+// Conversation history sidebar, suggested actions, natural welcome
 // ============================================================================
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -8,15 +8,8 @@ import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
 import {
-  METRICS,
-  TASKS,
-  SPVS,
-  VENTURES,
-  DISTRIBUTIONS,
-  STATUS_CONFIG,
-  getTaskStatusFromDate,
-  formatDate,
-  formatCurrency,
+  METRICS, TASKS, SPVS, VENTURES, DISTRIBUTIONS, AGENT_LOGS,
+  STATUS_CONFIG, getTaskStatusFromDate, formatDate, formatCurrency, formatTimestamp,
   type Task,
 } from "@/lib/data";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,9 +18,14 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
+import {
   Send, Bot, User, Sparkles, FileText, Mail, CalendarClock,
   CheckCircle2, XCircle, Layers3, Briefcase, ListChecks, Trash2,
-  BarChart3, Users, Cpu,
+  BarChart3, Users, Cpu, AlertTriangle, Search, Clock, Activity,
+  MessageSquare,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -45,19 +43,29 @@ interface ChatMessage {
   isStreaming?: boolean;
 }
 
+// ── Quick action pills (top bar) ──────────────────────────────────────────
 const QUICK_ACTIONS = [
   { label: "Portfolio summary", icon: <FileText className="size-3.5" />, prompt: "Give me a portfolio summary across all ventures and SPVs." },
   { label: "Draft LP update", icon: <Mail className="size-3.5" />, prompt: "Draft a professional LP update email covering recent distributions and venture progress." },
   { label: "Open tasks review", icon: <CalendarClock className="size-3.5" />, prompt: "List all open tasks sorted by priority and due date." },
   { label: "SPV pipeline", icon: <BarChart3 className="size-3.5" />, prompt: "Show me the current SPV pipeline status and deal stages." },
   { label: "Team overview", icon: <Users className="size-3.5" />, prompt: "Give me a team overview with roles and responsibilities." },
+  { label: "Latest activity", icon: <Activity className="size-3.5" />, prompt: "Show me the latest activity across all ventures, SPVs, and tasks." },
+];
+
+// ── Suggested actions (sidebar cards) ─────────────────────────────────────
+const SUGGESTED_ACTIONS = [
+  { label: "Summarize all overdue tasks", icon: <AlertTriangle className="size-4 text-amber-400" />, prompt: "Summarize all overdue tasks" },
+  { label: "Draft weekly ops report", icon: <FileText className="size-4 text-blue-400" />, prompt: "Draft weekly ops report" },
+  { label: "Review Venezuela Mining Rights status", icon: <Search className="size-4 text-emerald-400" />, prompt: "Review Venezuela Mining Rights status" },
+  { label: "Who is working on Nammos Watson Island?", icon: <Users className="size-4 text-purple-400" />, prompt: "Who is working on Nammos Watson Island?" },
 ];
 
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
     id: "sys-1",
     role: "assistant",
-    content: `Good afternoon. I'm your **ATLAS Venture Ops** assistant, powered by **Claude 4.6 Sonnet**. I have context on **${VENTURES.length} ventures** across 6 sectors, **${SPVS.length} SPVs**, and **${TASKS.filter(t => t.status === "open").length} open tasks**.\n\nRecent highlights:\n- **${formatCurrency(METRICS.paidDistributions)}** in distributions paid\n- **${SPVS.filter(s => s.stage === "Active deal").length}** active SPV deals\n- **${TASKS.filter(t => t.priority === "High").length}** high-priority task(s) pending\n\nHow can I help you today?`,
+    content: `Hey — I'm your **ATLAS ops assistant**. What do you need?`,
     timestamp: new Date(),
     model: "claude-4.6-sonnet",
   },
@@ -145,10 +153,22 @@ export default function Agent() {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [taskModal, setTaskModal] = useState<Task | null>(null);
+  const [clearConfirm, setClearConfirm] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const streamMsgIdRef = useRef<string>("");
+
+  // Build recent conversation history from messages
+  const recentConversations = messages
+    .filter(m => m.role === "user")
+    .slice(-3)
+    .reverse()
+    .map(m => ({
+      id: m.id,
+      preview: m.content.slice(0, 30) + (m.content.length > 30 ? "..." : ""),
+      timestamp: m.timestamp,
+    }));
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
@@ -215,7 +235,6 @@ export default function Agent() {
     try {
       await streamChat(
         history,
-        // onChunk — append each token
         (chunk) => {
           setMessages((prev) =>
             prev.map((m) =>
@@ -225,7 +244,6 @@ export default function Agent() {
             )
           );
         },
-        // onDone
         (model) => {
           setMessages((prev) =>
             prev.map((m) =>
@@ -245,7 +263,6 @@ export default function Agent() {
           );
           setIsStreaming(false);
         },
-        // onError
         (error) => {
           setMessages((prev) =>
             prev.map((m) =>
@@ -316,6 +333,7 @@ export default function Agent() {
   const clearChat = useCallback(() => {
     if (isStreaming) stopStreaming();
     setMessages(INITIAL_MESSAGES);
+    setClearConfirm(false);
     toast.info("Chat cleared");
   }, [isStreaming, stopStreaming]);
 
@@ -326,17 +344,12 @@ export default function Agent() {
     }
   };
 
-  const openTasks = TASKS.filter(t => t.status === "open").sort((a, b) => {
-    const p: Record<string, number> = { High: 0, Medium: 1, Low: 2 };
-    return (p[a.priority] ?? 2) - (p[b.priority] ?? 2);
-  }).slice(0, 4);
-
   return (
     <DashboardLayout title="AI Agent" subtitle="CLAUDE 4.6 SONNET">
       <div className="flex flex-col lg:flex-row h-[calc(100vh-3.5rem)] overflow-hidden">
-        {/* Left panel: Context */}
+        {/* ── Left Sidebar ─────────────────────────────────────────────── */}
         <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-border p-4 overflow-y-auto flex-shrink-0">
-          <div className="space-y-4">
+          <div className="space-y-5">
             {/* Model badge */}
             <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/20">
               <Cpu className="size-4 text-primary" />
@@ -347,65 +360,90 @@ export default function Agent() {
               <span className={cn("ml-auto size-2 rounded-full", isStreaming ? "bg-amber-400 animate-pulse" : "bg-green-400 animate-pulse")} />
             </div>
 
-            <h3 className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">
-              Portfolio Context
-            </h3>
-            <div className="grid grid-cols-3 lg:grid-cols-1 gap-2">
-              <div className="bg-card border border-border rounded-md p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Layers3 className="size-3.5 text-blue-400" />
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Ventures</span>
+            {/* Portfolio Context Stats */}
+            <div>
+              <h3 className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-2">
+                Portfolio Context
+              </h3>
+              <div className="grid grid-cols-3 lg:grid-cols-1 gap-2">
+                <div className="bg-card border border-border rounded-md p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Layers3 className="size-3.5 text-blue-400" />
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Ventures</span>
+                  </div>
+                  <span className="text-lg font-mono font-semibold text-foreground">{METRICS.totalVentures}</span>
                 </div>
-                <span className="text-lg font-mono font-semibold text-foreground">{METRICS.totalVentures}</span>
-              </div>
-              <div className="bg-card border border-border rounded-md p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Briefcase className="size-3.5 text-emerald-400" />
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">SPVs</span>
+                <div className="bg-card border border-border rounded-md p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Briefcase className="size-3.5 text-emerald-400" />
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide">SPVs</span>
+                  </div>
+                  <span className="text-lg font-mono font-semibold text-foreground">{METRICS.totalSPVs}</span>
                 </div>
-                <span className="text-lg font-mono font-semibold text-foreground">{METRICS.totalSPVs}</span>
-              </div>
-              <div className="bg-card border border-border rounded-md p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <ListChecks className="size-3.5 text-amber-400" />
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Open Tasks</span>
+                <div className="bg-card border border-border rounded-md p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <ListChecks className="size-3.5 text-amber-400" />
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Open Tasks</span>
+                  </div>
+                  <span className="text-lg font-mono font-semibold text-foreground">{METRICS.openTasks}</span>
                 </div>
-                <span className="text-lg font-mono font-semibold text-foreground">{METRICS.openTasks}</span>
               </div>
             </div>
 
-            {/* Open Tasks — clickable */}
-            <div className="mt-6">
-              <h3 className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-3">
-                Priority Tasks
+            {/* Recent Context (conversation history) */}
+            <div>
+              <h3 className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-2">
+                Recent Context
+              </h3>
+              {recentConversations.length === 0 ? (
+                <div className="bg-card border border-border rounded-md p-3">
+                  <p className="text-[10px] text-muted-foreground italic">No conversations yet. Start by asking a question.</p>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {recentConversations.map((conv) => (
+                    <button
+                      key={conv.id}
+                      className="w-full text-left bg-card border border-border rounded-md p-2.5 hover:bg-accent/30 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="size-3 text-muted-foreground flex-shrink-0" />
+                        <span className="text-xs text-foreground truncate">{conv.preview}</span>
+                      </div>
+                      <span className="text-[9px] font-mono text-muted-foreground ml-5">
+                        {conv.timestamp.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Suggested Actions */}
+            <div>
+              <h3 className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-2">
+                Suggested Actions
               </h3>
               <div className="space-y-2">
-                {openTasks.map((task) => {
-                  const resolvedStatus = getTaskStatusFromDate(task);
-                  const sc = STATUS_CONFIG[resolvedStatus];
-                  return (
-                    <button
-                      key={task.id}
-                      onClick={() => setTaskModal(task)}
-                      className="w-full text-left bg-card border border-border rounded-md p-3 hover:bg-accent/30 transition-colors"
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded", task.priority === "High" ? "bg-red-500/10 text-red-400" : "bg-amber-500/10 text-amber-400")}>
-                          {task.priority}
-                        </span>
-                        <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />
-                      </div>
-                      <p className="text-xs text-foreground mt-1">{task.title}</p>
-                      <p className="text-[10px] font-mono text-muted-foreground mt-1">Due {formatDate(task.dueDate)}</p>
-                    </button>
-                  );
-                })}
+                {SUGGESTED_ACTIONS.map((action) => (
+                  <button
+                    key={action.label}
+                    onClick={() => sendMessage(action.prompt)}
+                    disabled={isStreaming}
+                    className="w-full text-left bg-card border border-border rounded-md p-3 hover:bg-accent/30 hover:border-primary/30 transition-all disabled:opacity-50 group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">{action.icon}</div>
+                      <span className="text-xs text-foreground group-hover:text-primary transition-colors">{action.label}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right panel: Chat */}
+        {/* ── Right Panel: Chat ────────────────────────────────────────── */}
         <div className="flex-1 flex flex-col min-h-0">
           {/* Quick actions + Clear */}
           <div className="flex items-center gap-2 px-4 py-3 border-b border-border overflow-x-auto">
@@ -423,7 +461,7 @@ export default function Agent() {
             ))}
             <div className="ml-auto flex-shrink-0">
               <button
-                onClick={clearChat}
+                onClick={() => setClearConfirm(true)}
                 className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[10px] text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
               >
                 <Trash2 className="size-3" />
@@ -543,7 +581,7 @@ export default function Agent() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask Claude about ventures, SPVs, tasks, distributions..."
+                placeholder="Ask me anything about your ventures..."
                 className="flex-1 min-h-[44px] max-h-[120px] resize-none bg-secondary/30 border-border text-sm"
                 rows={1}
               />
@@ -574,46 +612,23 @@ export default function Agent() {
         </div>
       </div>
 
-      {/* Task Detail Modal */}
-      <Dialog open={!!taskModal} onOpenChange={(open) => !open && setTaskModal(null)}>
-        <DialogContent className="sm:max-w-md">
-          {taskModal && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-sm">{taskModal.title}</DialogTitle>
-                <DialogDescription className="text-[10px] font-mono">
-                  Due {formatDate(taskModal.dueDate)} · {taskModal.priority} priority
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-3 py-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Status</span>
-                  {(() => { const rs = getTaskStatusFromDate(taskModal); const sc = STATUS_CONFIG[rs]; return <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />; })()}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Assignees</span>
-                  <span className="text-xs text-foreground">{taskModal.assignees.join(", ") || "Unassigned"}</span>
-                </div>
-                {taskModal.ventureLink && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Venture</span>
-                    <span className="text-xs text-primary">{taskModal.ventureLink}</span>
-                  </div>
-                )}
-              </div>
-              <DialogFooter>
-                <Button size="sm" className="text-xs" onClick={() => {
-                  sendMessage(`Tell me about the task "${taskModal.title}" and suggest next steps.`);
-                  setTaskModal(null);
-                }}>
-                  <Sparkles className="size-3.5 mr-1" /> Ask Claude
-                </Button>
-                <Button variant="ghost" size="sm" className="text-xs" onClick={() => setTaskModal(null)}>Close</Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* ── Clear Confirmation Dialog ──────────────────────────────────── */}
+      <AlertDialog open={clearConfirm} onOpenChange={setClearConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-sm">Clear conversation history?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground">
+              This cannot be undone. All messages in the current conversation will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-xs h-8">Cancel</AlertDialogCancel>
+            <AlertDialogAction className="text-xs h-8 bg-red-600 hover:bg-red-700" onClick={clearChat}>
+              Yes, clear conversation
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

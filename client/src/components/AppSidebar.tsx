@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Users,
   DollarSign,
+  ListChecks,
 } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useState } from "react";
@@ -36,6 +37,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-[18px]" /> },
   { label: "SPVs & Deals", href: "/spvs", icon: <Briefcase className="size-[18px]" /> },
   { label: "Team", href: "/team", icon: <Users className="size-[18px]" /> },
+  { label: "Tasks", href: "/tasks", icon: <ListChecks className="size-[18px]" /> },
   { label: "Distributions", href: "/distributions", icon: <DollarSign className="size-[18px]" /> },
   { label: "Settings", href: "/settings", icon: <Shield className="size-[18px]" /> },
 ];

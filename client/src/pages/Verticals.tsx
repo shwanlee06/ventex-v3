@@ -23,6 +23,8 @@ import {
 import { motion } from "framer-motion";
 import { Layers3, MapPin, ListChecks, AlertTriangle, Plus, X, ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { useState, useCallback, useMemo, useEffect } from "react";
+import { useLocation } from "wouter";
+import { slugify } from "@/lib/slugify";
 import { toast } from "sonner";
 import { logAction } from "@/lib/operatorSession";
 import {
@@ -56,6 +58,7 @@ const ALL_STAGES = ["All", "In Validation", "Active ventures", "In Fundraising",
 const ALL_STATUSES = ["All", "In progress", "On-Hold", "Completed"];
 
 export default function VerticalsPage() {
+  const [, navigate] = useLocation();
   const [ventures, setVentures] = useState<Venture[]>([...VENTURES]);
   const [tasks, setTasks] = useState<Task[]>([...TASKS]);
   const [themeFilter, setThemeFilter] = useState("All");
@@ -234,7 +237,7 @@ export default function VerticalsPage() {
                     <TableRow
                       key={venture.id}
                       className="cursor-pointer hover:bg-accent/30"
-                      onClick={() => setDrawerVenture(venture)}
+                      onClick={() => navigate(`/ventures/${slugify(venture.name)}`)}
                     >
                       <TableCell>
                         <div>
