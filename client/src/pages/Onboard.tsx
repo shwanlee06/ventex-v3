@@ -31,8 +31,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const STATUS_CYCLE: Record<string, string> = { Active: "Advisor", Advisor: "Contributor", Contributor: "Active" };
 const MEMBER_TYPES = ["Internal", "External Partner", "Advisor"];
@@ -64,6 +65,13 @@ export default function OnboardPage() {
   const [newFunc, setNewFunc] = useState("Operations");
   const [newType, setNewType] = useState("Internal");
   const [newNotes, setNewNotes] = useState("");
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const internalTeam = team.filter(m => m.type === "Internal");
 
@@ -98,7 +106,7 @@ export default function OnboardPage() {
       <div className="p-4 md:p-6 space-y-6">
         {/* Summary metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {[
+          {loading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />) : [
             { label: "Team Members", value: team.length, icon: <Users className="size-4 text-blue-400" /> },
             { label: "Internal", value: internalTeam.length, icon: <UserCircle className="size-4 text-emerald-400" /> },
             { label: "Contacts", value: CONTACTS.length, icon: <Phone className="size-4 text-amber-400" /> },

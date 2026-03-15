@@ -25,7 +25,7 @@ import { motion } from "framer-motion";
 import {
   Briefcase, DollarSign, CalendarDays, FileText, TrendingUp, TrendingDown, Plus, X, ArrowUpDown,
 } from "lucide-react";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -37,6 +37,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ALL_STAGES = ["All", "Active deal", "In negotiation", "Closed deal", "Dropped deal"];
 const ALL_THEMES_SPV = ["All", "Oil & Gas", "Yacht", "Others", "Entertainment", "TBD"];
@@ -58,6 +59,12 @@ export default function SettingsPage() {
   const [newPriority, setNewPriority] = useState("Medium");
   const [newStage, setNewStage] = useState("In negotiation");
   const [newNotes, setNewNotes] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const filtered = useMemo(() => {
     return spvs.filter(s => {
@@ -107,7 +114,7 @@ export default function SettingsPage() {
       <div className="p-4 md:p-6 space-y-6">
         {/* Summary metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {[
+          {loading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />) : [
             { label: "Total SPVs", value: filtered.length, icon: <Briefcase className="size-4 text-blue-400" /> },
             { label: "Active Deals", value: activeSPVs, icon: <TrendingUp className="size-4 text-emerald-400" /> },
             { label: "Total Distributed", value: formatCurrency(totalDistributed), icon: <DollarSign className="size-4 text-primary" /> },

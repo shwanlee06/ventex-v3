@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/table";
 import { motion } from "framer-motion";
 import { Layers3, MapPin, ListChecks, AlertTriangle, Plus, X, ArrowUpRight, CheckCircle2 } from "lucide-react";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
@@ -38,6 +38,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ALL_THEMES = ["All", "Real Estate", "F&B", "Yacht", "Entertainment", "Oil & Gas", "Others"];
 const ALL_STAGES = ["All", "In Validation", "Active ventures", "In Fundraising", "On Hold"];
@@ -52,6 +53,13 @@ export default function VerticalsPage() {
   const [drawerVenture, setDrawerVenture] = useState<Venture | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [taskModal, setTaskModal] = useState<Task | null>(null);
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Add form state
   const [newName, setNewName] = useState("");
@@ -110,7 +118,7 @@ export default function VerticalsPage() {
       <div className="p-4 md:p-6 space-y-6">
         {/* Summary metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {summaryMetrics.map((m, i) => (
+          {loading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />) : summaryMetrics.map((m, i) => (
             <motion.div
               key={m.label}
               initial={{ opacity: 0, y: 12 }}

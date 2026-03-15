@@ -43,7 +43,7 @@ import {
   X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import {
@@ -91,9 +91,10 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   // Simulate loading
-  useState(() => {
-    setTimeout(() => setLoading(false), 600);
-  });
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
 
   const openTasks = tasks.filter(t => t.status !== "complete");
   const completedCount = tasks.filter(t => t.status === "complete").length;
