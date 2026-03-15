@@ -1,215 +1,220 @@
 // ============================================================================
-// Settings / Security Page — Swiss Instrument design
-// Security posture, tenant isolation, SOC 2 readiness checklist
+// SPVs & Deals Page — Swiss Instrument design
+// SPV table, distributions, meetings from Airtable
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
+import StatusBadge from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
-import { CLIENTS } from "@/lib/data";
-import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
+import {
+  SPVS,
+  DISTRIBUTIONS,
+  MEETINGS,
+  SPV_STAGE_CONFIG,
+  DIST_STATUS_CONFIG,
+  getThemeColor,
+  formatCurrency,
+  formatDate,
+} from "@/lib/data";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { motion } from "framer-motion";
 import {
-  Shield,
-  Lock,
-  KeyRound,
+  Briefcase,
+  DollarSign,
+  CalendarDays,
   FileText,
-  Server,
-  CheckCircle2,
-  AlertTriangle,
-  Eye,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react";
-import { useState } from "react";
-
-interface SecurityItem {
-  label: string;
-  description: string;
-  icon: React.ReactNode;
-  enabled: boolean;
-}
-
-const SOC2_CHECKLIST = [
-  { id: "s1", label: "Access control policies documented", completed: true },
-  { id: "s2", label: "Data encryption at rest (AES-256)", completed: true },
-  { id: "s3", label: "Data encryption in transit (TLS 1.3)", completed: true },
-  { id: "s4", label: "Multi-factor authentication enforced", completed: true },
-  { id: "s5", label: "Audit logging enabled", completed: true },
-  { id: "s6", label: "Incident response plan documented", completed: true },
-  { id: "s7", label: "Vendor risk assessment completed", completed: false },
-  { id: "s8", label: "Penetration testing scheduled", completed: false },
-  { id: "s9", label: "Business continuity plan reviewed", completed: false },
-  { id: "s10", label: "Employee security training completed", completed: true },
-  { id: "s11", label: "Data retention policy defined", completed: true },
-  { id: "s12", label: "Change management process documented", completed: false },
-];
 
 export default function SettingsPage() {
-  const [auditLog, setAuditLog] = useState(true);
-  const [mfaEnabled, setMfaEnabled] = useState(true);
-
-  const securityItems: SecurityItem[] = [
-    {
-      label: "Encryption at Rest",
-      description: "AES-256 encryption for all stored data",
-      icon: <Lock className="size-4 text-emerald-400" />,
-      enabled: true,
-    },
-    {
-      label: "Encryption in Transit",
-      description: "TLS 1.3 for all data transmission",
-      icon: <KeyRound className="size-4 text-emerald-400" />,
-      enabled: true,
-    },
-    {
-      label: "Multi-Factor Authentication",
-      description: "TOTP-based MFA for all admin accounts",
-      icon: <Shield className="size-4 text-emerald-400" />,
-      enabled: mfaEnabled,
-    },
-  ];
-
-  const completedCount = SOC2_CHECKLIST.filter((item) => item.completed).length;
-  const progressPercent = Math.round((completedCount / SOC2_CHECKLIST.length) * 100);
+  const activeSPVs = SPVS.filter(s => s.stage === "Active deal").length;
+  const totalDistributed = DISTRIBUTIONS.reduce((sum, d) => sum + d.amount, 0);
+  const paidDistributed = DISTRIBUTIONS.filter(d => d.status === "Paid").reduce((sum, d) => sum + d.amount, 0);
 
   return (
-    <DashboardLayout title="Settings" subtitle="SECURITY & COMPLIANCE">
-      <div className="p-4 md:p-6 space-y-6 max-w-4xl">
-        {/* Security Posture */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="bg-card border border-border rounded-lg"
-        >
-          <div className="px-5 py-4 border-b border-border">
-            <h2 className="text-sm font-semibold text-foreground">Security Posture</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Platform-wide security configuration</p>
-          </div>
-
-          <div className="p-5 space-y-4">
-            {securityItems.map((item) => (
-              <div key={item.label} className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5">{item.icon}</div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{item.label}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
-                  </div>
-                </div>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  <CheckCircle2 className="size-3" />
-                  Active
-                </span>
+    <DashboardLayout title="SPVs & Deals" subtitle="DEAL PIPELINE & DISTRIBUTIONS">
+      <div className="p-4 md:p-6 space-y-6">
+        {/* Summary metrics */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            { label: "Total SPVs", value: SPVS.length, icon: <Briefcase className="size-4 text-blue-400" /> },
+            { label: "Active Deals", value: activeSPVs, icon: <TrendingUp className="size-4 text-emerald-400" /> },
+            { label: "Total Distributed", value: formatCurrency(totalDistributed), icon: <DollarSign className="size-4 text-primary" /> },
+            { label: "Paid Out", value: formatCurrency(paidDistributed), icon: <TrendingDown className="size-4 text-amber-400" /> },
+          ].map((m, i) => (
+            <motion.div
+              key={m.label}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05, duration: 0.3 }}
+              className="bg-card border border-border rounded-lg p-4"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                {m.icon}
+                <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">{m.label}</span>
               </div>
-            ))}
+              <span className="text-2xl font-mono font-semibold text-foreground">{m.value}</span>
+            </motion.div>
+          ))}
+        </div>
 
-            <Separator />
-
-            {/* Toggleable settings */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-start gap-3">
-                <Eye className="size-4 text-blue-400 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">MFA Enforcement</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Require MFA for all user accounts</p>
-                </div>
-              </div>
-              <Switch checked={mfaEnabled} onCheckedChange={setMfaEnabled} />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-start gap-3">
-                <FileText className="size-4 text-blue-400 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">Audit Logging</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Record all system actions for compliance review</p>
-                </div>
-              </div>
-              <Switch checked={auditLog} onCheckedChange={setAuditLog} />
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Tenant Isolation */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.3 }}
-          className="bg-card border border-border rounded-lg"
-        >
-          <div className="px-5 py-4 border-b border-border">
-            <h2 className="text-sm font-semibold text-foreground">Tenant Isolation</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Data isolation status per client</p>
-          </div>
-
-          <div className="p-5 space-y-3">
-            {CLIENTS.map((client) => (
-              <div key={client.id} className="flex items-center justify-between p-3 bg-secondary/30 rounded-md">
-                <div className="flex items-center gap-3">
-                  <img src={client.avatarUrl} alt={client.name} className="size-8 rounded-md object-cover" />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{client.name}</p>
-                    <p className="text-[10px] font-mono text-muted-foreground">
-                      {client.status === "live" ? "Production tenant" : "Staging tenant"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Server className="size-3.5 text-emerald-400" />
-                  <span className="text-[10px] font-medium text-emerald-400">Isolated</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* SOC 2 Readiness */}
+        {/* SPVs Table */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.3 }}
-          className="bg-card border border-border rounded-lg"
+          className="bg-card border border-border rounded-lg overflow-hidden"
         >
-          <div className="px-5 py-4 border-b border-border">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-sm font-semibold text-foreground">SOC 2 Readiness</h2>
-                <p className="text-xs text-muted-foreground mt-0.5">Type II compliance checklist</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono text-foreground">{completedCount}/{SOC2_CHECKLIST.length}</span>
-                <span className="text-[10px] text-muted-foreground">({progressPercent}%)</span>
-              </div>
-            </div>
-            <div className="mt-3">
-              <Progress value={progressPercent} className="h-1.5" />
-            </div>
+          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-foreground">All SPVs & Deals</h2>
+            <span className="text-[10px] font-mono text-muted-foreground">{SPVS.length} deals</span>
           </div>
 
-          <div className="p-5 space-y-2">
-            {SOC2_CHECKLIST.map((item) => (
-              <div key={item.id} className="flex items-center gap-3 py-1.5">
-                <Checkbox checked={item.completed} disabled className="size-3.5" />
-                <span
-                  className={cn(
-                    "text-sm",
-                    item.completed ? "text-foreground" : "text-muted-foreground"
-                  )}
-                >
-                  {item.label}
-                </span>
-                {!item.completed && (
-                  <span className="ml-auto inline-flex items-center gap-1 text-[10px] text-amber-400">
-                    <AlertTriangle className="size-3" />
-                    Pending
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">SPV Name</TableHead>
+                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Sector</TableHead>
+                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Priority</TableHead>
+                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Stage</TableHead>
+                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {SPVS.map((spv) => {
+                const tc = getThemeColor(spv.theme);
+                const sc = SPV_STAGE_CONFIG[spv.stage];
+                return (
+                  <TableRow key={spv.id}>
+                    <TableCell>
+                      <div>
+                        <span className="text-xs text-foreground font-medium">{spv.name}</span>
+                        {spv.currentStatus && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5 truncate max-w-[200px]">{spv.currentStatus}</p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="size-2 rounded-full flex-shrink-0" style={{ backgroundColor: tc.color }} />
+                        <span className="text-xs" style={{ color: tc.color }}>{spv.theme}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded",
+                        spv.priority === "High" ? "bg-red-500/10 text-red-400" :
+                        spv.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
+                        "bg-secondary text-muted-foreground"
+                      )}>
+                        {spv.priority}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{spv.stage}</TableCell>
+                    <TableCell>
+                      {sc && <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </motion.div>
+
+        {/* Distributions Table */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.3 }}
+          className="bg-card border border-border rounded-lg overflow-hidden"
+        >
+          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-foreground">Distributions</h2>
+            <span className="text-[10px] font-mono text-emerald-400">{formatCurrency(totalDistributed)} total</span>
+          </div>
+
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Distribution</TableHead>
+                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Fund</TableHead>
+                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Date</TableHead>
+                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Amount</TableHead>
+                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Type</TableHead>
+                <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {DISTRIBUTIONS.map((dist) => {
+                const dc = DIST_STATUS_CONFIG[dist.status];
+                return (
+                  <TableRow key={dist.id}>
+                    <TableCell>
+                      <div>
+                        <span className="text-xs text-foreground font-medium">{dist.name}</span>
+                        {dist.notes && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5 truncate max-w-[200px]">{dist.notes}</p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{dist.fund}</TableCell>
+                    <TableCell className="text-xs font-mono text-muted-foreground">{formatDate(dist.date)}</TableCell>
+                    <TableCell className="text-xs font-mono font-medium text-foreground">{formatCurrency(dist.amount)}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{dist.type}</TableCell>
+                    <TableCell>
+                      {dc && <StatusBadge label={dc.label} bg={dc.bg} dot={dc.dot} />}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </motion.div>
+
+        {/* Meetings */}
+        {MEETINGS.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
+            className="bg-card border border-border rounded-lg"
+          >
+            <div className="px-4 py-3 border-b border-border">
+              <h2 className="text-sm font-semibold text-foreground">Recent Meetings</h2>
+            </div>
+            <div className="p-4 space-y-3">
+              {MEETINGS.map((meeting) => (
+                <div key={meeting.id} className="p-4 bg-secondary/30 rounded-md">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CalendarDays className="size-4 text-primary" />
+                    <span className="text-sm font-medium text-foreground">{meeting.name}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-3">{meeting.agenda}</p>
+                  <div className="bg-background/50 rounded-md p-3 mb-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <FileText className="size-3.5 text-muted-foreground" />
+                      <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Meeting Summary</span>
+                    </div>
+                    <p className="text-xs text-foreground whitespace-pre-line leading-relaxed">{meeting.summary}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="text-[10px] text-muted-foreground">Attendees:</span>
+                    {[...meeting.royaltonAttendees, ...meeting.attendees].map((a) => (
+                      <span key={a} className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-foreground">{a}</span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
       </div>
     </DashboardLayout>
   );

@@ -15,8 +15,10 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/agent" component={Agent} />
-      <Route path="/verticals" component={Verticals} />
-      <Route path="/onboard" component={Onboard} />
+      <Route path="/ventures" component={Verticals} />
+      <Route path="/team" component={Onboard} />
+      <Route path="/spvs" component={Settings} />
+      <Route path="/distributions" component={Settings} />
       <Route path="/settings" component={Settings} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

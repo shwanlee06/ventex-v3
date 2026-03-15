@@ -1,18 +1,21 @@
 // ============================================================================
 // AppSidebar — Swiss Instrument design
 // Fixed left rail, collapsible, gold accent on active, DM Sans typography
+// Venture themes from Airtable data
 // ============================================================================
 
 import { cn } from "@/lib/utils";
-import { VERTICAL_COLORS, type VerticalKey } from "@/lib/data";
+import { THEME_COLORS } from "@/lib/data";
 import {
   LayoutDashboard,
   Bot,
   Layers3,
-  UserPlus,
+  Briefcase,
   Shield,
   ChevronLeft,
   ChevronRight,
+  Users,
+  DollarSign,
 } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useState } from "react";
@@ -29,17 +32,20 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/", icon: <LayoutDashboard className="size-[18px]" /> },
   { label: "AI Agent", href: "/agent", icon: <Bot className="size-[18px]" /> },
-  { label: "Verticals", href: "/verticals", icon: <Layers3 className="size-[18px]" /> },
-  { label: "Onboarding", href: "/onboard", icon: <UserPlus className="size-[18px]" /> },
+  { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-[18px]" /> },
+  { label: "SPVs & Deals", href: "/spvs", icon: <Briefcase className="size-[18px]" /> },
+  { label: "Team", href: "/team", icon: <Users className="size-[18px]" /> },
+  { label: "Distributions", href: "/distributions", icon: <DollarSign className="size-[18px]" /> },
   { label: "Settings", href: "/settings", icon: <Shield className="size-[18px]" /> },
 ];
 
-const VERTICAL_DOTS: { key: VerticalKey; label: string }[] = [
-  { key: "real-estate", label: "RE" },
-  { key: "yachts", label: "YT" },
-  { key: "hospitality", label: "HS" },
-  { key: "fnb", label: "FB" },
-  { key: "energy", label: "EN" },
+const THEME_DOTS = [
+  { key: "Real Estate", abbr: "RE" },
+  { key: "Yacht", abbr: "YT" },
+  { key: "F&B", abbr: "FB" },
+  { key: "Entertainment", abbr: "EN" },
+  { key: "Oil & Gas", abbr: "OG" },
+  { key: "Others", abbr: "OT" },
 ];
 
 export default function AppSidebar() {
@@ -112,7 +118,7 @@ export default function AppSidebar() {
             );
           })}
 
-          {/* Vertical dots */}
+          {/* Theme dots */}
           <div className="mt-4 pt-4 border-t border-border">
             <AnimatePresence>
               {expanded && (
@@ -122,18 +128,18 @@ export default function AppSidebar() {
                   exit={{ opacity: 0 }}
                   className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground px-3 mb-2 font-medium"
                 >
-                  Verticals
+                  Sectors
                 </motion.p>
               )}
             </AnimatePresence>
             <div className={cn("flex gap-2 px-3", expanded ? "flex-col gap-1" : "flex-col items-center")}>
-              {VERTICAL_DOTS.map((v) => {
-                const vc = VERTICAL_COLORS[v.key];
+              {THEME_DOTS.map((v) => {
+                const tc = THEME_COLORS[v.key];
                 return (
                   <div key={v.key} className="flex items-center gap-3">
                     <div
                       className="size-[6px] rounded-full flex-shrink-0"
-                      style={{ backgroundColor: vc.color }}
+                      style={{ backgroundColor: tc?.color || "#888" }}
                     />
                     <AnimatePresence>
                       {expanded && (
@@ -143,7 +149,7 @@ export default function AppSidebar() {
                           exit={{ opacity: 0 }}
                           className="text-xs text-muted-foreground"
                         >
-                          {vc.label}
+                          {tc?.label || v.key}
                         </motion.span>
                       )}
                     </AnimatePresence>
@@ -167,7 +173,7 @@ export default function AppSidebar() {
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-sidebar border-t border-border flex items-center justify-around h-14 px-2">
-        {NAV_ITEMS.map((item) => {
+        {NAV_ITEMS.slice(0, 5).map((item) => {
           const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
           return (
             <Link key={item.href} href={item.href}>

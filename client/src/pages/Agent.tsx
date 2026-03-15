@@ -1,6 +1,6 @@
 // ============================================================================
 // AI Agent Page — Swiss Instrument design
-// Split layout: left = pending approvals + context metrics, right = chat
+// Split layout: left = portfolio context + open tasks, right = chat
 // Quick-action buttons, typing indicator, human-in-the-loop approve
 // ============================================================================
 
@@ -8,10 +8,20 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
-import { METRICS, COMPLIANCE_ITEMS, VERTICAL_COLORS, AGENT_CONTEXT, formatDate } from "@/lib/data";
+import {
+  METRICS,
+  TASKS,
+  SPVS,
+  VENTURES,
+  DISTRIBUTIONS,
+  STATUS_CONFIG,
+  getThemeColor,
+  getTaskStatusFromDate,
+  formatDate,
+  formatCurrency,
+} from "@/lib/data";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Send,
   Bot,
@@ -22,10 +32,9 @@ import {
   CalendarClock,
   CheckCircle2,
   XCircle,
-  AlertTriangle,
-  Activity,
-  Clock,
-  Users,
+  Layers3,
+  Briefcase,
+  ListChecks,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -39,71 +48,70 @@ interface ChatMessage {
 }
 
 const QUICK_ACTIONS = [
-  { label: "Weekly ops summary", icon: <FileText className="size-3.5" />, prompt: "Give me a weekly operations summary across all verticals." },
-  { label: "Draft vendor email", icon: <Mail className="size-3.5" />, prompt: "Draft a professional email to our vendor regarding the pending invoice reconciliation for Real Estate Q1." },
-  { label: "Compliance deadlines", icon: <CalendarClock className="size-3.5" />, prompt: "List all upcoming compliance deadlines across all verticals, sorted by urgency." },
+  { label: "Portfolio summary", icon: <FileText className="size-3.5" />, prompt: "Give me a portfolio summary across all ventures and SPVs." },
+  { label: "Draft LP update", icon: <Mail className="size-3.5" />, prompt: "Draft a professional LP update email covering recent distributions and venture progress." },
+  { label: "Open tasks review", icon: <CalendarClock className="size-3.5" />, prompt: "List all open tasks sorted by priority and due date." },
 ];
 
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
     id: "sys-1",
     role: "assistant",
-    content: "Good afternoon. I'm your ATLAS Venture Ops assistant. I have context on all 5 verticals, 2 active clients, and 3 compliance alerts requiring attention.\n\nHow can I help you today?",
+    content: `Good afternoon. I'm your ATLAS Venture Ops assistant. I have context on ${VENTURES.length} ventures across 6 sectors, ${SPVS.length} SPVs, and ${TASKS.filter(t => t.status === "open").length} open tasks.\n\nRecent highlights:\n- ${formatCurrency(METRICS.paidDistributions)} in distributions paid\n- ${SPVS.filter(s => s.stage === "Active deal").length} active SPV deals\n- ${TASKS.filter(t => t.priority === "High").length} high-priority task(s) pending\n\nHow can I help you today?`,
     timestamp: new Date(),
   },
 ];
 
-// Simulated responses
+// Simulated responses using real data
 const SIMULATED_RESPONSES: Record<string, string> = {
-  "weekly ops summary": `**Weekly Operations Summary — Week 11, 2026**
+  "portfolio summary": `**Portfolio Summary — Royalton Venture Holding**
 
-**Overall Performance:**
-- 247 tasks automated across all verticals
-- 61 hours reclaimed for client teams
-- 3 compliance items requiring immediate attention
+**Ventures (${VENTURES.length} total):**
+${Object.entries(VENTURES.reduce((acc, v) => { acc[v.theme] = (acc[v.theme] || 0) + 1; return acc; }, {} as Record<string, number>)).map(([theme, count]) => `- **${theme}:** ${count} ventures`).join('\n')}
 
-**Real Estate:**
-- 3 lease renewals in pipeline (2 pending, 1 completed)
-- Q1 vendor invoices fully reconciled (12 invoices, £284K total)
-- Fire safety certificate for 42 Mayfair scheduled for Apr 15
+**Active Ventures:** ${VENTURES.filter(v => v.status === "In progress").length} in progress
+**Key Locations:** ${Array.from(new Set(VENTURES.map(v => v.location).filter(l => l !== "TBD"))).join(", ")}
 
-**Yachts:**
-- **ALERT:** Crew certification overdue 8 days on M/Y Solaris — escalation recommended
-- Insurance renewal automated for Apr 1
-- Monaco dock reservation confirmed
+**SPVs (${SPVS.length} total):**
+- Active Deals: ${SPVS.filter(s => s.stage === "Active deal").length}
+- In Negotiation: ${SPVS.filter(s => s.stage === "In negotiation").length}
+- Closed: ${SPVS.filter(s => s.stage === "Closed deal").length}
 
-**Hospitality:**
-- H&S inspection prep underway for Apr 3
-- Staff rota for week 12 pending approval
-- Feb guest feedback analysis completed — NPS score: 72
+**High Priority SPV:** Venezuela Mining Rights — ${SPVS.find(s => s.name === "Venezuela Mining Rights")?.currentStatus || "Active"}
 
-**F&B:**
-- Liquor license renewal due Mar 31 — application drafted
-- POS integration agent deployment at 78% completion
-- Spring menu cost analysis completed — 4.2% margin improvement identified
+**Distributions:**
+- Total: ${formatCurrency(METRICS.totalDistributions)}
+- Paid: ${formatCurrency(METRICS.paidDistributions)}
+${DISTRIBUTIONS.map(d => `- ${d.name}: ${formatCurrency(d.amount)} (${d.status})`).join('\n')}
 
-**Energy:**
-- Solar array maintenance scheduled for Mar 25
-- Grid compliance audit pending for Apr 10
-- Q1 output report generated — 12% above forecast`,
+**Team:** ${METRICS.totalTeam} members across operations, finance, legal, and design.
 
-  "draft vendor email": `Here's a draft vendor email for your review:
+**Key Partner:** Monterock International (UAE) — Nammos brand ventures.`,
+
+  "lp update": `Here's a draft LP update for your review:
 
 ---
 
-**Subject:** Q1 Invoice Reconciliation — Real Estate Portfolio
+**Subject:** Royalton Venture Holding — Q1 2026 LP Update
 
-Dear [Vendor Name],
+Dear Limited Partners,
 
-I hope this message finds you well. I'm writing regarding the Q1 2026 invoice reconciliation for our real estate portfolio.
+We are pleased to provide an update on the Royalton portfolio:
 
-Our automated review has identified 12 invoices totaling £284,000 that have been processed and reconciled. We'd like to confirm the following:
+**Portfolio Activity:**
+Our portfolio now comprises ${VENTURES.length} ventures spanning Real Estate, F&B, Yacht, Entertainment, and other sectors across ${Array.from(new Set(VENTURES.map(v => v.location).filter(l => l !== "TBD"))).length} geographies.
 
-1. All line items match the agreed service schedules
-2. The payment terms remain Net 30 as per our contract
-3. Any outstanding credits from Q4 2025 have been applied
+**Distributions:**
+- Q4 2025 Profit Share: ${formatCurrency(250000)} — Paid via wire transfer
+- Return of Capital (SPV Alpha): ${formatCurrency(100000)} — Paid
+- Scheduled Dividend (REIT Fund I): ${formatCurrency(40000)} — Upcoming
 
-Could you please confirm receipt and verify the reconciliation summary attached? We'd appreciate your response by March 20th to ensure timely processing.
+**Key Developments:**
+- Zarka City (Oman): Vision workshop completed, master plan finalization in progress
+- Nammos Watson Island (USA): Deck preparation underway
+- Venezuela Mining Rights SPV: Awaiting updated financials from founder
+
+We remain committed to transparent communication and disciplined capital deployment.
 
 Best regards,
 ATLAS Operations Team
@@ -112,38 +120,39 @@ ATLAS Operations Team
 
 **⚠️ This is a draft email. Would you like me to send it?** This action requires your approval.`,
 
-  "compliance deadlines": `**Compliance Deadlines — Sorted by Urgency**
+  "open tasks": `**Open Tasks — Sorted by Priority**
 
-| Priority | Vertical | Item | Due Date | Status |
-|----------|----------|------|----------|--------|
-| 🔴 OVERDUE | Yachts | Crew certification — M/Y Solaris | Mar 6 | 8 days overdue |
-| 🟡 URGENT | Real Estate | Lease compliance — Belgravia | Mar 28 | 14 days remaining |
-| 🟡 URGENT | F&B | Liquor license renewal | Mar 31 | 17 days remaining |
-| 🟠 UPCOMING | Hospitality | H&S inspection | Apr 3 | 20 days remaining |
-| 🟠 UPCOMING | Energy | Grid compliance audit | Apr 10 | 27 days remaining |
-| ⚪ SCHEDULED | Real Estate | Fire safety cert — 42 Mayfair | Apr 15 | 32 days remaining |
-| ⚪ SCHEDULED | Yachts | Flag state inspection — M/Y Solaris | Apr 20 | 37 days remaining |
-| ⚪ SCHEDULED | Hospitality | Food hygiene rating renewal | May 1 | 48 days remaining |
+| Priority | Task | Due Date | Assignee |
+|----------|------|----------|----------|
+${TASKS.filter(t => t.status === "open").sort((a, b) => {
+  const p = { High: 0, Medium: 1, Low: 2 };
+  return (p[a.priority as keyof typeof p] ?? 2) - (p[b.priority as keyof typeof p] ?? 2);
+}).map(t => `| ${t.priority === "High" ? "🔴" : t.priority === "Medium" ? "🟡" : "⚪"} ${t.priority} | ${t.title} | ${t.dueDate} | ${t.assignees.join(", ") || "—"} |`).join('\n')}
+
+**Summary:**
+- ${TASKS.filter(t => t.priority === "High" && t.status === "open").length} high-priority tasks
+- ${TASKS.filter(t => getTaskStatusFromDate(t) === "overdue").length} overdue tasks
+- ${TASKS.filter(t => t.status === "complete").length} completed tasks
 
 **Recommended Actions:**
-1. **Immediate:** Escalate M/Y Solaris crew certification — 8 days overdue
-2. **This week:** Review Belgravia lease compliance documentation
-3. **Next week:** Submit F&B liquor license renewal application`,
+1. **Immediate:** Complete Lagonissi Nammos deal structure meeting (High priority)
+2. **This week:** Advance Nammos Watson Island deck preparation
+3. **Schedule:** Zarka City vision workshop coordination`,
 };
 
 function getSimulatedResponse(input: string): { content: string; requiresApproval: boolean } {
   const lower = input.toLowerCase();
-  if (lower.includes("summary") || lower.includes("ops")) {
-    return { content: SIMULATED_RESPONSES["weekly ops summary"], requiresApproval: false };
+  if (lower.includes("summary") || lower.includes("portfolio") || lower.includes("overview")) {
+    return { content: SIMULATED_RESPONSES["portfolio summary"], requiresApproval: false };
   }
-  if (lower.includes("email") || lower.includes("vendor") || lower.includes("draft")) {
-    return { content: SIMULATED_RESPONSES["draft vendor email"], requiresApproval: true };
+  if (lower.includes("email") || lower.includes("lp") || lower.includes("draft") || lower.includes("update")) {
+    return { content: SIMULATED_RESPONSES["lp update"], requiresApproval: true };
   }
-  if (lower.includes("compliance") || lower.includes("deadline")) {
-    return { content: SIMULATED_RESPONSES["compliance deadlines"], requiresApproval: false };
+  if (lower.includes("task") || lower.includes("open") || lower.includes("deadline") || lower.includes("priority")) {
+    return { content: SIMULATED_RESPONSES["open tasks"], requiresApproval: false };
   }
   return {
-    content: `I've analyzed your request. Based on current portfolio data:\n\n- **247 tasks** automated this week across 5 verticals\n- **3 compliance alerts** require attention\n- **2 active clients** (Meridian Holdings live, Solaris Group onboarding)\n\nCould you be more specific about which vertical or task you'd like me to focus on? I can provide detailed breakdowns for Real Estate, Yachts, Hospitality, F&B, or Energy.`,
+    content: `Based on the current portfolio data:\n\n- **${VENTURES.length} ventures** across 6 sectors\n- **${SPVS.filter(s => s.stage === "Active deal").length} active SPV deals** with ${SPVS.filter(s => s.stage === "In negotiation").length} in negotiation\n- **${TASKS.filter(t => t.status === "open").length} open tasks** (${TASKS.filter(t => t.priority === "High").length} high priority)\n- **${formatCurrency(METRICS.paidDistributions)}** distributed to LPs\n\nCould you be more specific? I can provide detailed breakdowns for any venture, SPV, team member, or distribution.`,
     requiresApproval: false,
   };
 }
@@ -179,12 +188,10 @@ export default function Agent() {
     setInput("");
     setIsTyping(true);
 
-    // Reset textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
 
-    // Simulate response delay
     setTimeout(() => {
       const response = getSimulatedResponse(text);
       const assistantMsg: ChatMessage = {
@@ -218,59 +225,60 @@ export default function Agent() {
     }
   };
 
-  const pendingAlerts = COMPLIANCE_ITEMS.filter((c) => c.status === "overdue" || c.status === "pending").slice(0, 3);
+  const openTasks = TASKS.filter(t => t.status === "open").slice(0, 3);
 
   return (
-    <DashboardLayout title="AI Agent" subtitle="CLAUDE-POWERED OPS ASSISTANT">
+    <DashboardLayout title="AI Agent" subtitle="ATLAS OPS ASSISTANT">
       <div className="flex flex-col lg:flex-row h-[calc(100vh-3.5rem)] overflow-hidden">
-        {/* Left panel: Context + Approvals */}
+        {/* Left panel: Context */}
         <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-border p-4 overflow-y-auto flex-shrink-0">
-          {/* Agent context metrics */}
           <div className="space-y-4">
             <h3 className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">
-              Agent Context
+              Portfolio Context
             </h3>
             <div className="grid grid-cols-3 lg:grid-cols-1 gap-2">
               <div className="bg-card border border-border rounded-md p-3">
                 <div className="flex items-center gap-2 mb-1">
-                  <Activity className="size-3.5 text-blue-400" />
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Tasks</span>
+                  <Layers3 className="size-3.5 text-blue-400" />
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Ventures</span>
                 </div>
-                <span className="text-lg font-mono font-semibold text-foreground">{METRICS.tasksAutomatedThisWeek}</span>
+                <span className="text-lg font-mono font-semibold text-foreground">{METRICS.totalVentures}</span>
               </div>
               <div className="bg-card border border-border rounded-md p-3">
                 <div className="flex items-center gap-2 mb-1">
-                  <Clock className="size-3.5 text-emerald-400" />
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Hours</span>
+                  <Briefcase className="size-3.5 text-emerald-400" />
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">SPVs</span>
                 </div>
-                <span className="text-lg font-mono font-semibold text-foreground">{METRICS.hoursReclaimed}</span>
+                <span className="text-lg font-mono font-semibold text-foreground">{METRICS.totalSPVs}</span>
               </div>
               <div className="bg-card border border-border rounded-md p-3">
                 <div className="flex items-center gap-2 mb-1">
-                  <Users className="size-3.5 text-primary" />
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Clients</span>
+                  <ListChecks className="size-3.5 text-amber-400" />
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Open Tasks</span>
                 </div>
-                <span className="text-lg font-mono font-semibold text-foreground">{METRICS.activeClients}</span>
+                <span className="text-lg font-mono font-semibold text-foreground">{METRICS.openTasks}</span>
               </div>
             </div>
 
-            {/* Pending alerts */}
+            {/* Open Tasks */}
             <div className="mt-6">
               <h3 className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium mb-3">
-                Compliance Alerts
+                Priority Tasks
               </h3>
               <div className="space-y-2">
-                {pendingAlerts.map((alert) => {
-                  const vc = VERTICAL_COLORS[alert.vertical];
+                {openTasks.map((task) => {
+                  const resolvedStatus = getTaskStatusFromDate(task);
+                  const sc = STATUS_CONFIG[resolvedStatus];
                   return (
-                    <div key={alert.id} className="bg-card border border-border rounded-md p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="size-1.5 rounded-full" style={{ backgroundColor: vc.color }} />
-                        <span className="text-[10px] font-mono text-muted-foreground">{vc.label}</span>
-                        <StatusBadge status={alert.status} className="ml-auto" />
+                    <div key={task.id} className="bg-card border border-border rounded-md p-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded", task.priority === "High" ? "bg-red-500/10 text-red-400" : "bg-amber-500/10 text-amber-400")}>
+                          {task.priority}
+                        </span>
+                        <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />
                       </div>
-                      <p className="text-xs text-foreground">{alert.item}</p>
-                      <p className="text-[10px] font-mono text-muted-foreground mt-1">Due {formatDate(alert.dueDate)}</p>
+                      <p className="text-xs text-foreground mt-1">{task.title}</p>
+                      <p className="text-[10px] font-mono text-muted-foreground mt-1">Due {formatDate(task.dueDate)}</p>
                     </div>
                   );
                 })}
@@ -330,7 +338,6 @@ export default function Agent() {
                         {msg.timestamp.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
                       </span>
 
-                      {/* Approval buttons */}
                       {msg.requiresApproval && msg.approved === undefined && (
                         <div className="flex items-center gap-2">
                           <button
@@ -371,7 +378,6 @@ export default function Agent() {
               ))}
             </AnimatePresence>
 
-            {/* Typing indicator */}
             {isTyping && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -400,7 +406,7 @@ export default function Agent() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask the agent anything..."
+                placeholder="Ask about ventures, SPVs, tasks, distributions..."
                 className="flex-1 min-h-[44px] max-h-[120px] resize-none bg-secondary/30 border-border text-sm"
                 rows={1}
               />

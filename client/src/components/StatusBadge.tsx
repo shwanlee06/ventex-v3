@@ -1,28 +1,33 @@
 // ============================================================================
 // StatusBadge — Swiss Instrument design
-// Color-coded status badges: Automated (blue), Done (green), Pending (amber), Overdue (red)
+// Flexible status badge that works with multiple status config maps
 // ============================================================================
 
 import { cn } from "@/lib/utils";
-import { STATUS_CONFIG, type TaskStatus } from "@/lib/data";
 
 interface StatusBadgeProps {
-  status: TaskStatus;
+  label: string;
+  color?: string;
+  bg?: string;
+  dot?: string;
   className?: string;
 }
 
-export default function StatusBadge({ status, className }: StatusBadgeProps) {
-  const config = STATUS_CONFIG[status];
+export default function StatusBadge({ label, color, bg, dot, className }: StatusBadgeProps) {
+  // Default styling if no config provided
+  const defaultBg = "bg-secondary text-muted-foreground border-border";
+  const defaultDot = "bg-muted-foreground";
+
   return (
     <span
       className={cn(
         "inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium border",
-        config.bg,
+        bg || defaultBg,
         className
       )}
     >
-      <span className={cn("size-1.5 rounded-full", config.dot)} />
-      {config.label}
+      <span className={cn("size-1.5 rounded-full", dot || defaultDot)} />
+      {label}
     </span>
   );
 }
