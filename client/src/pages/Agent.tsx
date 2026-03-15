@@ -1,5 +1,5 @@
 // ============================================================================
-// AI Agent Page — Claude 4.6 Sonnet — LIVE AI RESPONSES
+// AI Agent Page — Claude 4.6 Sonnet — STREAMING RESPONSES
 // Quick actions, clickable task cards, Enter-to-send, Clear chat, Markdown
 // ============================================================================
 
@@ -14,7 +14,6 @@ import {
   VENTURES,
   DISTRIBUTIONS,
   STATUS_CONFIG,
-  getThemeColor,
   getTaskStatusFromDate,
   formatDate,
   formatCurrency,
@@ -33,7 +32,6 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
-import { trpc } from "@/lib/trpc";
 import { logAction } from "@/lib/operatorSession";
 
 interface ChatMessage {
@@ -44,6 +42,7 @@ interface ChatMessage {
   requiresApproval?: boolean;
   approved?: boolean;
   model?: string;
+  isStreaming?: boolean;
 }
 
 const QUICK_ACTIONS = [
@@ -79,15 +78,77 @@ Distributions: ${distSummary}
 Metrics: Total Ventures=${METRICS.totalVentures}, Active=${METRICS.activeVentures}, Total SPVs=${METRICS.totalSPVs}, Active SPVs=${METRICS.activeSPVs}, Open Tasks=${METRICS.openTasks}, Total Distributions=${formatCurrency(METRICS.totalDistributions)}, Paid=${formatCurrency(METRICS.paidDistributions)}, Team=${METRICS.totalTeam}`;
 }
 
+// Stream AI response via SSE
+async function streamChat(
+  messages: { role: string; content: string }[],
+  onChunk: (text: string) => void,
+  onDone: (model: string) => void,
+  onError: (error: string) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  const response = await fetch("/api/ai/stream", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ messages }),
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Stream request failed: ${response.status}`);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("No response body");
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || !trimmed.startsWith("data: ")) continue;
+
+      const data = trimmed.slice(6);
+      if (data === "[DONE]") {
+        onDone("claude-4.6-sonnet");
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(data);
+        if (parsed.error) {
+          onError(parsed.error);
+          return;
+        }
+        if (parsed.content) {
+          onChunk(parsed.content);
+        }
+        if (parsed.finish_reason && parsed.model) {
+          onDone(parsed.model);
+        }
+      } catch {
+        // Skip malformed chunks
+      }
+    }
+  }
+}
+
 export default function Agent() {
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [taskModal, setTaskModal] = useState<Task | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const chatMutation = trpc.ai.chat.useMutation();
+  const abortRef = useRef<AbortController | null>(null);
+  const streamMsgIdRef = useRef<string>("");
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
@@ -97,10 +158,10 @@ export default function Agent() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping, scrollToBottom]);
+  }, [messages, isStreaming, scrollToBottom]);
 
   const sendMessage = useCallback(async (text: string) => {
-    if (!text.trim() || isTyping) return;
+    if (!text.trim() || isStreaming) return;
 
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
@@ -109,63 +170,132 @@ export default function Agent() {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    const assistantMsgId = `assistant-${Date.now()}`;
+    streamMsgIdRef.current = assistantMsgId;
+
+    const streamingMsg: ChatMessage = {
+      id: assistantMsgId,
+      role: "assistant",
+      content: "",
+      timestamp: new Date(),
+      isStreaming: true,
+      model: "claude-4.6-sonnet",
+    };
+
+    setMessages((prev) => [...prev, userMsg, streamingMsg]);
     setInput("");
-    setIsTyping(true);
+    setIsStreaming(true);
     logAction("AI chat", text.trim().slice(0, 50));
 
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
 
-    try {
-      // Build message history for context (last 10 messages + portfolio context on first user msg)
-      const history = [...messages, userMsg]
-        .filter(m => m.role === "user" || m.role === "assistant")
-        .slice(-10)
-        .map(m => ({
-          role: m.role as "user" | "assistant",
-          content: m.content,
-        }));
+    // Build message history for context (last 10 messages)
+    const allMsgs = [...messages, userMsg];
+    const history = allMsgs
+      .filter(m => m.role === "user" || m.role === "assistant")
+      .slice(-10)
+      .map(m => ({
+        role: m.role as string,
+        content: m.content,
+      }));
 
-      // Inject portfolio context into the first user message
-      if (history.length > 0) {
-        const firstUserIdx = history.findIndex(m => m.role === "user");
-        if (firstUserIdx === history.length - 1) {
-          // This is the latest message, inject context
-          history[history.length - 1] = {
-            ...history[history.length - 1],
-            content: `[Portfolio Context]\n${buildPortfolioContext()}\n\n[User Question]\n${history[history.length - 1].content}`,
-          };
-        }
-      }
-
-      const result = await chatMutation.mutateAsync({ messages: history });
-
-      const assistantMsg: ChatMessage = {
-        id: `assistant-${Date.now()}`,
-        role: "assistant",
-        content: result.content,
-        timestamp: new Date(),
-        requiresApproval: result.requiresApproval,
-        model: result.model,
+    // Inject portfolio context into the latest user message
+    if (history.length > 0) {
+      history[history.length - 1] = {
+        ...history[history.length - 1],
+        content: `[Portfolio Context]\n${buildPortfolioContext()}\n\n[User Question]\n${history[history.length - 1].content}`,
       };
-
-      setMessages((prev) => [...prev, assistantMsg]);
-    } catch (error) {
-      console.error("[AI Chat] Error:", error);
-      const errorMsg: ChatMessage = {
-        id: `error-${Date.now()}`,
-        role: "assistant",
-        content: `I encountered an error processing your request. Please try again.\n\n> ${error instanceof Error ? error.message : "Unknown error"}`,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMsg]);
-      toast.error("AI response failed — please try again");
-    } finally {
-      setIsTyping(false);
     }
-  }, [isTyping, messages, chatMutation]);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    try {
+      await streamChat(
+        history,
+        // onChunk — append each token
+        (chunk) => {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantMsgId
+                ? { ...m, content: m.content + chunk }
+                : m
+            )
+          );
+        },
+        // onDone
+        (model) => {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantMsgId
+                ? {
+                    ...m,
+                    isStreaming: false,
+                    model,
+                    requiresApproval:
+                      m.content.toLowerCase().includes("draft") &&
+                      (m.content.toLowerCase().includes("email") ||
+                        m.content.toLowerCase().includes("memo") ||
+                        m.content.toLowerCase().includes("letter")),
+                  }
+                : m
+            )
+          );
+          setIsStreaming(false);
+        },
+        // onError
+        (error) => {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantMsgId
+                ? {
+                    ...m,
+                    content: `I encountered an error. Please try again.\n\n> ${error}`,
+                    isStreaming: false,
+                  }
+                : m
+            )
+          );
+          setIsStreaming(false);
+          toast.error("AI response failed");
+        },
+        controller.signal,
+      );
+    } catch (error) {
+      if ((error as Error).name === "AbortError") return;
+      console.error("[AI Stream] Error:", error);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantMsgId
+            ? {
+                ...m,
+                content: `I encountered an error processing your request. Please try again.\n\n> ${error instanceof Error ? error.message : "Unknown error"}`,
+                isStreaming: false,
+              }
+            : m
+        )
+      );
+      setIsStreaming(false);
+      toast.error("AI response failed — please try again");
+    }
+  }, [isStreaming, messages]);
+
+  const stopStreaming = useCallback(() => {
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === streamMsgIdRef.current
+          ? { ...m, isStreaming: false }
+          : m
+      )
+    );
+    setIsStreaming(false);
+  }, []);
 
   const handleApprove = useCallback((msgId: string) => {
     setMessages((prev) =>
@@ -184,9 +314,10 @@ export default function Agent() {
   }, []);
 
   const clearChat = useCallback(() => {
+    if (isStreaming) stopStreaming();
     setMessages(INITIAL_MESSAGES);
     toast.info("Chat cleared");
-  }, []);
+  }, [isStreaming, stopStreaming]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -211,9 +342,9 @@ export default function Agent() {
               <Cpu className="size-4 text-primary" />
               <div>
                 <p className="text-[10px] font-mono text-primary font-semibold">CLAUDE 4.6 SONNET</p>
-                <p className="text-[10px] text-muted-foreground">Live AI · Forge API</p>
+                <p className="text-[10px] text-muted-foreground">Streaming · Forge API</p>
               </div>
-              <span className="ml-auto size-2 rounded-full bg-green-400 animate-pulse" />
+              <span className={cn("ml-auto size-2 rounded-full", isStreaming ? "bg-amber-400 animate-pulse" : "bg-green-400 animate-pulse")} />
             </div>
 
             <h3 className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">
@@ -283,7 +414,7 @@ export default function Agent() {
               <button
                 key={action.label}
                 onClick={() => sendMessage(action.prompt)}
-                disabled={isTyping}
+                disabled={isStreaming}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary/50 text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors whitespace-nowrap border border-border disabled:opacity-50"
               >
                 {action.icon}
@@ -317,7 +448,7 @@ export default function Agent() {
                 >
                   {msg.role === "assistant" && (
                     <div className="flex-shrink-0 size-7 rounded-md bg-primary/10 flex items-center justify-center mt-0.5">
-                      <Bot className="size-4 text-primary" />
+                      <Bot className={cn("size-4 text-primary", msg.isStreaming && "animate-pulse")} />
                     </div>
                   )}
 
@@ -329,22 +460,41 @@ export default function Agent() {
                         : "bg-card border border-border text-foreground"
                     )}
                   >
-                    <div className="text-sm leading-relaxed prose prose-invert prose-sm max-w-none [&_table]:text-xs [&_th]:px-2 [&_th]:py-1 [&_td]:px-2 [&_td]:py-1 [&_table]:border-border [&_th]:border-border [&_td]:border-border [&_h2]:text-sm [&_h2]:mt-3 [&_h2]:mb-1 [&_h3]:text-xs [&_h3]:mt-2 [&_h3]:mb-1 [&_li]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_p]:my-1 [&_blockquote]:border-primary/30 [&_blockquote]:bg-primary/5 [&_blockquote]:px-3 [&_blockquote]:py-2 [&_blockquote]:rounded">
-                      <Streamdown>{msg.content}</Streamdown>
-                    </div>
+                    {msg.role === "assistant" && msg.isStreaming && !msg.content ? (
+                      <div className="flex items-center gap-2">
+                        <div className="flex gap-1">
+                          <span className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "0ms" }} />
+                          <span className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "150ms" }} />
+                          <span className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "300ms" }} />
+                        </div>
+                        <span className="text-[10px] font-mono text-muted-foreground">Connecting to Claude 4.6 Sonnet...</span>
+                      </div>
+                    ) : (
+                      <div className="text-sm leading-relaxed prose prose-invert prose-sm max-w-none [&_table]:text-xs [&_th]:px-2 [&_th]:py-1 [&_td]:px-2 [&_td]:py-1 [&_table]:border-border [&_th]:border-border [&_td]:border-border [&_h2]:text-sm [&_h2]:mt-3 [&_h2]:mb-1 [&_h3]:text-xs [&_h3]:mt-2 [&_h3]:mb-1 [&_li]:my-0 [&_ul]:my-1 [&_ol]:my-1 [&_p]:my-1 [&_blockquote]:border-primary/30 [&_blockquote]:bg-primary/5 [&_blockquote]:px-3 [&_blockquote]:py-2 [&_blockquote]:rounded">
+                        <Streamdown>{msg.content}</Streamdown>
+                        {msg.isStreaming && (
+                          <span className="inline-block w-1.5 h-4 bg-primary/60 animate-pulse ml-0.5 align-text-bottom" />
+                        )}
+                      </div>
+                    )}
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-mono text-muted-foreground">
                           {msg.timestamp.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
                         </span>
-                        {msg.role === "assistant" && msg.model && (
+                        {msg.role === "assistant" && msg.model && !msg.isStreaming && (
                           <span className="text-[9px] font-mono text-primary/60 px-1.5 py-0.5 rounded bg-primary/5 border border-primary/10">
                             {msg.model}
                           </span>
                         )}
+                        {msg.isStreaming && (
+                          <span className="text-[9px] font-mono text-amber-400/80 px-1.5 py-0.5 rounded bg-amber-500/5 border border-amber-500/10">
+                            streaming...
+                          </span>
+                        )}
                       </div>
 
-                      {msg.requiresApproval && msg.approved === undefined && (
+                      {!msg.isStreaming && msg.requiresApproval && msg.approved === undefined && (
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleApprove(msg.id)}
@@ -383,28 +533,6 @@ export default function Agent() {
                 </motion.div>
               ))}
             </AnimatePresence>
-
-            {isTyping && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex gap-3"
-              >
-                <div className="size-7 rounded-md bg-primary/10 flex items-center justify-center">
-                  <Bot className="size-4 text-primary" />
-                </div>
-                <div className="bg-card border border-border rounded-lg px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-1">
-                      <span className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <span className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <span className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "300ms" }} />
-                    </div>
-                    <span className="text-[10px] font-mono text-muted-foreground">Claude 4.6 Sonnet is thinking...</span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
           </div>
 
           {/* Input area */}
@@ -419,17 +547,28 @@ export default function Agent() {
                 className="flex-1 min-h-[44px] max-h-[120px] resize-none bg-secondary/30 border-border text-sm"
                 rows={1}
               />
-              <Button
-                onClick={() => sendMessage(input)}
-                disabled={!input.trim() || isTyping}
-                size="icon"
-                className="size-[44px] flex-shrink-0"
-              >
-                <Send className="size-4" />
-              </Button>
+              {isStreaming ? (
+                <Button
+                  onClick={stopStreaming}
+                  variant="destructive"
+                  size="icon"
+                  className="size-[44px] flex-shrink-0"
+                >
+                  <XCircle className="size-4" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => sendMessage(input)}
+                  disabled={!input.trim()}
+                  size="icon"
+                  className="size-[44px] flex-shrink-0"
+                >
+                  <Send className="size-4" />
+                </Button>
+              )}
             </div>
             <p className="text-[10px] text-muted-foreground mt-2 font-mono">
-              Powered by Claude 4.6 Sonnet · Enter to send · Shift+Enter for new line · Destructive actions require approval
+              Powered by Claude 4.6 Sonnet · Streaming enabled · Enter to send · Shift+Enter for new line
             </p>
           </div>
         </div>
