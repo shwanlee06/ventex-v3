@@ -10,6 +10,7 @@ import Verticals from "./pages/Verticals";
 import Onboard from "./pages/Onboard";
 import Settings from "./pages/Settings";
 import Distributions from "./pages/Distributions";
+import SpyOps from "./pages/SpyOps";
 
 function Router() {
   return (
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/team" component={Onboard} />
       <Route path="/spvs" component={Settings} />
       <Route path="/distributions" component={Distributions} />
+      <Route path="/landing" component={SpyOps} />
       <Route path="/settings" component={Settings} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
