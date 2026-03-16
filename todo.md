@@ -212,3 +212,13 @@
 - [x] Airtable sync endpoint tests
 - [x] Auth logout test
 - [x] AI chat test
+
+## FIX — File Persistence (S3 + DB)
+- [x] Build server-side file upload endpoint (S3 storagePut + DB metadata)
+- [x] Wire VentureDetail file uploads to S3 backend instead of in-memory
+- [x] Wire SpvDetail file uploads to S3 backend (new spv_files + spv_folders tables)
+- [x] Files persist across page refresh for all users
+- [x] Folder organization persists in DB (venture_folders + spv_folders tables)
+- [x] File delete removes from DB
+- [x] File download/view works from S3 URLs
+- [x] SPV detail page: full Documents & Folders section with upload, folder create, rename, delete, move, lightbox

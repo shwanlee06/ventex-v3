@@ -224,3 +224,29 @@ export const contacts = mysqlTable("contacts", {
 
 export type Contact = typeof contacts.$inferSelect;
 export type InsertContact = typeof contacts.$inferInsert;
+
+// ── SPV Files ──────────────────────────────────────────────────────────
+export const spvFiles = mysqlTable("spv_files", {
+  id: int("id").autoincrement().primaryKey(),
+  spvId: int("spvId").notNull(),
+  folderId: int("folderId"),
+  filename: varchar("filename", { length: 500 }).notNull(),
+  fileType: varchar("fileType", { length: 128 }),
+  fileSize: bigint("fileSize", { mode: "number" }),
+  fileUrl: text("fileUrl").notNull(),
+  fileKey: varchar("fileKey", { length: 500 }),
+  uploadedBy: varchar("uploadedBy", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SpvFile = typeof spvFiles.$inferSelect;
+export type InsertSpvFile = typeof spvFiles.$inferInsert;
+
+// ── SPV Folders ────────────────────────────────────────────────────────
+export const spvFolders = mysqlTable("spv_folders", {
+  id: int("id").autoincrement().primaryKey(),
+  spvId: int("spvId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  color: varchar("color", { length: 32 }).default("blue"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});

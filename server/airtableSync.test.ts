@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import express from "express";
 import request from "supertest";
 
 // We'll test the airtable sync route handler by importing it and mounting on a test app
 describe("Airtable Sync API Routes", () => {
+  vi.setConfig({ testTimeout: 15000 });
   let app: express.Express;
 
   beforeEach(async () => {

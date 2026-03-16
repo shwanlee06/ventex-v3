@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { spvs, spvVentures, spvTeam, ventures, teamMembers, ventureFiles, activityLog } from "../../drizzle/schema";
+import { spvs, spvVentures, spvTeam, ventures, teamMembers, spvFiles, spvFolders, activityLog } from "../../drizzle/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { storagePut } from "../storage";
@@ -155,6 +155,98 @@ export const spvsRouter = router({
     await db.delete(spvTeam).where(
       and(eq(spvTeam.spvId, input.spvId), eq(spvTeam.memberId, input.memberId))
     );
+    return { success: true };
+  }),
+
+  // ── SPV Files ────────────────────────────────────────────────────────
+  getFiles: publicProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(spvFiles).where(eq(spvFiles.spvId, input.spvId)).orderBy(desc(spvFiles.createdAt));
+  }),
+
+  uploadFile: publicProcedure.input(z.object({
+    spvId: z.number(),
+    filename: z.string(),
+    fileType: z.string(),
+    fileSize: z.number(),
+    fileData: z.string(), // base64
+    folderId: z.number().optional(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const buffer = Buffer.from(input.fileData, "base64");
+    const fileKey = `spvs/${input.spvId}/${nanoid()}-${input.filename}`;
+    const { url } = await storagePut(fileKey, buffer, input.fileType);
+    await db.insert(spvFiles).values({
+      spvId: input.spvId,
+      folderId: input.folderId || null,
+      filename: input.filename,
+      fileType: input.fileType,
+      fileSize: input.fileSize,
+      fileUrl: url,
+      fileKey,
+    });
+    const [s] = await db.select().from(spvs).where(eq(spvs.id, input.spvId)).limit(1);
+    if (s) {
+      await db.insert(activityLog).values({
+        entityType: "spv", entityId: input.spvId, entityName: s.name,
+        action: "File Uploaded", detail: `File "${input.filename}" uploaded to ${s.name}`, userName: "System", sector: s.sector,
+      });
+    }
+    return { success: true, url };
+  }),
+
+  deleteFile: publicProcedure.input(z.object({ fileId: z.number() })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.delete(spvFiles).where(eq(spvFiles.id, input.fileId));
+    return { success: true };
+  }),
+
+  moveFile: publicProcedure.input(z.object({
+    fileId: z.number(),
+    folderId: z.number().nullable(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.update(spvFiles).set({ folderId: input.folderId }).where(eq(spvFiles.id, input.fileId));
+    return { success: true };
+  }),
+
+  // ── SPV Folders ──────────────────────────────────────────────────────
+  getFolders: publicProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(spvFolders).where(eq(spvFolders.spvId, input.spvId));
+  }),
+
+  createFolder: publicProcedure.input(z.object({
+    spvId: z.number(),
+    name: z.string(),
+    color: z.string().default("blue"),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.insert(spvFolders).values(input);
+    return { success: true };
+  }),
+
+  deleteFolder: publicProcedure.input(z.object({ folderId: z.number() })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.update(spvFiles).set({ folderId: null }).where(eq(spvFiles.folderId, input.folderId));
+    await db.delete(spvFolders).where(eq(spvFolders.id, input.folderId));
+    return { success: true };
+  }),
+
+  renameFolder: publicProcedure.input(z.object({
+    folderId: z.number(),
+    name: z.string(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.update(spvFolders).set({ name: input.name }).where(eq(spvFolders.id, input.folderId));
     return { success: true };
   }),
 
