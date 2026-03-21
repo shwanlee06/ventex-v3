@@ -31,6 +31,7 @@ export const ventures = mysqlTable("ventures", {
   nextMilestone: varchar("nextMilestone", { length: 32 }),
   priority: varchar("priority", { length: 32 }).default("Medium"),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
+  healthScore: int("healthScore").default(50),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -250,3 +251,107 @@ export const spvFolders = mysqlTable("spv_folders", {
   color: varchar("color", { length: 32 }).default("blue"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
+
+// ── Document Intelligence ──────────────────────────────────────────────
+export const documentIntelligence = mysqlTable("document_intelligence", {
+  id: int("id").autoincrement().primaryKey(),
+  fileId: int("fileId").notNull(),
+  ventureId: int("ventureId"),
+  spvId: int("spvId"),
+  documentType: varchar("documentType", { length: 64 }),
+  summary: text("summary"),
+  sentiment: varchar("sentiment", { length: 32 }),
+  keyEntities: json("keyEntities").$type<string[]>(),
+  keyFinancialFigures: json("keyFinancialFigures").$type<{ label: string; value: string; currency: string }[]>(),
+  actionItems: json("actionItems").$type<string[]>(),
+  deadlines: json("deadlines").$type<{ description: string; date: string }[]>(),
+  risksMentioned: json("risksMentioned").$type<string[]>(),
+  rawText: text("rawText"),
+  processingStatus: varchar("processingStatus", { length: 32 }).default("pending").notNull(),
+  processedAt: timestamp("processedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DocumentIntel = typeof documentIntelligence.$inferSelect;
+export type InsertDocumentIntel = typeof documentIntelligence.$inferInsert;
+
+// ── Venture Risks ──────────────────────────────────────────────────────
+export const ventureRisks = mysqlTable("venture_risks", {
+  id: int("id").autoincrement().primaryKey(),
+  ventureId: int("ventureId").notNull(),
+  riskDescription: text("riskDescription").notNull(),
+  sourceFileId: int("sourceFileId"),
+  status: varchar("status", { length: 32 }).default("Monitoring").notNull(),
+  identifiedAt: timestamp("identifiedAt").defaultNow().notNull(),
+});
+
+export type VentureRisk = typeof ventureRisks.$inferSelect;
+export type InsertVentureRisk = typeof ventureRisks.$inferInsert;
+
+// ── Meeting Briefs ─────────────────────────────────────────────────────
+export const meetingBriefs = mysqlTable("meeting_briefs", {
+  id: int("id").autoincrement().primaryKey(),
+  fileId: int("fileId").notNull(),
+  ventureId: int("ventureId"),
+  meetingDate: varchar("meetingDate", { length: 32 }),
+  attendees: json("attendees").$type<string[]>(),
+  keyDecisions: json("keyDecisions").$type<string[]>(),
+  actionItems: json("actionItems").$type<{ item: string; assignee: string }[]>(),
+  nextMeetingDate: varchar("nextMeetingDate", { length: 32 }),
+  headline: varchar("headline", { length: 500 }),
+  summary: text("summary"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MeetingBrief = typeof meetingBriefs.$inferSelect;
+export type InsertMeetingBrief = typeof meetingBriefs.$inferInsert;
+
+// ── AI Observations ────────────────────────────────────────────────────
+export const aiObservations = mysqlTable("ai_observations", {
+  id: int("id").autoincrement().primaryKey(),
+  observationType: varchar("observationType", { length: 64 }).notNull(),
+  ventureId: int("ventureId"),
+  ventureName: varchar("ventureName", { length: 255 }),
+  observation: text("observation").notNull(),
+  recommendedAction: text("recommendedAction"),
+  suggestedTaskTitle: varchar("suggestedTaskTitle", { length: 500 }),
+  suggestedAssignee: varchar("suggestedAssignee", { length: 255 }),
+  suggestedDueDays: int("suggestedDueDays"),
+  dismissed: int("dismissed").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AiObservation = typeof aiObservations.$inferSelect;
+export type InsertAiObservation = typeof aiObservations.$inferInsert;
+
+// ── Daily Briefs ───────────────────────────────────────────────────────
+export const dailyBriefs = mysqlTable("daily_briefs", {
+  id: int("id").autoincrement().primaryKey(),
+  briefDate: varchar("briefDate", { length: 16 }).notNull(),
+  headline: varchar("headline", { length: 500 }),
+  priorityItems: json("priorityItems").$type<{ type: string; description: string; venture?: string; action?: string; daysRemaining?: number }[]>(),
+  portfolioHealth: varchar("portfolioHealth", { length: 32 }),
+  recommendedActions: json("recommendedActions").$type<string[]>(),
+  winsThisWeek: json("winsThisWeek").$type<string[]>(),
+  generatedAt: timestamp("generatedAt").defaultNow().notNull(),
+});
+
+export type DailyBrief = typeof dailyBriefs.$inferSelect;
+export type InsertDailyBrief = typeof dailyBriefs.$inferInsert;
+
+// ── Smart Alerts ───────────────────────────────────────────────────────
+export const smartAlerts = mysqlTable("smart_alerts", {
+  id: int("id").autoincrement().primaryKey(),
+  severity: varchar("severity", { length: 16 }).notNull(), // critical, warning, info
+  alertType: varchar("alertType", { length: 64 }).notNull(),
+  message: text("message").notNull(),
+  entityType: varchar("entityType", { length: 64 }),
+  entityId: int("entityId"),
+  entityName: varchar("entityName", { length: 255 }),
+  actionUrl: varchar("actionUrl", { length: 500 }),
+  dismissed: int("dismissed").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SmartAlert = typeof smartAlerts.$inferSelect;
+export type InsertSmartAlert = typeof smartAlerts.$inferInsert;

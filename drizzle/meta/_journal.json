@@ -22,6 +22,20 @@
       "when": 1773626896842,
       "tag": "0002_last_gravity",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1774105610552,
+      "tag": "0003_nervous_lady_bullseye",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1774105648204,
+      "tag": "0004_naive_banshee",
+      "breakpoints": true
     }
   ]
 }

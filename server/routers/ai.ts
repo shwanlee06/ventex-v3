@@ -1,27 +1,110 @@
 // ============================================================================
-// AI Chat Router — Claude 4.6 Sonnet via Forge API
+// AI Chat Router — Document-Aware Intelligence Agent
 // ============================================================================
 
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { invokeLLM, type Message } from "../_core/llm";
+import { getDb } from "../db";
+import {
+  ventures, tasks, spvs, distributions, teamMembers,
+  documentIntelligence, ventureRisks, dailyBriefs, smartAlerts,
+  aiObservations, activityLog,
+} from "../../drizzle/schema";
+import { desc, eq } from "drizzle-orm";
 
-const SYSTEM_PROMPT = `You are the ATLAS Venture Intelligence Operations assistant for Thalora. You are powered by Claude 4.6 Sonnet.
+async function buildLiveContext(): Promise<string> {
+  try {
+    const db = await getDb();
+    if (!db) return "";
+
+    const [allVentures, allTasks, allSpvs, allDist, allTeam, recentDocs, allRisks, latestBrief, alerts, observations] = await Promise.all([
+      db.select().from(ventures),
+      db.select().from(tasks),
+      db.select().from(spvs),
+      db.select().from(distributions),
+      db.select().from(teamMembers),
+      db.select().from(documentIntelligence).where(eq(documentIntelligence.processingStatus, "completed")).orderBy(desc(documentIntelligence.processedAt)).limit(10),
+      db.select().from(ventureRisks),
+      db.select().from(dailyBriefs).orderBy(desc(dailyBriefs.generatedAt)).limit(1),
+      db.select().from(smartAlerts).where(eq(smartAlerts.dismissed, 0)).limit(10),
+      db.select().from(aiObservations).where(eq(aiObservations.dismissed, 0)).limit(5),
+    ]);
+
+    const overdueTasks = allTasks.filter((t: any) => {
+      if (!t.dueDate || t.status === "complete") return false;
+      return new Date(t.dueDate) < new Date();
+    });
+
+    const activeVentures = allVentures.filter((v: any) => v.status === "In progress");
+    const activeSpvs = allSpvs.filter((s: any) => s.stage === "Active deal" || s.stage === "In negotiation");
+
+    let context = `
+=== LIVE PORTFOLIO DATA ===
+
+VENTURES (${allVentures.length} total, ${activeVentures.length} active):
+${allVentures.map((v: any) => `- ${v.name} | ${v.sector} | ${v.location} | Status: ${v.status} | Health: ${v.healthScore || "N/A"}/100`).join("\n")}
+
+TASKS (${allTasks.length} total, ${overdueTasks.length} overdue):
+${allTasks.slice(0, 15).map((t: any) => `- [${t.status}] ${t.title}${t.dueDate ? ` (due: ${t.dueDate})` : ""}${t.priority ? ` [${t.priority}]` : ""}`).join("\n")}
+
+SPVs (${allSpvs.length} total, ${activeSpvs.length} active):
+${allSpvs.map((s: any) => `- ${s.name} | ${s.theme} | Stage: ${s.stage} | Priority: ${s.priority}`).join("\n")}
+
+TEAM (${allTeam.length} members):
+${allTeam.map((t: any) => `- ${t.name} (${t.role})`).join("\n")}
+
+DISTRIBUTIONS: ${allDist.length} total, ${allDist.filter((d: any) => d.status === "Paid").length} paid
+
+IDENTIFIED RISKS (${allRisks.length}):
+${allRisks.slice(0, 10).map((r: any) => `- [${r.status}] ${r.riskDescription}`).join("\n")}
+`;
+
+    if (recentDocs.length > 0) {
+      context += `\nRECENT DOCUMENT INTELLIGENCE (${recentDocs.length} analyzed):
+${recentDocs.map((d: any) => `- [${d.documentType}] ${d.summary?.slice(0, 150)}`).join("\n")}
+`;
+    }
+
+    if (latestBrief.length > 0) {
+      const brief = latestBrief[0];
+      context += `\nLATEST DAILY BRIEF (${brief.briefDate}):
+Headline: ${brief.headline}
+Portfolio Health: ${brief.portfolioHealth}
+`;
+    }
+
+    if (alerts.length > 0) {
+      context += `\nACTIVE SMART ALERTS:
+${alerts.map((a: any) => `- [${a.severity}] ${a.message}`).join("\n")}
+`;
+    }
+
+    if (observations.length > 0) {
+      context += `\nAI OBSERVATIONS:
+${observations.map((o: any) => `- [${o.observationType}] ${o.observation}`).join("\n")}
+`;
+    }
+
+    return context;
+  } catch (e) {
+    console.error("Failed to build live context:", e);
+    return "";
+  }
+}
+
+const BASE_SYSTEM_PROMPT = `You are the ATLAS Venture Intelligence Operations assistant for Royalton Venture Holding. You have LIVE access to the full portfolio database.
 
 You serve as an AI-powered operations assistant for a multi-sector venture holding company. The company manages ventures across Real Estate, F&B, Yacht, Entertainment, Oil & Gas, and other sectors.
 
-Key portfolio context:
-- The company operates across multiple geographies including Dubai, Oman, Greece, USA, and Lebanon
-- Key ventures include Nammos brand partnerships (Watson Island, Lagonissi), Zarka City (Oman), and various real estate projects
-- SPV (Special Purpose Vehicle) deals are tracked through stages: Active deal, In negotiation, Closed deal, Dropped deal
-- The team includes Jimmy Frangi (Founder), Carl Frangi (Investor Relations), Anton Maghami (VP Operations), Jon Eichner (COO), Maher Abou Chakra (Accounting), and others
-- Key partner: Monterock International (UAE) — luxury lifestyle holding company
-
-Your role:
-1. Answer questions about venture operations, SPV pipeline, team, and distributions
+Your capabilities:
+1. Answer questions about venture operations, SPV pipeline, team, and distributions using LIVE DATA
 2. Draft professional communications (LP updates, investor memos, internal briefs)
-3. Provide strategic analysis and recommendations
+3. Provide strategic analysis and recommendations based on actual portfolio data
 4. Help with task prioritization and operational planning
+5. Analyze document intelligence findings and surface insights
+6. Reference specific risks, deadlines, and action items from processed documents
+7. Provide venture health assessments based on real metrics
 
 Communication style:
 - Professional, concise, and data-driven
@@ -29,8 +112,9 @@ Communication style:
 - When drafting emails or communications, mark them as requiring approval
 - Reference specific ventures, SPVs, and team members by name when relevant
 - Use tables for comparative data when appropriate
+- When discussing documents, reference the specific findings from document intelligence
 
-Important: You are Claude 4.6 Sonnet. When asked about your model or identity, confirm this.`;
+Important: Always use the live portfolio data provided below to answer questions accurately. Do not make up data.`;
 
 const messageSchema = z.object({
   role: z.enum(["user", "assistant"]),
@@ -45,8 +129,15 @@ export const aiRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+      // Build live context from database
+      const liveContext = await buildLiveContext();
+
+      const systemPrompt = `${BASE_SYSTEM_PROMPT}
+
+${liveContext}`;
+
       const llmMessages: Message[] = [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         ...input.messages.map((m) => ({
           role: m.role as "user" | "assistant",
           content: m.content,
@@ -81,7 +172,7 @@ export const aiRouter = router({
         return {
           content: textContent,
           requiresApproval,
-          model: result.model || "claude-4.6-sonnet",
+          model: result.model || "atlas-intelligence",
         };
       } catch (error: unknown) {
         console.error("[AI Chat] Error:", error);

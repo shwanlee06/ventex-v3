@@ -1,0 +1,1 @@
+ALTER TABLE `ventures` ADD `healthScore` int DEFAULT 50;

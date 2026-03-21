@@ -17,6 +17,7 @@ import {
   File, Image, FileSpreadsheet, Download, Eye,
   X, AlertTriangle, ZoomIn, ZoomOut, FolderPlus, Folder, FolderOpen,
   ChevronRight, MoveRight, MoreHorizontal, Loader2,
+  Brain, Shield, Lightbulb, TrendingUp, Sparkles, RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,6 +95,37 @@ export default function VentureDetail() {
   const tasksQ = trpc.ventures.getTasks.useQuery({ ventureId: ventureId! }, { enabled: !!ventureId });
   const allTeamQ = trpc.team.list.useQuery();
   const activityQ = trpc.activity.recent.useQuery({ limit: 20 });
+
+  // ── Intelligence queries ──────────────────────────────────────────
+  const healthQ = trpc.intelligence.getVentureHealth.useQuery({ ventureId: ventureId! }, { enabled: !!ventureId });
+  const risksQ = trpc.docIntel.getVentureRisks.useQuery({ ventureId: ventureId! }, { enabled: !!ventureId });
+  const observationsQ = trpc.intelligence.getObservations.useQuery({ ventureId: ventureId!, limit: 5 }, { enabled: !!ventureId });
+  const docsIntelQ = trpc.docIntel.getByVenture.useQuery({ ventureId: ventureId! }, { enabled: !!ventureId });
+
+  const processDocument = trpc.docIntel.processFile.useMutation({
+    onSuccess: () => {
+      utils.docIntel.getByVenture.invalidate({ ventureId: ventureId! });
+      utils.docIntel.getVentureRisks.invalidate({ ventureId: ventureId! });
+      utils.intelligence.getVentureHealth.invalidate({ ventureId: ventureId! });
+      toast.success("Document processed by AI");
+    },
+    onError: (e: any) => toast.error(`Processing failed: ${e.message}`),
+  });
+  const acceptObs = trpc.intelligence.acceptObservation.useMutation({
+    onSuccess: () => {
+      utils.intelligence.getObservations.invalidate();
+      utils.tasks.list.invalidate();
+      toast.success("Task created from recommendation");
+    },
+  });
+  const dismissObs = trpc.intelligence.dismissObservation.useMutation({
+    onSuccess: () => utils.intelligence.getObservations.invalidate(),
+  });
+
+  const healthScore = healthQ.data?.score ?? 0;
+  const risks = risksQ.data || [];
+  const observations = observationsQ.data || [];
+  const processedDocs = docsIntelQ.data || [];
 
   const assignedTeam = teamQ.data || [];
   const allFiles = filesQ.data || [];
@@ -583,6 +615,14 @@ export default function VentureDetail() {
                             </DropdownMenuContent>
                           </DropdownMenu>
                         )}
+                        <button
+                          onClick={() => processDocument.mutate({ fileId: file.id, ventureId: ventureId!, fileUrl: file.fileUrl, filename: file.filename, fileType: file.fileType || "application/octet-stream", fileSize: file.fileSize || 0 })}
+                          className="size-7 rounded-md flex items-center justify-center hover:bg-purple-500/10 text-muted-foreground hover:text-purple-400 transition-colors"
+                          title="Process with AI"
+                          disabled={processDocument.isPending}
+                        >
+                          <Brain className="size-3.5" />
+                        </button>
                         <button onClick={() => handleOpenFile(file.fileUrl, file.filename)} className="size-7 rounded-md flex items-center justify-center hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors" title="Preview">
                           <Eye className="size-3.5" />
                         </button>
@@ -651,6 +691,147 @@ export default function VentureDetail() {
 
           {/* Right Column */}
           <div className="space-y-6">
+            {/* Health Score */}
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card border border-border rounded-lg">
+              <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <TrendingUp className="size-4 text-primary" /> Health Score
+                </h2>
+                <span className="text-[10px] font-mono text-muted-foreground">AI-calculated</span>
+              </div>
+              <div className="p-4 flex items-center gap-4">
+                <div className={cn(
+                  "size-16 rounded-full border-4 flex items-center justify-center font-mono text-lg font-bold",
+                  healthScore >= 80 ? "border-emerald-500 text-emerald-400" :
+                  healthScore >= 60 ? "border-amber-500 text-amber-400" :
+                  "border-red-500 text-red-400"
+                )}>
+                  {healthScore}
+                </div>
+                <div>
+                  <p className={cn("text-sm font-medium",
+                    healthScore >= 80 ? "text-emerald-400" :
+                    healthScore >= 60 ? "text-amber-400" :
+                    "text-red-400"
+                  )}>
+                    {healthScore >= 80 ? "Healthy" : healthScore >= 60 ? "Needs Attention" : "At Risk"}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    Based on task completion, risks, and activity
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* AI Risks */}
+            {risks.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="bg-card border border-border rounded-lg">
+                <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <Shield className="size-4 text-red-400" /> Identified Risks
+                  </h2>
+                  <span className="text-[10px] font-mono text-muted-foreground">{risks.length} risk{risks.length !== 1 ? "s" : ""}</span>
+                </div>
+                <div className="divide-y divide-border max-h-[300px] overflow-y-auto">
+                  {risks.map((risk: any) => (
+                    <div key={risk.id} className="px-4 py-3">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className={cn("size-3.5 mt-0.5 flex-shrink-0",
+                          risk.severity === "Critical" ? "text-red-400" :
+                          risk.severity === "High" ? "text-orange-400" :
+                          risk.severity === "Medium" ? "text-amber-400" : "text-muted-foreground"
+                        )} />
+                        <div>
+                          <p className="text-xs text-foreground">{risk.riskDescription}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded",
+                              risk.severity === "Critical" ? "bg-red-500/10 text-red-400" :
+                              risk.severity === "High" ? "bg-orange-500/10 text-orange-400" :
+                              risk.severity === "Medium" ? "bg-amber-500/10 text-amber-400" : "bg-secondary text-muted-foreground"
+                            )}>{risk.severity}</span>
+                            <span className="text-[10px] text-muted-foreground">{risk.status}</span>
+                          </div>
+                          {risk.mitigationAction && (
+                            <p className="text-[10px] text-muted-foreground mt-1 italic">Mitigation: {risk.mitigationAction}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* AI Recommendations */}
+            {observations.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }} className="bg-card border border-border rounded-lg">
+                <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <Lightbulb className="size-4 text-amber-400" /> AI Recommendations
+                  </h2>
+                  <span className="text-[10px] font-mono text-muted-foreground">{observations.length}</span>
+                </div>
+                <div className="divide-y divide-border max-h-[350px] overflow-y-auto">
+                  {observations.map((obs: any) => (
+                    <div key={obs.id} className="px-4 py-3">
+                      <div className="flex items-start gap-2">
+                        <Sparkles className={cn("size-3.5 mt-0.5 flex-shrink-0",
+                          obs.observationType === "risk" ? "text-red-400" :
+                          obs.observationType === "opportunity" ? "text-emerald-400" :
+                          "text-amber-400"
+                        )} />
+                        <div className="flex-1">
+                          <p className="text-xs text-foreground">{obs.observation}</p>
+                          {obs.recommendedAction && (
+                            <p className="text-[10px] text-muted-foreground mt-1">Action: {obs.recommendedAction}</p>
+                          )}
+                          <div className="flex items-center gap-2 mt-2">
+                            {obs.suggestedTaskTitle && (
+                              <Button size="sm" variant="outline" className="text-[10px] h-6 px-2" onClick={() => acceptObs.mutate({ observationId: obs.id })} disabled={acceptObs.isPending}>
+                                <Plus className="size-3 mr-1" /> Create Task
+                              </Button>
+                            )}
+                            <Button size="sm" variant="ghost" className="text-[10px] h-6 px-2 text-muted-foreground" onClick={() => dismissObs.mutate({ observationId: obs.id })}>
+                              Dismiss
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Document Intelligence */}
+            {processedDocs.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }} className="bg-card border border-border rounded-lg">
+                <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <Brain className="size-4 text-purple-400" /> Document Intelligence
+                  </h2>
+                  <span className="text-[10px] font-mono text-muted-foreground">{processedDocs.length} analyzed</span>
+                </div>
+                <div className="divide-y divide-border max-h-[300px] overflow-y-auto">
+                  {processedDocs.map((doc: any) => (
+                    <div key={doc.id} className="px-4 py-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400">
+                          {doc.documentType || "Unknown"}
+                        </span>
+                        <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded",
+                          doc.processingStatus === "completed" ? "bg-emerald-500/10 text-emerald-400" :
+                          doc.processingStatus === "processing" ? "bg-amber-500/10 text-amber-400" :
+                          "bg-red-500/10 text-red-400"
+                        )}>{doc.processingStatus}</span>
+                      </div>
+                      {doc.summary && <p className="text-xs text-muted-foreground mt-1 line-clamp-3">{doc.summary}</p>}
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
             {/* Team & Responsibilities */}
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-card border border-border rounded-lg">
               <div className="px-4 py-3 border-b border-border flex items-center justify-between">

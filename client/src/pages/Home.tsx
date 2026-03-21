@@ -31,6 +31,12 @@ import {
   CheckCircle2,
   AlertTriangle,
   Plus,
+  Brain,
+  Sparkles,
+  Bell,
+  FileText,
+  RefreshCw,
+  Shield,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useCallback, useMemo } from "react";
@@ -116,6 +122,11 @@ export default function Home() {
   const activityQ = trpc.activity.recent.useQuery({ limit: 8 });
   const teamQ = trpc.team.list.useQuery();
 
+  // ── Intelligence queries ──────────────────────────────────────────
+  const docFeedQ = trpc.docIntel.recentFeed.useQuery({ limit: 5 });
+  const dailyBriefQ = trpc.intelligence.getDailyBrief.useQuery();
+  const smartAlertsQ = trpc.intelligence.getSmartAlerts.useQuery({});
+
   const pageLoading = venturesQ.isLoading || tasksQ.isLoading;
 
   // ── Derived data ───────────────────────────────────────────────────
@@ -125,6 +136,9 @@ export default function Home() {
   const allDists = distQ.data || [];
   const activityLogs = activityQ.data || [];
   const allTeam = teamQ.data || [];
+  const docFeed = docFeedQ.data || [];
+  const dailyBrief = dailyBriefQ.data;
+  const smartAlerts = smartAlertsQ.data || [];
 
   // Group ventures by sector
   const venturesBySector = useMemo(() => {
@@ -467,6 +481,110 @@ export default function Home() {
                 )}
               </div>
             </div>
+
+            {/* Smart Alerts */}
+            {smartAlerts.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <Bell className="size-4 text-amber-400" /> Smart Alerts
+                  </h2>
+                  <span className="text-[10px] font-mono text-amber-400">{smartAlerts.length} active</span>
+                </div>
+                <div className="bg-card border border-border rounded-lg divide-y divide-border">
+                  {smartAlerts.map((alert: any) => (
+                    <div key={alert.id} className="p-3 flex items-start gap-2">
+                      <Shield className={cn("size-3.5 mt-0.5 flex-shrink-0",
+                        alert.severity === "critical" ? "text-red-400" :
+                        alert.severity === "high" ? "text-orange-400" :
+                        alert.severity === "medium" ? "text-amber-400" : "text-muted-foreground"
+                      )} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-foreground">{alert.title}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{alert.message}</p>
+                        <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded mt-1 inline-block",
+                          alert.severity === "critical" ? "bg-red-500/10 text-red-400" :
+                          alert.severity === "high" ? "bg-orange-500/10 text-orange-400" :
+                          alert.severity === "medium" ? "bg-amber-500/10 text-amber-400" : "bg-secondary text-muted-foreground"
+                        )}>{alert.severity}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Daily Brief */}
+            {dailyBrief && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <Sparkles className="size-4 text-purple-400" /> Daily Brief
+                  </h2>
+                  <span className="text-[10px] font-mono text-muted-foreground">
+                    {dailyBrief.briefDate}
+                  </span>
+                </div>
+                <div className="bg-card border border-border rounded-lg p-4">
+                  {dailyBrief.headline && <p className="text-sm font-medium text-foreground mb-2">{dailyBrief.headline}</p>}
+                  {dailyBrief.portfolioHealth && <p className="text-xs text-foreground leading-relaxed">{dailyBrief.portfolioHealth}</p>}
+                  {dailyBrief.recommendedActions && dailyBrief.recommendedActions.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-border">
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Recommended Actions</span>
+                      <ul className="mt-1 space-y-1">
+                        {dailyBrief.recommendedActions.map((a: string, i: number) => (
+                          <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                            <span className="text-primary mt-0.5">•</span> {a}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {dailyBrief.winsThisWeek && dailyBrief.winsThisWeek.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-border">
+                      <span className="text-[10px] uppercase tracking-wider text-emerald-400 font-medium">Wins This Week</span>
+                      <ul className="mt-1 space-y-1">
+                        {dailyBrief.winsThisWeek.map((w: string, i: number) => (
+                          <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                            <span className="text-emerald-400 mt-0.5">✓</span> {w}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Document Intelligence Feed */}
+            {docFeed.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <Brain className="size-4 text-purple-400" /> Document Intelligence
+                  </h2>
+                  <span className="text-[10px] font-mono text-muted-foreground">{docFeed.length} recent</span>
+                </div>
+                <div className="bg-card border border-border rounded-lg divide-y divide-border">
+                  {docFeed.map((doc: any) => (
+                    <div key={doc.id} className="p-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <FileText className="size-3.5 text-purple-400" />
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400">
+                          {doc.documentType || "Unknown"}
+                        </span>
+                        <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded",
+                          doc.processingStatus === "completed" ? "bg-emerald-500/10 text-emerald-400" :
+                          doc.processingStatus === "processing" ? "bg-amber-500/10 text-amber-400" :
+                          "bg-red-500/10 text-red-400"
+                        )}>{doc.processingStatus}</span>
+                      </div>
+                      {doc.summary && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{doc.summary}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Distributions Summary */}
             <div>

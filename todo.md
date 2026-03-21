@@ -207,11 +207,13 @@
 - [x] Click navigates to entity detail page
 
 ## Tests
-- [x] 27 vitest tests passing across 4 test files
+- [x] 44 vitest tests passing across 5 test files
 - [x] Ventures, tasks, SPVs, team, distributions, activity, notifications router tests
 - [x] Airtable sync endpoint tests
 - [x] Auth logout test
 - [x] AI chat test
+- [x] Document Intelligence router tests (8 procedure checks)
+- [x] Intelligence router tests (8 procedure checks)
 
 ## FIX — File Persistence (S3 + DB)
 - [x] Build server-side file upload endpoint (S3 storagePut + DB metadata)
@@ -222,3 +224,46 @@
 - [x] File delete removes from DB
 - [x] File download/view works from S3 URLs
 - [x] SPV detail page: full Documents & Folders section with upload, folder create, rename, delete, move, lightbox
+
+## PART 1 — Intelligent Document Processing Engine
+- [x] Create document_intelligence table in DB schema
+- [x] Create venture_risks table in DB schema
+- [x] Create meeting_briefs table in DB schema
+- [x] Install pdf-parse, mammoth, xlsx npm packages
+- [x] Build processFile tRPC procedure: PDF text extraction, DOCX extraction, XLSX extraction, image via Claude Vision
+- [x] Send extracted text to Claude for classification (document_type, entities, financials, action_items, deadlines, risks, summary, sentiment)
+- [x] Store structured intelligence in document_intelligence table
+- [x] Auto-create tasks from action_items (fuzzy match to avoid duplicates)
+- [x] Auto-create notifications from deadlines (urgent if <7 days)
+- [x] Auto-create venture_risks from risks_mentioned
+- [x] Show "Process with AI" brain icon on each file row
+- [x] Toast notification on processing success
+- [x] Meeting minutes auto-brief: special Claude prompt for meeting summaries, store in meeting_briefs table
+- [x] Auto-notify team members when meeting brief is generated
+
+## PART 2 — Live Intelligent Dashboard
+- [x] Create daily_briefs table in DB schema
+- [x] Create smart_alerts table in DB schema
+- [x] Create ai_observations table in DB schema
+- [x] Add health_score column to ventures table
+- [x] Build daily brief generator: Claude API with full portfolio context → structured JSON
+- [x] Build venture health score calculator (tasks, documents, team, stage, sentiment)
+- [x] Build smart alerts system: Critical (red), Warning (yellow), Info (blue) with dismiss
+- [x] Document Intelligence Feed section on dashboard (recent processed docs)
+- [x] Daily Brief card on dashboard right column
+- [x] Smart Alerts stacked cards on dashboard right column
+- [x] Venture health score on venture detail pages
+
+## PART 3 — Autonomous AI Agent
+- [x] Build AI processor: scheduled analysis of full portfolio → ai_observations
+- [x] AI Observations management (accept/dismiss)
+- [x] Document-aware AI chat: include document summaries, action items, deadlines, risks in system prompt
+- [x] AI Recommendations card on venture detail pages
+- [x] Accept/dismiss observation procedures
+
+## PART 4 — Document Intelligence on Venture & SPV Pages
+- [x] Document type tabs on venture detail (via docIntel.getByVenture)
+- [x] Document intelligence sections on venture detail: risks, recommendations, doc feed
+- [x] Document search across extracted text (searchDocuments procedure)
+- [x] Meeting Briefs retrieval (getMeetingBriefs procedure)
+- [x] SPV document intelligence (getBySpv procedure)
