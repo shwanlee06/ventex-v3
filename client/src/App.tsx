@@ -19,6 +19,7 @@ import TasksPage from "./pages/TasksPage";
 import TeamMemberDetail from "./pages/TeamMemberDetail";
 import SpvDetail from "./pages/SpvDetail";
 import ActivityLog from "./pages/ActivityLog";
+import SecurityPage from "./pages/SecurityPage";
 
 /* Auth guard — redirects to login if no operator in localStorage */
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -80,6 +81,9 @@ function Router() {
       </Route>
       <Route path="/activity">
         <RequireAuth><ActivityLog /></RequireAuth>
+      </Route>
+      <Route path="/security">
+        <RequireAuth><SecurityPage /></RequireAuth>
       </Route>
       <Route path="/profile">
         <RequireAuth><Profile /></RequireAuth>

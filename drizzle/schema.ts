@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, bigint, json } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, bigint, json, boolean } from "drizzle-orm/mysql-core";
 
 // ── Users (existing) ────────────────────────────────────────────────────
 export const users = mysqlTable("users", {
@@ -7,7 +7,7 @@ export const users = mysqlTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: mysqlEnum("role", ["viewer", "client", "user", "manager", "admin", "owner"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -355,3 +355,54 @@ export const smartAlerts = mysqlTable("smart_alerts", {
 
 export type SmartAlert = typeof smartAlerts.$inferSelect;
 export type InsertSmartAlert = typeof smartAlerts.$inferInsert;
+
+// ── RBAC: User-Venture Access ──────────────────────────────────────────
+// Row-level security: maps users to ventures/SPVs they can access
+export const userVentureAccess = mysqlTable("user_venture_access", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  ventureId: int("ventureId"),
+  spvId: int("spvId"),
+  permission: mysqlEnum("permission", ["view", "edit", "manage", "full"]).default("view").notNull(),
+  grantedBy: int("grantedBy"),
+  grantedAt: timestamp("grantedAt").defaultNow().notNull(),
+  expiresAt: timestamp("expiresAt"),
+});
+
+export type UserVentureAccess = typeof userVentureAccess.$inferSelect;
+
+// ── Audit Log ──────────────────────────────────────────────────────────
+// SOC 2 compliant audit trail of all access and mutations
+export const auditLog = mysqlTable("audit_log", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId"),
+  userName: varchar("userName", { length: 255 }),
+  action: varchar("action", { length: 64 }).notNull(), // e.g., "read", "create", "update", "delete", "login", "logout", "access_denied"
+  entityType: varchar("entityType", { length: 64 }), // e.g., "venture", "spv", "task", "file"
+  entityId: varchar("entityId", { length: 64 }),
+  entityName: varchar("entityName", { length: 255 }),
+  details: text("details"), // JSON string with before/after or extra context
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  userAgent: text("userAgent"),
+  result: mysqlEnum("result", ["success", "denied", "error"]).default("success").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AuditLog = typeof auditLog.$inferSelect;
+
+// ── Sessions ───────────────────────────────────────────────────────────
+// Track active sessions for zero-trust session management
+export const sessions = mysqlTable("sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  token: varchar("token", { length: 512 }).notNull(),
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  userAgent: text("userAgent"),
+  deviceFingerprint: varchar("deviceFingerprint", { length: 128 }),
+  lastActivity: timestamp("lastActivity").defaultNow().notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Session = typeof sessions.$inferSelect;

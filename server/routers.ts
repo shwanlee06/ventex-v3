@@ -13,6 +13,7 @@ import { notificationsRouter } from "./routers/notifications";
 import { searchRouter } from "./routers/search";
 import { documentIntelligenceRouter } from "./routers/documentIntelligence";
 import { intelligenceRouter } from "./routers/intelligence";
+import { securityRouter } from "./routers/security";
 
 export const appRouter = router({
   system: systemRouter,
@@ -37,6 +38,7 @@ export const appRouter = router({
   search: searchRouter,
   docIntel: documentIntelligenceRouter,
   intelligence: intelligenceRouter,
+  security: securityRouter,
 });
 
 export type AppRouter = typeof appRouter;

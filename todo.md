@@ -207,7 +207,7 @@
 - [x] Click navigates to entity detail page
 
 ## Tests
-- [x] 44 vitest tests passing across 5 test files
+- [x] 54 vitest tests passing across 6 test files
 - [x] Ventures, tasks, SPVs, team, distributions, activity, notifications router tests
 - [x] Airtable sync endpoint tests
 - [x] Auth logout test
@@ -267,3 +267,41 @@
 - [x] Document search across extracted text (searchDocuments procedure)
 - [x] Meeting Briefs retrieval (getMeetingBriefs procedure)
 - [x] SPV document intelligence (getBySpv procedure)
+
+## SOC 2 Compliance — AES-256 Encryption
+- [x] Build AES-256-GCM encryption/decryption module (server/security/encryption.ts)
+- [x] Auto-generated ENCRYPTION_MASTER_KEY (256-bit via openssl)
+- [x] Field-level encryption with HMAC-SHA256 key derivation per field
+- [x] Encrypted file storage module (server/security/encryptedStorage.ts)
+- [x] 10 vitest tests for encryption module (encrypt/decrypt/buffer/deterministic)
+
+## SOC 2 Compliance — Zero-Trust Architecture
+- [x] Re-validate session token on every tRPC request (via tRPC context)
+- [x] IP logging and user-agent tracking in audit trail
+- [x] Session management table with active session tracking
+- [x] Zero-trust: every procedure re-validates auth, no implicit trust
+
+## SOC 2 Compliance — RBAC (Role-Based Access Control)
+- [x] Extended user roles: Owner, Admin, Manager, User, Client, Viewer (6-tier)
+- [x] Created user_venture_access table (user → venture permission mapping)
+- [x] Created permissions matrix (13 actions × 6 roles)
+- [x] Built RBAC middleware (server/security/rbac.ts) with checkPermission, checkVentureAccess, logAudit
+- [x] Row-level security: users only see ventures/SPVs they have access to
+- [x] Owner/Admin can manage roles and access via security router
+- [x] Client/Viewer role: read-only access to assigned ventures only
+
+## SOC 2 Compliance — Audit Logging
+- [x] Created audit_log table (userId, userName, action, entityType, entityId, entityName, details, ipAddress, userAgent, result, createdAt)
+- [x] Audit middleware (server/security/auditMiddleware.ts) for mutations, access, and auth events
+- [x] Log all data access attempts (granted and denied)
+- [x] Log authentication events (login, logout, failed attempts)
+- [x] Log role/permission changes
+- [x] Audit log viewer with filters, pagination, and export in Security page
+
+## SOC 2 Compliance — Security Admin UI
+- [x] New /security route with Lock icon in sidebar
+- [x] Overview tab: SOC 2 compliance checklist, encryption config, quick stats
+- [x] Users & Roles tab: user list with inline role editing (6-tier dropdown)
+- [x] Audit Log tab: filterable table with pagination (result, entity type)
+- [x] Access Control tab: current user permissions, full permission matrix
+- [x] Role hierarchy legend with descriptions

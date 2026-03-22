@@ -12,6 +12,7 @@ import {
   Layers3,
   Briefcase,
   Shield,
+  Lock,
   ChevronLeft,
   ChevronRight,
   Users,
@@ -41,6 +42,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Tasks", href: "/tasks", icon: <ListChecks className="size-[18px]" /> },
   { label: "Distributions", href: "/distributions", icon: <DollarSign className="size-[18px]" /> },
   { label: "Activity", href: "/activity", icon: <Activity className="size-[18px]" /> },
+  { label: "Security", href: "/security", icon: <Lock className="size-[18px]" /> },
   { label: "Settings", href: "/settings", icon: <Shield className="size-[18px]" /> },
 ];
 
