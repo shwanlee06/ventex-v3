@@ -7,6 +7,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { startSession, logAction } from "@/lib/operatorSession";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
 
 /* ─── helpers ─── */
 function estNow() {
@@ -173,17 +175,7 @@ const COORDS = [
 const CIPHER_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*!?<>{}[]=/+~^|";
 const LINE_LENGTH = 36; // characters per cipher line
 
-/* Login keys — each exactly 48 characters */
-const ACCESS_KEYS: Record<string, string> = {
-  "ATLAS-JF-2026-ALPHA-9X7K-BRAVO-4M2N-QR8P-DELTAXX": "Jimmy Frangi",
-  "ATLAS-AM-2026-SIGMA-9X7K-FOXTR-4M2N-QR8P-ECHO0XX": "Anton Maghami",
-  "ATLAS-JE-2026-OMEGA-9X7K-GOLF0-4M2N-QR8P-TANGOXX": "Jon Eichner",
-  "ATLAS-MC-2026-ZULU0-9X7K-HOTEL-4M2N-QR8P-VICTRXX": "Maher Abou Chakra",
-  "ATLAS-AS-2026-KILO0-9X7K-INDIA-4M2N-QR8P-SIERRXX": "Angie Samadi",
-  "ATLAS-CF-2026-LIMA0-9X7K-JULIT-4M2N-QR8P-BRAVOXX": "Carl Frangi",
-  "ATLAS-NH-2026-ROMEO-9X7K-SIERRA-4M2N-QR8P-NOVAXX": "Najib Hanna",
-  "ATLAS-SL-2026-OSCAR-9X7K-VICTOR-4M2N-QR8P-FOXTXX": "Shwan Lee",
-};
+/* ACCESS_KEYS removed — authentication now handled by invite-only OAuth */
 
 
 /* Single-line cipher decode hook — random chars resolve into target text */
@@ -361,15 +353,12 @@ function Section({
    ═══════════════════════════════════════════════════════════════ */
 export default function SpyOps() {
   const [, navigate] = useLocation();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
 
   /* ─── 4-phase flow: cipher → login → welcome → transition ─── */
   type FlowPhase = "cipher" | "login" | "welcome" | "transition" | "page";
   const [flowPhase, setFlowPhase] = useState<FlowPhase>("cipher");
   const [operatorName, setOperatorName] = useState("");
-  const [keyInput, setKeyInput] = useState("");
-  const [keyError, setKeyError] = useState(false);
-  const [loginFocused, setLoginFocused] = useState(false);
-  const keyInputRef = useRef<HTMLInputElement>(null);
 
   /* ─── OAuth error/welcome URL parameter handling ─── */
   const [oauthError, setOauthError] = useState<string | null>(null);
@@ -389,14 +378,22 @@ export default function SpyOps() {
       window.history.replaceState({}, "", "/");
     }
     if (welcome === "true") {
-      // New invited user — skip to dashboard
-      const op = localStorage.getItem("atlas_operator");
-      if (op) {
-        navigate("/dashboard");
-      }
+      // New invited user — skip to welcome then dashboard
       window.history.replaceState({}, "", "/");
     }
-  }, [navigate]);
+  }, []);
+
+  /* ─── If already authenticated, skip login and go to welcome/dashboard ─── */
+  useEffect(() => {
+    if (authLoading) return;
+    if (isAuthenticated && user && flowPhase === "login") {
+      const name = user.name || "OPERATOR";
+      setOperatorName(name);
+      localStorage.setItem("atlas_operator", name);
+      startSession(name);
+      setFlowPhase("welcome");
+    }
+  }, [authLoading, isAuthenticated, user, flowPhase]);
 
   /* Phase 1: ATLAS cipher decode */
   const atlasCipher = useSingleLineCipher("A T L A S", 400, 120);
@@ -427,13 +424,19 @@ export default function SpyOps() {
     }
   }, [flowPhase, atlasCipher.done]);
 
-  /* Focus key input when login phase starts */
+  /* Check for welcome param on login phase */
   useEffect(() => {
     if (flowPhase === "login") {
-      const t = setTimeout(() => keyInputRef.current?.focus(), 600);
-      return () => clearTimeout(t);
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("welcome") === "true" && isAuthenticated && user) {
+        const name = user.name || "OPERATOR";
+        setOperatorName(name);
+        localStorage.setItem("atlas_operator", name);
+        startSession(name);
+        setFlowPhase("welcome");
+      }
     }
-  }, [flowPhase]);
+  }, [flowPhase, isAuthenticated, user]);
 
   /* Phase 3: Welcome cipher decode */
   const welcomeTarget = operatorName ? `WELCOME, ${operatorName.toUpperCase()}` : "";
@@ -458,20 +461,9 @@ export default function SpyOps() {
     }
   }, [flowPhase, navigate]);
 
-  /* Handle key submission */
-  const handleKeySubmit = () => {
-    const trimmed = keyInput.trim();
-    const name = ACCESS_KEYS[trimmed];
-    if (name) {
-      setOperatorName(name);
-      localStorage.setItem("atlas_operator", name);
-      startSession(name);
-      setKeyError(false);
-      setFlowPhase("welcome");
-    } else {
-      setKeyError(true);
-      setTimeout(() => setKeyError(false), 3500);
-    }
+  /* Handle OAuth sign-in */
+  const handleSignIn = () => {
+    window.location.href = getLoginUrl();
   };
 
   /* ─── page state (after transition) ─── */
@@ -739,7 +731,7 @@ export default function SpyOps() {
                 ENGINEERED BY ATLAS
               </div>
 
-              {/* Password label */}
+              {/* Status indicator */}
               <div
                 style={{
                   fontFamily: "'Share Tech Mono', monospace",
@@ -747,99 +739,40 @@ export default function SpyOps() {
                   letterSpacing: "0.2em",
                   color: "#666",
                   marginBottom: 12,
-                  alignSelf: "flex-start",
+                  textAlign: "center",
                 }}
               >
-                PASSWORD
+                {authLoading ? "VERIFYING CREDENTIALS..." : "SECURE AUTHENTICATION REQUIRED"}
               </div>
 
-              {/* Key input field */}
+              {/* Divider line */}
               <div
                 style={{
-                  position: "relative",
                   width: "min(560px, 85vw)",
+                  height: 1,
+                  background: "#333",
+                  marginBottom: 48,
                 }}
-              >
-                <input
-                  ref={keyInputRef}
-                  type="password"
-                  value={keyInput}
-                  onChange={(e) => setKeyInput(e.target.value)}
-                  onFocus={() => setLoginFocused(true)}
-                  onBlur={() => setLoginFocused(false)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleKeySubmit();
-                  }}
-                  maxLength={48}
-                  placeholder="ENTER ACCESS KEY"
-                  autoComplete="off"
-                  spellCheck={false}
-                  style={{
-                    width: "100%",
-                    fontFamily: "'Share Tech Mono', monospace",
-                    fontSize: 13,
-                    letterSpacing: "0.08em",
-                    color: keyError ? "#ff3333" : "#fff",
-                    background: "transparent",
-                    border: "none",
-                    borderBottom: `1px solid ${keyError ? "#ff3333" : loginFocused ? "#fff" : "#333"}`,
-                    padding: "12px 0",
-                    outline: "none",
-                    cursor: "none",
-                    transition: "border-color 0.3s, color 0.3s",
-                  }}
-                />
-                {/* Character count */}
-                <div
-                  style={{
-                    position: "absolute",
-                    right: 0,
-                    bottom: -24,
-                    fontFamily: "'Share Tech Mono', monospace",
-                    fontSize: 10,
-                    color: keyInput.length === 48 ? "#fff" : "#444",
-                  }}
-                >
-                  {keyInput.length > 0 ? `${keyInput.length} CHARS` : ""}
-                </div>
-              </div>
+              />
 
-              {/* Error message */}
-              <div
-                style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: 12,
-                  color: "#ff3333",
-                  marginTop: 24,
-                  letterSpacing: "0.25em",
-                  height: 20,
-                  opacity: keyError ? 1 : 0,
-                  display: keyError ? "block" : "none",
-                  transform: keyError ? "translateX(0)" : "translateX(-4px)",
-                  transition: "opacity 0.3s ease, transform 0.3s ease",
-                  animation: keyError ? "spyops-shake 0.5s ease" : "none",
-                }}
-              >
-                ✕ ACCESS DENIED — INVALID KEY
-              </div>
-
-              {/* Submit button */}
+              {/* Sign-in button */}
               <button
-                onClick={handleKeySubmit}
+                onClick={handleSignIn}
+                disabled={authLoading}
                 className="spyops-btn-primary"
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 11,
                   letterSpacing: "0.15em",
-                  background: "#fff",
-                  color: "#000",
+                  background: authLoading ? "#333" : "#fff",
+                  color: authLoading ? "#666" : "#000",
                   border: "none",
-                  padding: "12px 32px",
-                  marginTop: 48,
-                  cursor: "none",
+                  padding: "14px 40px",
+                  cursor: authLoading ? "wait" : "none",
+                  transition: "background 0.3s, color 0.3s",
                 }}
               >
-                AUTHENTICATE ▶
+                {authLoading ? "VERIFYING..." : "SIGN IN ▶"}
               </button>
 
               {/* OAuth error message */}
@@ -1148,9 +1081,9 @@ export default function SpyOps() {
               center. Zero drag.
             </p>
             <div style={{ display: "flex", gap: 12, marginTop: 32, flexWrap: "wrap" }}>
-              {/* FIX 14: ENTER COMMAND CENTER navigates to dashboard */}
+              {/* ENTER COMMAND CENTER — auth-aware */}
               <button
-                onClick={() => navigate("/dashboard")}
+                onClick={() => isAuthenticated ? navigate("/dashboard") : handleSignIn()}
                 className="spyops-btn-primary"
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
@@ -1163,7 +1096,7 @@ export default function SpyOps() {
                   cursor: "none",
                 }}
               >
-                ENTER COMMAND CENTER ▶
+                {isAuthenticated ? "ENTER COMMAND CENTER ▶" : "SIGN IN ▶"}
               </button>
               {/* FIX 15: REQUEST ACCESS scrolls to contact/coordinates */}
               <button

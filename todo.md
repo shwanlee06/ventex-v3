@@ -470,3 +470,5 @@
 - [x] Vitest tests for route guards (ATLAS-only routes blocked for clients)
 - [x] Vitest tests for dashboard subtitle by role
 - [x] Updated routers.test.ts with authenticated context for protectedProcedure
+
+- [x] Remove old hardcoded ACCESS_KEYS gate from SpyOps landing page — replaced with OAuth sign-in button, auth-aware hero CTA
