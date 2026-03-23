@@ -472,3 +472,28 @@
 - [x] Updated routers.test.ts with authenticated context for protectedProcedure
 
 - [x] Remove old hardcoded ACCESS_KEYS gate from SpyOps landing page — replaced with OAuth sign-in button, auth-aware hero CTA
+
+## Settings — Personal Information, Notifications, Security (Persistent)
+
+### Personal Information
+- [x] Save/load user profile fields (name, timezone) to DB via settings.updateProfile
+- [x] Load profile data from settings.getProfile on page load
+- [x] Edit mode with save/cancel, toast confirmation, loading states
+- [ ] Profile photo upload to S3 — deferred
+
+### Notifications
+- [x] Created user_preferences table with all notification fields
+- [x] Save/load notification channel toggles (email, push, Slack) from DB
+- [x] Save/load alert type toggles (task complete, distribution, login, overdue, weekly) from DB
+- [x] Batch save with "Save Notification Settings" button and unsaved changes indicator
+
+### Security
+- [x] Display active sessions from DB (last activity, browser type, IP)
+- [x] Session termination (end individual sessions)
+- [x] Security posture overview with real session/key counts
+- [x] API keys display from DB with prefix, status, and last used time
+- [x] Real audit log from DB with action type, result, and timestamp
+
+### Tests
+- [x] All 128 existing tests passing
+- [x] Backend procedures tested via existing router test suite

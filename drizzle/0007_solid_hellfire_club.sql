@@ -1,0 +1,21 @@
+CREATE TABLE `user_preferences` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`userId` int NOT NULL,
+	`displayName` varchar(255),
+	`timezone` varchar(64) DEFAULT 'America/New_York',
+	`compactView` boolean NOT NULL DEFAULT false,
+	`autoRefresh` boolean NOT NULL DEFAULT true,
+	`emailNotifications` boolean NOT NULL DEFAULT true,
+	`pushNotifications` boolean NOT NULL DEFAULT true,
+	`slackNotifications` boolean NOT NULL DEFAULT false,
+	`notifTaskComplete` boolean NOT NULL DEFAULT true,
+	`notifDistribution` boolean NOT NULL DEFAULT true,
+	`notifLogin` boolean NOT NULL DEFAULT true,
+	`notifOverdue` boolean NOT NULL DEFAULT true,
+	`notifWeekly` boolean NOT NULL DEFAULT false,
+	`twoFactorEnabled` boolean NOT NULL DEFAULT false,
+	`sessionTimeoutMinutes` int NOT NULL DEFAULT 30,
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `user_preferences_id` PRIMARY KEY(`id`),
+	CONSTRAINT `user_preferences_userId_unique` UNIQUE(`userId`)
+);

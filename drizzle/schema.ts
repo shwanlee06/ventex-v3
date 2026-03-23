@@ -473,3 +473,33 @@ export const sessions = mysqlTable("sessions", {
 });
 
 export type Session = typeof sessions.$inferSelect;
+
+// ── User Preferences ──────────────────────────────────────────────────
+// Persisted per-user settings for profile, notifications, display, and security
+export const userPreferences = mysqlTable("user_preferences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  // Display
+  displayName: varchar("displayName", { length: 255 }),
+  timezone: varchar("timezone", { length: 64 }).default("America/New_York"),
+  compactView: boolean("compactView").default(false).notNull(),
+  autoRefresh: boolean("autoRefresh").default(true).notNull(),
+  // Notification channels
+  emailNotifications: boolean("emailNotifications").default(true).notNull(),
+  pushNotifications: boolean("pushNotifications").default(true).notNull(),
+  slackNotifications: boolean("slackNotifications").default(false).notNull(),
+  // Notification alert types
+  notifTaskComplete: boolean("notifTaskComplete").default(true).notNull(),
+  notifDistribution: boolean("notifDistribution").default(true).notNull(),
+  notifLogin: boolean("notifLogin").default(true).notNull(),
+  notifOverdue: boolean("notifOverdue").default(true).notNull(),
+  notifWeekly: boolean("notifWeekly").default(false).notNull(),
+  // Security
+  twoFactorEnabled: boolean("twoFactorEnabled").default(false).notNull(),
+  sessionTimeoutMinutes: int("sessionTimeoutMinutes").default(30).notNull(),
+  // Metadata
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UserPreference = typeof userPreferences.$inferSelect;
+export type InsertUserPreference = typeof userPreferences.$inferInsert;

@@ -1,10 +1,11 @@
 // ============================================================================
-// Profile Page — Swiss Instrument design
-// User profile with avatar, info, and preferences
+// Profile Page — Swiss Instrument design — FULLY PERSISTENT
+// Loads user data from DB, saves changes via tRPC
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
-import { cn } from "@/lib/utils";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,59 +13,145 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import {
   User, Mail, Shield, Bell, Globe, Key, Camera, Save, LogOut,
+  CheckCircle2, Clock, Loader2, AlertTriangle,
 } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 
 const ATLAS_LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/atlas-logo-G2SBqxAK64sZYAYmAZY9js.webp";
 
+const ROLE_LABELS: Record<string, string> = {
+  owner: "System Owner",
+  admin: "System Administrator",
+  manager: "Manager",
+  user: "User",
+  client: "Client",
+  viewer: "Viewer",
+};
+
 export default function ProfilePage() {
   const [, navigate] = useLocation();
-  const [name, setName] = useState("ATLAS Admin");
-  const [email, setEmail] = useState("ops@atlas.vc");
-  const [role, setRole] = useState("System Administrator");
+  const { user: authUser, logout } = useAuth();
+  const utils = trpc.useUtils();
+
+  // Fetch profile data from DB
+  const { data: profile, isLoading } = trpc.settings.getProfile.useQuery(undefined, {
+    enabled: !!authUser,
+  });
+
+  // Local form state — initialized from DB data
+  const [displayName, setDisplayName] = useState("");
   const [timezone, setTimezone] = useState("America/New_York");
   const [emailNotifs, setEmailNotifs] = useState(true);
   const [pushNotifs, setPushNotifs] = useState(true);
-  const [twoFactor, setTwoFactor] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [twoFactor, setTwoFactor] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
-  const handleSave = useCallback(() => {
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
+  // Initialize form from DB data
+  useEffect(() => {
+    if (profile) {
+      setDisplayName(profile.preferences?.displayName || profile.user.name || "");
+      setTimezone(profile.preferences?.timezone || "America/New_York");
+      setEmailNotifs(profile.preferences?.emailNotifications ?? true);
+      setPushNotifs(profile.preferences?.pushNotifications ?? true);
+      setTwoFactor(profile.preferences?.twoFactorEnabled ?? false);
+      setHasChanges(false);
+    }
+  }, [profile]);
+
+  // Track changes
+  const markChanged = useCallback(() => setHasChanges(true), []);
+
+  // Mutations
+  const updateProfile = trpc.settings.updateProfile.useMutation({
+    onSuccess: () => {
+      utils.settings.getProfile.invalidate();
+      utils.auth.me.invalidate();
+    },
+  });
+  const updateNotifications = trpc.settings.updateNotifications.useMutation({
+    onSuccess: () => utils.settings.getProfile.invalidate(),
+  });
+  const updateSecurity = trpc.settings.updateSecurity.useMutation({
+    onSuccess: () => utils.settings.getProfile.invalidate(),
+  });
+
+  const saving = updateProfile.isPending || updateNotifications.isPending || updateSecurity.isPending;
+
+  const handleSave = useCallback(async () => {
+    try {
+      // Save profile info
+      await updateProfile.mutateAsync({
+        displayName: displayName.trim() || undefined,
+        timezone,
+      });
+
+      // Save notification preferences
+      await updateNotifications.mutateAsync({
+        emailNotifications: emailNotifs,
+        pushNotifications: pushNotifs,
+      });
+
+      // Save security settings
+      await updateSecurity.mutateAsync({
+        twoFactorEnabled: twoFactor,
+      });
+
+      setHasChanges(false);
       toast.success("Profile updated successfully");
-    }, 800);
-  }, []);
+    } catch (err) {
+      toast.error("Failed to save profile changes");
+    }
+  }, [displayName, timezone, emailNotifs, pushNotifs, twoFactor, updateProfile, updateNotifications, updateSecurity]);
 
-  const handleLogout = useCallback(() => {
-    toast.info("Signed out — redirecting to landing page");
-    localStorage.removeItem("atlas_operator");
-    setTimeout(() => navigate("/"), 600);
-  }, [navigate]);
+  const handleLogout = useCallback(async () => {
+    toast.info("Signing out...");
+    await logout();
+    navigate("/");
+  }, [logout, navigate]);
+
+  const userEmail = profile?.user.email || authUser?.email || "";
+  const userRole = profile?.user.role || authUser?.role || "user";
+  const initials = (displayName || profile?.user.name || "U")
+    .split(" ")
+    .map(w => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  if (isLoading) {
+    return (
+      <DashboardLayout title="Profile" subtitle="LOADING...">
+        <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto space-y-4 sm:space-y-6 pb-24 md:pb-6">
+          <Skeleton className="h-32 rounded-lg" />
+          <Skeleton className="h-48 rounded-lg" />
+          <Skeleton className="h-32 rounded-lg" />
+          <Skeleton className="h-32 rounded-lg" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
-    <DashboardLayout title="Profile" subtitle="OPERATOR CREDENTIALS">
+    <DashboardLayout title="Profile" subtitle="YOUR CREDENTIALS">
       <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto space-y-4 sm:space-y-6 pb-24 md:pb-6">
         {/* Profile Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
           <Card className="p-4 sm:p-6 bg-card border-border">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
               <div className="relative group">
                 <Avatar className="size-16 sm:size-20 border-2 border-primary/20">
                   <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
-                    AT
+                    {initials}
                   </AvatarFallback>
                 </Avatar>
                 <button
@@ -74,18 +161,31 @@ export default function ProfilePage() {
                   <Camera className="size-5 text-white" />
                 </button>
               </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-semibold text-foreground">{name}</h2>
-                <p className="text-sm text-muted-foreground font-mono mt-1">{email}</p>
-                <div className="flex items-center gap-2 mt-2">
+              <div className="flex-1 text-center sm:text-left">
+                <h2 className="text-xl font-semibold text-foreground">{displayName || profile?.user.name || "User"}</h2>
+                <p className="text-sm text-muted-foreground font-mono mt-1">{userEmail}</p>
+                <div className="flex items-center gap-2 mt-2 justify-center sm:justify-start flex-wrap">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-primary/10 text-primary border border-primary/20">
                     <Shield className="size-3" />
-                    {role}
+                    {ROLE_LABELS[userRole] || userRole}
                   </span>
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-green-500/10 text-green-400 border border-green-500/20">
-                    ACTIVE
+                    <CheckCircle2 className="size-3" />
+                    {profile?.user.status?.toUpperCase() || "ACTIVE"}
                   </span>
+                  {profile?.activeSessionCount !== undefined && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                      <Globe className="size-3" />
+                      {profile.activeSessionCount} session{profile.activeSessionCount !== 1 ? "s" : ""}
+                    </span>
+                  )}
                 </div>
+                {profile?.user.lastSignedIn && (
+                  <p className="text-[10px] text-muted-foreground mt-2 font-mono flex items-center gap-1 justify-center sm:justify-start">
+                    <Clock className="size-3" />
+                    Last signed in: {new Date(profile.user.lastSignedIn).toLocaleString()}
+                  </p>
+                )}
               </div>
               <img src={ATLAS_LOGO_URL} alt="ATLAS" className="size-8 sm:size-10 rounded-md opacity-50 hidden sm:block" />
             </div>
@@ -93,11 +193,7 @@ export default function ProfilePage() {
         </motion.div>
 
         {/* Personal Information */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
           <Card className="p-4 sm:p-6 bg-card border-border">
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
               <User className="size-4 text-primary" />
@@ -107,30 +203,32 @@ export default function ProfilePage() {
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground font-mono">DISPLAY NAME</Label>
                 <Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={displayName}
+                  onChange={(e) => { setDisplayName(e.target.value); markChanged(); }}
                   className="bg-secondary/30 border-border text-sm"
+                  placeholder="Your display name"
                 />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground font-mono">EMAIL ADDRESS</Label>
                 <Input
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="bg-secondary/30 border-border text-sm"
+                  value={userEmail}
+                  readOnly
+                  className="bg-secondary/30 border-border text-sm opacity-60"
                 />
+                <p className="text-[10px] text-muted-foreground">Email is managed by your OAuth provider</p>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground font-mono">ROLE</Label>
                 <Input
-                  value={role}
+                  value={ROLE_LABELS[userRole] || userRole}
                   readOnly
                   className="bg-secondary/30 border-border text-sm opacity-60"
                 />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground font-mono">TIMEZONE</Label>
-                <Select value={timezone} onValueChange={setTimezone}>
+                <Select value={timezone} onValueChange={(v) => { setTimezone(v); markChanged(); }}>
                   <SelectTrigger className="bg-secondary/30 border-border text-sm">
                     <SelectValue />
                   </SelectTrigger>
@@ -140,8 +238,12 @@ export default function ProfilePage() {
                     <SelectItem value="America/Denver">Mountain (MST/MDT)</SelectItem>
                     <SelectItem value="America/Los_Angeles">Pacific (PST/PDT)</SelectItem>
                     <SelectItem value="Europe/London">London (GMT/BST)</SelectItem>
+                    <SelectItem value="Europe/Paris">Paris (CET/CEST)</SelectItem>
                     <SelectItem value="Asia/Dubai">Dubai (GST)</SelectItem>
+                    <SelectItem value="Asia/Beirut">Beirut (EET/EEST)</SelectItem>
                     <SelectItem value="Asia/Tokyo">Tokyo (JST)</SelectItem>
+                    <SelectItem value="Asia/Singapore">Singapore (SGT)</SelectItem>
+                    <SelectItem value="Australia/Sydney">Sydney (AEST/AEDT)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -150,11 +252,7 @@ export default function ProfilePage() {
         </motion.div>
 
         {/* Notifications */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.2 }}>
           <Card className="p-4 sm:p-6 bg-card border-border">
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
               <Bell className="size-4 text-primary" />
@@ -166,7 +264,7 @@ export default function ProfilePage() {
                   <p className="text-sm text-foreground">Email Notifications</p>
                   <p className="text-xs text-muted-foreground">Receive task updates and alerts via email</p>
                 </div>
-                <Switch checked={emailNotifs} onCheckedChange={setEmailNotifs} />
+                <Switch checked={emailNotifs} onCheckedChange={(v) => { setEmailNotifs(v); markChanged(); }} />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
@@ -174,18 +272,14 @@ export default function ProfilePage() {
                   <p className="text-sm text-foreground">Push Notifications</p>
                   <p className="text-xs text-muted-foreground">Browser push notifications for urgent items</p>
                 </div>
-                <Switch checked={pushNotifs} onCheckedChange={setPushNotifs} />
+                <Switch checked={pushNotifs} onCheckedChange={(v) => { setPushNotifs(v); markChanged(); }} />
               </div>
             </div>
           </Card>
         </motion.div>
 
         {/* Security */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.3 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.3 }}>
           <Card className="p-4 sm:p-6 bg-card border-border">
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
               <Key className="size-4 text-primary" />
@@ -197,34 +291,56 @@ export default function ProfilePage() {
                   <p className="text-sm text-foreground">Two-Factor Authentication</p>
                   <p className="text-xs text-muted-foreground">Add an extra layer of security to your account</p>
                 </div>
-                <Switch checked={twoFactor} onCheckedChange={setTwoFactor} />
+                <Switch checked={twoFactor} onCheckedChange={(v) => { setTwoFactor(v); markChanged(); }} />
               </div>
               <Separator />
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-foreground">Change Password</p>
-                  <p className="text-xs text-muted-foreground">Last changed 14 days ago</p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => toast.info("Password change dialog coming soon")}
-                  className="text-xs"
-                >
-                  Change
-                </Button>
+              <div>
+                <p className="text-sm text-foreground mb-2">API Keys</p>
+                {profile?.apiKeys && profile.apiKeys.length > 0 ? (
+                  <div className="space-y-2">
+                    {profile.apiKeys.map((key) => (
+                      <div key={key.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/10 border border-border">
+                        <div className="flex items-center gap-3">
+                          <Key className="size-4 text-muted-foreground" />
+                          <div>
+                            <p className="text-xs font-mono text-foreground">{key.keyPrefix}••••••••</p>
+                            <p className="text-[10px] text-muted-foreground">
+                              {key.label || "API Key"} · Created {new Date(key.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] font-mono ${
+                            key.status === "active"
+                              ? "text-green-400 border-green-500/30"
+                              : "text-red-400 border-red-500/30"
+                          }`}
+                        >
+                          {key.status?.toUpperCase()}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground p-3 rounded-lg bg-secondary/10">
+                    No API keys assigned to your account.
+                  </p>
+                )}
               </div>
               <Separator />
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-foreground">Active Sessions</p>
-                  <p className="text-xs text-muted-foreground">1 active session (this device)</p>
+                  <p className="text-xs text-muted-foreground">
+                    {profile?.activeSessionCount || 0} active session{(profile?.activeSessionCount || 0) !== 1 ? "s" : ""}
+                  </p>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => toast.info("Session management coming soon")}
-                  className="text-xs"
+                  onClick={() => navigate("/settings")}
+                  className="text-xs h-8 min-h-[36px] touch-manipulation"
                 >
                   Manage
                 </Button>
@@ -251,13 +367,31 @@ export default function ProfilePage() {
           </Button>
           <Button
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || !hasChanges}
             className="gap-2 h-9 min-h-[36px] touch-manipulation"
           >
-            <Save className="size-3.5" />
-            {saving ? "Saving..." : "Save Changes"}
+            {saving ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Save className="size-3.5" />
+            )}
+            {saving ? "Saving..." : hasChanges ? "Save Changes" : "Saved"}
           </Button>
         </motion.div>
+
+        {/* Unsaved changes indicator */}
+        {hasChanges && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="fixed bottom-20 md:bottom-4 left-1/2 -translate-x-1/2 z-50"
+          >
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono shadow-lg backdrop-blur-sm">
+              <AlertTriangle className="size-3.5" />
+              Unsaved changes
+            </div>
+          </motion.div>
+        )}
       </div>
     </DashboardLayout>
   );
