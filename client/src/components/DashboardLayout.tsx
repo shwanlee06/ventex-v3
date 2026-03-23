@@ -1,6 +1,7 @@
 // ============================================================================
-// DashboardLayout — Swiss Instrument design
-// Wraps sidebar + topbar + scrollable content area
+// DashboardLayout — Swiss Instrument design — Mobile-first responsive
+// Mobile: full-width content + bottom tab bar padding
+// Desktop: sidebar rail + topbar + scrollable content
 // ============================================================================
 
 import AppSidebar from "@/components/AppSidebar";
@@ -17,10 +18,10 @@ export default function DashboardLayout({ children, title, subtitle }: Dashboard
     <div className="flex h-screen overflow-hidden bg-background">
       <AppSidebar />
 
-      {/* Main content area — offset by sidebar width */}
-      <div className="flex-1 flex flex-col md:ml-16 pb-14 md:pb-0">
+      {/* Main content area — offset by sidebar width on desktop, full-width on mobile */}
+      <div className="flex-1 flex flex-col md:ml-16 pb-16 md:pb-0">
         <Topbar title={title} subtitle={subtitle} />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto overscroll-contain">
           {children}
         </main>
       </div>

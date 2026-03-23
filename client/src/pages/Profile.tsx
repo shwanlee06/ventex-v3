@@ -52,17 +52,17 @@ export default function ProfilePage() {
 
   return (
     <DashboardLayout title="Profile" subtitle="OPERATOR CREDENTIALS">
-      <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <div className="p-3 sm:p-4 md:p-6 max-w-4xl mx-auto space-y-4 sm:space-y-6 pb-24 md:pb-6">
         {/* Profile Header */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <Card className="p-6 bg-card border-border">
-            <div className="flex items-start gap-6">
+          <Card className="p-4 sm:p-6 bg-card border-border">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
               <div className="relative group">
-                <Avatar className="size-20 border-2 border-primary/20">
+                <Avatar className="size-16 sm:size-20 border-2 border-primary/20">
                   <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
                     AT
                   </AvatarFallback>
@@ -87,7 +87,7 @@ export default function ProfilePage() {
                   </span>
                 </div>
               </div>
-              <img src={ATLAS_LOGO_URL} alt="ATLAS" className="size-10 rounded-md opacity-50" />
+              <img src={ATLAS_LOGO_URL} alt="ATLAS" className="size-8 sm:size-10 rounded-md opacity-50 hidden sm:block" />
             </div>
           </Card>
         </motion.div>
@@ -98,7 +98,7 @@ export default function ProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
         >
-          <Card className="p-6 bg-card border-border">
+          <Card className="p-4 sm:p-6 bg-card border-border">
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
               <User className="size-4 text-primary" />
               Personal Information
@@ -155,7 +155,7 @@ export default function ProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.2 }}
         >
-          <Card className="p-6 bg-card border-border">
+          <Card className="p-4 sm:p-6 bg-card border-border">
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
               <Bell className="size-4 text-primary" />
               Notifications
@@ -186,7 +186,7 @@ export default function ProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.3 }}
         >
-          <Card className="p-6 bg-card border-border">
+          <Card className="p-4 sm:p-6 bg-card border-border">
             <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
               <Key className="size-4 text-primary" />
               Security
@@ -238,13 +238,13 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.4 }}
-          className="flex items-center justify-between"
+          className="flex items-center justify-between gap-3"
         >
           <Button
             variant="destructive"
             size="sm"
             onClick={handleLogout}
-            className="gap-2"
+            className="gap-2 h-9 min-h-[36px] touch-manipulation"
           >
             <LogOut className="size-3.5" />
             Sign Out
@@ -252,7 +252,7 @@ export default function ProfilePage() {
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="gap-2"
+            className="gap-2 h-9 min-h-[36px] touch-manipulation"
           >
             <Save className="size-3.5" />
             {saving ? "Saving..." : "Save Changes"}

@@ -305,3 +305,59 @@
 - [x] Audit Log tab: filterable table with pagination (result, entity type)
 - [x] Access Control tab: current user permissions, full permission matrix
 - [x] Role hierarchy legend with descriptions
+
+## UI/UX Overhaul — Mobile-First Responsive Design
+
+### Global / Layout
+- [x] Replace sidebar with bottom tab bar on mobile (<768px) with icons + labels
+- [x] Responsive header: hide search behind icon on mobile, compact title
+- [x] Stat cards: stack vertically on mobile, 2-col tablet, 3-4 col desktop
+- [x] Typography: increase base font, 8pt grid spacing, distinct section headers
+- [x] Touch targets: minimum 44x44px tap area on all interactive elements
+- [x] Filter/action bars: collapse on mobile, FAB for primary actions
+
+### Dashboard Page
+- [x] 2x2 stat card grid on mobile, single row desktop
+- [x] Horizontal scrollable pill row for quick actions on mobile
+- [x] Swipeable/scrollable venture sector cards on mobile
+- [x] Stack activity/tasks/distributions panels full-width on mobile
+- [x] Prominent rounded overdue alert banner on mobile
+
+### Ventures Page
+- [x] Card list view on mobile (name, sector badge, country, stage, status pill)
+- [x] View toggle (List/Table/Grid) with user preference persistence
+- [x] Filter bottom sheet on mobile instead of inline dropdowns
+
+### SPVs & Deals Page
+- [x] Card view on mobile with name, sector, priority, stage, status
+- [x] Horizontal scroll stats on mobile, 3-col on desktop
+
+### Tasks Page
+- [x] Card/list view on mobile (title, venture, due date, priority, assignee)
+- [x] Full-width search, collapsible filters on mobile
+- [x] Clean segmented control for Table/Board toggle
+- [x] Consistent priority colors: High=red, Medium=amber, Low=green
+
+### Distributions Page
+- [x] Card view on mobile with name, fund, amount, status badge, date
+- [x] Full-width stacked buttons on mobile
+
+### Team & Contacts Page
+- [x] 2-column grid on mobile with avatar, name, role, contact icon
+- [x] Proper 3-up stat row that fits mobile
+
+### Security Page
+- [x] 1-col mobile, 2-col tablet, 3-col desktop for security cards
+- [x] Green checkmarks + progress bar for compliance checklist
+
+### Settings Page
+- [x] Horizontally scrollable tab row on mobile
+- [x] Label-left switch-right layout with ample row height
+
+### Design System
+- [x] Consistent semantic colors (emerald, amber, red, slate, gold)
+- [x] Standardized status badge pills across all pages
+- [x] Consistent card styling (12px radius, subtle border, bg difference)
+- [x] Skeleton loaders for all data tables and card grids
+- [x] Empty state UI with icon and message
+- [x] Micro-interactions: hover lift on desktop, press scale on mobile

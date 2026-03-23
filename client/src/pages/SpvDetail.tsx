@@ -336,7 +336,7 @@ export default function SpvDetail() {
 
   return (
     <DashboardLayout title={spv.name} subtitle="SPV DETAIL">
-      <div className="p-4 md:p-6 space-y-6">
+      <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -366,26 +366,26 @@ export default function SpvDetail() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Select value={spv.stage || "Active deal"} onValueChange={handleStageChange}>
-              <SelectTrigger className="h-8 text-xs w-[160px]"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 min-h-[36px] text-xs w-[140px] sm:w-[160px]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {ALL_STAGES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => fileInputRef.current?.click()}>
-              <Upload className="size-3.5 mr-1" /> Add File
+            <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="size-3.5 mr-1" /> <span className="hidden sm:inline">Add </span>File
             </Button>
             {!editing ? (
-              <Button variant="outline" size="sm" className="text-xs h-8" onClick={startEdit}>
+              <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={startEdit}>
                 <Edit2 className="size-3.5 mr-1" /> Edit
               </Button>
             ) : (
               <div className="flex gap-1">
-                <Button size="sm" className="text-xs h-8" onClick={saveEdit} disabled={updateSpv.isPending}>
+                <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={saveEdit} disabled={updateSpv.isPending}>
                   <Save className="size-3.5 mr-1" /> Save
                 </Button>
-                <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => setEditing(false)}>
+                <Button variant="ghost" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => setEditing(false)}>
                   <X className="size-3.5" />
                 </Button>
               </div>
@@ -431,12 +431,12 @@ export default function SpvDetail() {
                   <span className="text-[10px] font-mono text-muted-foreground">{allFiles.length} file{allFiles.length !== 1 ? "s" : ""} · {allFolders.length} folder{allFolders.length !== 1 ? "s" : ""}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-muted-foreground">Max 5MB</span>
-                  <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setCreateFolderOpen(true)}>
-                    <FolderPlus className="size-3 mr-1" /> New Folder
+                  <span className="text-[10px] text-muted-foreground hidden sm:inline">Max 5MB</span>
+                  <Button size="sm" variant="outline" className="text-xs h-8 min-h-[32px] touch-manipulation" onClick={() => setCreateFolderOpen(true)}>
+                    <FolderPlus className="size-3 mr-1" /> <span className="hidden sm:inline">New </span>Folder
                   </Button>
-                  <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => fileInputRef.current?.click()}>
-                    <Plus className="size-3 mr-1" /> Attach File
+                  <Button size="sm" variant="outline" className="text-xs h-8 min-h-[32px] touch-manipulation" onClick={() => fileInputRef.current?.click()}>
+                    <Plus className="size-3 mr-1" /> <span className="hidden sm:inline">Attach </span>File
                   </Button>
                 </div>
                 <input
@@ -538,7 +538,7 @@ export default function SpvDetail() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         {/* Move to folder */}
                         {allFolders.length > 0 && (
                           <DropdownMenu>
@@ -561,13 +561,13 @@ export default function SpvDetail() {
                             </DropdownMenuContent>
                           </DropdownMenu>
                         )}
-                        <button onClick={() => handleOpenFile(file.fileUrl, file.filename)} className="size-7 rounded-md flex items-center justify-center hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors" title="Preview">
+                        <button onClick={() => handleOpenFile(file.fileUrl, file.filename)} className="size-8 sm:size-7 rounded-md flex items-center justify-center hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors touch-manipulation" title="Preview">
                           <Eye className="size-3.5" />
                         </button>
-                        <button onClick={() => handleDownloadFile(file.fileUrl, file.filename)} className="size-7 rounded-md flex items-center justify-center hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 transition-colors" title="Download">
+                        <button onClick={() => handleDownloadFile(file.fileUrl, file.filename)} className="size-8 sm:size-7 rounded-md flex items-center justify-center hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 transition-colors touch-manipulation" title="Download">
                           <Download className="size-3.5" />
                         </button>
-                        <button onClick={() => handleDeleteFile(file.id, file.filename)} className="size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors" title="Remove">
+                        <button onClick={() => handleDeleteFile(file.id, file.filename)} className="size-8 sm:size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors touch-manipulation" title="Remove">
                           <Trash2 className="size-3.5" />
                         </button>
                       </div>
@@ -688,7 +688,7 @@ export default function SpvDetail() {
 
       {/* Link Venture Dialog */}
       <Dialog open={linkVentureOpen} onOpenChange={setLinkVentureOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-sm">Link Venture</DialogTitle>
             <DialogDescription className="text-[10px] font-mono">Select a venture to link to this SPV</DialogDescription>
@@ -718,7 +718,7 @@ export default function SpvDetail() {
 
       {/* Assign Team Dialog */}
       <Dialog open={assignTeamOpen} onOpenChange={setAssignTeamOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-sm">Assign Team Member</DialogTitle>
             <DialogDescription className="text-[10px] font-mono">Select a team member to assign to this SPV</DialogDescription>

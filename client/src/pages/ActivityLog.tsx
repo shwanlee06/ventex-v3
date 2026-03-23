@@ -1,6 +1,5 @@
 // ============================================================================
-// Activity Log Page — /activity — LIVE DB DATA
-// Full audit trail with entity-type filter, search, and clickable rows
+// Activity Log Page — /activity — Mobile-First
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
@@ -8,15 +7,12 @@ import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
-  Activity, Search, Filter, Building2, Briefcase, ListChecks, DollarSign,
-  Users, Clock, ChevronDown,
+  Activity, Search, Building2, Briefcase, ListChecks, DollarSign,
+  Users, Clock, ChevronDown, X,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const ENTITY_ICONS: Record<string, React.ReactNode> = {
@@ -73,7 +69,6 @@ export default function ActivityLog() {
   const displayed = filtered.slice(0, showCount);
   const hasMore = filtered.length > showCount;
 
-  // Group by date
   const grouped = useMemo(() => {
     const groups: Record<string, typeof displayed> = {};
     displayed.forEach(entry => {
@@ -85,7 +80,6 @@ export default function ActivityLog() {
     return Object.entries(groups);
   }, [displayed]);
 
-  // Entity type counts
   const typeCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     entries.forEach(e => {
@@ -94,22 +88,24 @@ export default function ActivityLog() {
     return counts;
   }, [entries]);
 
+  const filterChips = [
+    { label: "All", value: entries.length, type: "all", icon: <Activity className="size-3.5 text-foreground" /> },
+    { label: "Ventures", value: typeCounts["venture"] || 0, type: "venture", icon: ENTITY_ICONS["venture"] },
+    { label: "SPVs", value: typeCounts["spv"] || 0, type: "spv", icon: ENTITY_ICONS["spv"] },
+    { label: "Tasks", value: typeCounts["task"] || 0, type: "task", icon: ENTITY_ICONS["task"] },
+    { label: "Dist.", value: typeCounts["distribution"] || 0, type: "distribution", icon: ENTITY_ICONS["distribution"] },
+    { label: "Team", value: typeCounts["team"] || 0, type: "team", icon: ENTITY_ICONS["team"] },
+  ];
+
   return (
     <DashboardLayout title="Activity Log" subtitle="SYSTEM AUDIT TRAIL">
-      <div className="p-4 md:p-6 space-y-6">
-        {/* Summary bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
+        {/* Filter chips — horizontal scroll on mobile */}
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
           {activityQ.isLoading ? (
-            Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-16 rounded-lg" />)
+            Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-14 w-24 rounded-lg flex-shrink-0" />)
           ) : (
-            [
-              { label: "Total", value: entries.length, icon: <Activity className="size-4 text-foreground" />, type: "all" },
-              { label: "Ventures", value: typeCounts["venture"] || 0, icon: ENTITY_ICONS["venture"], type: "venture" },
-              { label: "SPVs", value: typeCounts["spv"] || 0, icon: ENTITY_ICONS["spv"], type: "spv" },
-              { label: "Tasks", value: typeCounts["task"] || 0, icon: ENTITY_ICONS["task"], type: "task" },
-              { label: "Distributions", value: typeCounts["distribution"] || 0, icon: ENTITY_ICONS["distribution"], type: "distribution" },
-              { label: "Team", value: typeCounts["team"] || 0, icon: ENTITY_ICONS["team"], type: "team" },
-            ].map((m, i) => (
+            filterChips.map((m, i) => (
               <motion.button
                 key={m.label}
                 initial={{ opacity: 0, y: 8 }}
@@ -117,33 +113,38 @@ export default function ActivityLog() {
                 transition={{ delay: i * 0.03 }}
                 onClick={() => setTypeFilter(m.type)}
                 className={cn(
-                  "bg-card border rounded-lg p-3 text-left transition-all hover:border-primary/30",
-                  typeFilter === m.type ? "border-primary/50 bg-primary/5" : "border-border"
+                  "bg-card border rounded-lg p-2.5 sm:p-3 text-left transition-all flex-shrink-0 min-w-[80px] sm:min-w-0 sm:flex-1 touch-manipulation active:scale-[0.97]",
+                  typeFilter === m.type ? "border-primary/50 bg-primary/5" : "border-border hover:border-primary/30"
                 )}
               >
                 <div className="flex items-center gap-1.5 mb-1">
                   {m.icon}
-                  <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">{m.label}</span>
+                  <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">{m.label}</span>
                 </div>
-                <span className="text-lg font-mono font-semibold text-foreground">{m.value}</span>
+                <span className="text-base sm:text-lg font-mono font-semibold text-foreground">{m.value}</span>
               </motion.button>
             ))
           )}
         </div>
 
-        {/* Search + filter */}
+        {/* Search */}
         <div className="flex items-center gap-3">
-          <div className="relative flex-1 max-w-sm">
+          <div className="relative flex-1">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
             <Input
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search activity..."
-              className="h-8 text-xs pl-8"
+              className="h-9 min-h-[36px] text-xs pl-8"
             />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground touch-manipulation">
+                <X className="size-3.5" />
+              </button>
+            )}
           </div>
-          <span className="text-[10px] font-mono text-muted-foreground">
-            {filtered.length} entries
+          <span className="text-[10px] font-mono text-muted-foreground whitespace-nowrap">
+            {filtered.length}
           </span>
         </div>
 
@@ -158,12 +159,12 @@ export default function ActivityLog() {
             <p className="text-sm text-muted-foreground">No activity entries match your filters.</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-5 sm:space-y-6">
             {grouped.map(([dateLabel, items]) => (
               <div key={dateLabel}>
-                <div className="flex items-center gap-3 mb-3">
-                  <Clock className="size-3.5 text-muted-foreground" />
-                  <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">{dateLabel}</span>
+                <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                  <Clock className="size-3.5 text-muted-foreground flex-shrink-0" />
+                  <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium truncate">{dateLabel}</span>
                   <div className="flex-1 h-px bg-border" />
                 </div>
                 <div className="space-y-1">
@@ -174,24 +175,24 @@ export default function ActivityLog() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.02, duration: 0.2 }}
                       className={cn(
-                        "bg-card border border-border rounded-lg p-3 flex items-start gap-3 border-l-2",
+                        "bg-card border border-border rounded-lg p-3 flex items-start gap-2.5 sm:gap-3 border-l-2",
                         ENTITY_COLORS[entry.entityType] || "border-l-border"
                       )}
                     >
-                      <div className="mt-0.5">
+                      <div className="mt-0.5 flex-shrink-0">
                         {ENTITY_ICONS[entry.entityType] || <Activity className="size-3.5 text-muted-foreground" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-start sm:items-center gap-1.5 sm:gap-2 flex-col sm:flex-row">
                           <span className="text-xs font-medium text-foreground">{entry.action}</span>
                           {entry.entityName && (
                             <span className="text-[10px] font-mono text-primary">{entry.entityName}</span>
                           )}
                         </div>
                         {entry.detail && (
-                          <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{entry.detail}</p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 sm:truncate">{entry.detail}</p>
                         )}
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <span className="text-[10px] font-mono text-muted-foreground">{formatTimestamp(entry.createdAt)}</span>
                           {entry.userName && (
                             <span className="text-[10px] text-muted-foreground">by {entry.userName}</span>
@@ -209,7 +210,7 @@ export default function ActivityLog() {
 
             {hasMore && (
               <div className="text-center">
-                <Button variant="outline" size="sm" className="text-xs" onClick={() => setShowCount(s => s + 50)}>
+                <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => setShowCount(s => s + 50)}>
                   <ChevronDown className="size-3.5 mr-1" /> Load more ({filtered.length - showCount} remaining)
                 </Button>
               </div>

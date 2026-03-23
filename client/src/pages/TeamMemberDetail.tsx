@@ -127,7 +127,7 @@ export default function TeamMemberDetail() {
 
   return (
     <DashboardLayout title={member.name} subtitle="TEAM MEMBER PROFILE">
-      <div className="p-4 md:p-6 space-y-6">
+      <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
         {/* Back button */}
         <motion.div
           initial={{ opacity: 0, x: -12 }}
@@ -173,12 +173,12 @@ export default function TeamMemberDetail() {
               </div>
 
               {/* Contact buttons */}
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
                 {member.whatsapp && (
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-xs gap-1.5"
+                    className="text-xs gap-1.5 h-9 min-h-[36px] touch-manipulation"
                     onClick={() => window.open(`https://wa.me/${member.whatsapp?.replace(/[^0-9]/g, "")}`, "_blank")}
                   >
                     <Phone className="size-3.5" /> WhatsApp

@@ -147,26 +147,26 @@ export default function SettingsConfigPage() {
 
   return (
     <DashboardLayout title="Settings" subtitle="SYSTEM CONFIGURATION">
-      <div className="p-6 max-w-5xl mx-auto">
-        <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="bg-secondary/30 border border-border flex-wrap h-auto gap-1 p-1">
-            <TabsTrigger value="general" className="text-xs gap-1.5">
-              <Zap className="size-3" /> General
+      <div className="p-3 sm:p-4 md:p-6 max-w-5xl mx-auto pb-24 md:pb-6">
+        <Tabs defaultValue="general" className="space-y-4 sm:space-y-6">
+          <TabsList className="bg-secondary/30 border border-border flex-wrap h-auto gap-1 p-1 overflow-x-auto scrollbar-hide">
+            <TabsTrigger value="general" className="text-xs gap-1 sm:gap-1.5 touch-manipulation">
+              <Zap className="size-3" /> <span className="hidden sm:inline">General</span><span className="sm:hidden">Gen</span>
             </TabsTrigger>
-            <TabsTrigger value="security" className="text-xs gap-1.5">
-              <Shield className="size-3" /> Security
+            <TabsTrigger value="security" className="text-xs gap-1 sm:gap-1.5 touch-manipulation">
+              <Shield className="size-3" /> <span className="hidden sm:inline">Security</span><span className="sm:hidden">Sec</span>
             </TabsTrigger>
-            <TabsTrigger value="compliance" className="text-xs gap-1.5">
-              <FileText className="size-3" /> Compliance
+            <TabsTrigger value="compliance" className="text-xs gap-1 sm:gap-1.5 touch-manipulation">
+              <FileText className="size-3" /> <span className="hidden sm:inline">Compliance</span><span className="sm:hidden">Comp</span>
             </TabsTrigger>
-            <TabsTrigger value="operators" className="text-xs gap-1.5">
-              <Users className="size-3" /> Operators
+            <TabsTrigger value="operators" className="text-xs gap-1 sm:gap-1.5 touch-manipulation">
+              <Users className="size-3" /> <span className="hidden sm:inline">Operators</span><span className="sm:hidden">Ops</span>
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="text-xs gap-1.5">
-              <Bell className="size-3" /> Notifications
+            <TabsTrigger value="notifications" className="text-xs gap-1 sm:gap-1.5 touch-manipulation">
+              <Bell className="size-3" /> <span className="hidden sm:inline">Notifications</span><span className="sm:hidden">Notif</span>
             </TabsTrigger>
-            <TabsTrigger value="audit" className="text-xs gap-1.5">
-              <Activity className="size-3" /> Audit Log
+            <TabsTrigger value="audit" className="text-xs gap-1 sm:gap-1.5 touch-manipulation">
+              <Activity className="size-3" /> <span className="hidden sm:inline">Audit Log</span><span className="sm:hidden">Audit</span>
             </TabsTrigger>
           </TabsList>
 
@@ -174,7 +174,7 @@ export default function SettingsConfigPage() {
           <TabsContent value="general">
             <div className="space-y-6">
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-                <Card className="p-6 bg-card border-border">
+                <Card className="p-4 sm:p-6 bg-card border-border">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
                     <Globe className="size-4 text-primary" />
                     Appearance
@@ -208,7 +208,7 @@ export default function SettingsConfigPage() {
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                <Card className="p-6 bg-card border-border">
+                <Card className="p-4 sm:p-6 bg-card border-border">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
                     <Key className="size-4 text-primary" />
                     API Configuration
@@ -239,7 +239,7 @@ export default function SettingsConfigPage() {
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-                <Card className="p-6 bg-card border-border">
+                <Card className="p-4 sm:p-6 bg-card border-border">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
                     <Download className="size-4 text-primary" />
                     Data Export
@@ -277,7 +277,7 @@ export default function SettingsConfigPage() {
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                <Card className="p-6 bg-card border-border">
+                <Card className="p-4 sm:p-6 bg-card border-border">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
                     <Server className="size-4 text-primary" />
                     System Information
@@ -304,7 +304,7 @@ export default function SettingsConfigPage() {
           <TabsContent value="security">
             <div className="space-y-6">
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-                <Card className="p-6 bg-card border-border">
+                <Card className="p-4 sm:p-6 bg-card border-border">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
                     <Lock className="size-4 text-primary" />
                     Security Posture
@@ -339,7 +339,7 @@ export default function SettingsConfigPage() {
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                <Card className="p-6 bg-card border-border">
+                <Card className="p-4 sm:p-6 bg-card border-border">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
                     <Database className="size-4 text-primary" />
                     Tenant Isolation
@@ -366,7 +366,7 @@ export default function SettingsConfigPage() {
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-                <Card className="p-6 bg-card border-border">
+                <Card className="p-4 sm:p-6 bg-card border-border">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
                     <Key className="size-4 text-primary" />
                     Access Keys
@@ -405,7 +405,7 @@ export default function SettingsConfigPage() {
           {/* ═══════════════════ COMPLIANCE TAB ═══════════════════ */}
           <TabsContent value="compliance">
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-              <Card className="p-6 bg-card border-border">
+              <Card className="p-4 sm:p-6 bg-card border-border">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <FileText className="size-4 text-primary" />
@@ -454,7 +454,7 @@ export default function SettingsConfigPage() {
             <div className="space-y-6">
               {/* Current session */}
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-                <Card className="p-6 bg-card border-border">
+                <Card className="p-4 sm:p-6 bg-card border-border">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <Monitor className="size-4 text-primary" />
@@ -475,7 +475,7 @@ export default function SettingsConfigPage() {
                           <p className="text-[10px] font-mono text-green-400">ACTIVE SESSION</p>
                         </div>
                       </div>
-                      <div className="grid grid-cols-3 gap-4 mt-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-3">
                         <div>
                           <p className="text-[10px] text-muted-foreground font-mono uppercase">Login Time</p>
                           <p className="text-xs font-mono text-foreground">{new Date(currentSession.loginTime).toLocaleTimeString()}</p>
@@ -500,7 +500,7 @@ export default function SettingsConfigPage() {
 
               {/* Known operators */}
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                <Card className="p-6 bg-card border-border">
+                <Card className="p-4 sm:p-6 bg-card border-border">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
                     <Users className="size-4 text-primary" />
                     Operator Activity
@@ -545,7 +545,7 @@ export default function SettingsConfigPage() {
 
               {/* Session history */}
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-                <Card className="p-6 bg-card border-border">
+                <Card className="p-4 sm:p-6 bg-card border-border">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <Clock className="size-4 text-primary" />
@@ -600,7 +600,7 @@ export default function SettingsConfigPage() {
           <TabsContent value="notifications">
             <div className="space-y-6">
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-                <Card className="p-6 bg-card border-border">
+                <Card className="p-4 sm:p-6 bg-card border-border">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
                     <Bell className="size-4 text-primary" />
                     Notification Channels
@@ -649,7 +649,7 @@ export default function SettingsConfigPage() {
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                <Card className="p-6 bg-card border-border">
+                <Card className="p-4 sm:p-6 bg-card border-border">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
                     <Zap className="size-4 text-primary" />
                     Alert Types
@@ -680,7 +680,7 @@ export default function SettingsConfigPage() {
           {/* ═══════════════════ AUDIT LOG TAB ═══════════════════ */}
           <TabsContent value="audit">
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-              <Card className="p-6 bg-card border-border">
+              <Card className="p-4 sm:p-6 bg-card border-border">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <Activity className="size-4 text-primary" />
@@ -784,7 +784,7 @@ function AirtableSyncCard() {
   }, []);
 
   return (
-    <Card className="p-6 bg-card border-border">
+    <Card className="p-4 sm:p-6 bg-card border-border">
       <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
         <Database className="size-4 text-primary" />
         Airtable Synchronization

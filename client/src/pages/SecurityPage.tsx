@@ -67,22 +67,22 @@ export default function SecurityPage() {
 
   return (
     <DashboardLayout title="Security" subtitle="SOC 2 COMPLIANCE">
-      <div className="p-4 md:p-6 space-y-6">
-        {/* Tab Bar */}
-        <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1">
+      <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
+        {/* Tab Bar — horizontal scroll on mobile */}
+        <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1 overflow-x-auto -mx-3 sm:mx-0 scrollbar-hide">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all",
+                "flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 touch-manipulation",
                 activeTab === tab.id
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
               )}
             >
               {tab.icon}
-              <span className="hidden sm:inline">{tab.label}</span>
+              <span>{tab.label}</span>
             </button>
           ))}
         </div>
@@ -146,7 +146,7 @@ function OverviewTab() {
     <div className="space-y-6">
       {/* Status Banner */}
       <div className={cn(
-        "rounded-lg border p-6",
+        "rounded-lg border p-4 sm:p-6",
         status?.compliance.soc2Ready
           ? "bg-emerald-500/5 border-emerald-500/20"
           : "bg-amber-500/5 border-amber-500/20"
@@ -157,7 +157,7 @@ function OverviewTab() {
           ) : (
             <AlertTriangle className="size-6 text-amber-400" />
           )}
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="text-sm sm:text-lg font-semibold text-foreground">
             {status?.compliance.soc2Ready ? "SOC 2 Compliance Ready" : "SOC 2 Compliance — Setup In Progress"}
           </h2>
         </div>
@@ -201,27 +201,27 @@ function OverviewTab() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-card border border-border rounded-lg p-4">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Total Events</span>
-          <p className="text-2xl font-mono font-semibold text-foreground mt-1">{auditStats?.total ?? 0}</p>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+        <div className="bg-card border border-border rounded-lg p-3 sm:p-4">
+          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-muted-foreground">Total Events</span>
+          <p className="text-base sm:text-2xl font-mono font-semibold text-foreground mt-1">{auditStats?.total ?? 0}</p>
         </div>
-        <div className="bg-card border border-border rounded-lg p-4">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Today</span>
-          <p className="text-2xl font-mono font-semibold text-foreground mt-1">{auditStats?.today ?? 0}</p>
+        <div className="bg-card border border-border rounded-lg p-3 sm:p-4">
+          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-muted-foreground">Today</span>
+          <p className="text-base sm:text-2xl font-mono font-semibold text-foreground mt-1">{auditStats?.today ?? 0}</p>
         </div>
-        <div className="bg-card border border-border rounded-lg p-4">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Access Denied</span>
-          <p className="text-2xl font-mono font-semibold text-red-400 mt-1">{auditStats?.denied ?? 0}</p>
+        <div className="bg-card border border-border rounded-lg p-3 sm:p-4">
+          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-muted-foreground">Access Denied</span>
+          <p className="text-base sm:text-2xl font-mono font-semibold text-red-400 mt-1">{auditStats?.denied ?? 0}</p>
         </div>
-        <div className="bg-card border border-border rounded-lg p-4">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Errors</span>
-          <p className="text-2xl font-mono font-semibold text-amber-400 mt-1">{auditStats?.errors ?? 0}</p>
+        <div className="bg-card border border-border rounded-lg p-3 sm:p-4">
+          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-muted-foreground">Errors</span>
+          <p className="text-base sm:text-2xl font-mono font-semibold text-amber-400 mt-1">{auditStats?.errors ?? 0}</p>
         </div>
       </div>
 
       {/* Encryption Details */}
-      <div className="bg-card border border-border rounded-lg p-4">
+      <div className="bg-card border border-border rounded-lg p-3 sm:p-4">
         <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
           <Lock className="size-4 text-primary" />
           Encryption Configuration
@@ -286,8 +286,8 @@ function UsersTab() {
         </div>
         <div className="divide-y divide-border">
           {users?.map((user) => (
-            <div key={user.id} className="px-4 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div key={user.id} className="px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                 <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
                   {(user.name ?? "?")[0]?.toUpperCase()}
                 </div>
@@ -377,10 +377,10 @@ function AuditLogTab() {
 
   return (
     <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex items-center gap-3 flex-wrap">
+      {/* Filters — horizontal scroll on mobile */}
+      <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
         <Select value={filter.result ?? "all"} onValueChange={(v) => { setFilter(f => ({ ...f, result: v === "all" ? undefined : v })); setOffset(0); }}>
-          <SelectTrigger className="w-36 h-8 text-xs">
+          <SelectTrigger className="w-28 sm:w-36 h-9 min-h-[36px] text-xs flex-shrink-0">
             <SelectValue placeholder="All Results" />
           </SelectTrigger>
           <SelectContent>
@@ -392,7 +392,7 @@ function AuditLogTab() {
         </Select>
 
         <Select value={filter.entityType ?? "all"} onValueChange={(v) => { setFilter(f => ({ ...f, entityType: v === "all" ? undefined : v })); setOffset(0); }}>
-          <SelectTrigger className="w-36 h-8 text-xs">
+          <SelectTrigger className="w-28 sm:w-36 h-9 min-h-[36px] text-xs flex-shrink-0">
             <SelectValue placeholder="All Entities" />
           </SelectTrigger>
           <SelectContent>
@@ -406,13 +406,13 @@ function AuditLogTab() {
           </SelectContent>
         </Select>
 
-        <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => refetch()}>
+        <Button variant="outline" size="sm" className="h-9 min-h-[36px] text-xs flex-shrink-0 touch-manipulation" onClick={() => refetch()}>
           <RefreshCw className="size-3 mr-1" />
           Refresh
         </Button>
 
-        <span className="text-[10px] font-mono text-muted-foreground ml-auto">
-          {total} events
+        <span className="text-[10px] font-mono text-muted-foreground ml-auto flex-shrink-0">
+          {total}
         </span>
       </div>
 
@@ -480,24 +480,24 @@ function AuditLogTab() {
 
         {/* Pagination */}
         {total > limit && (
-          <div className="px-4 py-3 border-t border-border flex items-center justify-between">
+            <div className="px-3 sm:px-4 py-3 border-t border-border flex items-center justify-between gap-2">
             <span className="text-[10px] font-mono text-muted-foreground">
-              Showing {offset + 1}–{Math.min(offset + limit, total)} of {total}
+              {offset + 1}–{Math.min(offset + limit, total)} of {total}
             </span>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 text-xs"
+                className="h-9 min-h-[36px] text-xs touch-manipulation"
                 disabled={offset === 0}
                 onClick={() => setOffset(Math.max(0, offset - limit))}
               >
-                Previous
+                Prev
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 text-xs"
+                className="h-9 min-h-[36px] text-xs touch-manipulation"
                 disabled={offset + limit >= total}
                 onClick={() => setOffset(offset + limit)}
               >

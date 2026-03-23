@@ -1,5 +1,5 @@
 // ============================================================================
-// Dashboard Page — Swiss Instrument design — LIVE DB DATA
+// Dashboard Page — Swiss Instrument design — LIVE DB DATA — Mobile-First
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
@@ -35,8 +35,8 @@ import {
   Sparkles,
   Bell,
   FileText,
-  RefreshCw,
   Shield,
+  ChevronRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useCallback, useMemo } from "react";
@@ -217,7 +217,7 @@ export default function Home() {
 
   return (
     <DashboardLayout title="Dashboard" subtitle="ROYALTON VENTURE HOLDING">
-      <div className="p-4 md:p-6 space-y-6">
+      <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
 
         {/* Overdue Alert Banner */}
         {overdueTasks.length > 0 && (
@@ -227,22 +227,22 @@ export default function Home() {
             className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex items-center justify-between"
           >
             <div className="flex items-center gap-2">
-              <AlertTriangle className="size-4 text-red-400" />
+              <AlertTriangle className="size-4 text-red-400 flex-shrink-0" />
               <span className="text-xs font-medium text-red-400">
-                {overdueTasks.length} overdue task{overdueTasks.length > 1 ? "s" : ""} need attention
+                {overdueTasks.length} overdue task{overdueTasks.length > 1 ? "s" : ""}
               </span>
             </div>
-            <Button variant="ghost" size="sm" className="text-xs text-red-400 h-7" onClick={() => navigate("/tasks")}>
-              View tasks →
+            <Button variant="ghost" size="sm" className="text-xs text-red-400 h-8 min-h-[32px] px-3" onClick={() => navigate("/tasks")}>
+              View <ChevronRight className="size-3 ml-0.5" />
             </Button>
           </motion.div>
         )}
 
-        {/* Metrics Bar — clickable */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Metrics Bar — 2x2 grid on mobile, 4-col on desktop */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
           {pageLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-24 rounded-lg" />
+              <Skeleton key={i} className="h-20 sm:h-24 rounded-lg" />
             ))
           ) : (
             METRIC_CARDS.map((m, i) => (
@@ -252,111 +252,158 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05, duration: 0.3, ease: "easeOut" }}
                 onClick={() => navigate(m.href)}
-                className="bg-card border border-border rounded-lg p-4 flex flex-col gap-2 cursor-pointer hover:border-primary/30 hover:bg-card/80 transition-all group"
+                className="bg-card border border-border rounded-lg p-3 sm:p-4 flex flex-col gap-1.5 sm:gap-2 cursor-pointer hover:border-primary/30 active:scale-[0.98] hover:bg-card/80 transition-all group touch-manipulation"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">
+                  <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium truncate">
                     {m.label}
                   </span>
-                  <span className={cn("opacity-60 group-hover:opacity-100 transition-opacity", m.color)}>{m.icon}</span>
+                  <span className={cn("opacity-60 group-hover:opacity-100 transition-opacity flex-shrink-0", m.color)}>{m.icon}</span>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-semibold tracking-tight text-foreground font-mono">
+                <div className="flex items-baseline gap-1.5 sm:gap-2">
+                  <span className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground font-mono">
                     {m.value}
                   </span>
-                  <span className="text-[10px] text-muted-foreground font-mono">{m.suffix}</span>
+                  <span className="text-[9px] sm:text-[10px] text-muted-foreground font-mono">{m.suffix}</span>
                 </div>
               </motion.div>
             ))
           )}
         </div>
 
-        {/* Quick Actions Row */}
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="text-xs gap-1.5 h-7" onClick={() => navigate("/ventures")}>
+        {/* Quick Actions — horizontal scroll on mobile */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
+          <Button variant="outline" size="sm" className="text-xs gap-1.5 h-8 min-h-[32px] whitespace-nowrap flex-shrink-0 touch-manipulation" onClick={() => navigate("/ventures")}>
             <Plus className="size-3" /> New Venture
           </Button>
-          <Button variant="outline" size="sm" className="text-xs gap-1.5 h-7" onClick={() => navigate("/tasks")}>
+          <Button variant="outline" size="sm" className="text-xs gap-1.5 h-8 min-h-[32px] whitespace-nowrap flex-shrink-0 touch-manipulation" onClick={() => navigate("/tasks")}>
             <Plus className="size-3" /> New Task
           </Button>
-          <Button variant="outline" size="sm" className="text-xs gap-1.5 h-7" onClick={() => navigate("/spvs")}>
+          <Button variant="outline" size="sm" className="text-xs gap-1.5 h-8 min-h-[32px] whitespace-nowrap flex-shrink-0 touch-manipulation" onClick={() => navigate("/spvs")}>
             <Plus className="size-3" /> New SPV
           </Button>
         </div>
 
-        {/* Main content */}
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
-          {/* Venture Sectors Grid — clickable */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-foreground">Venture Sectors</h2>
-              <span className="text-[10px] font-mono text-muted-foreground">{Object.keys(venturesBySector).length} sectors · {allVentures.length} ventures</span>
+        {/* Main content — stacked on mobile, 2-col on desktop */}
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-4 sm:gap-6">
+          {/* Left column — Venture Sectors + SPVs */}
+          <div className="space-y-4 sm:space-y-6">
+            {/* Venture Sectors */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-foreground">Venture Sectors</h2>
+                <span className="text-[10px] font-mono text-muted-foreground">{Object.keys(venturesBySector).length} sectors</span>
+              </div>
+
+              {pageLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-40 sm:h-48 rounded-lg" />
+                  ))}
+                </div>
+              ) : (
+                /* Horizontal scroll on mobile, grid on desktop */
+                <>
+                  {/* Mobile: horizontal scroll */}
+                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-3 px-3 sm:hidden scrollbar-hide snap-x snap-mandatory">
+                    {Object.entries(venturesBySector).map(([theme, ventures], i) => {
+                      const tc = getThemeColor(theme);
+                      const activeCount = ventures.filter(v => v.status === "In progress").length;
+                      return (
+                        <motion.div
+                          key={theme}
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 + i * 0.05, duration: 0.3 }}
+                          onClick={() => setSectorDrawer(theme)}
+                          className="bg-card border border-border rounded-lg p-3 min-w-[240px] w-[240px] flex-shrink-0 snap-start cursor-pointer active:scale-[0.98] transition-all touch-manipulation"
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="flex items-center justify-center size-7 rounded-md" style={{ backgroundColor: `${tc.color}15` }}>
+                              <span style={{ color: tc.color }}>{THEME_ICONS[theme] || <Package className="size-4" />}</span>
+                            </div>
+                            <span className="text-sm font-medium text-foreground">{theme}</span>
+                          </div>
+                          <div className="space-y-1 mb-2">
+                            {ventures.slice(0, 3).map((v) => (
+                              <div key={v.id} className="flex items-center justify-between">
+                                <span className="text-xs text-muted-foreground truncate max-w-[140px]">{v.name}</span>
+                                <span className="text-[10px] font-mono text-muted-foreground">{v.location}</span>
+                              </div>
+                            ))}
+                            {ventures.length > 3 && (
+                              <span className="text-[10px] text-muted-foreground font-mono">+{ventures.length - 3} more</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-4 pt-2 border-t border-border">
+                            <div className="flex flex-col">
+                              <span className="text-xs font-mono font-medium text-foreground">{ventures.length}</span>
+                              <span className="text-[10px] text-muted-foreground">ventures</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-mono font-medium text-foreground">{activeCount}</span>
+                              <span className="text-[10px] text-muted-foreground">active</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Desktop: grid */}
+                  <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {Object.entries(venturesBySector).map(([theme, ventures], i) => {
+                      const tc = getThemeColor(theme);
+                      const activeCount = ventures.filter(v => v.status === "In progress").length;
+                      return (
+                        <motion.div
+                          key={theme}
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 + i * 0.05, duration: 0.3, ease: "easeOut" }}
+                          onClick={() => setSectorDrawer(theme)}
+                          className="bg-card border border-border rounded-lg p-4 hover:border-primary/30 transition-all cursor-pointer group"
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center justify-center size-7 rounded-md" style={{ backgroundColor: `${tc.color}15` }}>
+                                <span style={{ color: tc.color }}>{THEME_ICONS[theme] || <Package className="size-4" />}</span>
+                              </div>
+                              <span className="text-sm font-medium text-foreground">{theme}</span>
+                            </div>
+                            <ArrowUpRight className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                          <div className="space-y-1.5 mb-3">
+                            {ventures.slice(0, 4).map((v) => (
+                              <div key={v.id} className="flex items-center justify-between">
+                                <span className="text-xs text-muted-foreground truncate max-w-[160px]">{v.name}</span>
+                                <span className="text-[10px] font-mono text-muted-foreground">{v.location}</span>
+                              </div>
+                            ))}
+                            {ventures.length > 4 && (
+                              <span className="text-[10px] text-muted-foreground font-mono">+{ventures.length - 4} more</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-4 pt-3 border-t border-border">
+                            <div className="flex flex-col">
+                              <span className="text-xs font-mono font-medium text-foreground">{ventures.length}</span>
+                              <span className="text-[10px] text-muted-foreground">ventures</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-mono font-medium text-foreground">{activeCount}</span>
+                              <span className="text-[10px] text-muted-foreground">active</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </div>
 
-            {pageLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="h-48 rounded-lg" />
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {Object.entries(venturesBySector).map(([theme, ventures], i) => {
-                  const tc = getThemeColor(theme);
-                  const activeCount = ventures.filter(v => v.status === "In progress").length;
-
-                  return (
-                    <motion.div
-                      key={theme}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 + i * 0.05, duration: 0.3, ease: "easeOut" }}
-                      onClick={() => setSectorDrawer(theme)}
-                      className="bg-card border border-border rounded-lg p-4 hover:border-primary/30 transition-all cursor-pointer group"
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="flex items-center justify-center size-7 rounded-md"
-                            style={{ backgroundColor: `${tc.color}15` }}
-                          >
-                            <span style={{ color: tc.color }}>{THEME_ICONS[theme] || <Package className="size-4" />}</span>
-                          </div>
-                          <span className="text-sm font-medium text-foreground">{theme}</span>
-                        </div>
-                        <ArrowUpRight className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-
-                      <div className="space-y-1.5 mb-3">
-                        {ventures.slice(0, 4).map((v) => (
-                          <div key={v.id} className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground truncate max-w-[160px]">{v.name}</span>
-                            <span className="text-[10px] font-mono text-muted-foreground">{v.location}</span>
-                          </div>
-                        ))}
-                        {ventures.length > 4 && (
-                          <span className="text-[10px] text-muted-foreground font-mono">+{ventures.length - 4} more</span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-4 pt-3 border-t border-border">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-mono font-medium text-foreground">{ventures.length}</span>
-                          <span className="text-[10px] text-muted-foreground">ventures</span>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-xs font-mono font-medium text-foreground">{activeCount}</span>
-                          <span className="text-[10px] text-muted-foreground">active</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Active SPVs — clickable rows */}
-            <div className="mt-6">
+            {/* Active SPVs — card style on mobile */}
+            <div>
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-foreground">Active SPVs & Deals</h2>
                 <span className="text-[10px] font-mono text-muted-foreground">{allSpvs.length} total</span>
@@ -372,17 +419,17 @@ export default function Home() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.3 + i * 0.05, duration: 0.25 }}
                       onClick={() => setSpvModal(spv)}
-                      className="p-3 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors"
+                      className="p-3 flex items-center justify-between cursor-pointer hover:bg-accent/30 active:bg-accent/40 transition-colors touch-manipulation"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="size-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: tc.color }} />
-                        <div>
-                          <span className="text-xs font-medium text-foreground">{spv.name}</span>
-                          <span className="text-[10px] font-mono text-muted-foreground ml-2">{spv.sector}</span>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="size-2 rounded-full flex-shrink-0" style={{ backgroundColor: tc.color }} />
+                        <div className="min-w-0">
+                          <span className="text-xs font-medium text-foreground block truncate">{spv.name}</span>
+                          <span className="text-[10px] font-mono text-muted-foreground">{spv.sector}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded", spv.priority === "High" ? "bg-red-500/10 text-red-400" : spv.priority === "Medium" ? "bg-amber-500/10 text-amber-400" : "bg-secondary text-muted-foreground")}>
+                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                        <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded hidden sm:inline-block", spv.priority === "High" ? "bg-red-500/10 text-red-400" : spv.priority === "Medium" ? "bg-amber-500/10 text-amber-400" : "bg-secondary text-muted-foreground")}>
                           {spv.priority}
                         </span>
                         <StatusBadge label={sc?.label || spv.stage || "Unknown"} bg={sc?.bg} dot={sc?.dot} />
@@ -397,46 +444,47 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Right column */}
+          {/* Right column — stacked on mobile below main content */}
           <div className="space-y-4">
-            {/* Agent Activity Feed — live from DB */}
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-foreground">Recent Activity</h2>
-              <div className="flex items-center gap-1.5">
-                <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[10px] font-mono text-emerald-400">live</span>
+            {/* Recent Activity */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-foreground">Recent Activity</h2>
+                <div className="flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[10px] font-mono text-emerald-400">live</span>
+                </div>
+              </div>
+              <div className="bg-card border border-border rounded-lg divide-y divide-border">
+                {activityLogs.slice(0, 6).map((log, i) => {
+                  const tc = getThemeColor(log.sector || "Others");
+                  return (
+                    <motion.div
+                      key={log.id}
+                      initial={{ opacity: 0, x: 8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.4 + i * 0.08, duration: 0.25, ease: "easeOut" }}
+                      onClick={() => toast.info(`${log.action}: ${log.detail || ""}`)}
+                      className="p-3 flex gap-3 cursor-pointer hover:bg-accent/30 active:bg-accent/40 transition-colors touch-manipulation"
+                    >
+                      <div className="size-2 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: tc.color }} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-foreground truncate">{log.action}</span>
+                          <span className="text-[10px] font-mono text-muted-foreground flex-shrink-0">{formatTimestamp(log.createdAt instanceof Date ? log.createdAt.toISOString() : String(log.createdAt))}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">{log.detail}</p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+                {activityLogs.length === 0 && (
+                  <div className="p-4 text-center text-xs text-muted-foreground">No recent activity</div>
+                )}
               </div>
             </div>
 
-            <div className="bg-card border border-border rounded-lg divide-y divide-border">
-              {activityLogs.map((log, i) => {
-                const tc = getThemeColor(log.sector || "Others");
-                return (
-                  <motion.div
-                    key={log.id}
-                    initial={{ opacity: 0, x: 8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 + i * 0.08, duration: 0.25, ease: "easeOut" }}
-                    onClick={() => toast.info(`${log.action}: ${log.detail || ""}`)}
-                    className="p-3 flex gap-3 cursor-pointer hover:bg-accent/30 transition-colors"
-                  >
-                    <div className="size-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: tc.color }} />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-foreground">{log.action}</span>
-                        <span className="text-[10px] font-mono text-muted-foreground">{formatTimestamp(log.createdAt instanceof Date ? log.createdAt.toISOString() : String(log.createdAt))}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate">{log.detail}</p>
-                    </div>
-                  </motion.div>
-                );
-              })}
-              {activityLogs.length === 0 && (
-                <div className="p-4 text-center text-xs text-muted-foreground">No recent activity</div>
-              )}
-            </div>
-
-            {/* Tasks — with checkboxes and click-to-open modal */}
+            {/* Tasks */}
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-foreground">Tasks</h2>
@@ -447,18 +495,18 @@ export default function Home() {
                   const resolvedStatus = getTaskStatus(task as DBTask);
                   const sc = STATUS_CONFIG[resolvedStatus];
                   return (
-                    <div key={task.id} className="p-3 group">
+                    <div key={task.id} className="p-3 group touch-manipulation">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
                           <Checkbox
                             checked={task.status === "complete"}
                             onCheckedChange={() => handleTaskToggle(task as DBTask)}
-                            className="size-3.5"
+                            className="size-4 flex-shrink-0"
                           />
                           <button
                             onClick={() => setTaskModal(task as DBTask)}
                             className={cn(
-                              "text-xs font-medium text-foreground truncate max-w-[200px] hover:text-primary transition-colors text-left",
+                              "text-xs font-medium text-foreground truncate hover:text-primary transition-colors text-left",
                               task.status === "complete" && "line-through opacity-50"
                             )}
                           >
@@ -470,7 +518,7 @@ export default function Home() {
                       <div className="flex items-center gap-2 mt-1 ml-6">
                         <span className="text-[10px] font-mono text-muted-foreground">Due {task.dueDate ? formatDate(task.dueDate) : "—"}</span>
                         {task.assigneeNames && task.assigneeNames.length > 0 && (
-                          <span className="text-[10px] text-muted-foreground">· {task.assigneeNames[0]}</span>
+                          <span className="text-[10px] text-muted-foreground hidden sm:inline">· {task.assigneeNames[0]}</span>
                         )}
                       </div>
                     </div>
@@ -493,15 +541,15 @@ export default function Home() {
                 </div>
                 <div className="bg-card border border-border rounded-lg divide-y divide-border">
                   {smartAlerts.map((alert: any) => (
-                    <div key={alert.id} className="p-3 flex items-start gap-2">
-                      <Shield className={cn("size-3.5 mt-0.5 flex-shrink-0",
+                    <div key={alert.id} className="p-3 flex items-start gap-2 touch-manipulation">
+                      <Shield className={cn("size-4 mt-0.5 flex-shrink-0",
                         alert.severity === "critical" ? "text-red-400" :
                         alert.severity === "high" ? "text-orange-400" :
                         alert.severity === "medium" ? "text-amber-400" : "text-muted-foreground"
                       )} />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium text-foreground">{alert.title}</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{alert.message}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{alert.message}</p>
                         <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded mt-1 inline-block",
                           alert.severity === "critical" ? "bg-red-500/10 text-red-400" :
                           alert.severity === "high" ? "bg-orange-500/10 text-orange-400" :
@@ -521,11 +569,9 @@ export default function Home() {
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <Sparkles className="size-4 text-purple-400" /> Daily Brief
                   </h2>
-                  <span className="text-[10px] font-mono text-muted-foreground">
-                    {dailyBrief.briefDate}
-                  </span>
+                  <span className="text-[10px] font-mono text-muted-foreground">{dailyBrief.briefDate}</span>
                 </div>
-                <div className="bg-card border border-border rounded-lg p-4">
+                <div className="bg-card border border-border rounded-lg p-3 sm:p-4">
                   {dailyBrief.headline && <p className="text-sm font-medium text-foreground mb-2">{dailyBrief.headline}</p>}
                   {dailyBrief.portfolioHealth && <p className="text-xs text-foreground leading-relaxed">{dailyBrief.portfolioHealth}</p>}
                   {dailyBrief.recommendedActions && dailyBrief.recommendedActions.length > 0 && (
@@ -561,15 +607,15 @@ export default function Home() {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <Brain className="size-4 text-purple-400" /> Document Intelligence
+                    <Brain className="size-4 text-purple-400" /> Doc Intelligence
                   </h2>
                   <span className="text-[10px] font-mono text-muted-foreground">{docFeed.length} recent</span>
                 </div>
                 <div className="bg-card border border-border rounded-lg divide-y divide-border">
                   {docFeed.map((doc: any) => (
                     <div key={doc.id} className="p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <FileText className="size-3.5 text-purple-400" />
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <FileText className="size-3.5 text-purple-400 flex-shrink-0" />
                         <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400">
                           {doc.documentType || "Unknown"}
                         </span>
@@ -600,13 +646,13 @@ export default function Home() {
                   <div
                     key={dist.id}
                     onClick={() => navigate("/distributions")}
-                    className="p-3 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors"
+                    className="p-3 flex items-center justify-between cursor-pointer hover:bg-accent/30 active:bg-accent/40 transition-colors touch-manipulation"
                   >
-                    <div>
-                      <span className="text-xs font-medium text-foreground">{dist.name}</span>
+                    <div className="min-w-0">
+                      <span className="text-xs font-medium text-foreground block truncate">{dist.name}</span>
                       <p className="text-[10px] font-mono text-muted-foreground mt-0.5">{dist.fund}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0 ml-2">
                       <span className="text-xs font-mono font-medium text-foreground">{formatCurrency(dist.amount || 0)}</span>
                       <p className={cn("text-[10px] font-mono mt-0.5", dist.status === "Paid" ? "text-emerald-400" : dist.status === "Cancelled" ? "text-red-400" : "text-blue-400")}>
                         {dist.status}
@@ -623,9 +669,9 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Sector Drawer */}
+      {/* Sector Drawer — full width on mobile */}
       <Sheet open={!!sectorDrawer} onOpenChange={(open) => !open && setSectorDrawer(null)}>
-        <SheetContent side="right" className="w-[420px] sm:max-w-[420px] bg-card border-border p-0">
+        <SheetContent side="right" className="w-full sm:w-[420px] sm:max-w-[420px] bg-card border-border p-0">
           <SheetHeader className="px-4 pt-4 pb-3 border-b border-border">
             <div className="flex items-center gap-2">
               {sectorDrawer && (
@@ -649,7 +695,7 @@ export default function Home() {
               {sectorVentures.map((v) => (
                 <div
                   key={v.id}
-                  className="px-4 py-3 cursor-pointer hover:bg-accent/30 transition-colors"
+                  className="px-4 py-3 cursor-pointer hover:bg-accent/30 active:bg-accent/40 transition-colors touch-manipulation"
                   onClick={() => { setSectorDrawer(null); navigate(`/ventures/${v.slug}`); }}
                 >
                   <div className="flex items-center justify-between">
@@ -669,7 +715,7 @@ export default function Home() {
                     <span className="text-[10px] text-muted-foreground">{v.stage}</span>
                   </div>
                   {v.currentStatus && (
-                    <p className="text-[10px] text-muted-foreground mt-1 italic">{v.currentStatus}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1 italic line-clamp-2">{v.currentStatus}</p>
                   )}
                 </div>
               ))}
@@ -678,7 +724,7 @@ export default function Home() {
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full text-xs"
+                className="w-full text-xs h-9 min-h-[36px] touch-manipulation"
                 onClick={() => { setSectorDrawer(null); navigate("/ventures"); }}
               >
                 View all ventures →
@@ -690,7 +736,7 @@ export default function Home() {
 
       {/* SPV Modal */}
       <Dialog open={!!spvModal} onOpenChange={(open) => !open && setSpvModal(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
           {spvModal && (
             <>
               <DialogHeader>
@@ -723,11 +769,11 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              <DialogFooter>
-                <Button variant="outline" size="sm" className="text-xs" onClick={() => { setSpvModal(null); navigate(`/spvs/${spvModal.slug}`); }}>
+              <DialogFooter className="flex-col sm:flex-row gap-2">
+                <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={() => { setSpvModal(null); navigate(`/spvs/${spvModal.slug}`); }}>
                   View full details →
                 </Button>
-                <Button variant="ghost" size="sm" className="text-xs" onClick={() => setSpvModal(null)}>
+                <Button variant="ghost" size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={() => setSpvModal(null)}>
                   Close
                 </Button>
               </DialogFooter>
@@ -738,7 +784,7 @@ export default function Home() {
 
       {/* Task Modal */}
       <Dialog open={!!taskModal} onOpenChange={(open) => !open && setTaskModal(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
           {taskModal && (
             <>
               <DialogHeader>
@@ -769,7 +815,7 @@ export default function Home() {
                 <div>
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Reassign</span>
                   <Select onValueChange={(val) => handleReassign(taskModal.id, val)}>
-                    <SelectTrigger className="h-8 text-xs">
+                    <SelectTrigger className="h-9 min-h-[36px] text-xs">
                       <SelectValue placeholder="Select team member" />
                     </SelectTrigger>
                     <SelectContent>
@@ -780,12 +826,12 @@ export default function Home() {
                   </Select>
                 </div>
               </div>
-              <DialogFooter>
-                <Button size="sm" className="text-xs" onClick={() => { handleTaskToggle(taskModal); setTaskModal(null); }}>
+              <DialogFooter className="flex-col sm:flex-row gap-2">
+                <Button size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={() => { handleTaskToggle(taskModal); setTaskModal(null); }}>
                   <CheckCircle2 className="size-3.5 mr-1" />
                   {taskModal.status === "complete" ? "Reopen Task" : "Mark Complete"}
                 </Button>
-                <Button variant="ghost" size="sm" className="text-xs" onClick={() => setTaskModal(null)}>
+                <Button variant="ghost" size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={() => setTaskModal(null)}>
                   Close
                 </Button>
               </DialogFooter>
@@ -800,12 +846,12 @@ export default function Home() {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-sm">Reopen this task?</AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-muted-foreground">
-              Are you sure you want to mark this task as incomplete? It will be moved back to your open tasks list.
+              Are you sure you want to mark this task as incomplete?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="text-xs h-8">Cancel</AlertDialogCancel>
-            <AlertDialogAction className="text-xs h-8 bg-amber-600 hover:bg-amber-700" onClick={confirmUncomplete}>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="text-xs h-9 min-h-[36px] touch-manipulation">Cancel</AlertDialogCancel>
+            <AlertDialogAction className="text-xs h-9 min-h-[36px] bg-amber-600 hover:bg-amber-700 touch-manipulation" onClick={confirmUncomplete}>
               Yes, reopen task
             </AlertDialogAction>
           </AlertDialogFooter>

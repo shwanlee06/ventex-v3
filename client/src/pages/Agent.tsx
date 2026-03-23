@@ -656,8 +656,8 @@ export default function Agent() {
   return (
     <DashboardLayout title="AI Agent" subtitle="CLAUDE 4.6 SONNET">
       <div className="flex flex-col lg:flex-row h-[calc(100vh-3.5rem)] overflow-hidden">
-        {/* ── Left Sidebar ─────────────────────────────────────────────── */}
-        <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-border p-4 overflow-y-auto flex-shrink-0">
+        {/* ── Left Sidebar — hidden on mobile, shown on desktop ──────── */}
+        <div className="hidden lg:block w-80 border-r border-border p-4 overflow-y-auto flex-shrink-0">
           <div className="space-y-5">
             <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/20">
               <Cpu className="size-4 text-primary" />
@@ -807,15 +807,26 @@ export default function Agent() {
 
         {/* ── Right Panel: Chat ────────────────────────────────────────── */}
         <div className="flex-1 flex flex-col min-h-0">
-          {/* Quick actions + active chat title */}
-          <div className="flex items-center gap-2 px-4 py-3 border-b border-border overflow-x-auto">
+          {/* Mobile chat header with new chat button */}
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-border lg:hidden">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <Cpu className="size-3.5 text-primary flex-shrink-0" />
+              <span className="text-xs font-medium text-foreground truncate">{activeChat?.title || "New conversation"}</span>
+            </div>
+            <Button variant="ghost" size="sm" className="h-8 px-2 text-xs flex-shrink-0 touch-manipulation" onClick={createNewChat} disabled={isStreaming}>
+              <Plus className="size-3.5 mr-1" /> New
+            </Button>
+          </div>
+
+          {/* Quick actions — horizontal scroll */}
+          <div className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 border-b border-border overflow-x-auto scrollbar-hide">
             <Sparkles className="size-3.5 text-primary flex-shrink-0" />
             {QUICK_ACTIONS.map(action => (
               <button
                 key={action.label}
                 onClick={() => sendMessage(action.prompt)}
                 disabled={isStreaming}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary/50 text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors whitespace-nowrap border border-border disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-secondary/50 text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors whitespace-nowrap border border-border disabled:opacity-50 touch-manipulation flex-shrink-0"
               >
                 {action.icon}
                 {action.label}
@@ -831,7 +842,7 @@ export default function Agent() {
           </div>
 
           {/* Messages */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
             <AnimatePresence initial={false}>
               {messages.map((msg) => {
                 let dateSeparator: React.ReactNode = null;
@@ -865,7 +876,7 @@ export default function Agent() {
                       )}
 
                       <div className={cn(
-                        "max-w-[85%] lg:max-w-[70%] rounded-lg px-4 py-3",
+                        "max-w-[90%] sm:max-w-[85%] lg:max-w-[70%] rounded-lg px-3 sm:px-4 py-2.5 sm:py-3",
                         msg.role === "user" ? "bg-primary/10 text-foreground" : "bg-card border border-border text-foreground"
                       )}>
                         {msg.attachments && msg.attachments.length > 0 && (
@@ -972,7 +983,7 @@ export default function Agent() {
           )}
 
           {/* Input area */}
-          <div className="border-t border-border p-4">
+          <div className="border-t border-border p-3 sm:p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:pb-4 mb-16 md:mb-0">
             <div className="flex items-end gap-2">
               <input
                 ref={fileInputRef}
@@ -985,7 +996,7 @@ export default function Agent() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="size-[44px] flex-shrink-0 text-muted-foreground hover:text-foreground"
+                className="size-10 sm:size-[44px] flex-shrink-0 text-muted-foreground hover:text-foreground touch-manipulation"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Paperclip className="size-4" />
@@ -995,22 +1006,22 @@ export default function Agent() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask me anything about your ventures..."
-                className="flex-1 min-h-[44px] max-h-[120px] resize-none bg-secondary/30 border-border text-sm"
+                placeholder="Ask about your ventures..."
+                className="flex-1 min-h-[40px] sm:min-h-[44px] max-h-[120px] resize-none bg-secondary/30 border-border text-sm"
                 rows={1}
               />
               {isStreaming ? (
-                <Button onClick={stopStreaming} variant="destructive" size="icon" className="size-[44px] flex-shrink-0">
+                <Button onClick={stopStreaming} variant="destructive" size="icon" className="size-10 sm:size-[44px] flex-shrink-0 touch-manipulation">
                   <XCircle className="size-4" />
                 </Button>
               ) : (
-                <Button onClick={() => sendMessage(input)} disabled={!input.trim() && attachments.length === 0} size="icon" className="size-[44px] flex-shrink-0">
+                <Button onClick={() => sendMessage(input)} disabled={!input.trim() && attachments.length === 0} size="icon" className="size-10 sm:size-[44px] flex-shrink-0 touch-manipulation">
                   <Send className="size-4" />
                 </Button>
               )}
             </div>
-            <p className="text-[10px] text-muted-foreground mt-2 font-mono">
-              Powered by Claude 4.6 Sonnet · Streaming enabled · 📎 Attach files · Enter to send · Shift+Enter for new line
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-1.5 sm:mt-2 font-mono">
+              Claude 4.6 Sonnet · Enter to send
             </p>
           </div>
         </div>

@@ -106,7 +106,7 @@ export default function OnboardPage() {
 
   return (
     <DashboardLayout title="Team & Contacts" subtitle="PEOPLE & ORGANIZATIONS">
-      <div className="p-4 md:p-6 space-y-6">
+      <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
         {/* Summary metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {loading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />) : [
@@ -133,7 +133,7 @@ export default function OnboardPage() {
 
         {/* Add button */}
         <div className="flex justify-end">
-          <Button size="sm" className="text-xs h-8" onClick={() => setAddOpen(true)}>
+          <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => setAddOpen(true)}>
             <Plus className="size-3.5 mr-1" /> Add Member
           </Button>
         </div>
@@ -150,6 +150,7 @@ export default function OnboardPage() {
             <span className="text-[10px] font-mono text-muted-foreground">{team.length} people</span>
           </div>
 
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -191,6 +192,7 @@ export default function OnboardPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </motion.div>
 
         {/* Contacts Table — clickable rows */}
@@ -205,6 +207,7 @@ export default function OnboardPage() {
             <span className="text-[10px] font-mono text-muted-foreground">{CONTACTS.length} contacts</span>
           </div>
 
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -237,6 +240,7 @@ export default function OnboardPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </motion.div>
 
         {/* Organizations & LPs */}

@@ -359,7 +359,7 @@ export default function VentureDetail() {
 
   return (
     <DashboardLayout title={venture.name} subtitle={venture.sector.toUpperCase()}>
-      <div className="p-4 md:p-6 space-y-6">
+      <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
         {/* ── Header Bar ─────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -385,15 +385,15 @@ export default function VentureDetail() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => isEditing ? handleSaveDetails() : startEditing()}>
-              {isEditing ? <><Save className="size-3.5 mr-1" /> Save</> : <><Edit3 className="size-3.5 mr-1" /> Edit Details</>}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => isEditing ? handleSaveDetails() : startEditing()}>
+              {isEditing ? <><Save className="size-3.5 mr-1" /> Save</> : <><Edit3 className="size-3.5 mr-1" /> Edit</>}
             </Button>
-            <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => fileInputRef.current?.click()}>
-              <Upload className="size-3.5 mr-1" /> Add File
+            <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="size-3.5 mr-1" /> <span className="hidden sm:inline">Add </span>File
             </Button>
-            <Button size="sm" className="text-xs h-8" onClick={() => navigate("/agent")}>
-              <MessageSquare className="size-3.5 mr-1" /> Chat with AI →
+            <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => navigate("/agent")}>
+              <MessageSquare className="size-3.5 mr-1" /> <span className="hidden sm:inline">Chat with </span>AI →
             </Button>
           </div>
         </div>
@@ -592,12 +592,12 @@ export default function VentureDetail() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         {/* Move to folder */}
                         {allFolders.length > 0 && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <button className="size-7 rounded-md flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors" title="Move to folder">
+                              <button className="size-8 sm:size-7 rounded-md flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors touch-manipulation" title="Move to folder">
                                 <MoveRight className="size-3.5" />
                               </button>
                             </DropdownMenuTrigger>
@@ -617,19 +617,19 @@ export default function VentureDetail() {
                         )}
                         <button
                           onClick={() => processDocument.mutate({ fileId: file.id, ventureId: ventureId!, fileUrl: file.fileUrl, filename: file.filename, fileType: file.fileType || "application/octet-stream", fileSize: file.fileSize || 0 })}
-                          className="size-7 rounded-md flex items-center justify-center hover:bg-purple-500/10 text-muted-foreground hover:text-purple-400 transition-colors"
+                          className="size-8 sm:size-7 rounded-md flex items-center justify-center hover:bg-purple-500/10 text-muted-foreground hover:text-purple-400 transition-colors touch-manipulation"
                           title="Process with AI"
                           disabled={processDocument.isPending}
                         >
                           <Brain className="size-3.5" />
                         </button>
-                        <button onClick={() => handleOpenFile(file.fileUrl, file.filename)} className="size-7 rounded-md flex items-center justify-center hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors" title="Preview">
+                        <button onClick={() => handleOpenFile(file.fileUrl, file.filename)} className="size-8 sm:size-7 rounded-md flex items-center justify-center hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors touch-manipulation" title="Preview">
                           <Eye className="size-3.5" />
                         </button>
-                        <button onClick={() => handleDownloadFile(file.fileUrl, file.filename)} className="size-7 rounded-md flex items-center justify-center hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 transition-colors" title="Download">
+                        <button onClick={() => handleDownloadFile(file.fileUrl, file.filename)} className="size-8 sm:size-7 rounded-md flex items-center justify-center hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 transition-colors touch-manipulation" title="Download">
                           <Download className="size-3.5" />
                         </button>
-                        <button onClick={() => handleDeleteFile(file.id, file.filename)} className="size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors" title="Remove">
+                        <button onClick={() => handleDeleteFile(file.id, file.filename)} className="size-8 sm:size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors touch-manipulation" title="Remove">
                           <Trash2 className="size-3.5" />
                         </button>
                       </div>
