@@ -587,3 +587,21 @@
 - [x] Org Map section on dashboard — shows all members with type badges (INT/EXT/ADV), roles, and venture counts
 - [x] Display member roles and venture assignments in Org Map with 76 total assignments
 - [x] Add member avatars (initials) and count per venture on partnership cards + table view
+
+## Mobile-First Cleanup — Admin Dashboard & Client Portal
+
+### ATLAS Admin Dashboard Cleanup
+- [x] Reduce visual density — 4 KPI cards (2x2 on mobile), AI Velocity hidden on mobile
+- [x] Simplify partnership cards — name, sector, completion ring, key metrics, health, members
+- [x] Stack sections vertically on mobile (grid-cols-1 on mobile, 3-col on desktop)
+- [x] Larger font sizes (text-xl/2xl KPIs) and generous padding (p-4 sm:p-5 md:p-6)
+- [x] Removed pipeline/sector allocation/fund overview — replaced with cleaner Activity, SPVs, Team columns
+- [x] Removed Needs Attention banner — overdue count shown in KPI card and per-venture
+
+### Client Portal Cleanup
+- [x] Simplified hero — clean greeting, date, portfolio value, and +18.4% indicator
+- [x] Single-column venture cards with icon, name, sector·location, status badge, chevron
+- [x] Better spacing — space-y-6 sm:space-y-8, generous padding, max-w-3xl centered
+- [x] Simpler activity feed — 5 items max, clean timeline with dots and connecting lines
+- [x] All touch targets comfortable — cards are full-width with 1.5rem padding
+- [x] Removed visual noise — minimal badges, clean borders, no micro-elements
