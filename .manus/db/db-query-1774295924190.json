@@ -1,0 +1,190 @@
+{
+  "query": "SELECT v.id, v.name, v.sector, v.status, v.stage, COUNT(t.id) as task_count, SUM(CASE WHEN t.status = 'complete' THEN 1 ELSE 0 END) as completed_tasks FROM ventures v LEFT JOIN tasks t ON t.ventureId = v.id GROUP BY v.id, v.name, v.sector, v.status, v.stage ORDER BY v.name LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT v.id, v.name, v.sector, v.status, v.stage, COUNT(t.id) as task_count, SUM(CASE WHEN t.status = 'complete' THEN 1 ELSE 0 END) as completed_tasks FROM ventures v LEFT JOIN tasks t ON t.ventureId = v.id GROUP BY v.id, v.name, v.sector, v.status, v.stage ORDER BY v.name LIMIT 30;",
+  "rows": [
+    {
+      "id": "12",
+      "name": "Bagatelle",
+      "sector": "Yacht",
+      "status": "In progress",
+      "stage": "In Validation",
+      "task_count": "0",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "8",
+      "name": "Berbara - Lebanon",
+      "sector": "F&B",
+      "status": "On-Hold",
+      "stage": "Active ventures",
+      "task_count": "0",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "14",
+      "name": "Berlin",
+      "sector": "Entertainment",
+      "status": "Completed",
+      "stage": "Active ventures",
+      "task_count": "0",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "16",
+      "name": "Casino - Malaysia",
+      "sector": "Entertainment",
+      "status": "In progress",
+      "stage": "Active ventures",
+      "task_count": "0",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "4",
+      "name": "Chekka Land - Resort",
+      "sector": "Real Estate",
+      "status": "In progress",
+      "stage": "Active ventures",
+      "task_count": "0",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "13",
+      "name": "JV Yacht - Nammos",
+      "sector": "Yacht",
+      "status": "In progress",
+      "stage": "In Validation",
+      "task_count": "1",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "17",
+      "name": "Kazzafi Daughter",
+      "sector": "Others",
+      "status": "In progress",
+      "stage": "Active ventures",
+      "task_count": "0",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "15",
+      "name": "KTL-Dubai Casino License",
+      "sector": "Entertainment",
+      "status": "In progress",
+      "stage": "On Hold",
+      "task_count": "0",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "11",
+      "name": "Mar-a-Lago Yacht Club",
+      "sector": "Yacht",
+      "status": "In progress",
+      "stage": "In Fundraising",
+      "task_count": "0",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "3",
+      "name": "Muscat Bay",
+      "sector": "Real Estate",
+      "status": "In progress",
+      "stage": "Active ventures",
+      "task_count": "0",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "1",
+      "name": "Nammos - Barcelona",
+      "sector": "Real Estate",
+      "status": "In progress",
+      "stage": "In Validation",
+      "task_count": "0",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "9",
+      "name": "Nammos - Ibiza",
+      "sector": "F&B",
+      "status": "In progress",
+      "stage": "In Validation",
+      "task_count": "0",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "2",
+      "name": "Nammos - Lagonissi",
+      "sector": "Real Estate",
+      "status": "In progress",
+      "stage": "In Validation",
+      "task_count": "1",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "6",
+      "name": "Nammos - Watson Island",
+      "sector": "Real Estate",
+      "status": "In progress",
+      "stage": "In Validation",
+      "task_count": "1",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "10",
+      "name": "Nammos Lebanon",
+      "sector": "F&B",
+      "status": "In progress",
+      "stage": "In Validation",
+      "task_count": "0",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "19",
+      "name": "P430",
+      "sector": "Others",
+      "status": "In progress",
+      "stage": "In Validation",
+      "task_count": "0",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "5",
+      "name": "Shady Hotel",
+      "sector": "Real Estate",
+      "status": "In progress",
+      "stage": "Active ventures",
+      "task_count": "0",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "18",
+      "name": "Shady Project",
+      "sector": "Others",
+      "status": "In progress",
+      "stage": "Active ventures",
+      "task_count": "0",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "20",
+      "name": "Venezuela Mining Rights",
+      "sector": "Oil & Gas",
+      "status": "In progress",
+      "stage": "In Validation",
+      "task_count": "0",
+      "completed_tasks": "0"
+    },
+    {
+      "id": "7",
+      "name": "Zarka City",
+      "sector": "Real Estate",
+      "status": "In progress",
+      "stage": "In Validation",
+      "task_count": "1",
+      "completed_tasks": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tsector\tstatus\tstage\ttask_count\tcompleted_tasks\n12\tBagatelle\tYacht\tIn progress\tIn Validation\t0\t0\n8\tBerbara - Lebanon\tF&B\tOn-Hold\tActive ventures\t0\t0\n14\tBerlin\tEntertainment\tCompleted\tActive ventures\t0\t0\n16\tCasino - Malaysia\tEntertainment\tIn progress\tActive ventures\t0\t0\n4\tChekka Land - Resort\tReal Estate\tIn progress\tActive ventures\t0\t0\n13\tJV Yacht - Nammos\tYacht\tIn progress\tIn Validation\t1\t0\n17\tKazzafi Daughter\tOthers\tIn progress\tActive ventures\t0\t0\n15\tKTL-Dubai Casino License\tEntertainment\tIn progress\tOn Hold\t0\t0\n11\tMar-a-Lago Yacht Club\tYacht\tIn progress\tIn Fundraising\t0\t0\n3\tMuscat Bay\tReal Estate\tIn progress\tActive ventures\t0\t0\n1\tNammos - Barcelona\tReal Estate\tIn progress\tIn Validation\t0\t0\n9\tNammos - Ibiza\tF&B\tIn progress\tIn Validation\t0\t0\n2\tNammos - Lagonissi\tReal Estate\tIn progress\tIn Validation\t1\t0\n6\tNammos - Watson Island\tReal Estate\tIn progress\tIn Validation\t1\t0\n10\tNammos Lebanon\tF&B\tIn progress\tIn Validation\t0\t0\n19\tP430\tOthers\tIn progress\tIn Validation\t0\t0\n5\tShady Hotel\tReal Estate\tIn progress\tActive ventures\t0\t0\n18\tShady Project\tOthers\tIn progress\tActive ventures\t0\t0\n20\tVenezuela Mining Rights\tOil & Gas\tIn progress\tIn Validation\t0\t0\n7\tZarka City\tReal Estate\tIn progress\tIn Validation\t1\t0\n",
+  "stderr": "",
+  "execution_time_ms": 409
+}

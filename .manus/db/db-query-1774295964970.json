@@ -1,0 +1,42 @@
+{
+  "query": "SELECT id, name, fund, amount, status, distributionDate FROM distributions LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, fund, amount, status, distributionDate FROM distributions LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Q4 2025 Profit Share",
+      "fund": "Thalora Venture Fund I",
+      "amount": "250000",
+      "status": "Paid",
+      "distributionDate": "2026-01-14"
+    },
+    {
+      "id": "2",
+      "name": "2025 Return of Capital - SPV Alpha",
+      "fund": "Thalora SPV Alpha",
+      "amount": "100000",
+      "status": "Paid",
+      "distributionDate": "2026-01-28"
+    },
+    {
+      "id": "3",
+      "name": "2026 Scheduled Dividend - REIT Fund I",
+      "fund": "Thalora Real Estate Fund II",
+      "amount": "40000",
+      "status": "Scheduled",
+      "distributionDate": "2026-02-09"
+    },
+    {
+      "id": "4",
+      "name": "Cancelled Profit Distribution - Growth Equity Fund II",
+      "fund": "Thalora Growth Equity Fund II",
+      "amount": "50000",
+      "status": "Cancelled",
+      "distributionDate": "2026-02-14"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tfund\tamount\tstatus\tdistributionDate\n1\tQ4 2025 Profit Share\tThalora Venture Fund I\t250000\tPaid\t2026-01-14\n2\t2025 Return of Capital - SPV Alpha\tThalora SPV Alpha\t100000\tPaid\t2026-01-28\n3\t2026 Scheduled Dividend - REIT Fund I\tThalora Real Estate Fund II\t40000\tScheduled\t2026-02-09\n4\tCancelled Profit Distribution - Growth Equity Fund II\tThalora Growth Equity Fund II\t50000\tCancelled\t2026-02-14\n",
+  "stderr": "",
+  "execution_time_ms": 367
+}

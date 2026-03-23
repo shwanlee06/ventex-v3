@@ -1,0 +1,42 @@
+{
+  "query": "SELECT id, entityType, entityId, entityName, action, sector FROM activity_log WHERE entityType = 'venture' LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, entityType, entityId, entityName, action, sector FROM activity_log WHERE entityType = 'venture' LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "entityType": "venture",
+      "entityId": "NULL",
+      "entityName": "Zarka City",
+      "action": "Workshop Scheduled",
+      "sector": "Real Estate"
+    },
+    {
+      "id": "2",
+      "entityType": "venture",
+      "entityId": "NULL",
+      "entityName": "Nammos - Watson Island",
+      "action": "Deck Drafted",
+      "sector": "Real Estate"
+    },
+    {
+      "id": "3",
+      "entityType": "venture",
+      "entityId": "NULL",
+      "entityName": "Nammos - Lagonissi",
+      "action": "Deal Structure",
+      "sector": "Real Estate"
+    },
+    {
+      "id": "120001",
+      "entityType": "venture",
+      "entityId": "13",
+      "entityName": "JV Yacht - Nammos",
+      "action": "File Uploaded",
+      "sector": "Yacht"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tentityType\tentityId\tentityName\taction\tsector\n1\tventure\tNULL\tZarka City\tWorkshop Scheduled\tReal Estate\n2\tventure\tNULL\tNammos - Watson Island\tDeck Drafted\tReal Estate\n3\tventure\tNULL\tNammos - Lagonissi\tDeal Structure\tReal Estate\n120001\tventure\t13\tJV Yacht - Nammos\tFile Uploaded\tYacht\n",
+  "stderr": "",
+  "execution_time_ms": 363
+}

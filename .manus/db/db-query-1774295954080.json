@@ -1,0 +1,90 @@
+{
+  "query": "SELECT s.id, s.name, s.sector, s.stage, s.priority, GROUP_CONCAT(sv.ventureId) as ventureIds FROM spvs s LEFT JOIN spv_ventures sv ON sv.spvId = s.id GROUP BY s.id, s.name, s.sector, s.stage, s.priority LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT s.id, s.name, s.sector, s.stage, s.priority, GROUP_CONCAT(sv.ventureId) as ventureIds FROM spvs s LEFT JOIN spv_ventures sv ON sv.spvId = s.id GROUP BY s.id, s.name, s.sector, s.stage, s.priority LIMIT 20;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Venezuela Mining Rights",
+      "sector": "Oil & Gas",
+      "stage": "Active deal",
+      "priority": "High",
+      "ventureIds": "NULL"
+    },
+    {
+      "id": "9",
+      "name": "ReserveOne",
+      "sector": "TBD",
+      "stage": "Closed deal",
+      "priority": "Medium",
+      "ventureIds": "NULL"
+    },
+    {
+      "id": "5",
+      "name": "Chakra Yacht - Brokerage",
+      "sector": "Yacht",
+      "stage": "Active deal",
+      "priority": "Low",
+      "ventureIds": "NULL"
+    },
+    {
+      "id": "6",
+      "name": "Serenity Yacht - Brokerage",
+      "sector": "Yacht",
+      "stage": "Active deal",
+      "priority": "Low",
+      "ventureIds": "NULL"
+    },
+    {
+      "id": "8",
+      "name": "Onara",
+      "sector": "TBD",
+      "stage": "Closed deal",
+      "priority": "Medium",
+      "ventureIds": "NULL"
+    },
+    {
+      "id": "3",
+      "name": "Crude Oil Deal",
+      "sector": "Oil & Gas",
+      "stage": "In negotiation",
+      "priority": "Medium",
+      "ventureIds": "NULL"
+    },
+    {
+      "id": "4",
+      "name": "Shipping Deal",
+      "sector": "Others",
+      "stage": "Active deal",
+      "priority": "Low",
+      "ventureIds": "NULL"
+    },
+    {
+      "id": "7",
+      "name": "Ego Yacht",
+      "sector": "Yacht",
+      "stage": "Active deal",
+      "priority": "Low",
+      "ventureIds": "NULL"
+    },
+    {
+      "id": "10",
+      "name": "Casino License",
+      "sector": "Entertainment",
+      "stage": "Dropped deal",
+      "priority": "Medium",
+      "ventureIds": "NULL"
+    },
+    {
+      "id": "2",
+      "name": "Azzam - Yacht",
+      "sector": "Yacht",
+      "stage": "Active deal",
+      "priority": "Medium",
+      "ventureIds": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tsector\tstage\tpriority\tventureIds\n1\tVenezuela Mining Rights\tOil & Gas\tActive deal\tHigh\tNULL\n9\tReserveOne\tTBD\tClosed deal\tMedium\tNULL\n5\tChakra Yacht - Brokerage\tYacht\tActive deal\tLow\tNULL\n6\tSerenity Yacht - Brokerage\tYacht\tActive deal\tLow\tNULL\n8\tOnara\tTBD\tClosed deal\tMedium\tNULL\n3\tCrude Oil Deal\tOil & Gas\tIn negotiation\tMedium\tNULL\n4\tShipping Deal\tOthers\tActive deal\tLow\tNULL\n7\tEgo Yacht\tYacht\tActive deal\tLow\tNULL\n10\tCasino License\tEntertainment\tDropped deal\tMedium\tNULL\n2\tAzzam - Yacht\tYacht\tActive deal\tMedium\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 379
+}

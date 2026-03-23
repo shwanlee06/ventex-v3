@@ -1,0 +1,42 @@
+{
+  "query": "SELECT id, title, ventureId, ventureLink, status, priority FROM tasks WHERE ventureId IS NOT NULL LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, title, ventureId, ventureLink, status, priority FROM tasks WHERE ventureId IS NOT NULL LIMIT 20;",
+  "rows": [
+    {
+      "id": "1",
+      "title": "Nammos Watson Island",
+      "ventureId": "6",
+      "ventureLink": "Nammos - Watson Island",
+      "status": "open",
+      "priority": "Medium"
+    },
+    {
+      "id": "3",
+      "title": "Zarka City — Workshop schedule (vision statement/storytelling)",
+      "ventureId": "7",
+      "ventureLink": "Zarka City",
+      "status": "open",
+      "priority": "Low"
+    },
+    {
+      "id": "5",
+      "title": "Lagonissi Nammos — Internal deal structure meeting",
+      "ventureId": "2",
+      "ventureLink": "Nammos - Lagonissi",
+      "status": "open",
+      "priority": "High"
+    },
+    {
+      "id": "7",
+      "title": "JV Yacht Nammos — Internal deal structure meeting",
+      "ventureId": "13",
+      "ventureLink": "JV Yacht - Nammos",
+      "status": "open",
+      "priority": "Medium"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tventureId\tventureLink\tstatus\tpriority\n1\tNammos Watson Island\t6\tNammos - Watson Island\topen\tMedium\n3\tZarka City — Workshop schedule (vision statement/storytelling)\t7\tZarka City\topen\tLow\n5\tLagonissi Nammos — Internal deal structure meeting\t2\tNammos - Lagonissi\topen\tHigh\n7\tJV Yacht Nammos — Internal deal structure meeting\t13\tJV Yacht - Nammos\topen\tMedium\n",
+  "stderr": "",
+  "execution_time_ms": 374
+}

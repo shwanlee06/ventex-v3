@@ -1,0 +1,8 @@
+{
+  "query": "SELECT t.id, t.title, t.ventureId, t.ventureLink, t.status, t.priority, t.dueDate FROM tasks ORDER BY t.ventureId, t.title LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT t.id, t.title, t.ventureId, t.ventureLink, t.status, t.priority, t.dueDate FROM tasks ORDER BY t.ventureId, t.title LIMIT 30;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 't.ventureId' in 'order clause'"
+  ]
+}

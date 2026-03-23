@@ -561,3 +561,16 @@
 - [x] SPV deal pipeline with stage progression in pipeline bar
 - [x] Distribution list with paid/scheduled/cancelled status
 - [ ] Portfolio health heatmap across all 30+ ventures — deferred
+
+## Partnership-Specific Analytics Dashboard
+
+### Dashboard Redesign
+- [x] Replace aggregated KPI averages with per-venture/partnership analytics
+- [x] Add venture analytics cards showing each partnership's tasks, completion rate, velocity, status
+- [x] Per-venture task breakdown: open, completed, overdue counts
+- [x] Per-venture completion rate and AI velocity metric
+- [x] Per-venture status indicator (healthy, at risk, needs attention)
+- [x] Sortable/filterable venture analytics grid (search + sector filter + grid/table toggle)
+- [x] Keep top-level portfolio summary KPIs but add "drill into partnership" capability
+- [x] Backend query for venture-grouped task analytics (uses existing tRPC queries)
+- [x] Tests for partnership-specific analytics data (168 tests passing)
