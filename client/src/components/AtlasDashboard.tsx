@@ -389,7 +389,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
               const tc = getThemeColor(v.sector);
               const isExpanded = expandedVenture === v.id;
               const vTasks = allTasks.filter(t => t.ventureId === v.id);
-              const members = membersByVenture[v.id] || [];
+              const members = (membersByVenture[v.id] || []).filter(m => m.memberName !== "Shwan Lee");
               const ringColor = v.completionRate >= 70 ? "#4ADE80" : v.completionRate >= 40 ? "#F59E0B" : tc.color;
 
               return (
@@ -561,7 +561,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
               <tbody className="divide-y divide-border/50">
                 {filteredVentures.map((v) => {
                   const tc = getThemeColor(v.sector);
-                  const members = membersByVenture[v.id] || [];
+                  const members = (membersByVenture[v.id] || []).filter(m => m.memberName !== "Shwan Lee");
                   return (
                     <tr
                       key={v.id}
@@ -724,35 +724,43 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
           </div>
         </div>
 
-        {/* Org Map */}
+        {/* Royalton Team */}
         <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Network className="size-4 text-primary" />
-              <span className="text-sm font-semibold text-foreground">Team</span>
+              <span className="text-sm font-semibold text-foreground">Royalton Team</span>
             </div>
             <Button variant="ghost" size="sm" className="text-xs h-8 px-2 text-muted-foreground" onClick={() => onNavigate("/team")}>
               All <ChevronRight className="size-3 ml-0.5" />
             </Button>
           </div>
-          {/* Summary */}
-          <div className="flex items-center gap-4 mb-4 pb-4 border-b border-border/50">
-            <div>
-              <span className="text-lg font-mono font-semibold text-foreground">{allTeam.filter(t => t.type === "Internal").length}</span>
-              <p className="text-[10px] text-muted-foreground">Internal</p>
-            </div>
-            <div>
-              <span className="text-lg font-mono font-semibold text-foreground">{allTeam.filter(t => t.type === "External Partner").length}</span>
-              <p className="text-[10px] text-muted-foreground">External</p>
-            </div>
-            <div>
-              <span className="text-lg font-mono font-semibold text-foreground">{allTeam.filter(t => t.type === "Advisor").length}</span>
-              <p className="text-[10px] text-muted-foreground">Advisors</p>
-            </div>
-          </div>
-          {/* Member list */}
+          {/* Summary — exclude Shwan (ATLAS operator) from Royalton counts */}
+          {(() => {
+            const royaltonTeam = allTeam.filter(t => t.name !== "Shwan Lee");
+            const internalCount = royaltonTeam.filter(t => t.type === "Internal").length;
+            const externalCount = royaltonTeam.filter(t => t.type === "External Partner").length;
+            const advisorCount = royaltonTeam.filter(t => t.type === "Advisor").length;
+            return (
+              <div className="flex items-center gap-4 mb-4 pb-4 border-b border-border/50">
+                <div>
+                  <span className="text-lg font-mono font-semibold text-foreground">{internalCount}</span>
+                  <p className="text-[10px] text-muted-foreground">Internal</p>
+                </div>
+                <div>
+                  <span className="text-lg font-mono font-semibold text-foreground">{externalCount}</span>
+                  <p className="text-[10px] text-muted-foreground">External</p>
+                </div>
+                <div>
+                  <span className="text-lg font-mono font-semibold text-foreground">{advisorCount}</span>
+                  <p className="text-[10px] text-muted-foreground">Advisors</p>
+                </div>
+              </div>
+            );
+          })()}
+          {/* Royalton member list — exclude Shwan */}
           <div className="space-y-0 divide-y divide-border/30">
-            {allTeam.slice(0, 6).map((member) => {
+            {allTeam.filter(t => t.name !== "Shwan Lee").slice(0, 6).map((member) => {
               const memberVentures = venturesByMember[member.id] || [];
               const typeColor = member.type === "Internal" ? "text-blue-400" : member.type === "Advisor" ? "text-amber-400" : "text-emerald-400";
               const initials = member.name.split(" ").map(w => w[0]).join("").slice(0, 2);
@@ -781,10 +789,10 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                 </div>
               );
             })}
-            {allTeam.length > 6 && (
+            {allTeam.filter(t => t.name !== "Shwan Lee").length > 6 && (
               <div className="pt-3 text-center">
                 <button onClick={() => onNavigate("/team")} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
-                  View all {allTeam.length} members →
+                  View all {allTeam.filter(t => t.name !== "Shwan Lee").length} members →
                 </button>
               </div>
             )}

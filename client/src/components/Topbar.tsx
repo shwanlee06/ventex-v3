@@ -49,7 +49,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
     if (isPreviewMode) return "Viewing as Client";
     if (!user?.role) return "";
     if (user.role === "owner") return "Owner";
-    if (user.role === "admin") return "ATLAS Admin";
+    if (user.role === "admin") return "ATLAS Operator";
     return user.role.charAt(0).toUpperCase() + user.role.slice(1);
   }, [user?.role, isPreviewMode]);
 

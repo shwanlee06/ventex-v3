@@ -605,3 +605,9 @@
 - [x] Simpler activity feed — 5 items max, clean timeline with dots and connecting lines
 - [x] All touch targets comfortable — cards are full-width with 1.5rem padding
 - [x] Removed visual noise — minimal badges, clean borders, no micro-elements
+
+## Org Structure Fix — ATLAS vs Royalton
+- [x] Only Shwan is ATLAS (the operator/platform); everyone else is Royalton (the client's team)
+- [x] Update Team section on dashboard to reflect this — label "Royalton Team", exclude Shwan from counts (5 INT, 3 EXT, 3 ADV)
+- [x] Updated "ATLAS Admin" to "ATLAS Operator" in topbar
+- [x] Shwan filtered from venture member avatars (cards + table view), only Royalton team shown
