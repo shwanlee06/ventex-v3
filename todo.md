@@ -429,3 +429,7 @@
 - [x] Vitest tests for invite link format (org-specific vs fallback)
 - [x] Vitest tests for email masking in invite validation
 - [x] Vitest tests for special character handling in org slugs
+
+## Bug Fixes
+
+- [x] Admin cannot remove/delete users (e.g., Jason) from Security page — added delete user with confirmation dialog, cascade cleanup of sessions/API keys/access grants, audit logging, and role-based guards (can't delete owner, only owner can delete admins)

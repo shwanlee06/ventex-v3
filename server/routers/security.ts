@@ -13,6 +13,7 @@ import {
   sessions,
   ventures,
   spvs,
+  apiKeys,
 } from "../../drizzle/schema";
 import { eq, desc, and, like, sql, gte, lte } from "drizzle-orm";
 import {
@@ -108,6 +109,66 @@ export const securityRouter = router({
         details: JSON.stringify({
           previousRole: targetUser.role,
           newRole: input.role,
+        }),
+        ipAddress: ctx.req.ip,
+        userAgent: ctx.req.headers["user-agent"],
+      });
+
+      return { success: true };
+    }),
+
+  /** Delete a user and all associated data */
+  deleteUser: adminProcedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      requirePermission(ctx.user, "manage_roles");
+
+      // Cannot delete yourself
+      if (input.userId === ctx.user.id) {
+        throw new Error("Cannot delete your own account");
+      }
+
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Get the target user for audit and validation
+      const [targetUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, input.userId))
+        .limit(1);
+
+      if (!targetUser) throw new Error("User not found");
+
+      // Cannot delete the owner
+      if (targetUser.role === "owner") {
+        throw new Error("Cannot delete the system owner");
+      }
+
+      // Only owner can delete admins
+      if (targetUser.role === "admin" && ctx.user.role !== "owner") {
+        throw new Error("Only the owner can delete admin users");
+      }
+
+      // Delete associated data in order (foreign key safe)
+      await db.delete(sessions).where(eq(sessions.userId, input.userId));
+      await db.delete(apiKeys).where(eq(apiKeys.userId, input.userId));
+      await db.delete(userVentureAccess).where(eq(userVentureAccess.userId, input.userId));
+
+      // Delete the user
+      await db.delete(users).where(eq(users.id, input.userId));
+
+      // Log the deletion
+      await logAudit({
+        userId: ctx.user.id,
+        userName: ctx.user.name,
+        action: "delete_user",
+        entityType: "user",
+        entityId: String(input.userId),
+        entityName: targetUser.name ?? "Unknown",
+        details: JSON.stringify({
+          deletedEmail: targetUser.email,
+          deletedRole: targetUser.role,
         }),
         ipAddress: ctx.req.ip,
         userAgent: ctx.req.headers["user-agent"],

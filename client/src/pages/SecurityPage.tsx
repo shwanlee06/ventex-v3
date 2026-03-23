@@ -33,6 +33,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { motion } from "framer-motion";
 
 type Tab = "overview" | "users" | "audit" | "access";
@@ -258,8 +268,17 @@ function UsersTab() {
     },
     onError: (err) => toast.error(err.message),
   });
+  const deleteUser = trpc.security.deleteUser.useMutation({
+    onSuccess: () => {
+      refetch();
+      toast.success("User removed successfully");
+      setDeleteTarget(null);
+    },
+    onError: (err) => toast.error(err.message),
+  });
 
   const [editingUser, setEditingUser] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string; email: string } | null>(null);
 
   return (
     <div className="space-y-6">
@@ -331,6 +350,15 @@ function UsersTab() {
                     </Button>
                   </>
                 )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                  onClick={() => setDeleteTarget({ id: user.id, name: user.name ?? "Unknown", email: user.email ?? "" })}
+                  title="Remove user"
+                >
+                  <Trash2 className="size-3" />
+                </Button>
                 <span className="text-[10px] font-mono text-muted-foreground">
                   {user.lastSignedIn ? new Date(user.lastSignedIn).toLocaleDateString() : "Never"}
                 </span>
@@ -344,6 +372,27 @@ function UsersTab() {
           )}
         </div>
       </div>
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently remove <strong>{deleteTarget?.name}</strong> ({deleteTarget?.email})?
+              This will delete their account, sessions, API keys, and all access grants. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={() => deleteTarget && deleteUser.mutate({ userId: deleteTarget.id })}
+            >
+              {deleteUser.isPending ? "Removing..." : "Remove User"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
