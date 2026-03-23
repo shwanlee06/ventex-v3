@@ -130,7 +130,8 @@ export default function AppSidebar() {
   const mobileSecondary = navItems.slice(5);
 
   const isActive = (href: string) =>
-    location === href || (href !== "/dashboard" && location.startsWith(href));
+    location === href || (href !== "/dashboard" && location.startsWith(href)) ||
+    (href === "/dashboard" && location.startsWith("/clients/"));
 
   const secondaryActive = mobileSecondary.some(item => isActive(item.href));
 

@@ -25,6 +25,7 @@ import ActivityLog from "./pages/ActivityLog";
 import SecurityPage from "./pages/SecurityPage";
 import AccessManagement from "./pages/AccessManagement";
 import InviteAccept from "./pages/InviteAccept";
+import ClientDetail from "./pages/ClientDetail";
 
 /* Auth guard — redirects to login if no operator in localStorage */
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -82,6 +83,9 @@ function Router() {
       {/* Protected dashboard pages — available to all authenticated users */}
       <Route path="/dashboard">
         <RequireAuth><Home /></RequireAuth>
+      </Route>
+      <Route path="/clients/:slug">
+        <RequireAuth><RequireAtlas><ClientDetail /></RequireAtlas></RequireAuth>
       </Route>
       <Route path="/ventures/:slug">
         <RequireAuth><VentureDetail /></RequireAuth>

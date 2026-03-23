@@ -1,6 +1,6 @@
 // ============================================================================
 // Dashboard Page — Role-based routing
-// ATLAS team (owner/admin): Dense analytics command center
+// ATLAS team (owner/admin): Multi-client command center (all clients overview)
 // Client users / Preview mode: Luxury UHNWI portal
 // ============================================================================
 
@@ -9,21 +9,19 @@ import AtlasDashboard from "@/components/AtlasDashboard";
 import ClientDashboard from "@/components/ClientDashboard";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { usePreviewMode } from "@/contexts/PreviewMode";
-import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useLocation } from "wouter";
 
 export default function Home() {
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const { isPreviewMode } = usePreviewMode();
-  const { activeOrg } = useWorkspace();
   const isAtlas = (user?.role === "owner" || user?.role === "admin") && !isPreviewMode;
-  const dashboardSubtitle = isAtlas
-    ? `CLIENT: ${activeOrg?.name?.toUpperCase() || "SELECT WORKSPACE"}`
-    : "Client Portal";
 
   return (
-    <DashboardLayout title="Dashboard" subtitle={dashboardSubtitle}>
+    <DashboardLayout
+      title="Dashboard"
+      subtitle={isAtlas ? "ATLAS COMMAND CENTER" : "Client Portal"}
+    >
       {isAtlas ? (
         <AtlasDashboard onNavigate={navigate} />
       ) : (

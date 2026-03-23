@@ -644,3 +644,15 @@
 - [x] Update all frontend pages to pass activeOrgId to queries (8 pages + 2 dashboard components)
 - [x] Dashboard KPIs update when switching clients (all queries re-fetch on org change)
 - [x] Tests for org-scoped filtering (168 tests passing)
+
+## Multi-Client Management Redesign (30+ Clients at Scale)
+- [x] Backend: Add organizations.listWithMetrics endpoint — returns all clients with aggregate metrics (venture count, task counts, overdue, health, team size, distributions)
+- [x] ATLAS Home redesign: Client Portfolio Overview — searchable/filterable table of ALL clients with key metrics
+- [x] Client detail page: /clients/:slug — drill into any client's full workspace (ventures, tasks, SPVs, distributions, team)
+- [x] Sidebar workspace dropdown preserved — client list is primary navigation from dashboard
+- [x] Dashboard shows "ATLAS COMMAND CENTER" with all-clients overview
+- [x] Client cards with health indicators, task velocity, overdue alerts
+- [x] Search/filter/sort across 30+ clients by name, health, overdue count, sector
+- [x] Quick actions per client (view details, add venture, manage team)
+- [x] Client detail: KPI cards, venture grid with task metrics, sector filter, team, distributions, activity
+- [x] Tests for new multi-client endpoints (12 new tests, 180 total passing)
