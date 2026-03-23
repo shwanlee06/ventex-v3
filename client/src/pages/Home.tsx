@@ -16,7 +16,7 @@ export default function Home() {
   const { user } = useAuth();
   const { isPreviewMode } = usePreviewMode();
   const isAtlas = (user?.role === "owner" || user?.role === "admin") && !isPreviewMode;
-  const dashboardSubtitle = isAtlas ? "ROYALTON PORTFOLIO · MANAGED BY ATLAS" : "Client Portal";
+  const dashboardSubtitle = isAtlas ? "CLIENT: ROYALTON VENTURE HOLDING" : "Client Portal";
 
   return (
     <DashboardLayout title="Dashboard" subtitle={dashboardSubtitle}>

@@ -138,7 +138,11 @@ export default function AppSidebar() {
                 <span className="text-sm font-semibold tracking-tight text-foreground whitespace-nowrap block">
                   {sidebarTitle}
                 </span>
-                {!isAtlas && (
+                {isAtlas ? (
+                  <span className="text-[10px] text-muted-foreground font-mono whitespace-nowrap block">
+                    Royalton Workspace
+                  </span>
+                ) : (
                   <span className="text-[10px] text-muted-foreground font-mono whitespace-nowrap block">
                     Client Portal
                   </span>

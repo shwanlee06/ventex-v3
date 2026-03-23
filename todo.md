@@ -611,3 +611,11 @@
 - [x] Update Team section on dashboard to reflect this — label "Royalton Team", exclude Shwan from counts (5 INT, 3 EXT, 3 ADV)
 - [x] Updated "ATLAS Admin" to "ATLAS Operator" in topbar
 - [x] Shwan filtered from venture member avatars (cards + table view), only Royalton team shown
+
+## SaaS Framing — ATLAS as Platform Provider
+- [x] Reframe dashboard header: subtitle now "CLIENT: ROYALTON VENTURE HOLDING"
+- [x] Dashboard subtitle shows "CLIENT: ROYALTON VENTURE HOLDING"
+- [x] Partnerships section labeled "Royalton Partnerships"
+- [x] Topbar shows "Platform Admin" for owner, "ATLAS Operator" for admin
+- [x] Sidebar shows "ATLAS" with "Royalton Workspace" subtitle when expanded
+- [x] Dashboard reads as ATLAS managing Royalton's portfolio — verified in UI

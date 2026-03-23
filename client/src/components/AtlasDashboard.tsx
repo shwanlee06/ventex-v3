@@ -341,7 +341,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
           <div>
             <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
               <BarChart3 className="size-4 text-primary" />
-              Partnerships
+              Royalton Partnerships
             </h2>
             <p className="text-[11px] text-muted-foreground mt-0.5">
               {filteredVentures.length} of {allVentures.length} · {overdueCount} overdue tasks
