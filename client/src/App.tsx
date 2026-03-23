@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { PreviewModeProvider, usePreviewMode } from "./contexts/PreviewMode";
+import { WorkspaceProvider } from "./contexts/WorkspaceContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import Home from "./pages/Home";
 import Agent from "./pages/Agent";
@@ -138,10 +139,12 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark" switchable>
         <PreviewModeProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
+          <WorkspaceProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+            </TooltipProvider>
+          </WorkspaceProvider>
         </PreviewModeProvider>
       </ThemeProvider>
     </ErrorBoundary>

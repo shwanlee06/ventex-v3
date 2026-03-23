@@ -45,6 +45,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 const THEME_ICONS: Record<string, React.ReactNode> = {
   "Real Estate": <Building2 className="size-4" />,
@@ -108,6 +109,8 @@ interface AtlasDashboardProps {
 
 export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
   const utils = trpc.useUtils();
+  const { activeOrg } = useWorkspace();
+  const clientName = activeOrg?.name || "Client";
 
   // ── Live data queries ──────────────────────────────────────────────
   const venturesQ = trpc.ventures.list.useQuery();
@@ -341,7 +344,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
           <div>
             <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
               <BarChart3 className="size-4 text-primary" />
-              Royalton Partnerships
+              {clientName} Partnerships
             </h2>
             <p className="text-[11px] text-muted-foreground mt-0.5">
               {filteredVentures.length} of {allVentures.length} · {overdueCount} overdue tasks
@@ -724,12 +727,12 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
           </div>
         </div>
 
-        {/* Royalton Team */}
+        {/* Client Team */}
         <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Network className="size-4 text-primary" />
-              <span className="text-sm font-semibold text-foreground">Royalton Team</span>
+              <span className="text-sm font-semibold text-foreground">{clientName} Team</span>
             </div>
             <Button variant="ghost" size="sm" className="text-xs h-8 px-2 text-muted-foreground" onClick={() => onNavigate("/team")}>
               All <ChevronRight className="size-3 ml-0.5" />

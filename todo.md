@@ -619,3 +619,14 @@
 - [x] Topbar shows "Platform Admin" for owner, "ATLAS Operator" for admin
 - [x] Sidebar shows "ATLAS" with "Royalton Workspace" subtitle when expanded
 - [x] Dashboard reads as ATLAS managing Royalton's portfolio — verified in UI
+
+## Multi-Client Workspace System
+- [x] Design multi-client data model — uses existing organizations table with type (core/partner/client)
+- [x] Link existing ventures to Royalton via org_venture_access junction table (20 ventures linked)
+- [x] Seeded ATLAS (core) and Royalton Venture Holding (client) as organizations
+- [x] tRPC endpoints: organizations.list (with venture counts), organizations.create
+- [x] WorkspaceContext provider — tracks active org, persists to localStorage, auto-selects first client
+- [x] Sidebar workspace switcher — dropdown under ATLAS logo shows all client workspaces with venture counts
+- [x] Dashboard dynamically shows active org name in subtitle, partnerships header, and team section
+- [ ] "Add Client" flow — create new organization with basic info (deferred)
+- [x] All 168 tests passing after workspace changes

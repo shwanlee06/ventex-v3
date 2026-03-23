@@ -8,6 +8,7 @@
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { usePreviewMode } from "@/contexts/PreviewMode";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { THEME_COLORS } from "@/lib/data";
 import {
   LayoutDashboard,
@@ -80,6 +81,8 @@ export default function AppSidebar() {
   const [moreOpen, setMoreOpen] = useState(false);
   const { user } = useAuth();
   const { isPreviewMode } = usePreviewMode();
+  const { organizations, activeOrg, setActiveOrg } = useWorkspace();
+  const [orgDropdownOpen, setOrgDropdownOpen] = useState(false);
 
   // In preview mode, treat admin/owner as client
   const isAtlas = isPreviewMode ? false : isAtlasRole(user?.role);
@@ -139,9 +142,13 @@ export default function AppSidebar() {
                   {sidebarTitle}
                 </span>
                 {isAtlas ? (
-                  <span className="text-[10px] text-muted-foreground font-mono whitespace-nowrap block">
-                    Royalton Workspace
-                  </span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setOrgDropdownOpen(!orgDropdownOpen); }}
+                    className="text-[10px] text-muted-foreground font-mono whitespace-nowrap block hover:text-foreground transition-colors flex items-center gap-1"
+                  >
+                    {activeOrg?.name || "Select Client"}
+                    <svg className={cn("size-3 transition-transform", orgDropdownOpen && "rotate-180")} viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 5l3 3 3-3" /></svg>
+                  </button>
                 ) : (
                   <span className="text-[10px] text-muted-foreground font-mono whitespace-nowrap block">
                     Client Portal
@@ -151,6 +158,49 @@ export default function AppSidebar() {
             )}
           </AnimatePresence>
         </div>
+
+        {/* Client workspace dropdown */}
+        <AnimatePresence>
+          {expanded && orgDropdownOpen && isAtlas && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.15 }}
+              className="border-b border-border overflow-hidden"
+            >
+              <div className="p-2 space-y-1">
+                <p className="text-[9px] uppercase tracking-[0.1em] text-muted-foreground px-2 py-1 font-medium">Client Workspaces</p>
+                {organizations.map((org) => (
+                  <button
+                    key={org.id}
+                    onClick={() => { setActiveOrg(org); setOrgDropdownOpen(false); }}
+                    className={cn(
+                      "w-full flex items-center gap-2 px-2 py-2 rounded-md text-xs transition-colors",
+                      activeOrg?.id === org.id
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    )}
+                  >
+                    <div className="size-6 rounded-md bg-accent flex items-center justify-center flex-shrink-0">
+                      <Building2 className="size-3" />
+                    </div>
+                    <div className="text-left min-w-0">
+                      <span className="block truncate font-medium">{org.name}</span>
+                      <span className="block text-[10px] text-muted-foreground font-mono">{org.ventureCount} ventures</span>
+                    </div>
+                    {activeOrg?.id === org.id && (
+                      <div className="ml-auto size-1.5 rounded-full bg-primary flex-shrink-0" />
+                    )}
+                  </button>
+                ))}
+                {organizations.length === 0 && (
+                  <p className="text-[10px] text-muted-foreground px-2 py-2">No client workspaces yet</p>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Nav items */}
         <nav className="flex-1 flex flex-col gap-1 px-2 py-3 overflow-y-auto">

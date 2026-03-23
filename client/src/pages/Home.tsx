@@ -9,14 +9,18 @@ import AtlasDashboard from "@/components/AtlasDashboard";
 import ClientDashboard from "@/components/ClientDashboard";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { usePreviewMode } from "@/contexts/PreviewMode";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useLocation } from "wouter";
 
 export default function Home() {
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const { isPreviewMode } = usePreviewMode();
+  const { activeOrg } = useWorkspace();
   const isAtlas = (user?.role === "owner" || user?.role === "admin") && !isPreviewMode;
-  const dashboardSubtitle = isAtlas ? "CLIENT: ROYALTON VENTURE HOLDING" : "Client Portal";
+  const dashboardSubtitle = isAtlas
+    ? `CLIENT: ${activeOrg?.name?.toUpperCase() || "SELECT WORKSPACE"}`
+    : "Client Portal";
 
   return (
     <DashboardLayout title="Dashboard" subtitle={dashboardSubtitle}>

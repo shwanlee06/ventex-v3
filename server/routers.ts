@@ -16,6 +16,7 @@ import { intelligenceRouter } from "./routers/intelligence";
 import { securityRouter } from "./routers/security";
 import { accessRouter } from "./routers/access";
 import { settingsRouter } from "./routers/settings";
+import { organizationsRouter } from "./routers/organizations";
 
 export const appRouter = router({
   system: systemRouter,
@@ -43,6 +44,7 @@ export const appRouter = router({
   security: securityRouter,
   access: accessRouter,
   settings: settingsRouter,
+  organizations: organizationsRouter,
 });
 
 export type AppRouter = typeof appRouter;
