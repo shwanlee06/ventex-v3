@@ -1,0 +1,103 @@
+{
+  "query": "SHOW TABLES;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SHOW TABLES;",
+  "rows": [
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "activity_log"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "ai_observations"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "api_keys"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "audit_log"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "contacts"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "daily_briefs"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "distributions"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "document_intelligence"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "invitations"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "meeting_briefs"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "notifications"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "org_venture_access"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "organizations"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "sessions"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "smart_alerts"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "spv_files"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "spv_folders"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "spv_team"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "spv_ventures"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "spvs"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "tasks"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "team_members"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "user_preferences"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "user_venture_access"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "users"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "venture_files"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "venture_folders"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "venture_risks"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "venture_team"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT": "ventures"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_TYkqBQavc4Sd5YvF3sSZqT\n__drizzle_migrations\nactivity_log\nai_observations\napi_keys\naudit_log\ncontacts\ndaily_briefs\ndistributions\ndocument_intelligence\ninvitations\nmeeting_briefs\nnotifications\norg_venture_access\norganizations\nsessions\nsmart_alerts\nspv_files\nspv_folders\nspv_team\nspv_ventures\nspvs\ntasks\nteam_members\nuser_preferences\nuser_venture_access\nusers\nventure_files\nventure_folders\nventure_risks\nventure_team\nventures\n",
+  "stderr": "",
+  "execution_time_ms": 369
+}

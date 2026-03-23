@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { teamMembers, activityLog } from "../../drizzle/schema";
-import { eq, desc } from "drizzle-orm";
+import { teamMembers, activityLog, ventureTeam, ventures } from "../../drizzle/schema";
+import { eq, desc, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 function slugify(name: string) {
@@ -52,6 +52,53 @@ export const teamRouter = router({
       entityType: "team", entityName: input.name, action: "Member Added",
       detail: `${input.name} added as ${input.role || input.type}`, userName: "System",
     });
+    return { success: true };
+  }),
+
+  // ── Venture Team Assignments ────────────────────────────────────────
+  ventureAssignments: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    const rows = await db
+      .select({
+        id: ventureTeam.id,
+        ventureId: ventureTeam.ventureId,
+        memberId: ventureTeam.memberId,
+        responsibility: ventureTeam.responsibility,
+        ventureName: ventures.name,
+        ventureSector: ventures.sector,
+        memberName: teamMembers.name,
+        memberRole: teamMembers.role,
+        memberFunction: teamMembers.memberFunction,
+        memberType: teamMembers.type,
+      })
+      .from(ventureTeam)
+      .leftJoin(ventures, eq(ventureTeam.ventureId, ventures.id))
+      .leftJoin(teamMembers, eq(ventureTeam.memberId, teamMembers.id));
+    return rows;
+  }),
+
+  assignToVenture: publicProcedure.input(z.object({
+    ventureId: z.number(),
+    memberId: z.number(),
+    responsibility: z.string().optional(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.insert(ventureTeam).values({
+      ventureId: input.ventureId,
+      memberId: input.memberId,
+      responsibility: input.responsibility || null,
+    });
+    return { success: true };
+  }),
+
+  removeFromVenture: publicProcedure.input(z.object({
+    id: z.number(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.delete(ventureTeam).where(eq(ventureTeam.id, input.id));
     return { success: true };
   }),
 

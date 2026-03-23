@@ -1,0 +1,110 @@
+{
+  "query": "SELECT id, name, sector FROM ventures ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, sector FROM ventures ORDER BY id;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Nammos - Barcelona",
+      "sector": "Real Estate"
+    },
+    {
+      "id": "2",
+      "name": "Nammos - Lagonissi",
+      "sector": "Real Estate"
+    },
+    {
+      "id": "3",
+      "name": "Muscat Bay",
+      "sector": "Real Estate"
+    },
+    {
+      "id": "4",
+      "name": "Chekka Land - Resort",
+      "sector": "Real Estate"
+    },
+    {
+      "id": "5",
+      "name": "Shady Hotel",
+      "sector": "Real Estate"
+    },
+    {
+      "id": "6",
+      "name": "Nammos - Watson Island",
+      "sector": "Real Estate"
+    },
+    {
+      "id": "7",
+      "name": "Zarka City",
+      "sector": "Real Estate"
+    },
+    {
+      "id": "8",
+      "name": "Berbara - Lebanon",
+      "sector": "F&B"
+    },
+    {
+      "id": "9",
+      "name": "Nammos - Ibiza",
+      "sector": "F&B"
+    },
+    {
+      "id": "10",
+      "name": "Nammos Lebanon",
+      "sector": "F&B"
+    },
+    {
+      "id": "11",
+      "name": "Mar-a-Lago Yacht Club",
+      "sector": "Yacht"
+    },
+    {
+      "id": "12",
+      "name": "Bagatelle",
+      "sector": "Yacht"
+    },
+    {
+      "id": "13",
+      "name": "JV Yacht - Nammos",
+      "sector": "Yacht"
+    },
+    {
+      "id": "14",
+      "name": "Berlin",
+      "sector": "Entertainment"
+    },
+    {
+      "id": "15",
+      "name": "KTL-Dubai Casino License",
+      "sector": "Entertainment"
+    },
+    {
+      "id": "16",
+      "name": "Casino - Malaysia",
+      "sector": "Entertainment"
+    },
+    {
+      "id": "17",
+      "name": "Kazzafi Daughter",
+      "sector": "Others"
+    },
+    {
+      "id": "18",
+      "name": "Shady Project",
+      "sector": "Others"
+    },
+    {
+      "id": "19",
+      "name": "P430",
+      "sector": "Others"
+    },
+    {
+      "id": "20",
+      "name": "Venezuela Mining Rights",
+      "sector": "Oil & Gas"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tsector\n1\tNammos - Barcelona\tReal Estate\n2\tNammos - Lagonissi\tReal Estate\n3\tMuscat Bay\tReal Estate\n4\tChekka Land - Resort\tReal Estate\n5\tShady Hotel\tReal Estate\n6\tNammos - Watson Island\tReal Estate\n7\tZarka City\tReal Estate\n8\tBerbara - Lebanon\tF&B\n9\tNammos - Ibiza\tF&B\n10\tNammos Lebanon\tF&B\n11\tMar-a-Lago Yacht Club\tYacht\n12\tBagatelle\tYacht\n13\tJV Yacht - Nammos\tYacht\n14\tBerlin\tEntertainment\n15\tKTL-Dubai Casino License\tEntertainment\n16\tCasino - Malaysia\tEntertainment\n17\tKazzafi Daughter\tOthers\n18\tShady Project\tOthers\n19\tP430\tOthers\n20\tVenezuela Mining Rights\tOil & Gas\n",
+  "stderr": "",
+  "execution_time_ms": 390
+}

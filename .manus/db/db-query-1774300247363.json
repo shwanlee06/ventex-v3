@@ -1,0 +1,9 @@
+{
+  "query": "SELECT sv.*, s.name as spvName, v.name as ventureName FROM spv_ventures sv LEFT JOIN spvs s ON sv.spvId = s.id LEFT JOIN ventures v ON sv.ventureId = v.id LIMIT 15;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT sv.*, s.name as spvName, v.name as ventureName FROM spv_ventures sv LEFT JOIN spvs s ON sv.spvId = s.id LEFT JOIN ventures v ON sv.ventureId = v.id LIMIT 15;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 362
+}

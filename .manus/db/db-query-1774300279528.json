@@ -1,0 +1,9 @@
+{
+  "query": "SELECT vt.*, tm.name as memberName, tm.role as memberRole, tm.type as memberType, v.name as ventureName FROM venture_team vt LEFT JOIN team_members tm ON vt.memberId = tm.id LEFT JOIN ventures v ON vt.ventureId = v.id LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT vt.*, tm.name as memberName, tm.role as memberRole, tm.type as memberType, v.name as ventureName FROM venture_team vt LEFT JOIN team_members tm ON vt.memberId = tm.id LEFT JOIN ventures v ON vt.ventureId = v.id LIMIT 20;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 347
+}

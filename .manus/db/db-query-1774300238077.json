@@ -1,0 +1,120 @@
+{
+  "query": "SELECT * FROM contacts LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT * FROM contacts LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "legacyId": "recUMWGqm7xOehSbv",
+      "name": "Benjamin",
+      "role": "Miami Real Estate Growth Leader",
+      "status": "Active",
+      "industries": "[\"Real Estate\"]",
+      "geography": "NULL",
+      "slug": "benjamin",
+      "createdAt": "2026-03-15 19:19:21"
+    },
+    {
+      "id": "2",
+      "legacyId": "recKasLElIchg6ydi",
+      "name": "Shawki Rassi",
+      "role": "Support on Nammos Watson venture",
+      "status": "Active",
+      "industries": "[\"Real Estate\"]",
+      "geography": "Lebanon",
+      "slug": "shawki-rassi",
+      "createdAt": "2026-03-15 19:19:21"
+    },
+    {
+      "id": "3",
+      "legacyId": "recKCf3sMWBHTOLkG",
+      "name": "Mohamed",
+      "role": "Architect - Zarka",
+      "status": "Active",
+      "industries": "[\"Real Estate\"]",
+      "geography": "Oman",
+      "slug": "mohamed",
+      "createdAt": "2026-03-15 19:19:21"
+    },
+    {
+      "id": "4",
+      "legacyId": "recCokIMaCGM4NM8p",
+      "name": "Marwan",
+      "role": "Support - Zarka",
+      "status": "Active",
+      "industries": "[\"Real Estate\"]",
+      "geography": "NULL",
+      "slug": "marwan",
+      "createdAt": "2026-03-15 19:19:21"
+    },
+    {
+      "id": "5",
+      "legacyId": "recabrBi2wP5p3JvG",
+      "name": "Guy",
+      "role": "Zarka City Consultant",
+      "status": "Active",
+      "industries": "[\"Real Estate\"]",
+      "geography": "NULL",
+      "slug": "guy",
+      "createdAt": "2026-03-15 19:19:21"
+    },
+    {
+      "id": "6",
+      "legacyId": "recOKkcPoYypyLCNC",
+      "name": "Saeed",
+      "role": "Mar-A-Lago",
+      "status": "Active",
+      "industries": "[\"Yacht\"]",
+      "geography": "NULL",
+      "slug": "saeed",
+      "createdAt": "2026-03-15 19:19:22"
+    },
+    {
+      "id": "7",
+      "legacyId": "recBSBC44ZS4XENQg",
+      "name": "Doris",
+      "role": "NULL",
+      "status": "Active",
+      "industries": "[\"F&B\"]",
+      "geography": "NULL",
+      "slug": "doris",
+      "createdAt": "2026-03-15 19:19:22"
+    },
+    {
+      "id": "8",
+      "legacyId": "recD9lTVZaCCxiKCh",
+      "name": "Moe",
+      "role": "Partner Lagonissi",
+      "status": "Active",
+      "industries": "[\"F&B\"]",
+      "geography": "NULL",
+      "slug": "moe",
+      "createdAt": "2026-03-15 19:19:22"
+    },
+    {
+      "id": "9",
+      "legacyId": "rec59YAgORfmFOg9U",
+      "name": "Nicola",
+      "role": "Oil & Gas",
+      "status": "Active",
+      "industries": "[\"Oil & Gas\"]",
+      "geography": "NULL",
+      "slug": "nicola",
+      "createdAt": "2026-03-15 19:19:22"
+    },
+    {
+      "id": "10",
+      "legacyId": "recMoLtR5joaraBdr",
+      "name": "Victor",
+      "role": "NULL",
+      "status": "Active",
+      "industries": "[\"Shipping\"]",
+      "geography": "NULL",
+      "slug": "victor",
+      "createdAt": "2026-03-15 19:19:22"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tlegacyId\tname\trole\tstatus\tindustries\tgeography\tslug\tcreatedAt\n1\trecUMWGqm7xOehSbv\tBenjamin\tMiami Real Estate Growth Leader\tActive\t[\"Real Estate\"]\tNULL\tbenjamin\t2026-03-15 19:19:21\n2\trecKasLElIchg6ydi\tShawki Rassi\tSupport on Nammos Watson venture\tActive\t[\"Real Estate\"]\tLebanon\tshawki-rassi\t2026-03-15 19:19:21\n3\trecKCf3sMWBHTOLkG\tMohamed\tArchitect - Zarka\tActive\t[\"Real Estate\"]\tOman\tmohamed\t2026-03-15 19:19:21\n4\trecCokIMaCGM4NM8p\tMarwan\tSupport - Zarka\tActive\t[\"Real Estate\"]\tNULL\tmarwan\t2026-03-15 19:19:21\n5\trecabrBi2wP5p3JvG\tGuy\tZarka City Consultant\tActive\t[\"Real Estate\"]\tNULL\tguy\t2026-03-15 19:19:21\n6\trecOKkcPoYypyLCNC\tSaeed\tMar-A-Lago\tActive\t[\"Yacht\"]\tNULL\tsaeed\t2026-03-15 19:19:22\n7\trecBSBC44ZS4XENQg\tDoris\tNULL\tActive\t[\"F&B\"]\tNULL\tdoris\t2026-03-15 19:19:22\n8\trecD9lTVZaCCxiKCh\tMoe\tPartner Lagonissi\tActive\t[\"F&B\"]\tNULL\tmoe\t2026-03-15 19:19:22\n9\trec59YAgORfmFOg9U\tNicola\tOil & Gas\tActive\t[\"Oil & Gas\"]\tNULL\tnicola\t2026-03-15 19:19:22\n10\trecMoLtR5joaraBdr\tVictor\tNULL\tActive\t[\"Shipping\"]\tNULL\tvictor\t2026-03-15 19:19:22\n",
+  "stderr": "",
+  "execution_time_ms": 374
+}

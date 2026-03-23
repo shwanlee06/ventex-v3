@@ -574,3 +574,16 @@
 - [x] Keep top-level portfolio summary KPIs but add "drill into partnership" capability
 - [x] Backend query for venture-grouped task analytics (uses existing tRPC queries)
 - [x] Tests for partnership-specific analytics data (168 tests passing)
+
+## Branding Fix & Organizational Member Mapping
+
+### Branding
+- [x] Fix dashboard context — ventures belong to Royalton (client), ATLAS is the managing firm
+- [x] Update subtitle/header to reflect "ROYALTON PORTFOLIO · MANAGED BY ATLAS"
+- [x] Ensure ATLAS branding is about the tool/platform, not the venture owner
+
+### Organizational Member Mapping
+- [x] Show which team members are assigned to which ventures/partnerships
+- [x] Org Map section on dashboard — shows all members with type badges (INT/EXT/ADV), roles, and venture counts
+- [x] Display member roles and venture assignments in Org Map with 76 total assignments
+- [x] Add member avatars (initials) and count per venture on partnership cards + table view

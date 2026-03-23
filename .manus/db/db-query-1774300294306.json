@@ -1,0 +1,94 @@
+{
+  "query": "SELECT id, name, role, memberFunction, type FROM team_members ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, role, memberFunction, type FROM team_members ORDER BY id;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Jimmy Frangi",
+      "role": "Founder",
+      "memberFunction": "Finance & Capital",
+      "type": "Internal"
+    },
+    {
+      "id": "2",
+      "name": "Anton Maghami",
+      "role": "Vice President",
+      "memberFunction": "Operations & Systems",
+      "type": "Internal"
+    },
+    {
+      "id": "3",
+      "name": "Jon Eichner",
+      "role": "COO",
+      "memberFunction": "Operations",
+      "type": "Internal"
+    },
+    {
+      "id": "4",
+      "name": "Maher Abou Chakra",
+      "role": "Accounting",
+      "memberFunction": "Finance / Accounting",
+      "type": "Internal"
+    },
+    {
+      "id": "5",
+      "name": "Angie Samadi",
+      "role": "HR",
+      "memberFunction": "People Ops / HR",
+      "type": "Internal"
+    },
+    {
+      "id": "6",
+      "name": "Carl Frangi",
+      "role": "Member",
+      "memberFunction": "Investor Relations",
+      "type": "Advisor"
+    },
+    {
+      "id": "7",
+      "name": "Leonidas Kyrris",
+      "role": "Legal (maritime focus)",
+      "memberFunction": "Legal",
+      "type": "Advisor"
+    },
+    {
+      "id": "8",
+      "name": "Igor",
+      "role": "Deck Design",
+      "memberFunction": "Design",
+      "type": "External Partner"
+    },
+    {
+      "id": "9",
+      "name": "Sohail",
+      "role": "Financial Modeling",
+      "memberFunction": "Financial Modeling",
+      "type": "External Partner"
+    },
+    {
+      "id": "10",
+      "name": "Ruwaida",
+      "role": "Yacht Design",
+      "memberFunction": "Design",
+      "type": "External Partner"
+    },
+    {
+      "id": "11",
+      "name": "Shwan Lee",
+      "role": "Founder & CEO",
+      "memberFunction": "Strategy & Vision",
+      "type": "Internal"
+    },
+    {
+      "id": "12",
+      "name": "Najib",
+      "role": "Advisor",
+      "memberFunction": "Legal & Compliance",
+      "type": "Advisor"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\trole\tmemberFunction\ttype\n1\tJimmy Frangi\tFounder\tFinance & Capital\tInternal\n2\tAnton Maghami\tVice President\tOperations & Systems\tInternal\n3\tJon Eichner\tCOO\tOperations\tInternal\n4\tMaher Abou Chakra\tAccounting\tFinance / Accounting\tInternal\n5\tAngie Samadi\tHR\tPeople Ops / HR\tInternal\n6\tCarl Frangi\tMember\tInvestor Relations\tAdvisor\n7\tLeonidas Kyrris\tLegal (maritime focus)\tLegal\tAdvisor\n8\tIgor\tDeck Design\tDesign\tExternal Partner\n9\tSohail\tFinancial Modeling\tFinancial Modeling\tExternal Partner\n10\tRuwaida\tYacht Design\tDesign\tExternal Partner\n11\tShwan Lee\tFounder & CEO\tStrategy & Vision\tInternal\n12\tNajib\tAdvisor\tLegal & Compliance\tAdvisor\n",
+  "stderr": "",
+  "execution_time_ms": 459
+}

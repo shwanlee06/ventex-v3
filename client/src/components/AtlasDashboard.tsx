@@ -57,6 +57,8 @@ import {
   ExternalLink,
   LayoutGrid,
   List,
+  UserCircle2,
+  Network,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useCallback, useMemo } from "react";
@@ -229,6 +231,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
   const teamQ = trpc.team.list.useQuery();
   const dailyBriefQ = trpc.intelligence.getDailyBrief.useQuery();
   const smartAlertsQ = trpc.intelligence.getSmartAlerts.useQuery({});
+  const ventureAssignmentsQ = trpc.team.ventureAssignments.useQuery();
 
   const pageLoading = venturesQ.isLoading || tasksQ.isLoading;
 
@@ -241,6 +244,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
   const allTeam = teamQ.data || [];
   const dailyBrief = dailyBriefQ.data;
   const smartAlerts = smartAlertsQ.data || [];
+  const ventureAssignments = ventureAssignmentsQ.data || [];
 
   // ── UI state ───────────────────────────────────────────────────────
   const [searchTerm, setSearchTerm] = useState("");
@@ -289,6 +293,25 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
       };
     });
   }, [allVentures, allTasks, allSpvs, activityLogs, now]);
+
+  // ── Member-venture mapping ────────────────────────────────────────
+  const membersByVenture = useMemo(() => {
+    const map: Record<number, typeof ventureAssignments> = {};
+    for (const a of ventureAssignments) {
+      if (!map[a.ventureId]) map[a.ventureId] = [];
+      map[a.ventureId].push(a);
+    }
+    return map;
+  }, [ventureAssignments]);
+
+  const venturesByMember = useMemo(() => {
+    const map: Record<number, typeof ventureAssignments> = {};
+    for (const a of ventureAssignments) {
+      if (!map[a.memberId]) map[a.memberId] = [];
+      map[a.memberId].push(a);
+    }
+    return map;
+  }, [ventureAssignments]);
 
   // Unassigned tasks (no venture link)
   const unassignedTasks = useMemo(() => {
@@ -762,8 +785,38 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                   )}
                 </AnimatePresence>
 
+                {/* Team members assigned */}
+                {(() => {
+                  const members = membersByVenture[v.id] || [];
+                  if (members.length === 0) return null;
+                  return (
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <div className="flex -space-x-1.5">
+                        {members.slice(0, 4).map((m) => {
+                          const initials = (m.memberName || "?").split(" ").map(w => w[0]).join("").slice(0, 2);
+                          return (
+                            <div
+                              key={m.id}
+                              title={`${m.memberName} — ${m.responsibility || m.memberRole}`}
+                              className="size-5 rounded-full bg-primary/15 border border-background flex items-center justify-center"
+                            >
+                              <span className="text-[7px] font-medium text-primary">{initials}</span>
+                            </div>
+                          );
+                        })}
+                        {members.length > 4 && (
+                          <div className="size-5 rounded-full bg-secondary border border-background flex items-center justify-center">
+                            <span className="text-[7px] font-mono text-muted-foreground">+{members.length - 4}</span>
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-[9px] text-muted-foreground">{members.length} member{members.length !== 1 ? "s" : ""}</span>
+                    </div>
+                  );
+                })()}
+
                 {/* Footer: SPVs + Activity */}
-                <div className="flex items-center gap-3 mt-3 pt-2 border-t border-border/50">
+                <div className="flex items-center gap-3 mt-2 pt-2 border-t border-border/50">
                   {v.spvCount > 0 && (
                     <div className="flex items-center gap-1">
                       <Briefcase className="size-3 text-muted-foreground" />
@@ -812,6 +865,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                     </div>
                   </th>
                 ))}
+                <th className="text-left text-[10px] uppercase tracking-wider text-muted-foreground font-medium pb-2 pr-4">Team</th>
                 <th className="text-left text-[10px] uppercase tracking-wider text-muted-foreground font-medium pb-2 pr-4">Sector</th>
                 <th className="text-left text-[10px] uppercase tracking-wider text-muted-foreground font-medium pb-2">Stage</th>
               </tr>
@@ -858,6 +912,26 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                     </td>
                     <td className="py-2.5 pr-4">
                       <HealthIndicator score={v.healthScore ?? 50} />
+                    </td>
+                    <td className="py-2.5 pr-4">
+                      {(() => {
+                        const members = membersByVenture[v.id] || [];
+                        return (
+                          <div className="flex items-center gap-1">
+                            <div className="flex -space-x-1">
+                              {members.slice(0, 3).map((m) => {
+                                const initials = (m.memberName || "?").split(" ").map(w => w[0]).join("").slice(0, 2);
+                                return (
+                                  <div key={m.id} title={m.memberName || ""} className="size-4 rounded-full bg-primary/15 border border-background flex items-center justify-center">
+                                    <span className="text-[6px] font-medium text-primary">{initials}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <span className="text-[10px] font-mono text-muted-foreground">{members.length}</span>
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td className="py-2.5 pr-4">
                       <span className="text-[10px]" style={{ color: tc.color }}>{v.sector}</span>
@@ -1065,30 +1139,73 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
             </div>
           </div>
 
-          {/* Team Summary */}
+          {/* Org Map — Who's Where */}
           <div className="chart-container">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <Users className="size-4 text-primary" />
-                <span className="text-xs font-semibold text-foreground">Team</span>
+                <Network className="size-4 text-primary" />
+                <span className="text-xs font-semibold text-foreground">Org Map</span>
               </div>
-              <span className="text-[10px] font-mono text-muted-foreground">{allTeam.length} members</span>
+              <Button variant="ghost" size="sm" className="text-xs h-7 px-2 text-muted-foreground" onClick={() => onNavigate("/team")}>
+                All <ChevronRight className="size-3 ml-0.5" />
+              </Button>
             </div>
-            <div className="flex items-center gap-3">
+            {/* Summary counts */}
+            <div className="flex items-center gap-3 mb-3 pb-3 border-b border-border/50">
               <div>
                 <span className="text-lg font-mono font-semibold text-foreground">{allTeam.filter(t => t.type === "Internal").length}</span>
-                <p className="text-[10px] text-muted-foreground">Internal</p>
+                <p className="text-[9px] text-muted-foreground">Internal</p>
               </div>
-              <div className="w-px h-8 bg-border" />
+              <div className="w-px h-7 bg-border" />
               <div>
                 <span className="text-lg font-mono font-semibold text-foreground">{allTeam.filter(t => t.type === "External Partner").length}</span>
-                <p className="text-[10px] text-muted-foreground">External</p>
+                <p className="text-[9px] text-muted-foreground">External</p>
               </div>
-              <div className="w-px h-8 bg-border" />
+              <div className="w-px h-7 bg-border" />
               <div>
                 <span className="text-lg font-mono font-semibold text-foreground">{allTeam.filter(t => t.type === "Advisor").length}</span>
-                <p className="text-[10px] text-muted-foreground">Advisors</p>
+                <p className="text-[9px] text-muted-foreground">Advisors</p>
               </div>
+              <div className="w-px h-7 bg-border" />
+              <div>
+                <span className="text-lg font-mono font-semibold text-primary">{ventureAssignments.length}</span>
+                <p className="text-[9px] text-muted-foreground">Assignments</p>
+              </div>
+            </div>
+            {/* Member list with venture counts */}
+            <div className="space-y-0 divide-y divide-border/30">
+              {allTeam.slice(0, 8).map((member) => {
+                const memberVentures = venturesByMember[member.id] || [];
+                const typeColor = member.type === "Internal" ? "text-blue-400" : member.type === "Advisor" ? "text-amber-400" : "text-emerald-400";
+                const initials = member.name.split(" ").map(w => w[0]).join("").slice(0, 2);
+                return (
+                  <div
+                    key={member.id}
+                    onClick={() => onNavigate(`/team/${member.slug}`)}
+                    className="py-1.5 flex items-center gap-2 cursor-pointer hover:bg-accent/30 -mx-4 px-4 transition-colors"
+                  >
+                    <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-[8px] font-semibold text-primary">{initials}</span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-medium text-foreground truncate">{member.name}</span>
+                        <span className={cn("text-[8px] font-medium", typeColor)}>{member.type === "External Partner" ? "EXT" : member.type === "Advisor" ? "ADV" : "INT"}</span>
+                      </div>
+                      <span className="text-[9px] text-muted-foreground truncate block">{member.role || member.memberFunction}</span>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <span className="text-[10px] font-mono font-medium text-foreground">{memberVentures.length}</span>
+                      <p className="text-[8px] text-muted-foreground">ventures</p>
+                    </div>
+                  </div>
+                );
+              })}
+              {allTeam.length > 8 && (
+                <div className="pt-2 text-center">
+                  <span className="text-[10px] text-muted-foreground font-mono">+{allTeam.length - 8} more members</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
