@@ -5,6 +5,7 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/_core/hooks/useAuth";
 import {
   THEME_COLORS,
   STATUS_CONFIG,
@@ -113,6 +114,9 @@ type DBSPV = {
 export default function Home() {
   const [, navigate] = useLocation();
   const utils = trpc.useUtils();
+  const { user } = useAuth();
+  const isAtlas = user?.role === "owner" || user?.role === "admin";
+  const dashboardSubtitle = isAtlas ? "ROYALTON VENTURE HOLDING" : "Client Portal";
 
   // ── Live data queries ──────────────────────────────────────────────
   const venturesQ = trpc.ventures.list.useQuery();
@@ -121,11 +125,10 @@ export default function Home() {
   const distQ = trpc.distributions.list.useQuery();
   const activityQ = trpc.activity.recent.useQuery({ limit: 8 });
   const teamQ = trpc.team.list.useQuery();
-
-  // ── Intelligence queries ──────────────────────────────────────────
-  const docFeedQ = trpc.docIntel.recentFeed.useQuery({ limit: 5 });
-  const dailyBriefQ = trpc.intelligence.getDailyBrief.useQuery();
-  const smartAlertsQ = trpc.intelligence.getSmartAlerts.useQuery({});
+  // ── Intelligence queries (ATLAS team only) ────────────────────────────────
+  const docFeedQ = trpc.docIntel.recentFeed.useQuery({ limit: 5 }, { enabled: isAtlas });
+  const dailyBriefQ = trpc.intelligence.getDailyBrief.useQuery(undefined, { enabled: isAtlas });
+  const smartAlertsQ = trpc.intelligence.getSmartAlerts.useQuery({}, { enabled: isAtlas });
 
   const pageLoading = venturesQ.isLoading || tasksQ.isLoading;
 
@@ -216,7 +219,7 @@ export default function Home() {
   const sectorActive = sectorVentures.filter(v => v.status === "In progress").length;
 
   return (
-    <DashboardLayout title="Dashboard" subtitle="ROYALTON VENTURE HOLDING">
+    <DashboardLayout title="Dashboard" subtitle={dashboardSubtitle}>
       <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
 
         {/* Overdue Alert Banner */}
@@ -271,18 +274,20 @@ export default function Home() {
           )}
         </div>
 
-        {/* Quick Actions — horizontal scroll on mobile */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
-          <Button variant="outline" size="sm" className="text-xs gap-1.5 h-8 min-h-[32px] whitespace-nowrap flex-shrink-0 touch-manipulation" onClick={() => navigate("/ventures")}>
-            <Plus className="size-3" /> New Venture
-          </Button>
-          <Button variant="outline" size="sm" className="text-xs gap-1.5 h-8 min-h-[32px] whitespace-nowrap flex-shrink-0 touch-manipulation" onClick={() => navigate("/tasks")}>
-            <Plus className="size-3" /> New Task
-          </Button>
-          <Button variant="outline" size="sm" className="text-xs gap-1.5 h-8 min-h-[32px] whitespace-nowrap flex-shrink-0 touch-manipulation" onClick={() => navigate("/spvs")}>
-            <Plus className="size-3" /> New SPV
-          </Button>
-        </div>
+        {/* Quick Actions — ATLAS team only */}
+        {isAtlas && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
+            <Button variant="outline" size="sm" className="text-xs gap-1.5 h-8 min-h-[32px] whitespace-nowrap flex-shrink-0 touch-manipulation" onClick={() => navigate("/ventures")}>
+              <Plus className="size-3" /> New Venture
+            </Button>
+            <Button variant="outline" size="sm" className="text-xs gap-1.5 h-8 min-h-[32px] whitespace-nowrap flex-shrink-0 touch-manipulation" onClick={() => navigate("/tasks")}>
+              <Plus className="size-3" /> New Task
+            </Button>
+            <Button variant="outline" size="sm" className="text-xs gap-1.5 h-8 min-h-[32px] whitespace-nowrap flex-shrink-0 touch-manipulation" onClick={() => navigate("/spvs")}>
+              <Plus className="size-3" /> New SPV
+            </Button>
+          </div>
+        )}
 
         {/* Main content — stacked on mobile, 2-col on desktop */}
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-4 sm:gap-6">

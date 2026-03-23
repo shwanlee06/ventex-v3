@@ -1,17 +1,21 @@
 import { z } from "zod";
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { distributions, activityLog } from "../../drizzle/schema";
 import { eq, desc } from "drizzle-orm";
+import { isAtlasTeam } from "../security/rbac";
 
 export const distributionsRouter = router({
-  list: publicProcedure.query(async () => {
+  // List distributions — currently all users see all distributions
+  // TODO: Add ventureId/orgId to distributions table for proper scoping
+  list: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
     if (!db) return [];
     return db.select().from(distributions).orderBy(desc(distributions.createdAt));
   }),
 
-  create: publicProcedure.input(z.object({
+  // Create distribution — ATLAS team only
+  create: protectedProcedure.input(z.object({
     name: z.string(),
     fund: z.string().optional(),
     amount: z.number(),
@@ -21,18 +25,22 @@ export const distributionsRouter = router({
     method: z.string().optional(),
     notes: z.string().optional(),
     distributionDate: z.string().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    if (!isAtlasTeam(ctx.user)) {
+      throw new Error("Only ATLAS team can create distributions");
+    }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.insert(distributions).values(input);
     await db.insert(activityLog).values({
       entityType: "distribution", entityName: input.name, action: "Distribution Created",
-      detail: `Distribution "${input.name}" — $${input.amount.toLocaleString()} ${input.status}`, userName: "System",
+      detail: `Distribution "${input.name}" — $${input.amount.toLocaleString()} ${input.status}`, userName: ctx.user.name || "System",
     });
     return { success: true };
   }),
 
-  update: publicProcedure.input(z.object({
+  // Update distribution — ATLAS team only
+  update: protectedProcedure.input(z.object({
     id: z.number(),
     name: z.string().optional(),
     fund: z.string().optional(),
@@ -43,7 +51,10 @@ export const distributionsRouter = router({
     method: z.string().optional(),
     notes: z.string().optional(),
     distributionDate: z.string().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    if (!isAtlasTeam(ctx.user)) {
+      throw new Error("Only ATLAS team can update distributions");
+    }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const { id, ...data } = input;
@@ -51,7 +62,8 @@ export const distributionsRouter = router({
     return { success: true };
   }),
 
-  metrics: publicProcedure.query(async () => {
+  // Metrics
+  metrics: protectedProcedure.query(async () => {
     const db = await getDb();
     if (!db) return { total: 0, paid: 0, totalAmount: 0, paidAmount: 0 };
     const all = await db.select().from(distributions);

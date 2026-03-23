@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
-import { Bell, Search, User, Settings, LogOut } from "lucide-react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { Bell, Search, User, Settings, LogOut, Building2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -20,23 +21,42 @@ interface TopbarProps {
   subtitle?: string;
 }
 
+function isAtlasRole(role?: string): boolean {
+  return role === "owner" || role === "admin";
+}
+
 export default function Topbar({ title, subtitle }: TopbarProps) {
   const { unreadCount } = useNotifications();
   const [notifOpen, setNotifOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [, navigate] = useLocation();
+  const { user, logout } = useAuth();
 
-  const operatorName = useMemo(() => {
-    try { return localStorage.getItem("atlas_operator") || "ATLAS Admin"; } catch { return "ATLAS Admin"; }
-  }, []);
-  const initials = operatorName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  const isAtlas = isAtlasRole(user?.role);
 
-  const handleSignOut = useCallback(() => {
+  const displayName = useMemo(() => {
+    if (user?.name) return user.name;
+    try { return localStorage.getItem("atlas_operator") || "User"; } catch { return "User"; }
+  }, [user?.name]);
+
+  const initials = displayName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+
+  const roleLabel = useMemo(() => {
+    if (!user?.role) return "";
+    if (user.role === "owner") return "Owner";
+    if (user.role === "admin") return "ATLAS Admin";
+    return user.role.charAt(0).toUpperCase() + user.role.slice(1);
+  }, [user?.role]);
+
+  const handleSignOut = useCallback(async () => {
     endCurrentSession();
     localStorage.removeItem("atlas_operator");
+    try {
+      await logout();
+    } catch {}
     toast.info("Signed out — redirecting to landing");
     setTimeout(() => navigate("/"), 600);
-  }, [navigate]);
+  }, [navigate, logout]);
 
   return (
     <>
@@ -80,25 +100,37 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 hover:opacity-80 transition-opacity min-h-[44px]">
                   <Avatar className="size-8">
-                    <AvatarFallback className="bg-primary/20 text-primary text-[11px] font-semibold">
+                    <AvatarFallback className={cn(
+                      "text-[11px] font-semibold",
+                      isAtlas ? "bg-primary/20 text-primary" : "bg-emerald-500/20 text-emerald-400"
+                    )}>
                       {initials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden sm:flex flex-col text-left">
-                    <span className="text-xs font-medium text-foreground leading-tight">{operatorName}</span>
-                    <span className="text-[10px] text-muted-foreground font-mono">ops@atlas.vc</span>
+                    <span className="text-xs font-medium text-foreground leading-tight">{displayName}</span>
+                    <span className="text-[10px] text-muted-foreground font-mono">
+                      {roleLabel}
+                    </span>
                   </div>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
+                <div className="px-2 py-1.5 sm:hidden">
+                  <p className="text-xs font-medium text-foreground">{displayName}</p>
+                  <p className="text-[10px] text-muted-foreground">{roleLabel}</p>
+                </div>
+                <DropdownMenuSeparator className="sm:hidden" />
                 <DropdownMenuItem onClick={() => navigate("/profile")} className="min-h-[44px]">
                   <User className="size-4 mr-2" />
                   Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/settings")} className="min-h-[44px]">
-                  <Settings className="size-4 mr-2" />
-                  Settings
-                </DropdownMenuItem>
+                {isAtlas && (
+                  <DropdownMenuItem onClick={() => navigate("/settings")} className="min-h-[44px]">
+                    <Settings className="size-4 mr-2" />
+                    Settings
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-red-400 focus:text-red-400 min-h-[44px]">
                   <LogOut className="size-4 mr-2" />

@@ -5,6 +5,7 @@ import { Route, Switch, Redirect, useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { useAuth } from "@/_core/hooks/useAuth";
 import Home from "./pages/Home";
 import Agent from "./pages/Agent";
 import Verticals from "./pages/Verticals";
@@ -43,8 +44,26 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   if (!authed) return null;
   return <>{children}</>;
 }
+
+/* ATLAS-only guard — redirects non-admin/owner users to dashboard */
+function RequireAtlas({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const [, navigate] = useLocation();
+
+  useEffect(() => {
+    if (loading) return;
+    if (user && user.role !== "owner" && user.role !== "admin") {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) return null;
+  if (user && user.role !== "owner" && user.role !== "admin") return null;
+
+  return <>{children}</>;
+}
+
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       {/* Login / landing page is the root */}
@@ -53,12 +72,9 @@ function Router() {
       {/* Partner invite acceptance — public, no auth */}
       <Route path="/invite/:orgSlug/:token" component={InviteAccept} />
 
-      {/* Protected dashboard pages */}
+      {/* Protected dashboard pages — available to all authenticated users */}
       <Route path="/dashboard">
         <RequireAuth><Home /></RequireAuth>
-      </Route>
-      <Route path="/agent">
-        <RequireAuth><Agent /></RequireAuth>
       </Route>
       <Route path="/ventures/:slug">
         <RequireAuth><VentureDetail /></RequireAuth>
@@ -68,12 +84,6 @@ function Router() {
       </Route>
       <Route path="/tasks">
         <RequireAuth><TasksPage /></RequireAuth>
-      </Route>
-      <Route path="/team/:slug">
-        <RequireAuth><TeamMemberDetail /></RequireAuth>
-      </Route>
-      <Route path="/team">
-        <RequireAuth><Onboard /></RequireAuth>
       </Route>
       <Route path="/spvs/:slug">
         <RequireAuth><SpvDetail /></RequireAuth>
@@ -87,17 +97,28 @@ function Router() {
       <Route path="/activity">
         <RequireAuth><ActivityLog /></RequireAuth>
       </Route>
-      <Route path="/security">
-        <RequireAuth><SecurityPage /></RequireAuth>
-      </Route>
-      <Route path="/access">
-        <RequireAuth><AccessManagement /></RequireAuth>
-      </Route>
       <Route path="/profile">
         <RequireAuth><Profile /></RequireAuth>
       </Route>
+
+      {/* ATLAS team only pages — admin/owner access required */}
+      <Route path="/agent">
+        <RequireAuth><RequireAtlas><Agent /></RequireAtlas></RequireAuth>
+      </Route>
+      <Route path="/team/:slug">
+        <RequireAuth><RequireAtlas><TeamMemberDetail /></RequireAtlas></RequireAuth>
+      </Route>
+      <Route path="/team">
+        <RequireAuth><RequireAtlas><Onboard /></RequireAtlas></RequireAuth>
+      </Route>
+      <Route path="/security">
+        <RequireAuth><RequireAtlas><SecurityPage /></RequireAtlas></RequireAuth>
+      </Route>
+      <Route path="/access">
+        <RequireAuth><RequireAtlas><AccessManagement /></RequireAtlas></RequireAuth>
+      </Route>
       <Route path="/settings">
-        <RequireAuth><SettingsPage /></RequireAuth>
+        <RequireAuth><RequireAtlas><SettingsPage /></RequireAtlas></RequireAuth>
       </Route>
 
       <Route path="/404" component={NotFound} />

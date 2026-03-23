@@ -1,37 +1,64 @@
 import { z } from "zod";
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { spvs, spvVentures, spvTeam, ventures, teamMembers, spvFiles, spvFolders, activityLog } from "../../drizzle/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { storagePut } from "../storage";
+import { isAtlasTeam, getOrgSpvIds } from "../security/rbac";
 
 function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
 export const spvsRouter = router({
-  list: publicProcedure.query(async () => {
+  // List SPVs — scoped by org for clients
+  list: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
     if (!db) return [];
-    return db.select().from(spvs).orderBy(desc(spvs.createdAt));
+
+    const spvIds = await getOrgSpvIds(ctx.user);
+
+    if (spvIds === null) {
+      return db.select().from(spvs).orderBy(desc(spvs.createdAt));
+    }
+
+    if (spvIds.length === 0) return [];
+    return db.select().from(spvs)
+      .where(inArray(spvs.id, spvIds))
+      .orderBy(desc(spvs.createdAt));
   }),
 
-  getBySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
+  getBySlug: protectedProcedure.input(z.object({ slug: z.string() })).query(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) return null;
     const rows = await db.select().from(spvs).where(eq(spvs.slug, input.slug)).limit(1);
-    return rows[0] || null;
+    if (!rows[0]) return null;
+
+    if (!isAtlasTeam(ctx.user)) {
+      const spvIds = await getOrgSpvIds(ctx.user);
+      if (spvIds && !spvIds.includes(rows[0].id)) return null;
+    }
+
+    return rows[0];
   }),
 
-  getById: publicProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
+  getById: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) return null;
     const rows = await db.select().from(spvs).where(eq(spvs.id, input.id)).limit(1);
-    return rows[0] || null;
+    if (!rows[0]) return null;
+
+    if (!isAtlasTeam(ctx.user)) {
+      const spvIds = await getOrgSpvIds(ctx.user);
+      if (spvIds && !spvIds.includes(rows[0].id)) return null;
+    }
+
+    return rows[0];
   }),
 
-  create: publicProcedure.input(z.object({
+  // Create SPV — ATLAS team only
+  create: protectedProcedure.input(z.object({
     name: z.string(),
     sector: z.string().optional(),
     priority: z.string().default("Medium"),
@@ -39,20 +66,24 @@ export const spvsRouter = router({
     notes: z.string().optional(),
     currentStatus: z.string().optional(),
     nextStep: z.string().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    if (!isAtlasTeam(ctx.user)) {
+      throw new Error("Only ATLAS team can create SPVs");
+    }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const slug = slugify(input.name) + "-" + nanoid(4);
     await db.insert(spvs).values({ ...input, slug });
     await db.insert(activityLog).values({
       entityType: "spv", entityName: input.name, action: "SPV Created",
-      detail: `New SPV "${input.name}" created`, userName: "System", sector: input.sector,
+      detail: `New SPV "${input.name}" created`, userName: ctx.user.name || "System", sector: input.sector,
     });
     const rows = await db.select().from(spvs).where(eq(spvs.slug, slug)).limit(1);
     return rows[0];
   }),
 
-  update: publicProcedure.input(z.object({
+  // Update SPV — ATLAS team only
+  update: protectedProcedure.input(z.object({
     id: z.number(),
     name: z.string().optional(),
     sector: z.string().optional(),
@@ -61,7 +92,10 @@ export const spvsRouter = router({
     notes: z.string().optional(),
     currentStatus: z.string().optional(),
     nextStep: z.string().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    if (!isAtlasTeam(ctx.user)) {
+      throw new Error("Only ATLAS team can update SPVs");
+    }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const { id, ...data } = input;
@@ -70,14 +104,14 @@ export const spvsRouter = router({
     if (rows[0]) {
       await db.insert(activityLog).values({
         entityType: "spv", entityId: id, entityName: rows[0].name,
-        action: "SPV Updated", detail: `SPV "${rows[0].name}" updated`, userName: "System", sector: rows[0].sector,
+        action: "SPV Updated", detail: `SPV "${rows[0].name}" updated`, userName: ctx.user.name || "System", sector: rows[0].sector,
       });
     }
     return rows[0] || null;
   }),
 
   // Linked ventures
-  getLinkedVentures: publicProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
+  getLinkedVentures: protectedProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
     const db = await getDb();
     if (!db) return [];
     return db.select({
@@ -91,10 +125,13 @@ export const spvsRouter = router({
       .where(eq(spvVentures.spvId, input.spvId));
   }),
 
-  linkVenture: publicProcedure.input(z.object({
+  linkVenture: protectedProcedure.input(z.object({
     spvId: z.number(),
     ventureId: z.number(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    if (!isAtlasTeam(ctx.user)) {
+      throw new Error("Only ATLAS team can link ventures");
+    }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const existing = await db.select().from(spvVentures)
@@ -104,10 +141,13 @@ export const spvsRouter = router({
     return { success: true };
   }),
 
-  unlinkVenture: publicProcedure.input(z.object({
+  unlinkVenture: protectedProcedure.input(z.object({
     spvId: z.number(),
     ventureId: z.number(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    if (!isAtlasTeam(ctx.user)) {
+      throw new Error("Only ATLAS team can unlink ventures");
+    }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.delete(spvVentures).where(
@@ -117,7 +157,7 @@ export const spvsRouter = router({
   }),
 
   // Team
-  getTeam: publicProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
+  getTeam: protectedProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
     const db = await getDb();
     if (!db) return [];
     return db.select({
@@ -132,11 +172,14 @@ export const spvsRouter = router({
       .where(eq(spvTeam.spvId, input.spvId));
   }),
 
-  assignTeam: publicProcedure.input(z.object({
+  assignTeam: protectedProcedure.input(z.object({
     spvId: z.number(),
     memberId: z.number(),
     responsibility: z.string().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    if (!isAtlasTeam(ctx.user)) {
+      throw new Error("Only ATLAS team can assign team members");
+    }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const existing = await db.select().from(spvTeam)
@@ -146,10 +189,13 @@ export const spvsRouter = router({
     return { success: true };
   }),
 
-  removeTeam: publicProcedure.input(z.object({
+  removeTeam: protectedProcedure.input(z.object({
     spvId: z.number(),
     memberId: z.number(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    if (!isAtlasTeam(ctx.user)) {
+      throw new Error("Only ATLAS team can remove team members");
+    }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.delete(spvTeam).where(
@@ -158,21 +204,21 @@ export const spvsRouter = router({
     return { success: true };
   }),
 
-  // ── SPV Files ────────────────────────────────────────────────────────
-  getFiles: publicProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
+  // SPV Files
+  getFiles: protectedProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
     const db = await getDb();
     if (!db) return [];
     return db.select().from(spvFiles).where(eq(spvFiles.spvId, input.spvId)).orderBy(desc(spvFiles.createdAt));
   }),
 
-  uploadFile: publicProcedure.input(z.object({
+  uploadFile: protectedProcedure.input(z.object({
     spvId: z.number(),
     filename: z.string(),
     fileType: z.string(),
     fileSize: z.number(),
-    fileData: z.string(), // base64
+    fileData: z.string(),
     folderId: z.number().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const buffer = Buffer.from(input.fileData, "base64");
@@ -186,25 +232,29 @@ export const spvsRouter = router({
       fileSize: input.fileSize,
       fileUrl: url,
       fileKey,
+      uploadedBy: ctx.user.name || undefined,
     });
     const [s] = await db.select().from(spvs).where(eq(spvs.id, input.spvId)).limit(1);
     if (s) {
       await db.insert(activityLog).values({
         entityType: "spv", entityId: input.spvId, entityName: s.name,
-        action: "File Uploaded", detail: `File "${input.filename}" uploaded to ${s.name}`, userName: "System", sector: s.sector,
+        action: "File Uploaded", detail: `File "${input.filename}" uploaded to ${s.name}`, userName: ctx.user.name || "System", sector: s.sector,
       });
     }
     return { success: true, url };
   }),
 
-  deleteFile: publicProcedure.input(z.object({ fileId: z.number() })).mutation(async ({ input }) => {
+  deleteFile: protectedProcedure.input(z.object({ fileId: z.number() })).mutation(async ({ input, ctx }) => {
+    if (!isAtlasTeam(ctx.user)) {
+      throw new Error("Only ATLAS team can delete files");
+    }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.delete(spvFiles).where(eq(spvFiles.id, input.fileId));
     return { success: true };
   }),
 
-  moveFile: publicProcedure.input(z.object({
+  moveFile: protectedProcedure.input(z.object({
     fileId: z.number(),
     folderId: z.number().nullable(),
   })).mutation(async ({ input }) => {
@@ -214,14 +264,14 @@ export const spvsRouter = router({
     return { success: true };
   }),
 
-  // ── SPV Folders ──────────────────────────────────────────────────────
-  getFolders: publicProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
+  // SPV Folders
+  getFolders: protectedProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
     const db = await getDb();
     if (!db) return [];
     return db.select().from(spvFolders).where(eq(spvFolders.spvId, input.spvId));
   }),
 
-  createFolder: publicProcedure.input(z.object({
+  createFolder: protectedProcedure.input(z.object({
     spvId: z.number(),
     name: z.string(),
     color: z.string().default("blue"),
@@ -232,7 +282,10 @@ export const spvsRouter = router({
     return { success: true };
   }),
 
-  deleteFolder: publicProcedure.input(z.object({ folderId: z.number() })).mutation(async ({ input }) => {
+  deleteFolder: protectedProcedure.input(z.object({ folderId: z.number() })).mutation(async ({ input, ctx }) => {
+    if (!isAtlasTeam(ctx.user)) {
+      throw new Error("Only ATLAS team can delete folders");
+    }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.update(spvFiles).set({ folderId: null }).where(eq(spvFiles.folderId, input.folderId));
@@ -240,7 +293,7 @@ export const spvsRouter = router({
     return { success: true };
   }),
 
-  renameFolder: publicProcedure.input(z.object({
+  renameFolder: protectedProcedure.input(z.object({
     folderId: z.number(),
     name: z.string(),
   })).mutation(async ({ input }) => {
@@ -250,10 +303,22 @@ export const spvsRouter = router({
     return { success: true };
   }),
 
-  metrics: publicProcedure.query(async () => {
+  // Metrics — scoped by org
+  metrics: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
     if (!db) return { total: 0, active: 0, negotiating: 0, closed: 0 };
-    const all = await db.select().from(spvs);
+
+    const spvIds = await getOrgSpvIds(ctx.user);
+
+    let all;
+    if (spvIds === null) {
+      all = await db.select().from(spvs);
+    } else if (spvIds.length === 0) {
+      return { total: 0, active: 0, negotiating: 0, closed: 0 };
+    } else {
+      all = await db.select().from(spvs).where(inArray(spvs.id, spvIds));
+    }
+
     return {
       total: all.length,
       active: all.filter(s => s.stage === "Active deal").length,

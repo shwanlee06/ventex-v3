@@ -1,10 +1,12 @@
 // ============================================================================
-// AppSidebar — Mobile-first responsive navigation
-// Mobile: bottom tab bar with 6 items + "More" sheet
-// Desktop: collapsible left rail
+// AppSidebar — Role-based navigation
+// ATLAS team (owner/admin): full navigation with all pages
+// Client users: scoped portal with limited navigation
+// Mobile: bottom tab bar | Desktop: collapsible left rail
 // ============================================================================
 
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { THEME_COLORS } from "@/lib/data";
 import {
   LayoutDashboard,
@@ -22,9 +24,12 @@ import {
   MoreHorizontal,
   X,
   KeyRound,
+  Building2,
+  FileText,
+  User,
 } from "lucide-react";
 import { useLocation, Link } from "wouter";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -34,25 +39,25 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
+  atlasOnly?: boolean; // Only visible to ATLAS team (owner/admin)
+  clientOnly?: boolean; // Only visible to client users
 }
 
-const NAV_ITEMS: NavItem[] = [
+// Full navigation — items marked atlasOnly are hidden from clients
+const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="size-5" /> },
-  { label: "AI Agent", href: "/agent", icon: <Bot className="size-5" /> },
+  { label: "AI Agent", href: "/agent", icon: <Bot className="size-5" />, atlasOnly: true },
   { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-5" /> },
   { label: "SPVs & Deals", href: "/spvs", icon: <Briefcase className="size-5" /> },
-  { label: "Team", href: "/team", icon: <Users className="size-5" /> },
+  { label: "Team", href: "/team", icon: <Users className="size-5" />, atlasOnly: true },
   { label: "Tasks", href: "/tasks", icon: <ListChecks className="size-5" /> },
   { label: "Distributions", href: "/distributions", icon: <DollarSign className="size-5" /> },
   { label: "Activity", href: "/activity", icon: <Activity className="size-5" /> },
-  { label: "Security", href: "/security", icon: <Lock className="size-5" /> },
-  { label: "Access", href: "/access", icon: <KeyRound className="size-5" /> },
-  { label: "Settings", href: "/settings", icon: <Shield className="size-5" /> },
+  { label: "Security", href: "/security", icon: <Lock className="size-5" />, atlasOnly: true },
+  { label: "Access", href: "/access", icon: <KeyRound className="size-5" />, atlasOnly: true },
+  { label: "Settings", href: "/settings", icon: <Shield className="size-5" />, atlasOnly: true },
+  { label: "My Profile", href: "/profile", icon: <User className="size-5" />, clientOnly: true },
 ];
-
-// First 5 items shown in mobile bottom bar, rest in "More" sheet
-const MOBILE_PRIMARY = NAV_ITEMS.slice(0, 5);
-const MOBILE_SECONDARY = NAV_ITEMS.slice(5);
 
 const THEME_DOTS = [
   { key: "Real Estate", abbr: "RE" },
@@ -63,16 +68,39 @@ const THEME_DOTS = [
   { key: "Others", abbr: "OT" },
 ];
 
+/** Check if user is ATLAS internal team */
+function isAtlasRole(role?: string): boolean {
+  return role === "owner" || role === "admin";
+}
+
 export default function AppSidebar() {
   const [location] = useLocation();
   const [expanded, setExpanded] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const { user } = useAuth();
+
+  const isAtlas = isAtlasRole(user?.role);
+
+  // Filter nav items based on role
+  const navItems = useMemo(() => {
+    return ALL_NAV_ITEMS.filter((item) => {
+      if (item.atlasOnly && !isAtlas) return false;
+      if (item.clientOnly && isAtlas) return false;
+      return true;
+    });
+  }, [isAtlas]);
+
+  // Mobile: first 5 items in bottom bar, rest in "More" sheet
+  const mobilePrimary = navItems.slice(0, 5);
+  const mobileSecondary = navItems.slice(5);
 
   const isActive = (href: string) =>
     location === href || (href !== "/dashboard" && location.startsWith(href));
 
-  // Check if any secondary item is active (to highlight "More" tab)
-  const secondaryActive = MOBILE_SECONDARY.some(item => isActive(item.href));
+  const secondaryActive = mobileSecondary.some(item => isActive(item.href));
+
+  // Sidebar header text
+  const sidebarTitle = isAtlas ? "ATLAS" : (user?.name?.split(" ")[0] || "Portal");
 
   return (
     <>
@@ -82,31 +110,44 @@ export default function AppSidebar() {
         animate={{ width: expanded ? 240 : 64 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
       >
-        {/* Logo */}
+        {/* Logo / Branding */}
         <div className="flex items-center h-14 px-4 border-b border-border">
-          <img
-            src={ATLAS_LOGO_URL}
-            alt="ATLAS"
-            className="size-8 rounded-md flex-shrink-0"
-          />
+          {isAtlas ? (
+            <img
+              src={ATLAS_LOGO_URL}
+              alt="ATLAS"
+              className="size-8 rounded-md flex-shrink-0"
+            />
+          ) : (
+            <div className="size-8 rounded-md flex-shrink-0 bg-primary/10 flex items-center justify-center">
+              <Building2 className="size-4 text-primary" />
+            </div>
+          )}
           <AnimatePresence>
             {expanded && (
-              <motion.span
+              <motion.div
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -8 }}
                 transition={{ duration: 0.15 }}
-                className="ml-3 text-sm font-semibold tracking-tight text-foreground whitespace-nowrap"
+                className="ml-3 overflow-hidden"
               >
-                ATLAS
-              </motion.span>
+                <span className="text-sm font-semibold tracking-tight text-foreground whitespace-nowrap block">
+                  {sidebarTitle}
+                </span>
+                {!isAtlas && (
+                  <span className="text-[10px] text-muted-foreground font-mono whitespace-nowrap block">
+                    Client Portal
+                  </span>
+                )}
+              </motion.div>
             )}
           </AnimatePresence>
         </div>
 
         {/* Nav items */}
         <nav className="flex-1 flex flex-col gap-1 px-2 py-3 overflow-y-auto">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const active = isActive(item.href);
             return (
               <Tooltip key={item.href}>
@@ -149,46 +190,65 @@ export default function AppSidebar() {
             );
           })}
 
-          {/* Theme dots */}
-          <div className="mt-4 pt-4 border-t border-border">
-            <AnimatePresence>
-              {expanded && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground px-3 mb-2 font-medium"
-                >
-                  Sectors
-                </motion.p>
-              )}
-            </AnimatePresence>
-            <div className={cn("flex gap-2 px-3", expanded ? "flex-col gap-1" : "flex-col items-center")}>
-              {THEME_DOTS.map((v) => {
-                const tc = THEME_COLORS[v.key];
-                return (
-                  <div key={v.key} className="flex items-center gap-3">
-                    <div
-                      className="size-[6px] rounded-full flex-shrink-0"
-                      style={{ backgroundColor: tc?.color || "#888" }}
-                    />
-                    <AnimatePresence>
-                      {expanded && (
-                        <motion.span
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="text-xs text-muted-foreground"
-                        >
-                          {tc?.label || v.key}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })}
+          {/* Theme dots — ATLAS team only */}
+          {isAtlas && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <AnimatePresence>
+                {expanded && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground px-3 mb-2 font-medium"
+                  >
+                    Sectors
+                  </motion.p>
+                )}
+              </AnimatePresence>
+              <div className={cn("flex gap-2 px-3", expanded ? "flex-col gap-1" : "flex-col items-center")}>
+                {THEME_DOTS.map((v) => {
+                  const tc = THEME_COLORS[v.key];
+                  return (
+                    <div key={v.key} className="flex items-center gap-3">
+                      <div
+                        className="size-[6px] rounded-full flex-shrink-0"
+                        style={{ backgroundColor: tc?.color || "#888" }}
+                      />
+                      <AnimatePresence>
+                        {expanded && (
+                          <motion.span
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="text-xs text-muted-foreground"
+                          >
+                            {tc?.label || v.key}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Client portal info */}
+          {!isAtlas && expanded && (
+            <div className="mt-4 pt-4 border-t border-border px-3">
+              <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground mb-2 font-medium">
+                Your Access
+              </p>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="size-1.5 rounded-full bg-emerald-400" />
+                  <span className="text-xs text-muted-foreground">
+                    {user?.role === "manager" ? "Manager" : user?.role === "client" ? "Client" : user?.role === "viewer" ? "Viewer" : "User"} Access
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </nav>
 
         {/* Expand toggle */}
@@ -208,7 +268,7 @@ export default function AppSidebar() {
         style={{ paddingBottom: "max(0.25rem, env(safe-area-inset-bottom))" }}
       >
         <div className="flex items-center justify-around px-1 pt-1">
-          {MOBILE_PRIMARY.map((item) => {
+          {mobilePrimary.map((item) => {
             const active = isActive(item.href);
             return (
               <Link key={item.href} href={item.href}>
@@ -227,17 +287,19 @@ export default function AppSidebar() {
             );
           })}
 
-          {/* More button */}
-          <button
-            onClick={() => setMoreOpen(true)}
-            className={cn(
-              "flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[48px] rounded-lg transition-colors",
-              secondaryActive ? "text-primary" : "text-muted-foreground active:text-foreground"
-            )}
-          >
-            <MoreHorizontal className="size-5" />
-            <span className="text-[10px] font-medium leading-tight">More</span>
-          </button>
+          {/* More button — only if there are secondary items */}
+          {mobileSecondary.length > 0 && (
+            <button
+              onClick={() => setMoreOpen(true)}
+              className={cn(
+                "flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[48px] rounded-lg transition-colors",
+                secondaryActive ? "text-primary" : "text-muted-foreground active:text-foreground"
+              )}
+            >
+              <MoreHorizontal className="size-5" />
+              <span className="text-[10px] font-medium leading-tight">More</span>
+            </button>
+          )}
         </div>
       </nav>
 
@@ -245,7 +307,6 @@ export default function AppSidebar() {
       <AnimatePresence>
         {moreOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -253,7 +314,6 @@ export default function AppSidebar() {
               className="md:hidden fixed inset-0 z-[60] bg-black/50"
               onClick={() => setMoreOpen(false)}
             />
-            {/* Sheet */}
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
@@ -272,7 +332,7 @@ export default function AppSidebar() {
                 </button>
               </div>
               <div className="grid grid-cols-3 gap-2 p-4">
-                {MOBILE_SECONDARY.map((item) => {
+                {mobileSecondary.map((item) => {
                   const active = isActive(item.href);
                   return (
                     <Link key={item.href} href={item.href}>

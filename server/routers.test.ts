@@ -15,13 +15,43 @@ function createPublicContext(): TrpcContext {
   };
 }
 
-function createCaller() {
+function createAuthenticatedContext(): TrpcContext {
+  return {
+    user: {
+      id: 1,
+      openId: "test-open-id",
+      name: "Test Admin",
+      email: "admin@test.com",
+      role: "admin",
+      organizationId: null, // ATLAS team (no org = sees all)
+      status: "active",
+      avatarUrl: null,
+      invitationId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastSignedInAt: new Date(),
+    },
+    req: {
+      protocol: "https",
+      headers: {},
+    } as TrpcContext["req"],
+    res: {
+      clearCookie: () => {},
+    } as TrpcContext["res"],
+  };
+}
+
+function createPublicCaller() {
   return appRouter.createCaller(createPublicContext());
+}
+
+function createAuthCaller() {
+  return appRouter.createCaller(createAuthenticatedContext());
 }
 
 describe("ventures router", () => {
   it("lists all ventures from the database", async () => {
-    const caller = createCaller();
+    const caller = createAuthCaller();
     const ventures = await caller.ventures.list();
     expect(Array.isArray(ventures)).toBe(true);
     expect(ventures.length).toBeGreaterThan(0);
@@ -34,7 +64,7 @@ describe("ventures router", () => {
   });
 
   it("gets a single venture by slug", async () => {
-    const caller = createCaller();
+    const caller = createAuthCaller();
     const ventures = await caller.ventures.list();
     if (ventures.length > 0) {
       const venture = await caller.ventures.getBySlug({ slug: ventures[0].slug });
@@ -44,15 +74,20 @@ describe("ventures router", () => {
   });
 
   it("returns null for non-existent venture slug", async () => {
-    const caller = createCaller();
+    const caller = createAuthCaller();
     const venture = await caller.ventures.getBySlug({ slug: "non-existent-slug-xyz" });
     expect(venture).toBeNull();
+  });
+
+  it("rejects unauthenticated access", async () => {
+    const caller = createPublicCaller();
+    await expect(caller.ventures.list()).rejects.toThrow();
   });
 });
 
 describe("tasks router", () => {
   it("lists all tasks from the database", async () => {
-    const caller = createCaller();
+    const caller = createAuthCaller();
     const tasks = await caller.tasks.list();
     expect(Array.isArray(tasks)).toBe(true);
     expect(tasks.length).toBeGreaterThan(0);
@@ -63,7 +98,7 @@ describe("tasks router", () => {
   });
 
   it("creates a new task", async () => {
-    const caller = createCaller();
+    const caller = createAuthCaller();
     const result = await caller.tasks.create({
       title: "Test task from vitest",
       priority: "Medium",
@@ -72,11 +107,16 @@ describe("tasks router", () => {
     });
     expect(result).toHaveProperty("success", true);
   });
+
+  it("rejects unauthenticated access", async () => {
+    const caller = createPublicCaller();
+    await expect(caller.tasks.list()).rejects.toThrow();
+  });
 });
 
 describe("spvs router", () => {
   it("lists all SPVs from the database", async () => {
-    const caller = createCaller();
+    const caller = createAuthCaller();
     const spvs = await caller.spvs.list();
     expect(Array.isArray(spvs)).toBe(true);
     expect(spvs.length).toBeGreaterThan(0);
@@ -88,7 +128,7 @@ describe("spvs router", () => {
   });
 
   it("gets a single SPV by slug", async () => {
-    const caller = createCaller();
+    const caller = createAuthCaller();
     const spvs = await caller.spvs.list();
     if (spvs.length > 0) {
       const spv = await caller.spvs.getBySlug({ slug: spvs[0].slug });
@@ -96,11 +136,16 @@ describe("spvs router", () => {
       expect(spv!.name).toBe(spvs[0].name);
     }
   });
+
+  it("rejects unauthenticated access", async () => {
+    const caller = createPublicCaller();
+    await expect(caller.spvs.list()).rejects.toThrow();
+  });
 });
 
 describe("team router", () => {
   it("lists all team members from the database", async () => {
-    const caller = createCaller();
+    const caller = createPublicCaller();
     const team = await caller.team.list();
     expect(Array.isArray(team)).toBe(true);
     expect(team.length).toBeGreaterThan(0);
@@ -113,7 +158,7 @@ describe("team router", () => {
 
 describe("distributions router", () => {
   it("lists all distributions from the database", async () => {
-    const caller = createCaller();
+    const caller = createAuthCaller();
     const dists = await caller.distributions.list();
     expect(Array.isArray(dists)).toBe(true);
     expect(dists.length).toBeGreaterThan(0);
@@ -122,11 +167,16 @@ describe("distributions router", () => {
     expect(d).toHaveProperty("name");
     expect(d).toHaveProperty("amount");
   });
+
+  it("rejects unauthenticated access", async () => {
+    const caller = createPublicCaller();
+    await expect(caller.distributions.list()).rejects.toThrow();
+  });
 });
 
 describe("activity router", () => {
   it("lists recent activity entries", async () => {
-    const caller = createCaller();
+    const caller = createPublicCaller();
     const activity = await caller.activity.recent({ limit: 10 });
     expect(Array.isArray(activity)).toBe(true);
     // Seeded data should have entries
@@ -138,7 +188,7 @@ describe("activity router", () => {
   });
 
   it("returns activity metrics", async () => {
-    const caller = createCaller();
+    const caller = createPublicCaller();
     const metrics = await caller.activity.metrics();
     expect(metrics).toHaveProperty("total");
     expect(metrics).toHaveProperty("today");
@@ -148,13 +198,13 @@ describe("activity router", () => {
 
 describe("notifications router", () => {
   it("lists notifications", async () => {
-    const caller = createCaller();
+    const caller = createPublicCaller();
     const notifs = await caller.notifications.list({ limit: 10 });
     expect(Array.isArray(notifs)).toBe(true);
   });
 
   it("creates a notification", async () => {
-    const caller = createCaller();
+    const caller = createPublicCaller();
     const result = await caller.notifications.create({
       type: "info",
       title: "Test notification from vitest",
@@ -164,7 +214,7 @@ describe("notifications router", () => {
   });
 
   it("gets unread count", async () => {
-    const caller = createCaller();
+    const caller = createPublicCaller();
     const count = await caller.notifications.unreadCount();
     expect(typeof count).toBe("number");
   });

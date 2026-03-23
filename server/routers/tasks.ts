@@ -1,30 +1,53 @@
 import { z } from "zod";
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { tasks, activityLog, ventures } from "../../drizzle/schema";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and, sql, inArray, isNull } from "drizzle-orm";
+import { isAtlasTeam, getOrgVentureIds } from "../security/rbac";
 
 export const tasksRouter = router({
-  list: publicProcedure.query(async () => {
+  // List tasks — scoped by org for clients (tasks linked to their ventures)
+  list: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
     if (!db) return [];
-    return db.select().from(tasks).orderBy(desc(tasks.createdAt));
+
+    const ventureIds = await getOrgVentureIds(ctx.user);
+
+    // ATLAS team sees all tasks
+    if (ventureIds === null) {
+      return db.select().from(tasks).orderBy(desc(tasks.createdAt));
+    }
+
+    // Client sees tasks linked to their org's ventures
+    if (ventureIds.length === 0) return [];
+    return db.select().from(tasks)
+      .where(inArray(tasks.ventureId, ventureIds))
+      .orderBy(desc(tasks.createdAt));
   }),
 
-  getById: publicProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
+  getById: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) return null;
     const rows = await db.select().from(tasks).where(eq(tasks.id, input.id)).limit(1);
-    return rows[0] || null;
+    if (!rows[0]) return null;
+
+    // Check access for non-ATLAS users
+    if (!isAtlasTeam(ctx.user) && rows[0].ventureId) {
+      const ventureIds = await getOrgVentureIds(ctx.user);
+      if (ventureIds && !ventureIds.includes(rows[0].ventureId)) return null;
+    }
+
+    return rows[0];
   }),
 
-  getByVenture: publicProcedure.input(z.object({ ventureId: z.number() })).query(async ({ input }) => {
+  getByVenture: protectedProcedure.input(z.object({ ventureId: z.number() })).query(async ({ input }) => {
     const db = await getDb();
     if (!db) return [];
     return db.select().from(tasks).where(eq(tasks.ventureId, input.ventureId)).orderBy(desc(tasks.createdAt));
   }),
 
-  create: publicProcedure.input(z.object({
+  // Create task — ATLAS team can create any, clients can only create for their ventures
+  create: protectedProcedure.input(z.object({
     title: z.string(),
     ventureId: z.number().optional(),
     ventureLink: z.string().optional(),
@@ -33,7 +56,14 @@ export const tasksRouter = router({
     priority: z.string().default("Medium"),
     status: z.string().default("open"),
     description: z.string().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    // Non-ATLAS users can only create tasks for their assigned ventures
+    if (!isAtlasTeam(ctx.user) && input.ventureId) {
+      const ventureIds = await getOrgVentureIds(ctx.user);
+      if (ventureIds && !ventureIds.includes(input.ventureId)) {
+        throw new Error("You can only create tasks for your assigned ventures");
+      }
+    }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.insert(tasks).values({
@@ -42,12 +72,12 @@ export const tasksRouter = router({
     });
     await db.insert(activityLog).values({
       entityType: "task", entityName: input.title, action: "Task Created",
-      detail: `New task "${input.title}" created`, userName: "System",
+      detail: `New task "${input.title}" created`, userName: ctx.user.name || "System",
     });
     return { success: true };
   }),
 
-  update: publicProcedure.input(z.object({
+  update: protectedProcedure.input(z.object({
     id: z.number(),
     title: z.string().optional(),
     ventureId: z.number().nullable().optional(),
@@ -57,7 +87,7 @@ export const tasksRouter = router({
     priority: z.string().optional(),
     status: z.string().optional(),
     description: z.string().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const { id, ...data } = input;
@@ -68,23 +98,38 @@ export const tasksRouter = router({
         entityType: "task", entityId: id, entityName: rows[0].title,
         action: input.status === "complete" ? "Task Completed" : "Task Updated",
         detail: `Task "${rows[0].title}" ${input.status === "complete" ? "marked complete" : "updated"}`,
-        userName: "System",
+        userName: ctx.user.name || "System",
       });
     }
     return rows[0] || null;
   }),
 
-  delete: publicProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+    if (!isAtlasTeam(ctx.user)) {
+      throw new Error("Only ATLAS team can delete tasks");
+    }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.delete(tasks).where(eq(tasks.id, input.id));
     return { success: true };
   }),
 
-  metrics: publicProcedure.query(async () => {
+  // Metrics — scoped by org
+  metrics: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
     if (!db) return { total: 0, open: 0, complete: 0, overdue: 0 };
-    const all = await db.select().from(tasks);
+
+    const ventureIds = await getOrgVentureIds(ctx.user);
+
+    let all;
+    if (ventureIds === null) {
+      all = await db.select().from(tasks);
+    } else if (ventureIds.length === 0) {
+      return { total: 0, open: 0, complete: 0, overdue: 0 };
+    } else {
+      all = await db.select().from(tasks).where(inArray(tasks.ventureId, ventureIds));
+    }
+
     const now = new Date();
     let open = 0, complete = 0, overdue = 0;
     for (const t of all) {

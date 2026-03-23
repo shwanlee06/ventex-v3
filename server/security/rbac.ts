@@ -11,9 +11,9 @@
  */
 
 import { TRPCError } from "@trpc/server";
-import { eq, and, or, isNull, gte } from "drizzle-orm";
+import { eq, and, or, isNull, gte, inArray } from "drizzle-orm";
 import { getDb } from "../db";
-import { userVentureAccess, auditLog } from "../../drizzle/schema";
+import { userVentureAccess, auditLog, orgVentureAccess } from "../../drizzle/schema";
 import type { User } from "../../drizzle/schema";
 
 // ── Role Hierarchy ─────────────────────────────────────────────────────
@@ -66,6 +66,66 @@ const PERMISSION_MATRIX: Record<string, Set<Action>> = {
     "process_documents", "manage_spvs", "manage_distributions",
   ]),
 };
+
+// ── Two-Tier Helpers ──────────────────────────────────────────────────
+
+/**
+ * Check if a user is part of the ATLAS internal team (owner or admin).
+ * ATLAS team sees everything; clients see only their org's data.
+ */
+export function isAtlasTeam(user: { role: string }): boolean {
+  return user.role === "owner" || user.role === "admin";
+}
+
+/**
+ * Get venture IDs accessible to a user's organization.
+ * Returns null for ATLAS team (meaning "all ventures").
+ * Returns empty array if user has no org or org has no venture access.
+ */
+export async function getOrgVentureIds(
+  user: User
+): Promise<number[] | null> {
+  // ATLAS team sees everything
+  if (isAtlasTeam(user)) return null;
+
+  // No org = no access
+  if (!user.organizationId) return [];
+
+  const db = await getDb();
+  if (!db) return [];
+
+  const rows = await db
+    .select({ ventureId: orgVentureAccess.ventureId })
+    .from(orgVentureAccess)
+    .where(eq(orgVentureAccess.organizationId, user.organizationId));
+
+  return rows.map((r) => r.ventureId);
+}
+
+/**
+ * Get SPV IDs accessible to a user's organization (via venture links).
+ * Returns null for ATLAS team (meaning "all SPVs").
+ */
+export async function getOrgSpvIds(
+  user: User
+): Promise<number[] | null> {
+  if (isAtlasTeam(user)) return null;
+
+  const ventureIds = await getOrgVentureIds(user);
+  if (!ventureIds || ventureIds.length === 0) return ventureIds === null ? null : [];
+
+  const db = await getDb();
+  if (!db) return [];
+
+  // Import spvVentures dynamically to avoid circular deps
+  const { spvVentures } = await import("../../drizzle/schema");
+  const rows = await db
+    .select({ spvId: spvVentures.spvId })
+    .from(spvVentures)
+    .where(inArray(spvVentures.ventureId, ventureIds));
+
+  return Array.from(new Set(rows.map((r) => r.spvId)));
+}
 
 /**
  * Check if a role has a specific permission.

@@ -391,7 +391,7 @@
 - [x] Invite link with unique token (copy-to-clipboard from admin UI)
 - [x] OAuth callback gates access: checks for pending invitation by email
 - [x] Error handling on landing page: no_invitation, blocked, suspended, invitation_expired
-- [ ] Venture-scoped dashboard: users only see ventures their org has access to — deferred
+- [x] Venture-scoped dashboard: users only see ventures their org has access to — implemented in two-tier architecture
 
 ### Tests
 - [x] Vitest tests for API key generation (format, uniqueness, 45-char length)
@@ -433,3 +433,40 @@
 ## Bug Fixes
 
 - [x] Admin cannot remove/delete users (e.g., Jason) from Security page — added delete user with confirmation dialog, cascade cleanup of sessions/API keys/access grants, audit logging, and role-based guards (can't delete owner, only owner can delete admins)
+
+## Two-Tier Architecture — ATLAS Team vs Client Sub-Accounts
+
+### Role Simplification
+- [x] Simplify to two tiers: ATLAS internal (owner, admin) vs Client (manager, user, viewer)
+- [x] ATLAS team (owner/admin) = full dashboard, all data, all admin controls
+- [x] Client roles = scoped portal, only their org's ventures/SPVs/tasks/distributions
+- [x] Add isAtlasTeam() helper in rbac.ts to check if user is owner or admin
+
+### Org-Scoped Data Filtering (Backend)
+- [x] Filter ventures by user's organizationId via org_venture_access table
+- [x] Filter SPVs by ventures the org has access to
+- [x] Filter tasks by ventures the org has access to
+- [x] Filter distributions — ATLAS sees all, clients see all (venture-link deferred)
+- [x] ATLAS team bypasses all filters (sees everything)
+
+### Client Portal Layout (Frontend)
+- [x] Scoped sidebar: hide admin-only pages (Security, Access, Agent, Team, Settings)
+- [x] Client sees: Dashboard, Ventures, SPVs, Tasks, Distributions, Activity, Profile
+- [x] Dynamic dashboard subtitle: ATLAS sees "ROYALTON VENTURE HOLDING", clients see "Client Portal"
+- [x] Route guards: RequireAtlas wrapper redirects clients away from admin pages
+- [x] Quick actions (New Venture/Task/SPV) hidden for clients
+- [x] Intelligence queries (Daily Brief, Smart Alerts, Doc Intel) disabled for clients
+- [x] Bottom tab bar on mobile shows role-appropriate nav items
+
+### ATLAS Admin Dashboard Enhancements
+- [x] ATLAS team sees all data across all orgs (no filter needed yet — all data visible)
+- [ ] Add org filter dropdown to dashboard for per-client view — deferred for future
+- [ ] Show org badge on ventures/SPVs — deferred for future
+
+### Tests
+- [x] Vitest tests for isAtlasTeam helper (owner/admin = true, all others = false)
+- [x] Vitest tests for org-scoped data filtering logic (null = see all, array = filtered)
+- [x] Vitest tests for role-based navigation visibility (ATLAS nav vs client nav)
+- [x] Vitest tests for route guards (ATLAS-only routes blocked for clients)
+- [x] Vitest tests for dashboard subtitle by role
+- [x] Updated routers.test.ts with authenticated context for protectedProcedure
