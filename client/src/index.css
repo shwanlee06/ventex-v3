@@ -42,6 +42,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: "DM Sans", system-ui, sans-serif;
   --font-mono: "DM Mono", ui-monospace, monospace;
+  --font-display: "Inter", system-ui, sans-serif;
   /* Vertical semantic colors */
   --color-v-realestate: oklch(0.65 0.12 240);
   --color-v-yachts: oklch(0.7 0.12 180);
@@ -49,6 +50,8 @@
   --color-v-fnb: oklch(0.7 0.14 340);
   --color-v-energy: oklch(0.72 0.14 85);
   --color-gold: oklch(0.75 0.1 75);
+  --color-gold-light: oklch(0.82 0.08 75);
+  --color-gold-muted: oklch(0.75 0.1 75 / 15%);
   /* Semantic status colors */
   --color-success: oklch(0.72 0.17 155);
   --color-warning: oklch(0.75 0.15 75);
@@ -99,33 +102,33 @@
   --primary-foreground: oklch(0.15 0.01 75);
   --sidebar-primary: oklch(0.75 0.1 75);
   --sidebar-primary-foreground: oklch(0.15 0.01 75);
-  --background: oklch(0.13 0.005 270);
-  --foreground: oklch(0.9 0.005 80);
-  --card: oklch(0.16 0.005 270);
-  --card-foreground: oklch(0.9 0.005 80);
-  --popover: oklch(0.18 0.005 270);
-  --popover-foreground: oklch(0.9 0.005 80);
-  --secondary: oklch(0.2 0.005 270);
+  --background: oklch(0.12 0.005 270);
+  --foreground: oklch(0.92 0.005 80);
+  --card: oklch(0.15 0.005 270);
+  --card-foreground: oklch(0.92 0.005 80);
+  --popover: oklch(0.17 0.005 270);
+  --popover-foreground: oklch(0.92 0.005 80);
+  --secondary: oklch(0.19 0.005 270);
   --secondary-foreground: oklch(0.75 0.005 80);
-  --muted: oklch(0.22 0.005 270);
-  --muted-foreground: oklch(0.6 0.01 270);
-  --accent: oklch(0.2 0.005 270);
-  --accent-foreground: oklch(0.9 0.005 80);
+  --muted: oklch(0.21 0.005 270);
+  --muted-foreground: oklch(0.58 0.01 270);
+  --accent: oklch(0.19 0.005 270);
+  --accent-foreground: oklch(0.92 0.005 80);
   --destructive: oklch(0.65 0.2 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 12%);
+  --border: oklch(1 0 0 / 7%);
+  --input: oklch(1 0 0 / 10%);
   --ring: oklch(0.75 0.1 75);
   --chart-1: oklch(0.65 0.12 240);
   --chart-2: oklch(0.7 0.12 180);
   --chart-3: oklch(0.7 0.14 60);
   --chart-4: oklch(0.7 0.14 340);
   --chart-5: oklch(0.72 0.14 85);
-  --sidebar: oklch(0.14 0.005 270);
+  --sidebar: oklch(0.13 0.005 270);
   --sidebar-foreground: oklch(0.85 0.005 80);
-  --sidebar-accent: oklch(0.2 0.005 270);
-  --sidebar-accent-foreground: oklch(0.9 0.005 80);
-  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-accent: oklch(0.19 0.005 270);
+  --sidebar-accent-foreground: oklch(0.92 0.005 80);
+  --sidebar-border: oklch(1 0 0 / 7%);
   --sidebar-ring: oklch(0.75 0.1 75);
 }
 
@@ -265,6 +268,112 @@
   .snap-start {
     scroll-snap-align: start;
   }
+
+  /* ============================================ */
+  /* CLIENT PORTAL — Luxury UHNWI Design System  */
+  /* ============================================ */
+
+  .client-portal {
+    font-family: "Inter", system-ui, sans-serif;
+  }
+
+  .client-portal .client-heading {
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .client-portal .client-value {
+    font-family: "Inter", system-ui, sans-serif;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .client-portal .client-card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+  }
+
+  .client-portal .client-card:hover {
+    border-color: oklch(0.75 0.1 75 / 0.2);
+  }
+
+  .client-portal .client-card:active {
+    transform: scale(0.985);
+    transition: transform 0.1s ease;
+  }
+
+  .client-portal .gold-accent {
+    color: oklch(0.75 0.1 75);
+  }
+
+  .client-portal .gold-bg {
+    background-color: oklch(0.75 0.1 75 / 0.1);
+  }
+
+  .client-portal .gold-border {
+    border-color: oklch(0.75 0.1 75 / 0.2);
+  }
+
+  /* Client bottom nav — frosted glass */
+  .client-bottom-nav {
+    background: oklch(0.13 0.005 270 / 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 1px solid oklch(1 0 0 / 0.06);
+  }
+
+  /* ============================================ */
+  /* ATLAS ADMIN — Dense Analytics Design System  */
+  /* ============================================ */
+
+  .atlas-admin .kpi-card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 0.875rem 1rem;
+    transition: all 0.15s ease;
+  }
+
+  .atlas-admin .kpi-card:hover {
+    border-color: oklch(from var(--primary) l c h / 0.25);
+    background-color: oklch(from var(--card) l c h / 0.8);
+  }
+
+  .atlas-admin .data-table-row {
+    transition: background-color 0.1s ease;
+  }
+
+  .atlas-admin .data-table-row:hover {
+    background-color: oklch(from var(--accent) l c h / 0.5);
+  }
+
+  /* Velocity indicator */
+  .velocity-up {
+    color: oklch(0.72 0.17 155);
+  }
+  .velocity-down {
+    color: oklch(0.63 0.22 25);
+  }
+
+  /* Chart container */
+  .chart-container {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1rem;
+  }
+
+  /* Mini sparkline area */
+  .sparkline-area {
+    fill: oklch(0.75 0.1 75 / 0.1);
+    stroke: oklch(0.75 0.1 75);
+    stroke-width: 1.5;
+  }
 }
 
 /* Custom scrollbar — adapts to theme */
@@ -290,4 +399,13 @@
 }
 :root:not(.dark) ::-webkit-scrollbar-thumb:hover {
   background: oklch(0.65 0 0);
+}
+
+/* Client portal — hide scrollbar for cleaner mobile feel */
+.client-portal ::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+.client-portal {
+  scrollbar-width: none;
 }

@@ -509,3 +509,55 @@
 - [x] Intelligence queries disabled in preview mode
 - [x] Quick actions hidden in preview mode
 - [x] Avatar changes to amber color in preview mode
+
+## UHNWI/HNWI Client Portal Redesign
+
+### Design Language
+- [x] Luxury private banking aesthetic — spacious, clean, premium
+- [x] Large typography with generous letter-spacing (Inter/Playfair Display mix)
+- [x] Generous whitespace — no compact layouts, breathable spacing
+- [x] Subtle gold/champagne accent on dark background
+- [x] Card-based layout with soft shadows and rounded corners (16-20px radius)
+- [x] Smooth micro-animations (fade, slide, scale) for premium feel
+
+### Client Layout
+- [x] Dedicated ClientPortal layout component (ClientDashboard.tsx)
+- [x] Minimal bottom tab bar (3-4 items max) with elegant icons
+- [x] No sidebar on mobile — full-width content
+- [x] Premium header with greeting and portfolio value
+- [ ] Pull-down gesture area for refresh — deferred
+
+### Client Dashboard
+- [x] Hero greeting card with name, portfolio value, and performance indicator
+- [x] Large venture cards with sector icons, status badges, and key metrics
+- [x] Recent activity feed — clean timeline style
+- [x] Upcoming distributions section with amounts and dates
+
+### Client Detail Views
+- [ ] Venture detail — full-width hero, key metrics, documents, updates — deferred
+- [ ] SPV detail — clean card layout with investment summary — deferred
+- [ ] Distribution history — timeline with amounts and status badges — deferred
+
+### Mobile-First
+- [x] All touch targets minimum 48x48px
+- [x] Full-width cards with 20-24px horizontal padding
+- [x] Large text (16px base, 24-32px headings)
+- [x] Safe area padding for notch/home indicator
+
+## ATLAS Admin Dashboard — Analytics Command Center
+
+### Dashboard Redesign
+- [x] Dense analytics grid with 6 KPI cards (ventures, SPVs, tasks, completion rate, distributions, AI velocity)
+- [x] AI Velocity Tracker — show 43% task completion acceleration metric with banner
+- [x] Fund Management section — AUM, deployed capital, pipeline value, IRR
+- [x] Venture Pipeline bar visualization (Validation → Active → Fundraising → On Hold)
+- [x] Task velocity shown in KPI cards with sparkline trends
+- [x] Sector allocation breakdown with donut chart
+- [x] Team summary with internal/external/advisor breakdown
+- [x] Real-time activity stream with live indicator
+
+### Data-Rich Views
+- [x] Dense data table for Active SPVs & Deals with priority/stage columns
+- [x] SPV deal pipeline with stage progression in pipeline bar
+- [x] Distribution list with paid/scheduled/cancelled status
+- [ ] Portfolio health heatmap across all 30+ ventures — deferred
