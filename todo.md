@@ -401,3 +401,31 @@
 - [x] Vitest tests for invitation expiry logic
 - [x] Vitest tests for role hierarchy and organization types
 - [x] Vitest tests for OAuth error messages
+
+## Partner Identification — Org-Specific Invite Links & Branded Onboarding
+
+### Invite Link Structure
+- [x] Embed org slug in invite URL: `/invite/aurovia/<token>` or `/invite/royalton/<token>`
+- [x] System identifies partner org from URL before user even logs in
+- [x] Each org gets unique invite links that are visually distinct
+
+### Branded Onboarding Page
+- [x] Partner-specific welcome page showing org name, type badge, and context
+- [x] "YOU HAVE BEEN INVITED BY [ORG NAME]" typewriter messaging before OAuth
+- [x] Org-branded color accent on the invite acceptance page (core=gold, partner=blue, client=green)
+
+### OAuth Flow — Org Tracking
+- [x] Invite token stored in sessionStorage before OAuth redirect
+- [x] Public /api/invite/validate endpoint validates token + org slug match
+- [x] Email masking for privacy on invite page (pa***@aurovia.com)
+
+### API Key — Org Prefix
+- [x] Include org identifier in API key prefix: `ATLAS-AUROVI-XXXX...` or `ATLAS-ROYALT-XXXX...`
+- [x] Admin can see at a glance which org a key belongs to via prefix
+
+### Tests
+- [x] Vitest tests for org slug generation and URL-safe formatting
+- [x] Vitest tests for org-prefixed API key generation (aurovia, royalton, atlas)
+- [x] Vitest tests for invite link format (org-specific vs fallback)
+- [x] Vitest tests for email masking in invite validation
+- [x] Vitest tests for special character handling in org slugs

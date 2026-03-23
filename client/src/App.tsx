@@ -21,6 +21,7 @@ import SpvDetail from "./pages/SpvDetail";
 import ActivityLog from "./pages/ActivityLog";
 import SecurityPage from "./pages/SecurityPage";
 import AccessManagement from "./pages/AccessManagement";
+import InviteAccept from "./pages/InviteAccept";
 
 /* Auth guard — redirects to login if no operator in localStorage */
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -48,6 +49,9 @@ function Router() {
     <Switch>
       {/* Login / landing page is the root */}
       <Route path="/" component={SpyOps} />
+
+      {/* Partner invite acceptance — public, no auth */}
+      <Route path="/invite/:orgSlug/:token" component={InviteAccept} />
 
       {/* Protected dashboard pages */}
       <Route path="/dashboard">

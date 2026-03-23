@@ -20,13 +20,20 @@ import crypto from "crypto";
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
-/** Generate a 48-character API key: ATLAS-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX */
-function generateApiKey(): string {
+/** Generate an org-branded API key: ATLAS-<ORG>-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX */
+function generateApiKey(orgSlug?: string): string {
+  const prefix = orgSlug
+    ? orgSlug.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, 6)
+    : null;
   const segments: string[] = [];
-  for (let i = 0; i < 8; i++) {
+  // Adjust segment count to keep total length reasonable
+  const segCount = prefix ? 6 : 8;
+  for (let i = 0; i < segCount; i++) {
     segments.push(crypto.randomBytes(2).toString("hex").toUpperCase());
   }
-  return `ATLAS-${segments.join("-")}`;
+  return prefix
+    ? `ATLAS-${prefix}-${segments.join("-")}`
+    : `ATLAS-${segments.join("-")}`;
 }
 
 /** Generate a secure invitation token */
@@ -270,6 +277,15 @@ export const accessRouter = router({
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + input.expiresInDays);
 
+      // Fetch org slug for the invite link
+      const [org] = await db
+        .select({ slug: organizations.slug, name: organizations.name })
+        .from(organizations)
+        .where(eq(organizations.id, input.organizationId))
+        .limit(1);
+
+      if (!org) throw new Error("Organization not found");
+
       await db.insert(invitations).values({
         email: input.email.toLowerCase(),
         organizationId: input.organizationId,
@@ -291,12 +307,13 @@ export const accessRouter = router({
           organizationId: input.organizationId,
           role: input.role,
           ventureIds: input.ventureIds,
+          orgSlug: org.slug,
         }),
         ipAddress: ctx.req.ip,
         userAgent: ctx.req.headers["user-agent"],
       });
 
-      return { success: true, token };
+      return { success: true, token, orgSlug: org.slug };
     }),
 
   /** List all invitations */
@@ -310,6 +327,7 @@ export const accessRouter = router({
         email: invitations.email,
         organizationId: invitations.organizationId,
         orgName: organizations.name,
+        orgSlug: organizations.slug,
         role: invitations.role,
         status: invitations.status,
         ventureIds: invitations.ventureIds,
@@ -431,8 +449,15 @@ export const accessRouter = router({
         }
       }
 
-      // Generate 48-char API key
-      const rawKey = generateApiKey();
+      // Get org slug for branded API key
+      const [org] = await db
+        .select({ slug: organizations.slug })
+        .from(organizations)
+        .where(eq(organizations.id, invite.organizationId))
+        .limit(1);
+
+      // Generate org-branded API key
+      const rawKey = generateApiKey(org?.slug);
       const keyHash = hashApiKey(rawKey);
       const keyPrefix = getKeyPrefix(rawKey);
 
@@ -515,7 +540,14 @@ export const accessRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
-      const rawKey = generateApiKey();
+      // Get org slug for branded key
+      const [org] = await db
+        .select({ slug: organizations.slug })
+        .from(organizations)
+        .where(eq(organizations.id, input.organizationId))
+        .limit(1);
+
+      const rawKey = generateApiKey(org?.slug);
       const keyHash = hashApiKey(rawKey);
       const keyPrefix = getKeyPrefix(rawKey);
 
@@ -607,6 +639,30 @@ export const accessRouter = router({
       organizationName: org.name,
     };
   }),
+
+  // ── Public Org Lookup (for invite pages) ──────────────────────────────
+
+  /** Look up an organization by slug — public, no auth needed */
+  lookupOrgBySlug: protectedProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return null;
+
+      const [org] = await db
+        .select({
+          id: organizations.id,
+          name: organizations.name,
+          slug: organizations.slug,
+          type: organizations.type,
+          status: organizations.status,
+        })
+        .from(organizations)
+        .where(eq(organizations.slug, input.slug))
+        .limit(1);
+
+      return org ?? null;
+    }),
 
   // ── Stats ─────────────────────────────────────────────────────────────
 

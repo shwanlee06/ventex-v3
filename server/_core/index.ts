@@ -9,6 +9,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { aiStreamRouter } from "../routes/aiStream";
 import airtableSyncRouter from "../routes/airtableSync";
+import inviteValidationRouter from "../routes/inviteValidation";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -41,6 +42,8 @@ async function startServer() {
   app.use(aiStreamRouter);
   // Airtable sync endpoint
   app.use("/api/airtable", airtableSyncRouter);
+  // Public invite validation (no auth)
+  app.use(inviteValidationRouter);
   // tRPC API
   app.use(
     "/api/trpc",

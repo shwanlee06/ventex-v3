@@ -317,6 +317,7 @@ function InvitationsTab() {
   const [role, setRole] = useState<string>("user");
   const [expiresInDays, setExpiresInDays] = useState(30);
   const [generatedToken, setGeneratedToken] = useState<string | null>(null);
+  const [generatedOrgSlug, setGeneratedOrgSlug] = useState<string | null>(null);
 
   const invites = trpc.access.listInvitations.useQuery();
   const orgs = trpc.access.listOrganizations.useQuery();
@@ -325,6 +326,7 @@ function InvitationsTab() {
     onSuccess: (data) => {
       toast.success("Invitation sent");
       setGeneratedToken(data.token);
+      setGeneratedOrgSlug(data.orgSlug);
       invites.refetch();
     },
     onError: (err) => toast.error(err.message),
@@ -338,8 +340,10 @@ function InvitationsTab() {
     onError: (err) => toast.error(err.message),
   });
 
-  const copyInviteLink = (token: string) => {
-    const link = `${window.location.origin}/?invite=${token}`;
+  const copyInviteLink = (token: string, orgSlug?: string | null) => {
+    const link = orgSlug
+      ? `${window.location.origin}/invite/${orgSlug}/${token}`
+      : `${window.location.origin}/?invite=${token}`;
     navigator.clipboard.writeText(link);
     toast.success("Invite link copied to clipboard");
   };
@@ -393,7 +397,7 @@ function InvitationsTab() {
                       variant="outline"
                       size="sm"
                       className="text-xs min-h-[36px] gap-1"
-                      onClick={() => copyInviteLink(invite.token)}
+                      onClick={() => copyInviteLink(invite.token, invite.orgSlug)}
                     >
                       <Copy className="size-3" />
                       Copy Link
@@ -440,13 +444,18 @@ function InvitationsTab() {
               <div className="bg-secondary/50 rounded-lg p-3">
                 <p className="text-[10px] text-muted-foreground mb-1">Invitation Link</p>
                 <code className="text-xs text-foreground break-all font-mono">
-                  {window.location.origin}/?invite={generatedToken}
+                  {generatedOrgSlug
+                    ? `${window.location.origin}/invite/${generatedOrgSlug}/${generatedToken}`
+                    : `${window.location.origin}/?invite=${generatedToken}`}
                 </code>
               </div>
               <Button
                 className="w-full gap-2"
                 onClick={() => {
-                  navigator.clipboard.writeText(`${window.location.origin}/?invite=${generatedToken}`);
+                  const link = generatedOrgSlug
+                    ? `${window.location.origin}/invite/${generatedOrgSlug}/${generatedToken}`
+                    : `${window.location.origin}/?invite=${generatedToken}`;
+                  navigator.clipboard.writeText(link);
                   toast.success("Link copied!");
                 }}
               >
