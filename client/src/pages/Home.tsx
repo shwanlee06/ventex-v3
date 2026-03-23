@@ -6,6 +6,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { usePreviewMode } from "@/contexts/PreviewMode";
 import {
   THEME_COLORS,
   STATUS_CONFIG,
@@ -115,7 +116,8 @@ export default function Home() {
   const [, navigate] = useLocation();
   const utils = trpc.useUtils();
   const { user } = useAuth();
-  const isAtlas = user?.role === "owner" || user?.role === "admin";
+  const { isPreviewMode } = usePreviewMode();
+  const isAtlas = (user?.role === "owner" || user?.role === "admin") && !isPreviewMode;
   const dashboardSubtitle = isAtlas ? "ROYALTON VENTURE HOLDING" : "Client Portal";
 
   // ── Live data queries ──────────────────────────────────────────────

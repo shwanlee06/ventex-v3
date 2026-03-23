@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { Bell, Search, User, Settings, LogOut, Building2 } from "lucide-react";
+import { usePreviewMode } from "@/contexts/PreviewMode";
+import { Bell, Search, User, Settings, LogOut, Eye, EyeOff, X } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -31,22 +32,26 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
   const [cmdOpen, setCmdOpen] = useState(false);
   const [, navigate] = useLocation();
   const { user, logout } = useAuth();
+  const { isPreviewMode, togglePreview, exitPreview } = usePreviewMode();
 
-  const isAtlas = isAtlasRole(user?.role);
+  const isReallyAtlas = isAtlasRole(user?.role);
+  const isAtlas = isPreviewMode ? false : isReallyAtlas;
 
   const displayName = useMemo(() => {
+    if (isPreviewMode) return "Client Preview";
     if (user?.name) return user.name;
     try { return localStorage.getItem("atlas_operator") || "User"; } catch { return "User"; }
-  }, [user?.name]);
+  }, [user?.name, isPreviewMode]);
 
   const initials = displayName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
   const roleLabel = useMemo(() => {
+    if (isPreviewMode) return "Viewing as Client";
     if (!user?.role) return "";
     if (user.role === "owner") return "Owner";
     if (user.role === "admin") return "ATLAS Admin";
     return user.role.charAt(0).toUpperCase() + user.role.slice(1);
-  }, [user?.role]);
+  }, [user?.role, isPreviewMode]);
 
   const handleSignOut = useCallback(async () => {
     endCurrentSession();
@@ -58,8 +63,41 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
     setTimeout(() => navigate("/"), 600);
   }, [navigate, logout]);
 
+  const handleTogglePreview = useCallback(() => {
+    if (isPreviewMode) {
+      exitPreview();
+      toast.info("Exited client preview — back to ATLAS admin view");
+    } else {
+      togglePreview();
+      toast.info("Entered client preview — viewing as a client would see it");
+      navigate("/dashboard");
+    }
+  }, [isPreviewMode, togglePreview, exitPreview, navigate]);
+
   return (
     <>
+      {/* Preview mode banner */}
+      {isPreviewMode && (
+        <div className="bg-amber-500/15 border-b border-amber-500/30 px-4 py-2 flex items-center justify-between z-40 relative">
+          <div className="flex items-center gap-2">
+            <Eye className="size-4 text-amber-400" />
+            <span className="text-xs font-medium text-amber-300">
+              CLIENT PREVIEW MODE
+            </span>
+            <span className="text-[10px] text-amber-400/70 hidden sm:inline">
+              — You are viewing the app as a client would see it
+            </span>
+          </div>
+          <button
+            onClick={handleTogglePreview}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-medium transition-colors min-h-[32px]"
+          >
+            <X className="size-3" />
+            <span className="hidden sm:inline">Exit Preview</span>
+          </button>
+        </div>
+      )}
+
       <header className="h-14 border-b border-border bg-background/80 backdrop-blur-sm flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30">
         {/* Left: Title */}
         <div className="flex flex-col min-w-0">
@@ -71,6 +109,23 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+          {/* Preview toggle — only visible to real ATLAS team */}
+          {isReallyAtlas && (
+            <button
+              onClick={handleTogglePreview}
+              className={cn(
+                "flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] sm:h-9 sm:min-w-0 sm:px-3 rounded-lg text-xs transition-colors",
+                isPreviewMode
+                  ? "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30"
+                  : "sm:bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground"
+              )}
+              title={isPreviewMode ? "Exit client preview" : "Preview as client"}
+            >
+              {isPreviewMode ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              <span className="hidden sm:inline">{isPreviewMode ? "Exit" : "Preview"}</span>
+            </button>
+          )}
+
           {/* Search — icon only on mobile, expanded on desktop */}
           <button
             onClick={() => setCmdOpen(true)}
@@ -102,14 +157,21 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
                   <Avatar className="size-8">
                     <AvatarFallback className={cn(
                       "text-[11px] font-semibold",
-                      isAtlas ? "bg-primary/20 text-primary" : "bg-emerald-500/20 text-emerald-400"
+                      isPreviewMode
+                        ? "bg-amber-500/20 text-amber-400"
+                        : isAtlas
+                          ? "bg-primary/20 text-primary"
+                          : "bg-emerald-500/20 text-emerald-400"
                     )}>
                       {initials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden sm:flex flex-col text-left">
                     <span className="text-xs font-medium text-foreground leading-tight">{displayName}</span>
-                    <span className="text-[10px] text-muted-foreground font-mono">
+                    <span className={cn(
+                      "text-[10px] font-mono",
+                      isPreviewMode ? "text-amber-400" : "text-muted-foreground"
+                    )}>
                       {roleLabel}
                     </span>
                   </div>
@@ -118,7 +180,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
               <DropdownMenuContent align="end" className="w-48">
                 <div className="px-2 py-1.5 sm:hidden">
                   <p className="text-xs font-medium text-foreground">{displayName}</p>
-                  <p className="text-[10px] text-muted-foreground">{roleLabel}</p>
+                  <p className={cn("text-[10px]", isPreviewMode ? "text-amber-400" : "text-muted-foreground")}>{roleLabel}</p>
                 </div>
                 <DropdownMenuSeparator className="sm:hidden" />
                 <DropdownMenuItem onClick={() => navigate("/profile")} className="min-h-[44px]">
@@ -130,6 +192,24 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
                     <Settings className="size-4 mr-2" />
                     Settings
                   </DropdownMenuItem>
+                )}
+                {isReallyAtlas && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleTogglePreview} className="min-h-[44px]">
+                      {isPreviewMode ? (
+                        <>
+                          <EyeOff className="size-4 mr-2 text-amber-400" />
+                          <span className="text-amber-400">Exit Preview</span>
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="size-4 mr-2" />
+                          Preview as Client
+                        </>
+                      )}
+                    </DropdownMenuItem>
+                  </>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-red-400 focus:text-red-400 min-h-[44px]">

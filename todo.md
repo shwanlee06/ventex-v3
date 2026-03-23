@@ -497,3 +497,15 @@
 ### Tests
 - [x] All 128 existing tests passing
 - [x] Backend procedures tested via existing router test suite
+
+## Preview as Client Mode
+
+- [x] Create PreviewMode context provider with toggle state
+- [x] Add "Preview as Client" toggle button in admin top bar (eye icon + dropdown menu item)
+- [x] Override role checks (isAtlasTeam, sidebar nav, route guards) when preview mode is active
+- [x] Show amber "CLIENT PREVIEW MODE" banner at top when active
+- [x] Exit preview mode via banner button, top bar icon, or dropdown menu
+- [x] Dashboard switches to "Client Portal" subtitle in preview mode
+- [x] Intelligence queries disabled in preview mode
+- [x] Quick actions hidden in preview mode
+- [x] Avatar changes to amber color in preview mode

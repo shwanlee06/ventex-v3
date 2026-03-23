@@ -7,6 +7,7 @@
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { usePreviewMode } from "@/contexts/PreviewMode";
 import { THEME_COLORS } from "@/lib/data";
 import {
   LayoutDashboard,
@@ -78,8 +79,10 @@ export default function AppSidebar() {
   const [expanded, setExpanded] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const { user } = useAuth();
+  const { isPreviewMode } = usePreviewMode();
 
-  const isAtlas = isAtlasRole(user?.role);
+  // In preview mode, treat admin/owner as client
+  const isAtlas = isPreviewMode ? false : isAtlasRole(user?.role);
 
   // Filter nav items based on role
   const navItems = useMemo(() => {

@@ -5,6 +5,7 @@ import { Route, Switch, Redirect, useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { PreviewModeProvider, usePreviewMode } from "./contexts/PreviewMode";
 import { useAuth } from "@/_core/hooks/useAuth";
 import Home from "./pages/Home";
 import Agent from "./pages/Agent";
@@ -45,20 +46,25 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-/* ATLAS-only guard — redirects non-admin/owner users to dashboard */
+/* ATLAS-only guard — redirects non-admin/owner users to dashboard.
+   In preview mode, admin/owner users are treated as clients and get redirected too. */
 function RequireAtlas({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const { isPreviewMode } = usePreviewMode();
   const [, navigate] = useLocation();
+
+  const isAtlas = user && (user.role === "owner" || user.role === "admin");
+  const shouldBlock = !isAtlas || isPreviewMode;
 
   useEffect(() => {
     if (loading) return;
-    if (user && user.role !== "owner" && user.role !== "admin") {
+    if (shouldBlock) {
       navigate("/dashboard", { replace: true });
     }
-  }, [user, loading, navigate]);
+  }, [shouldBlock, loading, navigate]);
 
   if (loading) return null;
-  if (user && user.role !== "owner" && user.role !== "admin") return null;
+  if (shouldBlock) return null;
 
   return <>{children}</>;
 }
@@ -101,7 +107,7 @@ function Router() {
         <RequireAuth><Profile /></RequireAuth>
       </Route>
 
-      {/* ATLAS team only pages — admin/owner access required */}
+      {/* ATLAS team only pages — admin/owner access required (blocked in preview mode) */}
       <Route path="/agent">
         <RequireAuth><RequireAtlas><Agent /></RequireAtlas></RequireAuth>
       </Route>
@@ -131,10 +137,12 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark" switchable>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <PreviewModeProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </PreviewModeProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
