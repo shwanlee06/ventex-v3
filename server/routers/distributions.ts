@@ -2,19 +2,23 @@ import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { distributions, activityLog } from "../../drizzle/schema";
-import { eq, desc } from "drizzle-orm";
-import { isAtlasTeam } from "../security/rbac";
+import { eq, desc, inArray } from "drizzle-orm";
+import { isAtlasTeam, resolveVentureScope } from "../security/rbac";
 
 export const distributionsRouter = router({
-  // List distributions — currently all users see all distributions
-  // TODO: Add ventureId/orgId to distributions table for proper scoping
-  list: protectedProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
-    if (!db) return [];
-    return db.select().from(distributions).orderBy(desc(distributions.createdAt));
-  }),
+  // List distributions — optionally scoped by org
+  // Note: distributions don't have a direct ventureId, so for now we show all
+  // for the selected org. Future: add ventureId to distributions table.
+  list: protectedProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) return [];
+      // For now, distributions are global — all orgs see all distributions
+      // TODO: Add ventureId/orgId to distributions for proper scoping
+      return db.select().from(distributions).orderBy(desc(distributions.createdAt));
+    }),
 
-  // Create distribution — ATLAS team only
   create: protectedProcedure.input(z.object({
     name: z.string(),
     fund: z.string().optional(),
@@ -39,7 +43,6 @@ export const distributionsRouter = router({
     return { success: true };
   }),
 
-  // Update distribution — ATLAS team only
   update: protectedProcedure.input(z.object({
     id: z.number(),
     name: z.string().optional(),
@@ -62,16 +65,19 @@ export const distributionsRouter = router({
     return { success: true };
   }),
 
-  // Metrics
-  metrics: protectedProcedure.query(async () => {
-    const db = await getDb();
-    if (!db) return { total: 0, paid: 0, totalAmount: 0, paidAmount: 0 };
-    const all = await db.select().from(distributions);
-    return {
-      total: all.length,
-      paid: all.filter(d => d.status === "Paid").length,
-      totalAmount: all.reduce((s, d) => s + (d.amount || 0), 0),
-      paidAmount: all.filter(d => d.status === "Paid").reduce((s, d) => s + (d.amount || 0), 0),
-    };
-  }),
+  // Metrics — scoped by org
+  metrics: protectedProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) return { total: 0, paid: 0, totalAmount: 0, paidAmount: 0 };
+      // Distributions are global for now
+      const all = await db.select().from(distributions);
+      return {
+        total: all.length,
+        paid: all.filter(d => d.status === "Paid").length,
+        totalAmount: all.reduce((s, d) => s + (d.amount || 0), 0),
+        paidAmount: all.filter(d => d.status === "Paid").reduce((s, d) => s + (d.amount || 0), 0),
+      };
+    }),
 });

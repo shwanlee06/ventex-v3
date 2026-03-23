@@ -5,29 +5,31 @@ import { spvs, spvVentures, spvTeam, ventures, teamMembers, spvFiles, spvFolders
 import { eq, desc, and, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { storagePut } from "../storage";
-import { isAtlasTeam, getOrgSpvIds } from "../security/rbac";
+import { isAtlasTeam, getOrgSpvIds, resolveSpvScope } from "../security/rbac";
 
 function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
 export const spvsRouter = router({
-  // List SPVs — scoped by org for clients
-  list: protectedProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
-    if (!db) return [];
+  // List SPVs — scoped by org for clients, optionally scoped for ATLAS admin
+  list: protectedProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) return [];
 
-    const spvIds = await getOrgSpvIds(ctx.user);
+      const spvIds = await resolveSpvScope(ctx.user, input?.organizationId);
 
-    if (spvIds === null) {
-      return db.select().from(spvs).orderBy(desc(spvs.createdAt));
-    }
+      if (spvIds === null) {
+        return db.select().from(spvs).orderBy(desc(spvs.createdAt));
+      }
 
-    if (spvIds.length === 0) return [];
-    return db.select().from(spvs)
-      .where(inArray(spvs.id, spvIds))
-      .orderBy(desc(spvs.createdAt));
-  }),
+      if (spvIds.length === 0) return [];
+      return db.select().from(spvs)
+        .where(inArray(spvs.id, spvIds))
+        .orderBy(desc(spvs.createdAt));
+    }),
 
   getBySlug: protectedProcedure.input(z.object({ slug: z.string() })).query(async ({ input, ctx }) => {
     const db = await getDb();
@@ -57,7 +59,6 @@ export const spvsRouter = router({
     return rows[0];
   }),
 
-  // Create SPV — ATLAS team only
   create: protectedProcedure.input(z.object({
     name: z.string(),
     sector: z.string().optional(),
@@ -82,7 +83,6 @@ export const spvsRouter = router({
     return rows[0];
   }),
 
-  // Update SPV — ATLAS team only
   update: protectedProcedure.input(z.object({
     id: z.number(),
     name: z.string().optional(),
@@ -110,7 +110,6 @@ export const spvsRouter = router({
     return rows[0] || null;
   }),
 
-  // Linked ventures
   getLinkedVentures: protectedProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
     const db = await getDb();
     if (!db) return [];
@@ -156,7 +155,6 @@ export const spvsRouter = router({
     return { success: true };
   }),
 
-  // Team
   getTeam: protectedProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
     const db = await getDb();
     if (!db) return [];
@@ -204,7 +202,6 @@ export const spvsRouter = router({
     return { success: true };
   }),
 
-  // SPV Files
   getFiles: protectedProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
     const db = await getDb();
     if (!db) return [];
@@ -264,7 +261,6 @@ export const spvsRouter = router({
     return { success: true };
   }),
 
-  // SPV Folders
   getFolders: protectedProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
     const db = await getDb();
     if (!db) return [];
@@ -304,26 +300,28 @@ export const spvsRouter = router({
   }),
 
   // Metrics — scoped by org
-  metrics: protectedProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
-    if (!db) return { total: 0, active: 0, negotiating: 0, closed: 0 };
+  metrics: protectedProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) return { total: 0, active: 0, negotiating: 0, closed: 0 };
 
-    const spvIds = await getOrgSpvIds(ctx.user);
+      const spvIds = await resolveSpvScope(ctx.user, input?.organizationId);
 
-    let all;
-    if (spvIds === null) {
-      all = await db.select().from(spvs);
-    } else if (spvIds.length === 0) {
-      return { total: 0, active: 0, negotiating: 0, closed: 0 };
-    } else {
-      all = await db.select().from(spvs).where(inArray(spvs.id, spvIds));
-    }
+      let all;
+      if (spvIds === null) {
+        all = await db.select().from(spvs);
+      } else if (spvIds.length === 0) {
+        return { total: 0, active: 0, negotiating: 0, closed: 0 };
+      } else {
+        all = await db.select().from(spvs).where(inArray(spvs.id, spvIds));
+      }
 
-    return {
-      total: all.length,
-      active: all.filter(s => s.stage === "Active deal").length,
-      negotiating: all.filter(s => s.stage === "In negotiation").length,
-      closed: all.filter(s => s.stage === "Closed deal").length,
-    };
-  }),
+      return {
+        total: all.length,
+        active: all.filter(s => s.stage === "Active deal").length,
+        negotiating: all.filter(s => s.stage === "In negotiation").length,
+        closed: all.filter(s => s.stage === "Closed deal").length,
+      };
+    }),
 });

@@ -3,27 +3,27 @@ import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { tasks, activityLog, ventures } from "../../drizzle/schema";
 import { eq, desc, and, sql, inArray, isNull } from "drizzle-orm";
-import { isAtlasTeam, getOrgVentureIds } from "../security/rbac";
+import { isAtlasTeam, getOrgVentureIds, resolveVentureScope } from "../security/rbac";
 
 export const tasksRouter = router({
-  // List tasks — scoped by org for clients (tasks linked to their ventures)
-  list: protectedProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
-    if (!db) return [];
+  // List tasks — scoped by org for clients, optionally scoped for ATLAS admin
+  list: protectedProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) return [];
 
-    const ventureIds = await getOrgVentureIds(ctx.user);
+      const ventureIds = await resolveVentureScope(ctx.user, input?.organizationId);
 
-    // ATLAS team sees all tasks
-    if (ventureIds === null) {
-      return db.select().from(tasks).orderBy(desc(tasks.createdAt));
-    }
+      if (ventureIds === null) {
+        return db.select().from(tasks).orderBy(desc(tasks.createdAt));
+      }
 
-    // Client sees tasks linked to their org's ventures
-    if (ventureIds.length === 0) return [];
-    return db.select().from(tasks)
-      .where(inArray(tasks.ventureId, ventureIds))
-      .orderBy(desc(tasks.createdAt));
-  }),
+      if (ventureIds.length === 0) return [];
+      return db.select().from(tasks)
+        .where(inArray(tasks.ventureId, ventureIds))
+        .orderBy(desc(tasks.createdAt));
+    }),
 
   getById: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ input, ctx }) => {
     const db = await getDb();
@@ -31,7 +31,6 @@ export const tasksRouter = router({
     const rows = await db.select().from(tasks).where(eq(tasks.id, input.id)).limit(1);
     if (!rows[0]) return null;
 
-    // Check access for non-ATLAS users
     if (!isAtlasTeam(ctx.user) && rows[0].ventureId) {
       const ventureIds = await getOrgVentureIds(ctx.user);
       if (ventureIds && !ventureIds.includes(rows[0].ventureId)) return null;
@@ -46,7 +45,6 @@ export const tasksRouter = router({
     return db.select().from(tasks).where(eq(tasks.ventureId, input.ventureId)).orderBy(desc(tasks.createdAt));
   }),
 
-  // Create task — ATLAS team can create any, clients can only create for their ventures
   create: protectedProcedure.input(z.object({
     title: z.string(),
     ventureId: z.number().optional(),
@@ -57,7 +55,6 @@ export const tasksRouter = router({
     status: z.string().default("open"),
     description: z.string().optional(),
   })).mutation(async ({ input, ctx }) => {
-    // Non-ATLAS users can only create tasks for their assigned ventures
     if (!isAtlasTeam(ctx.user) && input.ventureId) {
       const ventureIds = await getOrgVentureIds(ctx.user);
       if (ventureIds && !ventureIds.includes(input.ventureId)) {
@@ -115,28 +112,30 @@ export const tasksRouter = router({
   }),
 
   // Metrics — scoped by org
-  metrics: protectedProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
-    if (!db) return { total: 0, open: 0, complete: 0, overdue: 0 };
+  metrics: protectedProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) return { total: 0, open: 0, complete: 0, overdue: 0 };
 
-    const ventureIds = await getOrgVentureIds(ctx.user);
+      const ventureIds = await resolveVentureScope(ctx.user, input?.organizationId);
 
-    let all;
-    if (ventureIds === null) {
-      all = await db.select().from(tasks);
-    } else if (ventureIds.length === 0) {
-      return { total: 0, open: 0, complete: 0, overdue: 0 };
-    } else {
-      all = await db.select().from(tasks).where(inArray(tasks.ventureId, ventureIds));
-    }
+      let all;
+      if (ventureIds === null) {
+        all = await db.select().from(tasks);
+      } else if (ventureIds.length === 0) {
+        return { total: 0, open: 0, complete: 0, overdue: 0 };
+      } else {
+        all = await db.select().from(tasks).where(inArray(tasks.ventureId, ventureIds));
+      }
 
-    const now = new Date();
-    let open = 0, complete = 0, overdue = 0;
-    for (const t of all) {
-      if (t.status === "complete") { complete++; continue; }
-      if (t.dueDate && new Date(t.dueDate) < now) { overdue++; }
-      else { open++; }
-    }
-    return { total: all.length, open, complete, overdue };
-  }),
+      const now = new Date();
+      let open = 0, complete = 0, overdue = 0;
+      for (const t of all) {
+        if (t.status === "complete") { complete++; continue; }
+        if (t.dueDate && new Date(t.dueDate) < now) { overdue++; }
+        else { open++; }
+      }
+      return { total: all.length, open, complete, overdue };
+    }),
 });

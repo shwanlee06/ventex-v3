@@ -112,14 +112,15 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
   const { activeOrg } = useWorkspace();
   const clientName = activeOrg?.name || "Client";
 
-  // ── Live data queries ──────────────────────────────────────────────
-  const venturesQ = trpc.ventures.list.useQuery();
-  const tasksQ = trpc.tasks.list.useQuery();
-  const spvsQ = trpc.spvs.list.useQuery();
-  const distQ = trpc.distributions.list.useQuery();
-  const activityQ = trpc.activity.recent.useQuery({ limit: 8 });
-  const teamQ = trpc.team.list.useQuery();
-  const ventureAssignmentsQ = trpc.team.ventureAssignments.useQuery();
+  // ── Live data queries (scoped by active org) ──────────────────────
+  const orgFilter = activeOrg?.id ? { organizationId: activeOrg.id } : undefined;
+  const venturesQ = trpc.ventures.list.useQuery(orgFilter);
+  const tasksQ = trpc.tasks.list.useQuery(orgFilter);
+  const spvsQ = trpc.spvs.list.useQuery(orgFilter);
+  const distQ = trpc.distributions.list.useQuery(orgFilter);
+  const activityQ = trpc.activity.recent.useQuery({ limit: 8, organizationId: activeOrg?.id });
+  const teamQ = trpc.team.list.useQuery(orgFilter);
+  const ventureAssignmentsQ = trpc.team.ventureAssignments.useQuery(orgFilter);
 
   const pageLoading = venturesQ.isLoading || tasksQ.isLoading;
 

@@ -10,6 +10,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { usePreviewMode } from "@/contexts/PreviewMode";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { THEME_COLORS } from "@/lib/data";
+import { trpc } from "@/lib/trpc";
 import {
   LayoutDashboard,
   Bot,
@@ -29,9 +30,12 @@ import {
   Building2,
   FileText,
   User,
+  Plus,
+  Loader2,
 } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useState, useMemo } from "react";
+import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -81,8 +85,33 @@ export default function AppSidebar() {
   const [moreOpen, setMoreOpen] = useState(false);
   const { user } = useAuth();
   const { isPreviewMode } = usePreviewMode();
-  const { organizations, activeOrg, setActiveOrg } = useWorkspace();
+  const { organizations, activeOrg, setActiveOrg, refetchOrgs } = useWorkspace();
   const [orgDropdownOpen, setOrgDropdownOpen] = useState(false);
+  const [showAddClient, setShowAddClient] = useState(false);
+  const [newClientName, setNewClientName] = useState("");
+  const [addingClient, setAddingClient] = useState(false);
+
+  const createOrg = trpc.organizations.create.useMutation({
+    onSuccess: (created) => {
+      toast.success(`Client "${created.name}" created`);
+      setNewClientName("");
+      setShowAddClient(false);
+      setAddingClient(false);
+      refetchOrgs();
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to create client");
+      setAddingClient(false);
+    },
+  });
+
+  const handleAddClient = () => {
+    const name = newClientName.trim();
+    if (!name) return;
+    setAddingClient(true);
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    createOrg.mutate({ name, slug });
+  };
 
   // In preview mode, treat admin/owner as client
   const isAtlas = isPreviewMode ? false : isAtlasRole(user?.role);
@@ -196,6 +225,46 @@ export default function AppSidebar() {
                 ))}
                 {organizations.length === 0 && (
                   <p className="text-[10px] text-muted-foreground px-2 py-2">No client workspaces yet</p>
+                )}
+
+                {/* Add Client */}
+                {!showAddClient ? (
+                  <button
+                    onClick={() => setShowAddClient(true)}
+                    className="w-full flex items-center gap-2 px-2 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  >
+                    <div className="size-6 rounded-md bg-accent/50 border border-dashed border-border flex items-center justify-center flex-shrink-0">
+                      <Plus className="size-3" />
+                    </div>
+                    <span className="font-medium">Add Client</span>
+                  </button>
+                ) : (
+                  <div className="px-2 py-2 space-y-2">
+                    <input
+                      type="text"
+                      value={newClientName}
+                      onChange={(e) => setNewClientName(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleAddClient()}
+                      placeholder="Client name..."
+                      autoFocus
+                      className="w-full px-2 py-1.5 text-xs bg-accent/50 border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                    <div className="flex gap-1">
+                      <button
+                        onClick={handleAddClient}
+                        disabled={!newClientName.trim() || addingClient}
+                        className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[10px] font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                      >
+                        {addingClient ? <Loader2 className="size-3 animate-spin" /> : "Create"}
+                      </button>
+                      <button
+                        onClick={() => { setShowAddClient(false); setNewClientName(""); }}
+                        className="px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:text-foreground rounded-md hover:bg-accent transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             </motion.div>

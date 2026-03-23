@@ -5,31 +5,33 @@ import { ventures, ventureTeam, teamMembers, tasks, ventureFiles, ventureFolders
 import { eq, and, sql, desc, like, inArray } from "drizzle-orm";
 import { storagePut } from "../storage";
 import { nanoid } from "nanoid";
-import { isAtlasTeam, getOrgVentureIds } from "../security/rbac";
+import { isAtlasTeam, getOrgVentureIds, resolveVentureScope } from "../security/rbac";
 
 function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
 export const venturesRouter = router({
-  // List ventures — scoped by org for clients, all for ATLAS team
-  list: protectedProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
-    if (!db) return [];
+  // List ventures — scoped by org for clients, optionally scoped for ATLAS admin
+  list: protectedProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) return [];
 
-    const ventureIds = await getOrgVentureIds(ctx.user);
+      const ventureIds = await resolveVentureScope(ctx.user, input?.organizationId);
 
-    // ATLAS team sees everything
-    if (ventureIds === null) {
-      return db.select().from(ventures).orderBy(desc(ventures.createdAt));
-    }
+      // No filtering needed (ATLAS admin with no org selected)
+      if (ventureIds === null) {
+        return db.select().from(ventures).orderBy(desc(ventures.createdAt));
+      }
 
-    // Client sees only their org's ventures
-    if (ventureIds.length === 0) return [];
-    return db.select().from(ventures)
-      .where(inArray(ventures.id, ventureIds))
-      .orderBy(desc(ventures.createdAt));
-  }),
+      // Filtered by org
+      if (ventureIds.length === 0) return [];
+      return db.select().from(ventures)
+        .where(inArray(ventures.id, ventureIds))
+        .orderBy(desc(ventures.createdAt));
+    }),
 
   // Get single venture by slug — check access
   getBySlug: protectedProcedure.input(z.object({ slug: z.string() })).query(async ({ input, ctx }) => {
@@ -295,31 +297,33 @@ export const venturesRouter = router({
   }),
 
   // Get metrics — scoped by org
-  metrics: protectedProcedure.query(async ({ ctx }) => {
-    const db = await getDb();
-    if (!db) return { total: 0, active: 0, bySector: {} as Record<string, { total: number; active: number }> };
+  metrics: protectedProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) return { total: 0, active: 0, bySector: {} as Record<string, { total: number; active: number }> };
 
-    const ventureIds = await getOrgVentureIds(ctx.user);
+      const ventureIds = await resolveVentureScope(ctx.user, input?.organizationId);
 
-    let all;
-    if (ventureIds === null) {
-      all = await db.select().from(ventures);
-    } else if (ventureIds.length === 0) {
-      return { total: 0, active: 0, bySector: {} as Record<string, { total: number; active: number }> };
-    } else {
-      all = await db.select().from(ventures).where(inArray(ventures.id, ventureIds));
-    }
+      let all;
+      if (ventureIds === null) {
+        all = await db.select().from(ventures);
+      } else if (ventureIds.length === 0) {
+        return { total: 0, active: 0, bySector: {} as Record<string, { total: number; active: number }> };
+      } else {
+        all = await db.select().from(ventures).where(inArray(ventures.id, ventureIds));
+      }
 
-    const bySector: Record<string, { total: number; active: number }> = {};
-    for (const v of all) {
-      if (!bySector[v.sector]) bySector[v.sector] = { total: 0, active: 0 };
-      bySector[v.sector].total++;
-      if (v.status === "In progress") bySector[v.sector].active++;
-    }
-    return {
-      total: all.length,
-      active: all.filter(v => v.status === "In progress").length,
-      bySector,
-    };
-  }),
+      const bySector: Record<string, { total: number; active: number }> = {};
+      for (const v of all) {
+        if (!bySector[v.sector]) bySector[v.sector] = { total: 0, active: 0 };
+        bySector[v.sector].total++;
+        if (v.status === "In progress") bySector[v.sector].active++;
+      }
+      return {
+        total: all.length,
+        active: all.filter(v => v.status === "In progress").length,
+        bySector,
+      };
+    }),
 });

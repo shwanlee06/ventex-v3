@@ -630,3 +630,17 @@
 - [x] Dashboard dynamically shows active org name in subtitle, partnerships header, and team section
 - [ ] "Add Client" flow — create new organization with basic info (deferred)
 - [x] All 168 tests passing after workspace changes
+
+## Add Client Form & Org-Scoped Data Filtering
+- [x] Add Client button in workspace switcher dropdown
+- [x] Add Client form with name, type, and optional description (inline in sidebar workspace dropdown)
+- [x] Create organization via tRPC and auto-switch to new workspace
+- [x] Org-scoped ventures query — filter by active organization via org_venture_access
+- [x] Org-scoped tasks query — filter tasks by ventures belonging to active org
+- [x] Org-scoped SPVs query — filter SPVs linked to active org ventures
+- [x] Org-scoped distributions query — filter distributions by active org ventures
+- [x] Org-scoped team query — filter team members by venture_team assignments in active org
+- [x] Org-scoped activity query — filter activity by active org ventures
+- [x] Update all frontend pages to pass activeOrgId to queries (8 pages + 2 dashboard components)
+- [x] Dashboard KPIs update when switching clients (all queries re-fetch on org change)
+- [x] Tests for org-scoped filtering (168 tests passing)

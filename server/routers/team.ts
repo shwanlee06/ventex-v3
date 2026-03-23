@@ -1,20 +1,46 @@
 import { z } from "zod";
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { teamMembers, activityLog, ventureTeam, ventures } from "../../drizzle/schema";
 import { eq, desc, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { resolveVentureScope, getVentureIdsForOrg } from "../security/rbac";
 
 function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
 export const teamRouter = router({
-  list: publicProcedure.query(async () => {
-    const db = await getDb();
-    if (!db) return [];
-    return db.select().from(teamMembers).orderBy(desc(teamMembers.createdAt));
-  }),
+  list: publicProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) return [];
+
+      // If org-scoped, only return members assigned to that org's ventures
+      if (input?.organizationId) {
+        const ventureIds = ctx.user
+          ? await resolveVentureScope(ctx.user, input.organizationId)
+          : await getVentureIdsForOrg(input.organizationId);
+        if (ventureIds === null) {
+          return db.select().from(teamMembers).orderBy(desc(teamMembers.createdAt));
+        }
+        if (ventureIds.length === 0) return [];
+
+        // Get member IDs assigned to these ventures
+        const assignments = await db.select({ memberId: ventureTeam.memberId })
+          .from(ventureTeam)
+          .where(inArray(ventureTeam.ventureId, ventureIds));
+        const memberIds = Array.from(new Set(assignments.map(a => a.memberId)));
+        if (memberIds.length === 0) return [];
+
+        return db.select().from(teamMembers)
+          .where(inArray(teamMembers.id, memberIds))
+          .orderBy(desc(teamMembers.createdAt));
+      }
+
+      return db.select().from(teamMembers).orderBy(desc(teamMembers.createdAt));
+    }),
 
   getBySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
     const db = await getDb();
@@ -55,28 +81,41 @@ export const teamRouter = router({
     return { success: true };
   }),
 
-  // ── Venture Team Assignments ────────────────────────────────────────
-  ventureAssignments: publicProcedure.query(async () => {
-    const db = await getDb();
-    if (!db) return [];
-    const rows = await db
-      .select({
-        id: ventureTeam.id,
-        ventureId: ventureTeam.ventureId,
-        memberId: ventureTeam.memberId,
-        responsibility: ventureTeam.responsibility,
-        ventureName: ventures.name,
-        ventureSector: ventures.sector,
-        memberName: teamMembers.name,
-        memberRole: teamMembers.role,
-        memberFunction: teamMembers.memberFunction,
-        memberType: teamMembers.type,
-      })
-      .from(ventureTeam)
-      .leftJoin(ventures, eq(ventureTeam.ventureId, ventures.id))
-      .leftJoin(teamMembers, eq(ventureTeam.memberId, teamMembers.id));
-    return rows;
-  }),
+  // Venture team assignments — optionally scoped by org
+  ventureAssignments: protectedProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) return [];
+
+      const rows = await db
+        .select({
+          id: ventureTeam.id,
+          ventureId: ventureTeam.ventureId,
+          memberId: ventureTeam.memberId,
+          responsibility: ventureTeam.responsibility,
+          ventureName: ventures.name,
+          ventureSector: ventures.sector,
+          memberName: teamMembers.name,
+          memberRole: teamMembers.role,
+          memberFunction: teamMembers.memberFunction,
+          memberType: teamMembers.type,
+        })
+        .from(ventureTeam)
+        .leftJoin(ventures, eq(ventureTeam.ventureId, ventures.id))
+        .leftJoin(teamMembers, eq(ventureTeam.memberId, teamMembers.id));
+
+      // If org-scoped, filter by venture IDs
+      if (input?.organizationId) {
+        const ventureIds = await resolveVentureScope(ctx.user, input.organizationId);
+        if (ventureIds === null) return rows;
+        if (ventureIds.length === 0) return [];
+        const ventureIdSet = new Set(ventureIds);
+        return rows.filter(r => ventureIdSet.has(r.ventureId));
+      }
+
+      return rows;
+    }),
 
   assignToVenture: publicProcedure.input(z.object({
     ventureId: z.number(),

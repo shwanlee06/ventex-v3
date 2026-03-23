@@ -13,19 +13,23 @@ interface Organization {
 interface WorkspaceContextValue {
   organizations: Organization[];
   activeOrg: Organization | null;
+  activeOrgId: number | undefined;
   setActiveOrg: (org: Organization) => void;
+  refetchOrgs: () => void;
   isLoading: boolean;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextValue>({
   organizations: [],
   activeOrg: null,
+  activeOrgId: undefined,
   setActiveOrg: () => {},
+  refetchOrgs: () => {},
   isLoading: true,
 });
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
-  const { data: orgs, isLoading } = trpc.organizations.list.useQuery(undefined, {
+  const { data: orgs, isLoading, refetch } = trpc.organizations.list.useQuery(undefined, {
     retry: false,
     refetchOnWindowFocus: false,
   });
@@ -53,12 +57,18 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("atlas_active_org", org.slug);
   };
 
+  const refetchOrgs = () => {
+    refetch();
+  };
+
   return (
     <WorkspaceContext.Provider
       value={{
         organizations: (orgs as Organization[]) || [],
         activeOrg,
+        activeOrgId: activeOrg?.id,
         setActiveOrg,
+        refetchOrgs,
         isLoading,
       }}
     >

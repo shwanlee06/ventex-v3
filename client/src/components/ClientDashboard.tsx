@@ -30,6 +30,7 @@ import {
 import { motion } from "framer-motion";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 const THEME_ICONS: Record<string, React.ReactNode> = {
   "Real Estate": <Building2 className="size-5" />,
@@ -46,12 +47,14 @@ interface ClientDashboardProps {
 
 export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
   const { user } = useAuth();
+  const { activeOrg } = useWorkspace();
+  const orgFilter = activeOrg?.id ? { organizationId: activeOrg.id } : undefined;
 
-  // ── Data queries ──────────────────────────────────────────────────
-  const venturesQ = trpc.ventures.list.useQuery();
-  const spvsQ = trpc.spvs.list.useQuery();
-  const distQ = trpc.distributions.list.useQuery();
-  const activityQ = trpc.activity.recent.useQuery({ limit: 5 });
+  // ── Data queries (scoped by active org) ──────────────────────
+  const venturesQ = trpc.ventures.list.useQuery(orgFilter);
+  const spvsQ = trpc.spvs.list.useQuery(orgFilter);
+  const distQ = trpc.distributions.list.useQuery(orgFilter);
+  const activityQ = trpc.activity.recent.useQuery({ limit: 5, organizationId: activeOrg?.id });
 
   const pageLoading = venturesQ.isLoading;
 

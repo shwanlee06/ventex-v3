@@ -144,6 +144,75 @@ export function isRoleAtLeast(roleA: string, roleB: string): boolean {
 }
 
 /**
+ * Get venture IDs belonging to a specific organization.
+ * Used by ATLAS admin to scope data to a selected client workspace.
+ */
+export async function getVentureIdsForOrg(
+  organizationId: number
+): Promise<number[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const rows = await db
+    .select({ ventureId: orgVentureAccess.ventureId })
+    .from(orgVentureAccess)
+    .where(eq(orgVentureAccess.organizationId, organizationId));
+
+  return rows.map((r) => r.ventureId);
+}
+
+/**
+ * Get SPV IDs belonging to a specific organization (via venture links).
+ */
+export async function getSpvIdsForOrg(
+  organizationId: number
+): Promise<number[]> {
+  const ventureIds = await getVentureIdsForOrg(organizationId);
+  if (ventureIds.length === 0) return [];
+
+  const db = await getDb();
+  if (!db) return [];
+
+  const { spvVentures } = await import("../../drizzle/schema");
+  const rows = await db
+    .select({ spvId: spvVentures.spvId })
+    .from(spvVentures)
+    .where(inArray(spvVentures.ventureId, ventureIds));
+
+  return Array.from(new Set(rows.map((r) => r.spvId)));
+}
+
+/**
+ * Resolve venture IDs for a query — handles both ATLAS admin org-scoping and client RBAC.
+ * Returns null if no filtering needed (ATLAS admin with no org selected).
+ * Returns number[] of allowed venture IDs otherwise.
+ */
+export async function resolveVentureScope(
+  user: User,
+  organizationId?: number | null
+): Promise<number[] | null> {
+  // If ATLAS admin with a specific org selected, scope to that org
+  if (isAtlasTeam(user) && organizationId) {
+    return getVentureIdsForOrg(organizationId);
+  }
+  // Otherwise use standard RBAC
+  return getOrgVentureIds(user);
+}
+
+/**
+ * Resolve SPV IDs for a query — handles both ATLAS admin org-scoping and client RBAC.
+ */
+export async function resolveSpvScope(
+  user: User,
+  organizationId?: number | null
+): Promise<number[] | null> {
+  if (isAtlasTeam(user) && organizationId) {
+    return getSpvIdsForOrg(organizationId);
+  }
+  return getOrgSpvIds(user);
+}
+
+/**
  * Check if a user has access to a specific venture.
  * Owner and Admin have access to everything.
  * Other roles need explicit access grants.
