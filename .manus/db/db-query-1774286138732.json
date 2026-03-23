@@ -1,0 +1,30 @@
+{
+  "query": "SELECT id, openId, name, email, role, loginMethod, createdAt, lastSignedIn FROM users ORDER BY lastSignedIn DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, openId, name, email, role, loginMethod, createdAt, lastSignedIn FROM users ORDER BY lastSignedIn DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "1",
+      "openId": "3CJdUnVYxhkVWSh5udtwP8",
+      "name": "Shwan lee",
+      "email": "slee72106@gmail.com",
+      "role": "admin",
+      "loginMethod": "google",
+      "createdAt": "2026-03-15 15:27:20",
+      "lastSignedIn": "2026-03-23 17:14:19"
+    },
+    {
+      "id": "240001",
+      "openId": "WvRm6K6zzxiPNR3cPcv5sm",
+      "name": "Jason Yu",
+      "email": "jason41659@gmail.com",
+      "role": "viewer",
+      "loginMethod": "google",
+      "createdAt": "2026-03-23 01:04:33",
+      "lastSignedIn": "2026-03-23 03:00:47"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\topenId\tname\temail\trole\tloginMethod\tcreatedAt\tlastSignedIn\n1\t3CJdUnVYxhkVWSh5udtwP8\tShwan lee\tslee72106@gmail.com\tadmin\tgoogle\t2026-03-15 15:27:20\t2026-03-23 17:14:19\n240001\tWvRm6K6zzxiPNR3cPcv5sm\tJason Yu\tjason41659@gmail.com\tviewer\tgoogle\t2026-03-23 01:04:33\t2026-03-23 03:00:47\n",
+  "stderr": "",
+  "execution_time_ms": 376
+}

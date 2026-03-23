@@ -43,6 +43,13 @@
       "when": 1774154089151,
       "tag": "0005_fixed_groot",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1774286451044,
+      "tag": "0006_lively_krista_starr",
+      "breakpoints": true
     }
   ]
 }

@@ -21,6 +21,7 @@ import {
   Activity,
   MoreHorizontal,
   X,
+  KeyRound,
 } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useState } from "react";
@@ -45,6 +46,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Distributions", href: "/distributions", icon: <DollarSign className="size-5" /> },
   { label: "Activity", href: "/activity", icon: <Activity className="size-5" /> },
   { label: "Security", href: "/security", icon: <Lock className="size-5" /> },
+  { label: "Access", href: "/access", icon: <KeyRound className="size-5" /> },
   { label: "Settings", href: "/settings", icon: <Shield className="size-5" /> },
 ];
 

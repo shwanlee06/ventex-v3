@@ -361,3 +361,43 @@
 - [x] Skeleton loaders for all data tables and card grids
 - [x] Empty state UI with icon and message
 - [x] Micro-interactions: hover lift on desktop, press scale on mobile
+
+## Invite-Only Access System with API Keys
+
+### Schema & Backend
+- [x] Create organizations table (Aurovia, ATLAS, partnerships)
+- [x] Create invitations table (email, org, venture access, status, token)
+- [x] Create api_keys table (48-char key, user, org, venture scope, active/revoked)
+- [x] Add organizationId to users table
+- [x] Push DB migrations
+- [x] Build tRPC procedures: invite user, accept invite, generate API key, revoke key, list keys
+- [x] Build organization management procedures (CRUD)
+
+### Gated OAuth Flow
+- [x] Block OAuth login for users without a valid invitation
+- [x] Redirect unauthorized users to "Access Denied — Request Invitation" page
+- [x] On first OAuth login with valid invite: create user, assign org, generate 48-char API key
+- [x] Show API key once on first login (copy-to-clipboard, never shown again)
+- [ ] Validate API key on every authenticated request (middleware) — deferred, using session-based auth
+
+### Admin UI (Access Management Page)
+- [x] Organizations tab: list/add/edit/suspend partner organizations
+- [x] Invitations tab: send invites by email, set org + role, track status, copy invite link
+- [x] API Keys tab: list all keys, revoke, see last used, key prefix display
+- [x] Stat cards: org count, pending invites, active keys, total invitations
+- [x] New /access route with KeyRound icon in sidebar
+
+### User Onboarding Flow
+- [x] Invite link with unique token (copy-to-clipboard from admin UI)
+- [x] OAuth callback gates access: checks for pending invitation by email
+- [x] Error handling on landing page: no_invitation, blocked, suspended, invitation_expired
+- [ ] Venture-scoped dashboard: users only see ventures their org has access to — deferred
+
+### Tests
+- [x] Vitest tests for API key generation (format, uniqueness, 45-char length)
+- [x] Vitest tests for invite token generation (URL-safe, unique)
+- [x] Vitest tests for API key hashing (SHA-256, consistency, uniqueness)
+- [x] Vitest tests for key prefix extraction
+- [x] Vitest tests for invitation expiry logic
+- [x] Vitest tests for role hierarchy and organization types
+- [x] Vitest tests for OAuth error messages

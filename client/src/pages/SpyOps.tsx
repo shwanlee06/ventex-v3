@@ -371,6 +371,33 @@ export default function SpyOps() {
   const [loginFocused, setLoginFocused] = useState(false);
   const keyInputRef = useRef<HTMLInputElement>(null);
 
+  /* ─── OAuth error/welcome URL parameter handling ─── */
+  const [oauthError, setOauthError] = useState<string | null>(null);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get("error");
+    const welcome = params.get("welcome");
+    if (error) {
+      const errorMessages: Record<string, string> = {
+        no_invitation: "ACCESS DENIED — NO INVITATION FOUND FOR THIS ACCOUNT",
+        blocked: "ACCESS DENIED — YOUR ACCOUNT HAS BEEN BLOCKED",
+        suspended: "ACCESS DENIED — YOUR ACCOUNT HAS BEEN SUSPENDED",
+        invitation_expired: "ACCESS DENIED — YOUR INVITATION HAS EXPIRED",
+      };
+      setOauthError(errorMessages[error] || "ACCESS DENIED — AUTHENTICATION FAILED");
+      // Clean URL
+      window.history.replaceState({}, "", "/");
+    }
+    if (welcome === "true") {
+      // New invited user — skip to dashboard
+      const op = localStorage.getItem("atlas_operator");
+      if (op) {
+        navigate("/dashboard");
+      }
+      window.history.replaceState({}, "", "/");
+    }
+  }, [navigate]);
+
   /* Phase 1: ATLAS cipher decode */
   const atlasCipher = useSingleLineCipher("A T L A S", 400, 120);
 
@@ -814,6 +841,31 @@ export default function SpyOps() {
               >
                 AUTHENTICATE ▶
               </button>
+
+              {/* OAuth error message */}
+              {oauthError && (
+                <div
+                  style={{
+                    fontFamily: "'Share Tech Mono', monospace",
+                    fontSize: 11,
+                    color: "#ff3333",
+                    marginTop: 32,
+                    letterSpacing: "0.15em",
+                    textAlign: "center",
+                    lineHeight: 1.8,
+                    padding: "12px 24px",
+                    border: "1px solid rgba(255,51,51,0.3)",
+                    background: "rgba(255,51,51,0.05)",
+                    maxWidth: "min(560px, 85vw)",
+                    animation: "spyops-fadeIn 0.5s ease",
+                  }}
+                >
+                  ✖ {oauthError}
+                  <div style={{ fontSize: 9, color: "#666", marginTop: 8 }}>
+                    CONTACT YOUR ORGANIZATION ADMIN FOR ACCESS
+                  </div>
+                </div>
+              )}
 
               {/* Bottom hint */}
               <div

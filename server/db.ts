@@ -60,6 +60,12 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.role = 'admin';
     }
 
+    // Handle status field — don't overwrite on update unless explicitly set
+    if (user.status !== undefined) {
+      values.status = user.status;
+      updateSet.status = user.status;
+    }
+
     if (!values.lastSignedIn) {
       values.lastSignedIn = new Date();
     }

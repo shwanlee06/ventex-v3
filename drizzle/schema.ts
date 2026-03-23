@@ -8,6 +8,9 @@ export const users = mysqlTable("users", {
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["viewer", "client", "user", "manager", "admin", "owner"]).default("user").notNull(),
+  organizationId: int("organizationId"),
+  status: mysqlEnum("userStatus", ["active", "pending", "suspended", "blocked"]).default("active").notNull(),
+  invitationId: int("invitationId"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -15,6 +18,70 @@ export const users = mysqlTable("users", {
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
+
+// ── Organizations (Partner entities: Aurovia, ATLAS, etc.) ─────────────
+export const organizations = mysqlTable("organizations", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  slug: varchar("slug", { length: 128 }).notNull().unique(),
+  type: mysqlEnum("type", ["core", "partner", "client"]).default("partner").notNull(),
+  status: mysqlEnum("orgStatus", ["active", "suspended", "archived"]).default("active").notNull(),
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Organization = typeof organizations.$inferSelect;
+export type InsertOrganization = typeof organizations.$inferInsert;
+
+// ── Invitations ────────────────────────────────────────────────────────
+export const invitations = mysqlTable("invitations", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull(),
+  organizationId: int("organizationId").notNull(),
+  role: mysqlEnum("inviteRole", ["viewer", "client", "user", "manager", "admin"]).default("user").notNull(),
+  token: varchar("token", { length: 128 }).notNull().unique(),
+  status: mysqlEnum("inviteStatus", ["pending", "accepted", "expired", "revoked"]).default("pending").notNull(),
+  ventureIds: json("ventureIds").$type<number[]>(),
+  invitedBy: int("invitedBy").notNull(),
+  invitedByName: varchar("invitedByName", { length: 255 }),
+  acceptedAt: timestamp("acceptedAt"),
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Invitation = typeof invitations.$inferSelect;
+export type InsertInvitation = typeof invitations.$inferInsert;
+
+// ── API Keys (48-char, venture-scoped) ─────────────────────────────────
+export const apiKeys = mysqlTable("api_keys", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  organizationId: int("organizationId").notNull(),
+  keyHash: varchar("keyHash", { length: 128 }).notNull().unique(),
+  keyPrefix: varchar("keyPrefix", { length: 12 }).notNull(),
+  label: varchar("label", { length: 255 }),
+  ventureIds: json("ventureIds").$type<number[]>(),
+  status: mysqlEnum("keyStatus", ["active", "revoked"]).default("active").notNull(),
+  lastUsedAt: timestamp("lastUsedAt"),
+  expiresAt: timestamp("expiresAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type InsertApiKey = typeof apiKeys.$inferInsert;
+
+// ── Organization Venture Access (which org can see which ventures) ─────
+export const orgVentureAccess = mysqlTable("org_venture_access", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  ventureId: int("ventureId").notNull(),
+  permission: mysqlEnum("orgPermission", ["view", "edit", "manage", "full"]).default("view").notNull(),
+  grantedBy: int("grantedBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type OrgVentureAccess = typeof orgVentureAccess.$inferSelect;
 
 // ── Ventures ────────────────────────────────────────────────────────────
 export const ventures = mysqlTable("ventures", {
