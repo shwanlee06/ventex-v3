@@ -34,6 +34,8 @@ import {
   Network,
   Plus,
   CheckCircle2,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useCallback } from "react";
@@ -43,6 +45,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 // ── Mini progress ring ──────────────────────────────────────────────────
 function ProgressRing({ percent, size = 32, strokeWidth = 3, color = "#4ADE80" }: { percent: number; size?: number; strokeWidth?: number; color?: string }) {
@@ -100,6 +112,16 @@ export default function ClientDetail() {
       utils.activity.recent.invalidate();
     },
   });
+
+  const deleteOrg = trpc.organizations.delete.useMutation({
+    onSuccess: (data) => {
+      toast.success(`"${data.name}" has been removed`);
+      navigate("/dashboard");
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const pageLoading = orgQ.isLoading || venturesQ.isLoading || tasksQ.isLoading;
 
@@ -243,7 +265,7 @@ export default function ClientDetail() {
       <div className="p-4 sm:p-5 md:p-6 space-y-5 pb-24 md:pb-6">
 
         {/* ── Back + Client Header ────────────────────────────────── */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
@@ -251,6 +273,14 @@ export default function ClientDetail() {
             className="h-8 px-2 text-muted-foreground"
           >
             <ArrowLeft className="size-4 mr-1" /> All Clients
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowDeleteDialog(true)}
+            className="h-8 px-2 text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
+          >
+            <Trash2 className="size-4 mr-1" /> Remove Client
           </Button>
         </div>
 
@@ -766,6 +796,28 @@ export default function ClientDetail() {
             </div>
           </div>
         </div>
+
+        {/* ── Delete Client Confirmation ──────────────────────────── */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove Client</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to remove <strong>{clientName}</strong>? This will delete all venture access links and distributions associated with this client. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => orgId && deleteOrg.mutate({ id: orgId })}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                {deleteOrg.isPending ? <Loader2 className="size-4 animate-spin mr-1.5" /> : <Trash2 className="size-4 mr-1.5" />}
+                Delete Client
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DashboardLayout>
   );

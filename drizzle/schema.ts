@@ -203,6 +203,7 @@ export const spvTeam = mysqlTable("spv_team", {
 export const distributions = mysqlTable("distributions", {
   id: int("id").autoincrement().primaryKey(),
   legacyId: varchar("legacyId", { length: 64 }),
+  organizationId: int("organizationId"),
   name: varchar("name", { length: 255 }).notNull(),
   fund: varchar("fund", { length: 255 }),
   amount: bigint("amount", { mode: "number" }).notNull().default(0),

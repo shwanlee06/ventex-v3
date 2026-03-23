@@ -214,3 +214,96 @@ describe("organizations.create", () => {
     ).rejects.toThrow();
   });
 });
+
+describe("organizations.delete", () => {
+  it("rejects non-admin users", async () => {
+    const ctx = createRegularUserContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.organizations.delete({ id: 999999 })
+    ).rejects.toThrow();
+  });
+
+  it("throws for non-existent org", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.organizations.delete({ id: 999999 })
+    ).rejects.toThrow("Organization not found");
+  });
+
+  it("can create and then delete a client org", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    // Create a temp org
+    const slug = "delete-test-" + Date.now();
+    const created = await caller.organizations.create({
+      name: "Delete Test Client",
+      slug,
+    });
+    expect(created).toBeTruthy();
+    expect(created.slug).toBe(slug);
+
+    // Delete it
+    const result = await caller.organizations.delete({ id: created.id });
+    expect(result.success).toBe(true);
+    expect(result.name).toBe("Delete Test Client");
+
+    // Verify it's gone
+    const found = await caller.organizations.bySlug({ slug });
+    expect(found).toBeNull();
+  });
+});
+
+describe("distributions (per-client scoping)", () => {
+  it("list returns array for admin", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.distributions.list();
+    expect(Array.isArray(result)).toBe(true);
+  });
+
+  it("list filters by organizationId when provided", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    // Get all distributions
+    const all = await caller.distributions.list();
+
+    // Filter by a non-existent org — should return empty
+    const filtered = await caller.distributions.list({ organizationId: 999999 });
+    expect(filtered.length).toBe(0);
+  });
+
+  it("metrics returns totals", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+    const metrics = await caller.distributions.metrics();
+    expect(metrics).toHaveProperty("total");
+    expect(metrics).toHaveProperty("paid");
+    expect(metrics).toHaveProperty("totalAmount");
+    expect(metrics).toHaveProperty("paidAmount");
+    expect(typeof metrics.total).toBe("number");
+    expect(typeof metrics.totalAmount).toBe("number");
+  });
+
+  it("metrics scoped by org returns zeroes for non-existent org", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+    const metrics = await caller.distributions.metrics({ organizationId: 999999 });
+    expect(metrics.total).toBe(0);
+    expect(metrics.totalAmount).toBe(0);
+  });
+
+  it("create rejects non-admin users", async () => {
+    const ctx = createRegularUserContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.distributions.create({
+        name: "Test Dist",
+        amount: 1000,
+      })
+    ).rejects.toThrow();
+  });
+});

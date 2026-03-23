@@ -1,0 +1,1 @@
+ALTER TABLE `distributions` ADD `organizationId` int;

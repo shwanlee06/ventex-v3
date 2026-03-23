@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and, inArray, sql, desc } from "drizzle-orm";
+import { eq, inArray, desc } from "drizzle-orm";
 import { protectedProcedure, adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import {
@@ -7,12 +7,12 @@ import {
   orgVentureAccess,
   ventures,
   tasks,
-  spvs,
   spvVentures,
-  teamMembers,
   ventureTeam,
   distributions,
   activityLog,
+  invitations,
+  apiKeys,
 } from "../../drizzle/schema";
 
 export const organizationsRouter = router({
@@ -116,8 +116,9 @@ export const organizationsRouter = router({
       );
       const teamSize = memberIds.size;
 
-      // Distributions (global for now — TODO: scope per org)
-      const totalDistributions = allDists.reduce((s, d) => s + (d.amount || 0), 0);
+      // Distributions — scoped per org
+      const orgDists = allDists.filter(d => d.organizationId === org.id);
+      const totalDistributions = orgDists.reduce((s, d) => s + (d.amount || 0), 0);
 
       // Last activity — find most recent activity mentioning any of this org's ventures
       const ventureNames = new Set(orgVentures.map(v => v.name.toLowerCase()));
@@ -259,5 +260,49 @@ export const organizationsRouter = router({
         .limit(1);
 
       return updated;
+    }),
+
+  // Delete a client organization (admin only) — cascades related data
+  delete: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Verify org exists and is a client (don't allow deleting core/partner)
+      const [org] = await db
+        .select()
+        .from(organizations)
+        .where(eq(organizations.id, input.id))
+        .limit(1);
+
+      if (!org) throw new Error("Organization not found");
+      if (org.type === "core") throw new Error("Cannot delete core organization");
+
+      // 1. Delete org_venture_access links
+      await db.delete(orgVentureAccess).where(eq(orgVentureAccess.organizationId, input.id));
+
+      // 2. Delete distributions linked to this org
+      await db.delete(distributions).where(eq(distributions.organizationId, input.id));
+
+      // 3. Delete invitations for this org
+      await db.delete(invitations).where(eq(invitations.organizationId, input.id));
+
+      // 4. Delete API keys for this org
+      await db.delete(apiKeys).where(eq(apiKeys.organizationId, input.id));
+
+      // 5. Log the deletion
+      await db.insert(activityLog).values({
+        entityType: "organization",
+        entityName: org.name,
+        action: "Client Deleted",
+        detail: `Client "${org.name}" was removed from the system`,
+        userName: "ATLAS Admin",
+      });
+
+      // 6. Delete the organization itself
+      await db.delete(organizations).where(eq(organizations.id, input.id));
+
+      return { success: true, name: org.name };
     }),
 });

@@ -656,3 +656,18 @@
 - [x] Quick actions per client (view details, add venture, manage team)
 - [x] Client detail: KPI cards, venture grid with task metrics, sector filter, team, distributions, activity
 - [x] Tests for new multi-client endpoints (12 new tests, 180 total passing)
+
+## Delete Client Functionality
+- [x] Backend: Add organizations.delete endpoint (admin only) — removes org, org_venture_access, distributions, invitations, API keys
+- [x] Frontend: Add delete button on client detail page with confirmation dialog (AlertDialog)
+- [x] Frontend: Add delete button on ATLAS dashboard client table with confirmation dialog
+- [x] Handle cascade: deletes org_venture_access links, distributions, invitations, API keys, then org
+
+## Per-Client Distributions (Not Shared)
+- [x] Add organizationId column to distributions table (link distributions to specific clients)
+- [x] Migrate existing distributions to be linked to Royalton org (id=2)
+- [x] Update distributions router to filter by organizationId
+- [x] Update client detail page to show only that client's distributions
+- [x] Update ATLAS dashboard to show per-client distribution totals
+- [x] Rewrite Distributions page to use tRPC + workspace context for per-client scoping
+- [x] Tests for delete client and per-client distributions (8 new tests, 188 total passing)

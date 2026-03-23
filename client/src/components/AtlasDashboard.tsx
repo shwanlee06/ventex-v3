@@ -26,6 +26,7 @@ import {
   Filter,
   Loader2,
   BarChart3,
+  Trash2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useCallback, useMemo } from "react";
@@ -41,6 +42,16 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 // ── Types ───────────────────────────────────────────────────────────────
 type SortField = "name" | "ventures" | "tasks" | "overdue" | "health" | "team";
@@ -79,8 +90,17 @@ function OverdueBadge({ count }: { count: number }) {
   );
 }
 
+// ── Format currency ─────────────────────────────────────────────────────
+function fmtCurrency(amount: number): string {
+  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
+  if (amount >= 1_000) return `$${(amount / 1_000).toFixed(0)}K`;
+  return `$${amount.toLocaleString()}`;
+}
+
 export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
   const clientsQ = trpc.organizations.listWithMetrics.useQuery();
+  const utils = trpc.useUtils();
+
   const createOrg = trpc.organizations.create.useMutation({
     onSuccess: () => {
       clientsQ.refetch();
@@ -88,6 +108,16 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
       setNewName("");
       setNewDesc("");
       toast.success("Client created");
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const deleteOrg = trpc.organizations.delete.useMutation({
+    onSuccess: (data) => {
+      clientsQ.refetch();
+      utils.organizations.list.invalidate();
+      setDeleteTarget(null);
+      toast.success(`"${data.name}" has been removed`);
     },
     onError: (err) => toast.error(err.message),
   });
@@ -104,6 +134,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
 
   // ── Aggregate KPIs across ALL clients ─────────────────────────────
   const kpis = useMemo(() => {
@@ -175,6 +206,11 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
     if (!name) return;
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
     createOrg.mutate({ name, slug, description: newDesc || undefined });
+  };
+
+  const handleDeleteClient = () => {
+    if (!deleteTarget) return;
+    deleteOrg.mutate({ id: deleteTarget.id });
   };
 
   // ── Loading state ──────────────────────────────────────────────────
@@ -364,7 +400,9 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                 <th className="text-left text-[11px] uppercase tracking-wider text-muted-foreground font-medium p-3 sm:p-4">
                   Completion
                 </th>
-                <th className="p-3 sm:p-4"></th>
+                <th className="p-3 sm:p-4 text-right text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
@@ -428,7 +466,19 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                     </div>
                   </td>
                   <td className="p-3 sm:p-4">
-                    <ChevronRight className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteTarget({ id: client.id, name: client.name });
+                        }}
+                        className="p-1.5 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                        title="Delete client"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                      <ChevronRight className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
                   </td>
                 </motion.tr>
               ))}
@@ -445,8 +495,20 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03, duration: 0.3 }}
               onClick={() => onNavigate(`/clients/${client.slug}`)}
-              className="bg-card border border-border rounded-xl p-5 cursor-pointer hover:border-primary/30 transition-all group"
+              className="bg-card border border-border rounded-xl p-5 cursor-pointer hover:border-primary/30 transition-all group relative"
             >
+              {/* Delete button — top right */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeleteTarget({ id: client.id, name: client.name });
+                }}
+                className="absolute top-3 right-3 p-1.5 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                title="Delete client"
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -468,7 +530,6 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                     </span>
                   </div>
                 </div>
-                <ChevronRight className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
               </div>
 
               {/* Metrics grid */}
@@ -486,6 +547,16 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                   <p className="text-[10px] text-muted-foreground">Team</p>
                 </div>
               </div>
+
+              {/* Distributions amount */}
+              {client.totalDistributions > 0 && (
+                <div className="mb-3 flex items-center gap-1.5">
+                  <span className="text-[11px] text-muted-foreground">Distributions:</span>
+                  <span className="text-[12px] font-mono font-medium text-emerald-400">
+                    {fmtCurrency(client.totalDistributions)}
+                  </span>
+                </div>
+              )}
 
               {/* Health + Overdue + Completion */}
               <div className="pt-3 border-t border-border/50 space-y-2">
@@ -551,6 +622,28 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ── Delete Client Confirmation ────────────────────────────── */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Client</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove <strong>{deleteTarget?.name}</strong>? This will delete all venture access links and distributions associated with this client. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteClient}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {deleteOrg.isPending ? <Loader2 className="size-4 animate-spin mr-1.5" /> : <Trash2 className="size-4 mr-1.5" />}
+              Delete Client
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

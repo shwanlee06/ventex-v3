@@ -1,0 +1,30 @@
+{
+  "query": "SELECT id, name, organizationId FROM distributions;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, organizationId FROM distributions;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Q4 2025 Profit Share",
+      "organizationId": "2"
+    },
+    {
+      "id": "2",
+      "name": "2025 Return of Capital - SPV Alpha",
+      "organizationId": "2"
+    },
+    {
+      "id": "3",
+      "name": "2026 Scheduled Dividend - REIT Fund I",
+      "organizationId": "2"
+    },
+    {
+      "id": "4",
+      "name": "Cancelled Profit Distribution - Growth Equity Fund II",
+      "organizationId": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\torganizationId\n1\tQ4 2025 Profit Share\t2\n2\t2025 Return of Capital - SPV Alpha\t2\n3\t2026 Scheduled Dividend - REIT Fund I\t2\n4\tCancelled Profit Distribution - Growth Equity Fund II\t2\n",
+  "stderr": "",
+  "execution_time_ms": 373
+}

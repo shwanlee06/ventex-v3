@@ -2,20 +2,27 @@ import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { distributions, activityLog } from "../../drizzle/schema";
-import { eq, desc, inArray } from "drizzle-orm";
-import { isAtlasTeam, resolveVentureScope } from "../security/rbac";
+import { eq, desc } from "drizzle-orm";
+import { isAtlasTeam } from "../security/rbac";
 
 export const distributionsRouter = router({
-  // List distributions — optionally scoped by org
-  // Note: distributions don't have a direct ventureId, so for now we show all
-  // for the selected org. Future: add ventureId to distributions table.
+  // List distributions — scoped by organizationId
   list: protectedProcedure
     .input(z.object({ organizationId: z.number().optional() }).optional())
     .query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) return [];
-      // For now, distributions are global — all orgs see all distributions
-      // TODO: Add ventureId/orgId to distributions for proper scoping
+
+      const orgId = input?.organizationId;
+      if (orgId) {
+        return db
+          .select()
+          .from(distributions)
+          .where(eq(distributions.organizationId, orgId))
+          .orderBy(desc(distributions.createdAt));
+      }
+
+      // No org filter — return all (for global views)
       return db.select().from(distributions).orderBy(desc(distributions.createdAt));
     }),
 
@@ -29,6 +36,7 @@ export const distributionsRouter = router({
     method: z.string().optional(),
     notes: z.string().optional(),
     distributionDate: z.string().optional(),
+    organizationId: z.number().optional(),
   })).mutation(async ({ input, ctx }) => {
     if (!isAtlasTeam(ctx.user)) {
       throw new Error("Only ATLAS team can create distributions");
@@ -54,6 +62,7 @@ export const distributionsRouter = router({
     method: z.string().optional(),
     notes: z.string().optional(),
     distributionDate: z.string().optional(),
+    organizationId: z.number().optional(),
   })).mutation(async ({ input, ctx }) => {
     if (!isAtlasTeam(ctx.user)) {
       throw new Error("Only ATLAS team can update distributions");
@@ -71,8 +80,18 @@ export const distributionsRouter = router({
     .query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) return { total: 0, paid: 0, totalAmount: 0, paidAmount: 0 };
-      // Distributions are global for now
-      const all = await db.select().from(distributions);
+
+      const orgId = input?.organizationId;
+      let all;
+      if (orgId) {
+        all = await db
+          .select()
+          .from(distributions)
+          .where(eq(distributions.organizationId, orgId));
+      } else {
+        all = await db.select().from(distributions);
+      }
+
       return {
         total: all.length,
         paid: all.filter(d => d.status === "Paid").length,

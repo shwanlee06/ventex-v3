@@ -1,21 +1,22 @@
 // ============================================================================
-// Distributions Page — Mobile-First Responsive
+// Distributions Page — Per-Client Scoped via Workspace Context
 // Card/table view, detail modals, new distribution form
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
+import { trpc } from "@/lib/trpc";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import {
-  DISTRIBUTIONS, DIST_STATUS_CONFIG, formatCurrency, formatDate,
-  type Distribution,
+  DIST_STATUS_CONFIG, formatCurrency, formatDate,
 } from "@/lib/data";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { motion, AnimatePresence } from "framer-motion";
-import { DollarSign, Clock, XCircle, CheckCircle2, Plus, FileDown, LayoutGrid, List } from "lucide-react";
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { DollarSign, Clock, XCircle, CheckCircle2, Plus, FileDown, LayoutGrid, List, Loader2 } from "lucide-react";
+import { useState, useCallback, useMemo } from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -29,23 +30,37 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { exportDistributionPdf, exportAllDistributionsPdf } from "@/lib/exportPdf";
-import { logAction } from "@/lib/operatorSession";
-import { loadDistributions, saveDistributions } from "@/lib/persistence";
+import type { Distribution } from "@/lib/data";
 
 export default function DistributionsPage() {
-  const [distributions, setDistributionsRaw] = useState<Distribution[]>(() => loadDistributions(DISTRIBUTIONS));
-  const setDistributions = useCallback((updater: Distribution[] | ((prev: Distribution[]) => Distribution[])) => {
-    setDistributionsRaw(prev => {
-      const next = typeof updater === 'function' ? updater(prev) : updater;
-      saveDistributions(next);
-      return next;
-    });
-  }, []);
-  const [distModal, setDistModal] = useState<Distribution | null>(null);
+  const { activeOrg, activeOrgId } = useWorkspace();
+
+  // Fetch distributions scoped to active org
+  const distQ = trpc.distributions.list.useQuery(
+    activeOrgId ? { organizationId: activeOrgId } : undefined,
+    { enabled: true }
+  );
+  const utils = trpc.useUtils();
+
+  const createDist = trpc.distributions.create.useMutation({
+    onSuccess: () => {
+      distQ.refetch();
+      setAddOpen(false);
+      resetForm();
+      toast.success("Distribution created");
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const distributions = distQ.data || [];
+  const loading = distQ.isLoading;
+
+  // ── Detail modal state ──────────────────────────────────────────────
+  const [distModal, setDistModal] = useState<typeof distributions[number] | null>(null);
   const [addOpen, setAddOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
 
+  // ── New distribution form state ─────────────────────────────────────
   const [newName, setNewName] = useState("");
   const [newFund, setNewFund] = useState("");
   const [newAmount, setNewAmount] = useState("");
@@ -55,19 +70,21 @@ export default function DistributionsPage() {
   const [newStatus, setNewStatus] = useState("Scheduled");
   const [newNotes, setNewNotes] = useState("");
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
+  const resetForm = () => {
+    setNewName(""); setNewFund(""); setNewAmount(""); setNewDate(""); setNewNotes("");
+    setNewType("Profit Share"); setNewMethod("Wire Transfer"); setNewStatus("Scheduled");
+  };
 
-  const totalDistributed = distributions.reduce((sum, d) => sum + d.amount, 0);
-  const paidAmount = distributions.filter(d => d.status === "Paid").reduce((sum, d) => sum + d.amount, 0);
-  const scheduledAmount = distributions.filter(d => d.status === "Scheduled").reduce((sum, d) => sum + d.amount, 0);
-  const cancelledAmount = distributions.filter(d => d.status === "Cancelled").reduce((sum, d) => sum + d.amount, 0);
+  // ── Computed metrics ────────────────────────────────────────────────
+  const totalDistributed = distributions.reduce((sum, d) => sum + (d.amount || 0), 0);
+  const paidAmount = distributions.filter(d => d.status === "Paid").reduce((sum, d) => sum + (d.amount || 0), 0);
+  const scheduledAmount = distributions.filter(d => d.status === "Scheduled").reduce((sum, d) => sum + (d.amount || 0), 0);
+  const cancelledAmount = distributions.filter(d => d.status === "Cancelled").reduce((sum, d) => sum + (d.amount || 0), 0);
 
   const fundBreakdown = useMemo(() => {
     return Object.entries(distributions.reduce((acc, d) => {
-      acc[d.fund] = (acc[d.fund] || 0) + d.amount;
+      const fund = d.fund || "General";
+      acc[fund] = (acc[fund] || 0) + (d.amount || 0);
       return acc;
     }, {} as Record<string, number>));
   }, [distributions]);
@@ -75,26 +92,19 @@ export default function DistributionsPage() {
   const handleAdd = useCallback(() => {
     if (!newName.trim()) { toast.error("Name is required"); return; }
     if (!newAmount.trim() || isNaN(Number(newAmount))) { toast.error("Valid amount is required"); return; }
-    const nd: Distribution = {
-      id: `rec_new_${Date.now()}`,
+    createDist.mutate({
       name: newName.trim(),
       fund: newFund.trim() || "General Fund",
       amount: Number(newAmount),
       currency: "USD",
-      date: newDate || new Date().toISOString().split("T")[0],
       type: newType,
       method: newMethod,
-      status: newStatus as Distribution["status"],
-      isPaid: newStatus === "Paid",
-      ageDays: 0,
+      status: newStatus,
       notes: newNotes.trim() || undefined,
-    };
-    setDistributions(prev => [nd, ...prev]);
-    setAddOpen(false);
-    setNewName(""); setNewFund(""); setNewAmount(""); setNewDate(""); setNewNotes("");
-    logAction("Distribution created", nd.name);
-    toast.success(`Distribution "${nd.name}" added`);
-  }, [newName, newFund, newAmount, newDate, newType, newMethod, newStatus, newNotes, setDistributions]);
+      distributionDate: newDate || new Date().toISOString().split("T")[0],
+      organizationId: activeOrgId,
+    });
+  }, [newName, newFund, newAmount, newDate, newType, newMethod, newStatus, newNotes, activeOrgId, createDist]);
 
   const metrics = [
     { label: "Total", value: formatCurrency(totalDistributed), icon: <DollarSign className="size-4 text-primary" />, sub: `${distributions.length} dist.` },
@@ -103,9 +113,35 @@ export default function DistributionsPage() {
     { label: "Cancelled", value: formatCurrency(cancelledAmount), icon: <XCircle className="size-4 text-red-400" />, sub: `${distributions.filter(d => d.status === "Cancelled").length}` },
   ];
 
+  // Convert DB dist to local Distribution type for PDF export
+  const toLocalDist = (d: typeof distributions[number]): Distribution => ({
+    id: String(d.id),
+    name: d.name,
+    fund: d.fund || "General",
+    amount: d.amount || 0,
+    currency: d.currency || "USD",
+    date: d.distributionDate || "",
+    type: d.type || "",
+    method: d.method || "",
+    status: (d.status || "Scheduled") as Distribution["status"],
+    isPaid: d.status === "Paid",
+    ageDays: d.distributionDate ? Math.max(0, Math.floor((Date.now() - new Date(d.distributionDate).getTime()) / 86400000)) : 0,
+    notes: d.notes || undefined,
+  });
+
+  const clientLabel = activeOrg?.name || "All Clients";
+
   return (
-    <DashboardLayout title="Distributions" subtitle="LP PAYOUTS & DIVIDENDS">
+    <DashboardLayout title="Distributions" subtitle={`${clientLabel} · LP PAYOUTS & DIVIDENDS`}>
       <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
+
+        {/* Client indicator */}
+        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+          <span className="size-2 rounded-full bg-primary/50" />
+          Showing distributions for <span className="font-medium text-foreground">{clientLabel}</span>
+          {!activeOrgId && <span className="text-amber-400 ml-1">(select a client in the sidebar to filter)</span>}
+        </div>
+
         {/* Summary metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
           {loading ? (
@@ -141,7 +177,11 @@ export default function DistributionsPage() {
             </button>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation hidden sm:flex" onClick={() => { exportAllDistributionsPdf(distributions); toast.success("Summary PDF downloaded"); }}>
+            <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation hidden sm:flex" onClick={() => {
+              const localDists = distributions.map(toLocalDist);
+              exportAllDistributionsPdf(localDists);
+              toast.success("Summary PDF downloaded");
+            }}>
               <FileDown className="size-3.5 mr-1" /> Export
             </Button>
             <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => setAddOpen(true)}>
@@ -154,18 +194,18 @@ export default function DistributionsPage() {
         {viewMode === "card" && !loading && (
           <div className="space-y-2">
             <div className="flex items-center justify-between px-1">
-              <h2 className="text-sm font-semibold text-foreground">All Distributions</h2>
+              <h2 className="text-sm font-semibold text-foreground">{clientLabel} Distributions</h2>
               <span className="text-[10px] font-mono text-emerald-400">{formatCurrency(totalDistributed)}</span>
             </div>
             {distributions.length === 0 ? (
               <div className="p-12 text-center bg-card border border-border rounded-lg">
                 <DollarSign className="size-8 text-muted-foreground mx-auto mb-3 opacity-40" />
-                <p className="text-sm text-muted-foreground">No distributions recorded yet.</p>
+                <p className="text-sm text-muted-foreground">No distributions recorded for this client.</p>
               </div>
             ) : (
               <AnimatePresence>
                 {distributions.map((dist, i) => {
-                  const dc = DIST_STATUS_CONFIG[dist.status];
+                  const dc = DIST_STATUS_CONFIG[dist.status || "Scheduled"];
                   return (
                     <motion.div
                       key={dist.id}
@@ -181,11 +221,11 @@ export default function DistributionsPage() {
                           <span className="text-xs font-medium text-foreground">{dist.name}</span>
                           <p className="text-[10px] text-muted-foreground mt-0.5">{dist.fund}</p>
                         </div>
-                        <span className="text-sm font-mono font-semibold text-foreground flex-shrink-0">{formatCurrency(dist.amount)}</span>
+                        <span className="text-sm font-mono font-semibold text-foreground flex-shrink-0">{formatCurrency(dist.amount || 0)}</span>
                       </div>
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
                         {dc && <StatusBadge label={dc.label} bg={dc.bg} dot={dc.dot} />}
-                        <span className="text-[10px] font-mono text-muted-foreground">{formatDate(dist.date)}</span>
+                        <span className="text-[10px] font-mono text-muted-foreground">{dist.distributionDate ? formatDate(dist.distributionDate) : ""}</span>
                         <span className="text-[10px] text-muted-foreground">{dist.type}</span>
                       </div>
                     </motion.div>
@@ -200,13 +240,13 @@ export default function DistributionsPage() {
         {viewMode === "table" && !loading && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card border border-border rounded-lg overflow-hidden">
             <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-foreground">All Distributions</h2>
+              <h2 className="text-sm font-semibold text-foreground">{clientLabel} Distributions</h2>
               <span className="text-[10px] font-mono text-emerald-400">{formatCurrency(totalDistributed)} total</span>
             </div>
             {distributions.length === 0 ? (
               <div className="p-12 text-center">
                 <DollarSign className="size-8 text-muted-foreground mx-auto mb-3 opacity-40" />
-                <p className="text-sm text-muted-foreground">No distributions recorded yet.</p>
+                <p className="text-sm text-muted-foreground">No distributions recorded for this client.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -224,7 +264,7 @@ export default function DistributionsPage() {
                   </TableHeader>
                   <TableBody>
                     {distributions.map(dist => {
-                      const dc = DIST_STATUS_CONFIG[dist.status];
+                      const dc = DIST_STATUS_CONFIG[dist.status || "Scheduled"];
                       return (
                         <TableRow key={dist.id} className="cursor-pointer hover:bg-accent/30 active:bg-accent/40 touch-manipulation" onClick={() => setDistModal(dist)}>
                           <TableCell>
@@ -234,8 +274,8 @@ export default function DistributionsPage() {
                             </div>
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground hidden md:table-cell">{dist.fund}</TableCell>
-                          <TableCell className="text-xs font-mono text-muted-foreground hidden md:table-cell">{formatDate(dist.date)}</TableCell>
-                          <TableCell className="text-xs font-mono font-medium text-foreground">{formatCurrency(dist.amount)}</TableCell>
+                          <TableCell className="text-xs font-mono text-muted-foreground hidden md:table-cell">{dist.distributionDate ? formatDate(dist.distributionDate) : ""}</TableCell>
+                          <TableCell className="text-xs font-mono font-medium text-foreground">{formatCurrency(dist.amount || 0)}</TableCell>
                           <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{dist.type}</TableCell>
                           <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{dist.method}</TableCell>
                           <TableCell>{dc && <StatusBadge label={dc.label} bg={dc.bg} dot={dc.dot} />}</TableCell>
@@ -250,7 +290,7 @@ export default function DistributionsPage() {
         )}
 
         {/* Fund breakdown */}
-        {!loading && (
+        {!loading && fundBreakdown.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-card border border-border rounded-lg">
             <div className="px-3 sm:px-4 py-3 border-b border-border">
               <h2 className="text-sm font-semibold text-foreground">By Fund</h2>
@@ -261,7 +301,7 @@ export default function DistributionsPage() {
                   <div className="min-w-0 flex-1">
                     <span className="text-xs font-medium text-foreground">{fund}</span>
                     <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {distributions.filter(d => d.fund === fund).length} distribution(s)
+                      {distributions.filter(d => (d.fund || "General") === fund).length} distribution(s)
                     </p>
                   </div>
                   <span className="text-sm font-mono font-semibold text-foreground flex-shrink-0">{formatCurrency(amount)}</span>
@@ -275,56 +315,63 @@ export default function DistributionsPage() {
       {/* Distribution Detail Modal */}
       <Dialog open={!!distModal} onOpenChange={(open) => !open && setDistModal(null)}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-          {distModal && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-sm">{distModal.name}</DialogTitle>
-                <DialogDescription className="text-[10px] font-mono">{distModal.fund}</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-3 py-2">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Amount</span>
-                    <span className="text-sm font-mono font-semibold text-foreground">{formatCurrency(distModal.amount)}</span>
+          {distModal && (() => {
+            const dc = DIST_STATUS_CONFIG[distModal.status || "Scheduled"];
+            const ageDays = distModal.distributionDate
+              ? Math.max(0, Math.floor((Date.now() - new Date(distModal.distributionDate).getTime()) / 86400000))
+              : 0;
+            return (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="text-sm">{distModal.name}</DialogTitle>
+                  <DialogDescription className="text-[10px] font-mono">{distModal.fund}</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3 py-2">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Amount</span>
+                      <span className="text-sm font-mono font-semibold text-foreground">{formatCurrency(distModal.amount || 0)}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Date</span>
+                      <span className="text-xs font-mono text-foreground">{distModal.distributionDate ? formatDate(distModal.distributionDate) : "N/A"}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Type</span>
+                      <span className="text-xs text-foreground">{distModal.type || "N/A"}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Method</span>
+                      <span className="text-xs text-foreground">{distModal.method || "N/A"}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Status</span>
+                      {dc && <StatusBadge label={dc.label} bg={dc.bg} dot={dc.dot} />}
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Age</span>
+                      <span className="text-xs font-mono text-foreground">{ageDays} days</span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Date</span>
-                    <span className="text-xs font-mono text-foreground">{formatDate(distModal.date)}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Type</span>
-                    <span className="text-xs text-foreground">{distModal.type}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Method</span>
-                    <span className="text-xs text-foreground">{distModal.method}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Status</span>
-                    {DIST_STATUS_CONFIG[distModal.status] && (
-                      <StatusBadge label={DIST_STATUS_CONFIG[distModal.status].label} bg={DIST_STATUS_CONFIG[distModal.status].bg} dot={DIST_STATUS_CONFIG[distModal.status].dot} />
-                    )}
-                  </div>
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Age</span>
-                    <span className="text-xs font-mono text-foreground">{distModal.ageDays} days</span>
-                  </div>
+                  {distModal.notes && (
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Notes</span>
+                      <p className="text-xs text-foreground bg-secondary/30 rounded-md p-2">{distModal.notes}</p>
+                    </div>
+                  )}
                 </div>
-                {distModal.notes && (
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Notes</span>
-                    <p className="text-xs text-foreground bg-secondary/30 rounded-md p-2">{distModal.notes}</p>
-                  </div>
-                )}
-              </div>
-              <DialogFooter className="flex-col sm:flex-row gap-2">
-                <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={() => { exportDistributionPdf(distModal); toast.success("PDF downloaded"); }}>
-                  <FileDown className="size-3.5 mr-1" /> Export PDF
-                </Button>
-                <Button variant="ghost" size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={() => setDistModal(null)}>Close</Button>
-              </DialogFooter>
-            </>
-          )}
+                <DialogFooter className="flex-col sm:flex-row gap-2">
+                  <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={() => {
+                    exportDistributionPdf(toLocalDist(distModal));
+                    toast.success("PDF downloaded");
+                  }}>
+                    <FileDown className="size-3.5 mr-1" /> Export PDF
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={() => setDistModal(null)}>Close</Button>
+                </DialogFooter>
+              </>
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
@@ -333,7 +380,9 @@ export default function DistributionsPage() {
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-sm">New Distribution</DialogTitle>
-            <DialogDescription className="text-[10px] font-mono">Record a new distribution or payout</DialogDescription>
+            <DialogDescription className="text-[10px] font-mono">
+              Record a new distribution for {clientLabel}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
@@ -385,8 +434,9 @@ export default function DistributionsPage() {
             </div>
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={handleAdd}>
-              <Plus className="size-3.5 mr-1" /> Add Distribution
+            <Button size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={handleAdd} disabled={createDist.isPending}>
+              {createDist.isPending ? <Loader2 className="size-3.5 mr-1 animate-spin" /> : <Plus className="size-3.5 mr-1" />}
+              Add Distribution
             </Button>
             <Button variant="ghost" size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={() => setAddOpen(false)}>Cancel</Button>
           </DialogFooter>
