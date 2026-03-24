@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, inArray, desc } from "drizzle-orm";
+import { eq, inArray, desc, and, ne } from "drizzle-orm";
 import { protectedProcedure, adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import {
@@ -17,141 +17,167 @@ import {
 
 export const organizationsRouter = router({
   // List all client organizations (admin only) — basic list
-  list: adminProcedure.query(async () => {
-    const db = await getDb();
-    if (!db) return [];
+  list: adminProcedure
+    .input(z.object({ includeArchived: z.boolean().optional() }).optional())
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return [];
 
-    const orgs = await db
-      .select()
-      .from(organizations)
-      .where(eq(organizations.type, "client"));
+      const includeArchived = input?.includeArchived ?? false;
 
-    // Get venture counts per org
-    const access = await db.select().from(orgVentureAccess);
-    const countMap = new Map<number, number>();
-    for (const a of access) {
-      countMap.set(a.organizationId, (countMap.get(a.organizationId) || 0) + 1);
-    }
+      let orgs;
+      if (includeArchived) {
+        orgs = await db
+          .select()
+          .from(organizations)
+          .where(eq(organizations.type, "client"));
+      } else {
+        orgs = await db
+          .select()
+          .from(organizations)
+          .where(and(eq(organizations.type, "client"), ne(organizations.status, "archived")));
+      }
 
-    return orgs.map(org => ({
-      ...org,
-      ventureCount: countMap.get(org.id) || 0,
-    }));
-  }),
+      // Get venture counts per org
+      const access = await db.select().from(orgVentureAccess);
+      const countMap = new Map<number, number>();
+      for (const a of access) {
+        countMap.set(a.organizationId, (countMap.get(a.organizationId) || 0) + 1);
+      }
+
+      return orgs.map(org => ({
+        ...org,
+        ventureCount: countMap.get(org.id) || 0,
+      }));
+    }),
 
   // List all client organizations with aggregate metrics — for ATLAS admin dashboard
-  listWithMetrics: adminProcedure.query(async () => {
-    const db = await getDb();
-    if (!db) return [];
+  // By default excludes archived. Pass includeArchived: true to include them.
+  listWithMetrics: adminProcedure
+    .input(z.object({ includeArchived: z.boolean().optional() }).optional())
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return [];
 
-    const orgs = await db
-      .select()
-      .from(organizations)
-      .where(eq(organizations.type, "client"))
-      .orderBy(organizations.name);
+      const includeArchived = input?.includeArchived ?? false;
 
-    if (orgs.length === 0) return [];
+      let orgs;
+      if (includeArchived) {
+        orgs = await db
+          .select()
+          .from(organizations)
+          .where(eq(organizations.type, "client"))
+          .orderBy(organizations.name);
+      } else {
+        orgs = await db
+          .select()
+          .from(organizations)
+          .where(and(eq(organizations.type, "client"), ne(organizations.status, "archived")))
+          .orderBy(organizations.name);
+      }
 
-    // Get all org-venture access mappings
-    const allAccess = await db.select().from(orgVentureAccess);
-    const orgVentureMap = new Map<number, number[]>();
-    for (const a of allAccess) {
-      const arr = orgVentureMap.get(a.organizationId) || [];
-      arr.push(a.ventureId);
-      orgVentureMap.set(a.organizationId, arr);
-    }
+      if (orgs.length === 0) return [];
 
-    // Get all tasks, ventures, spvVentures, ventureTeam in bulk
-    const allVentures = await db.select().from(ventures);
-    const allTasks = await db.select().from(tasks);
-    const allSpvVentures = await db.select().from(spvVentures);
-    const allVentureTeam = await db.select().from(ventureTeam);
-    const allDists = await db.select().from(distributions);
+      // Get all org-venture access mappings
+      const allAccess = await db.select().from(orgVentureAccess);
+      const orgVentureMap = new Map<number, number[]>();
+      for (const a of allAccess) {
+        const arr = orgVentureMap.get(a.organizationId) || [];
+        arr.push(a.ventureId);
+        orgVentureMap.set(a.organizationId, arr);
+      }
 
-    // Get recent activity per org (last activity timestamp)
-    const recentActivity = await db
-      .select()
-      .from(activityLog)
-      .orderBy(desc(activityLog.createdAt))
-      .limit(200);
+      // Get all tasks, ventures, spvVentures, ventureTeam in bulk
+      const allVentures = await db.select().from(ventures);
+      const allTasks = await db.select().from(tasks);
+      const allSpvVentures = await db.select().from(spvVentures);
+      const allVentureTeam = await db.select().from(ventureTeam);
+      const allDists = await db.select().from(distributions);
 
-    const now = new Date();
+      // Get recent activity per org (last activity timestamp)
+      const recentActivity = await db
+        .select()
+        .from(activityLog)
+        .orderBy(desc(activityLog.createdAt))
+        .limit(200);
 
-    return orgs.map(org => {
-      const ventureIds = orgVentureMap.get(org.id) || [];
-      const ventureIdSet = new Set(ventureIds);
+      const now = new Date();
 
-      // Ventures
-      const orgVentures = allVentures.filter(v => ventureIdSet.has(v.id));
-      const ventureCount = orgVentures.length;
+      return orgs.map(org => {
+        const ventureIds = orgVentureMap.get(org.id) || [];
+        const ventureIdSet = new Set(ventureIds);
 
-      // Sectors
-      const sectors = new Set(orgVentures.map(v => v.sector));
+        // Ventures
+        const orgVentures = allVentures.filter(v => ventureIdSet.has(v.id));
+        const ventureCount = orgVentures.length;
 
-      // Health scores
-      const healthScores = orgVentures.map(v => v.healthScore ?? 50);
-      const avgHealth = healthScores.length > 0
-        ? Math.round(healthScores.reduce((a, b) => a + b, 0) / healthScores.length)
-        : 0;
+        // Sectors
+        const sectors = new Set(orgVentures.map(v => v.sector));
 
-      // Tasks
-      const orgTasks = allTasks.filter(t => t.ventureId && ventureIdSet.has(t.ventureId));
-      const totalTasks = orgTasks.length;
-      const completedTasks = orgTasks.filter(t => t.status === "complete").length;
-      const openTasks = totalTasks - completedTasks;
-      const overdueTasks = orgTasks.filter(t =>
-        t.status !== "complete" && t.dueDate && new Date(t.dueDate) < now
-      ).length;
-      const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        // Health scores
+        const healthScores = orgVentures.map(v => v.healthScore ?? 50);
+        const avgHealth = healthScores.length > 0
+          ? Math.round(healthScores.reduce((a, b) => a + b, 0) / healthScores.length)
+          : 0;
 
-      // SPVs (via spvVentures junction)
-      const spvIds = new Set(
-        allSpvVentures.filter(sv => ventureIdSet.has(sv.ventureId)).map(sv => sv.spvId)
-      );
-      const spvCount = spvIds.size;
+        // Tasks
+        const orgTasks = allTasks.filter(t => t.ventureId && ventureIdSet.has(t.ventureId));
+        const totalTasks = orgTasks.length;
+        const completedTasks = orgTasks.filter(t => t.status === "complete").length;
+        const openTasks = totalTasks - completedTasks;
+        const overdueTasks = orgTasks.filter(t =>
+          t.status !== "complete" && t.dueDate && new Date(t.dueDate) < now
+        ).length;
+        const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-      // Team members (via ventureTeam assignments)
-      const memberIds = new Set(
-        allVentureTeam.filter(vt => ventureIdSet.has(vt.ventureId)).map(vt => vt.memberId)
-      );
-      const teamSize = memberIds.size;
+        // SPVs (via spvVentures junction)
+        const spvIds = new Set(
+          allSpvVentures.filter(sv => ventureIdSet.has(sv.ventureId)).map(sv => sv.spvId)
+        );
+        const spvCount = spvIds.size;
 
-      // Distributions — scoped per org
-      const orgDists = allDists.filter(d => d.organizationId === org.id);
-      const totalDistributions = orgDists.reduce((s, d) => s + (d.amount || 0), 0);
+        // Team members (via ventureTeam assignments)
+        const memberIds = new Set(
+          allVentureTeam.filter(vt => ventureIdSet.has(vt.ventureId)).map(vt => vt.memberId)
+        );
+        const teamSize = memberIds.size;
 
-      // Last activity — find most recent activity mentioning any of this org's ventures
-      const ventureNames = new Set(orgVentures.map(v => v.name.toLowerCase()));
-      const lastActivity = recentActivity.find(a => {
-        if (a.entityName && ventureNames.has(a.entityName.toLowerCase())) return true;
-        if (a.entityType === "venture" && a.entityId && ventureIdSet.has(a.entityId)) return true;
-        return false;
+        // Distributions — scoped per org
+        const orgDists = allDists.filter(d => d.organizationId === org.id);
+        const totalDistributions = orgDists.reduce((s, d) => s + (d.amount || 0), 0);
+
+        // Last activity — find most recent activity mentioning any of this org's ventures
+        const ventureNames = new Set(orgVentures.map(v => v.name.toLowerCase()));
+        const lastActivity = recentActivity.find(a => {
+          if (a.entityName && ventureNames.has(a.entityName.toLowerCase())) return true;
+          if (a.entityType === "venture" && a.entityId && ventureIdSet.has(a.entityId)) return true;
+          return false;
+        });
+
+        return {
+          id: org.id,
+          name: org.name,
+          slug: org.slug,
+          type: org.type,
+          status: org.status,
+          description: org.description,
+          createdAt: org.createdAt,
+          // Metrics
+          ventureCount,
+          sectors: Array.from(sectors),
+          avgHealth,
+          totalTasks,
+          completedTasks,
+          openTasks,
+          overdueTasks,
+          completionRate,
+          spvCount,
+          teamSize,
+          totalDistributions,
+          lastActivityAt: lastActivity?.createdAt || null,
+        };
       });
-
-      return {
-        id: org.id,
-        name: org.name,
-        slug: org.slug,
-        type: org.type,
-        status: org.status,
-        description: org.description,
-        createdAt: org.createdAt,
-        // Metrics
-        ventureCount,
-        sectors: Array.from(sectors),
-        avgHealth,
-        totalTasks,
-        completedTasks,
-        openTasks,
-        overdueTasks,
-        completionRate,
-        spvCount,
-        teamSize,
-        totalDistributions,
-        lastActivityAt: lastActivity?.createdAt || null,
-      };
-    });
-  }),
+    }),
 
   // Get a single organization by slug with full metrics
   bySlug: protectedProcedure
@@ -262,7 +288,73 @@ export const organizationsRouter = router({
       return updated;
     }),
 
-  // Delete a client organization (admin only) — cascades related data
+  // Archive a client organization (soft delete — sets status to "archived")
+  archive: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const [org] = await db
+        .select()
+        .from(organizations)
+        .where(eq(organizations.id, input.id))
+        .limit(1);
+
+      if (!org) throw new Error("Organization not found");
+      if (org.type === "core") throw new Error("Cannot archive core organization");
+      if (org.status === "archived") throw new Error("Organization is already archived");
+
+      await db
+        .update(organizations)
+        .set({ status: "archived" })
+        .where(eq(organizations.id, input.id));
+
+      await db.insert(activityLog).values({
+        entityType: "organization",
+        entityName: org.name,
+        action: "Client Archived",
+        detail: `Client "${org.name}" was archived`,
+        userName: "ATLAS Admin",
+      });
+
+      return { success: true, name: org.name };
+    }),
+
+  // Restore an archived client organization (sets status back to "active")
+  restore: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const [org] = await db
+        .select()
+        .from(organizations)
+        .where(eq(organizations.id, input.id))
+        .limit(1);
+
+      if (!org) throw new Error("Organization not found");
+      if (org.status !== "archived") throw new Error("Organization is not archived");
+
+      await db
+        .update(organizations)
+        .set({ status: "active" })
+        .where(eq(organizations.id, input.id));
+
+      await db.insert(activityLog).values({
+        entityType: "organization",
+        entityName: org.name,
+        action: "Client Restored",
+        detail: `Client "${org.name}" was restored from archive`,
+        userName: "ATLAS Admin",
+      });
+
+      return { success: true, name: org.name };
+    }),
+
+  // Permanently delete a client organization (admin only) — cascades related data
+  // Should only be used on archived clients as a final step
   delete: adminProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
@@ -296,7 +388,7 @@ export const organizationsRouter = router({
         entityType: "organization",
         entityName: org.name,
         action: "Client Deleted",
-        detail: `Client "${org.name}" was removed from the system`,
+        detail: `Client "${org.name}" was permanently removed from the system`,
         userName: "ATLAS Admin",
       });
 

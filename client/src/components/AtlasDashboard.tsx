@@ -1,7 +1,7 @@
 // ============================================================================
 // ATLAS Admin Dashboard — Multi-Client Command Center
 // Overview of ALL clients with metrics, search, filter, drill-down
-// Designed to manage 30+ client organizations at scale
+// Supports archive/restore (soft delete) and permanent delete
 // ============================================================================
 
 import { cn } from "@/lib/utils";
@@ -27,6 +27,9 @@ import {
   Loader2,
   BarChart3,
   Trash2,
+  Archive,
+  ArchiveRestore,
+  RotateCcw,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useCallback, useMemo } from "react";
@@ -56,6 +59,7 @@ import {
 // ── Types ───────────────────────────────────────────────────────────────
 type SortField = "name" | "ventures" | "tasks" | "overdue" | "health" | "team";
 type ViewMode = "grid" | "table";
+type TabMode = "active" | "archived";
 
 interface AtlasDashboardProps {
   onNavigate: (path: string) => void;
@@ -98,12 +102,21 @@ function fmtCurrency(amount: number): string {
 }
 
 export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
-  const clientsQ = trpc.organizations.listWithMetrics.useQuery();
+  // Fetch active clients (default)
+  const activeClientsQ = trpc.organizations.listWithMetrics.useQuery();
+  // Fetch archived clients separately
+  const archivedClientsQ = trpc.organizations.listWithMetrics.useQuery({ includeArchived: true });
   const utils = trpc.useUtils();
+
+  const invalidateAll = () => {
+    activeClientsQ.refetch();
+    archivedClientsQ.refetch();
+    utils.organizations.list.invalidate();
+  };
 
   const createOrg = trpc.organizations.create.useMutation({
     onSuccess: () => {
-      clientsQ.refetch();
+      invalidateAll();
       setAddDialogOpen(false);
       setNewName("");
       setNewDesc("");
@@ -112,20 +125,41 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
     onError: (err) => toast.error(err.message),
   });
 
-  const deleteOrg = trpc.organizations.delete.useMutation({
+  const archiveOrg = trpc.organizations.archive.useMutation({
     onSuccess: (data) => {
-      clientsQ.refetch();
-      utils.organizations.list.invalidate();
-      setDeleteTarget(null);
-      toast.success(`"${data.name}" has been removed`);
+      invalidateAll();
+      setArchiveTarget(null);
+      toast.success(`"${data.name}" has been archived`);
     },
     onError: (err) => toast.error(err.message),
   });
 
-  const clients = clientsQ.data || [];
-  const isLoading = clientsQ.isLoading;
+  const restoreOrg = trpc.organizations.restore.useMutation({
+    onSuccess: (data) => {
+      invalidateAll();
+      toast.success(`"${data.name}" has been restored`);
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const deleteOrg = trpc.organizations.delete.useMutation({
+    onSuccess: (data) => {
+      invalidateAll();
+      setDeleteTarget(null);
+      toast.success(`"${data.name}" has been permanently deleted`);
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  // Separate active vs archived from the full list
+  const allClients = archivedClientsQ.data || [];
+  const activeClients = activeClientsQ.data || [];
+  const archivedClients = useMemo(() => allClients.filter(c => c.status === "archived"), [allClients]);
+
+  const isLoading = activeClientsQ.isLoading;
 
   // ── UI state ───────────────────────────────────────────────────────
+  const [tabMode, setTabMode] = useState<TabMode>("active");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>("overdue");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
@@ -134,23 +168,27 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
+  const [archiveTarget, setArchiveTarget] = useState<{ id: number; name: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
 
-  // ── Aggregate KPIs across ALL clients ─────────────────────────────
+  // Current tab's clients
+  const clients = tabMode === "active" ? activeClients : archivedClients;
+
+  // ── Aggregate KPIs across ACTIVE clients only ─────────────────────
   const kpis = useMemo(() => {
-    const totalClients = clients.length;
-    const totalVentures = clients.reduce((s, c) => s + c.ventureCount, 0);
-    const totalOpenTasks = clients.reduce((s, c) => s + c.openTasks, 0);
-    const totalOverdue = clients.reduce((s, c) => s + c.overdueTasks, 0);
-    const totalTeam = clients.reduce((s, c) => s + c.teamSize, 0);
-    const totalSpvs = clients.reduce((s, c) => s + c.spvCount, 0);
-    const avgHealth = clients.length > 0
-      ? Math.round(clients.reduce((s, c) => s + c.avgHealth, 0) / clients.length)
+    const totalClients = activeClients.length;
+    const totalVentures = activeClients.reduce((s, c) => s + c.ventureCount, 0);
+    const totalOpenTasks = activeClients.reduce((s, c) => s + c.openTasks, 0);
+    const totalOverdue = activeClients.reduce((s, c) => s + c.overdueTasks, 0);
+    const totalTeam = activeClients.reduce((s, c) => s + c.teamSize, 0);
+    const totalSpvs = activeClients.reduce((s, c) => s + c.spvCount, 0);
+    const avgHealth = activeClients.length > 0
+      ? Math.round(activeClients.reduce((s, c) => s + c.avgHealth, 0) / activeClients.length)
       : 0;
-    const clientsAtRisk = clients.filter(c => c.avgHealth < 40).length;
-    const clientsNeedingAttention = clients.filter(c => c.overdueTasks > 0).length;
+    const clientsAtRisk = activeClients.filter(c => c.avgHealth < 40).length;
+    const clientsNeedingAttention = activeClients.filter(c => c.overdueTasks > 0).length;
     return { totalClients, totalVentures, totalOpenTasks, totalOverdue, totalTeam, totalSpvs, avgHealth, clientsAtRisk, clientsNeedingAttention };
-  }, [clients]);
+  }, [activeClients]);
 
   // ── Filtered + sorted clients ─────────────────────────────────────
   const filteredClients = useMemo(() => {
@@ -165,13 +203,15 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
       );
     }
 
-    // Status filter
-    if (statusFilter === "at-risk") {
-      list = list.filter(c => c.avgHealth < 40);
-    } else if (statusFilter === "overdue") {
-      list = list.filter(c => c.overdueTasks > 0);
-    } else if (statusFilter === "healthy") {
-      list = list.filter(c => c.avgHealth >= 70);
+    // Status filter (only for active tab)
+    if (tabMode === "active") {
+      if (statusFilter === "at-risk") {
+        list = list.filter(c => c.avgHealth < 40);
+      } else if (statusFilter === "overdue") {
+        list = list.filter(c => c.overdueTasks > 0);
+      } else if (statusFilter === "healthy") {
+        list = list.filter(c => c.avgHealth >= 70);
+      }
     }
 
     // Sort
@@ -189,7 +229,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
     });
 
     return list;
-  }, [clients, searchTerm, sortField, sortDir, statusFilter]);
+  }, [clients, searchTerm, sortField, sortDir, statusFilter, tabMode]);
 
   // ── Sort toggle ────────────────────────────────────────────────────
   const toggleSort = useCallback((field: SortField) => {
@@ -206,6 +246,11 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
     if (!name) return;
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
     createOrg.mutate({ name, slug, description: newDesc || undefined });
+  };
+
+  const handleArchiveClient = () => {
+    if (!archiveTarget) return;
+    archiveOrg.mutate({ id: archiveTarget.id });
   };
 
   const handleDeleteClient = () => {
@@ -295,42 +340,80 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
         ))}
       </div>
 
+      {/* ── Active / Archived Tabs ────────────────────────────────── */}
+      <div className="flex items-center gap-1 border-b border-border">
+        <button
+          onClick={() => { setTabMode("active"); setStatusFilter("all"); setSearchTerm(""); }}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px",
+            tabMode === "active"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <Building2 className="size-4" />
+          Active Clients
+          <span className="text-[11px] font-mono bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+            {activeClients.length}
+          </span>
+        </button>
+        <button
+          onClick={() => { setTabMode("archived"); setStatusFilter("all"); setSearchTerm(""); }}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px",
+            tabMode === "archived"
+              ? "border-amber-500 text-amber-400"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <Archive className="size-4" />
+          Archived
+          {archivedClients.length > 0 && (
+            <span className="text-[11px] font-mono bg-amber-500/10 text-amber-400 px-1.5 py-0.5 rounded-full">
+              {archivedClients.length}
+            </span>
+          )}
+        </button>
+      </div>
+
       {/* ── Toolbar: Search + Filters + View Toggle + Add Client ── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
-            placeholder="Search clients or sectors..."
+            placeholder={tabMode === "active" ? "Search clients or sectors..." : "Search archived clients..."}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-9 h-10 bg-card border-border"
           />
         </div>
 
-        {/* Status filter pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto">
-          {[
-            { key: "all", label: "All", count: clients.length },
-            { key: "overdue", label: "Overdue", count: clients.filter(c => c.overdueTasks > 0).length },
-            { key: "at-risk", label: "At Risk", count: clients.filter(c => c.avgHealth < 40).length },
-            { key: "healthy", label: "Healthy", count: clients.filter(c => c.avgHealth >= 70).length },
-          ].map(f => (
-            <button
-              key={f.key}
-              onClick={() => setStatusFilter(f.key)}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-colors whitespace-nowrap",
-                statusFilter === f.key
-                  ? "bg-primary/10 text-primary border border-primary/20"
-                  : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20"
-              )}
-            >
-              {f.label}
-              <span className="font-mono text-[10px] opacity-70">{f.count}</span>
-            </button>
-          ))}
-        </div>
+        {/* Status filter pills — only for active tab */}
+        {tabMode === "active" && (
+          <div className="flex items-center gap-1.5 overflow-x-auto">
+            {[
+              { key: "all", label: "All", count: activeClients.length },
+              { key: "overdue", label: "Overdue", count: activeClients.filter(c => c.overdueTasks > 0).length },
+              { key: "at-risk", label: "At Risk", count: activeClients.filter(c => c.avgHealth < 40).length },
+              { key: "healthy", label: "Healthy", count: activeClients.filter(c => c.avgHealth >= 70).length },
+            ].map(f => (
+              <button
+                key={f.key}
+                onClick={() => setStatusFilter(f.key)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-colors whitespace-nowrap",
+                  statusFilter === f.key
+                    ? "bg-primary/10 text-primary border border-primary/20"
+                    : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20"
+                )}
+              >
+                {f.label}
+                <span className="font-mono text-[10px] opacity-70">{f.count}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* View toggle + Add */}
         <div className="flex items-center gap-2 ml-auto">
@@ -348,28 +431,41 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
               <LayoutGrid className="size-4" />
             </button>
           </div>
-          <Button
-            size="sm"
-            onClick={() => setAddDialogOpen(true)}
-            className="h-9 gap-1.5"
-          >
-            <Plus className="size-4" />
-            <span className="hidden sm:inline">Add Client</span>
-          </Button>
+          {tabMode === "active" && (
+            <Button
+              size="sm"
+              onClick={() => setAddDialogOpen(true)}
+              className="h-9 gap-1.5"
+            >
+              <Plus className="size-4" />
+              <span className="hidden sm:inline">Add Client</span>
+            </Button>
+          )}
         </div>
       </div>
 
       {/* ── Client List ───────────────────────────────────────────── */}
       {filteredClients.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center">
-          <Building2 className="size-8 text-muted-foreground mx-auto mb-3 opacity-40" />
-          <p className="text-sm text-muted-foreground">
-            {searchTerm || statusFilter !== "all" ? "No clients match your filters" : "No clients yet. Add your first client to get started."}
-          </p>
-          {!searchTerm && statusFilter === "all" && (
-            <Button size="sm" className="mt-4" onClick={() => setAddDialogOpen(true)}>
-              <Plus className="size-4 mr-1.5" /> Add Client
-            </Button>
+          {tabMode === "archived" ? (
+            <>
+              <Archive className="size-8 text-muted-foreground mx-auto mb-3 opacity-40" />
+              <p className="text-sm text-muted-foreground">
+                {searchTerm ? "No archived clients match your search" : "No archived clients. Clients you archive will appear here."}
+              </p>
+            </>
+          ) : (
+            <>
+              <Building2 className="size-8 text-muted-foreground mx-auto mb-3 opacity-40" />
+              <p className="text-sm text-muted-foreground">
+                {searchTerm || statusFilter !== "all" ? "No clients match your filters" : "No clients yet. Add your first client to get started."}
+              </p>
+              {!searchTerm && statusFilter === "all" && (
+                <Button size="sm" className="mt-4" onClick={() => setAddDialogOpen(true)}>
+                  <Plus className="size-4 mr-1.5" /> Add Client
+                </Button>
+              )}
+            </>
           )}
         </div>
       ) : viewMode === "table" ? (
@@ -413,23 +509,38 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.02, duration: 0.2 }}
                   onClick={() => onNavigate(`/clients/${client.slug}`)}
-                  className="cursor-pointer hover:bg-accent/30 transition-colors group"
+                  className={cn(
+                    "cursor-pointer hover:bg-accent/30 transition-colors group",
+                    client.status === "archived" && "opacity-60"
+                  )}
                 >
                   <td className="p-3 sm:p-4">
                     <div className="flex items-center gap-3">
                       <div className={cn(
                         "size-9 rounded-lg flex items-center justify-center flex-shrink-0",
+                        client.status === "archived" ? "bg-muted" :
                         client.avgHealth >= 70 ? "bg-emerald-500/10" :
                         client.avgHealth >= 40 ? "bg-amber-500/10" : "bg-red-500/10"
                       )}>
-                        <Building2 className={cn(
-                          "size-4",
-                          client.avgHealth >= 70 ? "text-emerald-400" :
-                          client.avgHealth >= 40 ? "text-amber-400" : "text-red-400"
-                        )} />
+                        {client.status === "archived" ? (
+                          <Archive className="size-4 text-muted-foreground" />
+                        ) : (
+                          <Building2 className={cn(
+                            "size-4",
+                            client.avgHealth >= 70 ? "text-emerald-400" :
+                            client.avgHealth >= 40 ? "text-amber-400" : "text-red-400"
+                          )} />
+                        )}
                       </div>
                       <div>
-                        <span className="font-medium text-foreground block">{client.name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-foreground">{client.name}</span>
+                          {client.status === "archived" && (
+                            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400">
+                              Archived
+                            </span>
+                          )}
+                        </div>
                         <span className="text-[11px] text-muted-foreground">
                           {client.sectors.slice(0, 3).join(", ")}
                           {client.sectors.length > 3 && ` +${client.sectors.length - 3}`}
@@ -466,17 +577,45 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                     </div>
                   </td>
                   <td className="p-3 sm:p-4">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteTarget({ id: client.id, name: client.name });
-                        }}
-                        className="p-1.5 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
-                        title="Delete client"
-                      >
-                        <Trash2 className="size-3.5" />
-                      </button>
+                    <div className="flex items-center justify-end gap-1.5">
+                      {client.status === "archived" ? (
+                        <>
+                          {/* Restore button for archived clients */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              restoreOrg.mutate({ id: client.id });
+                            }}
+                            className="p-1.5 rounded-md text-muted-foreground hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Restore client"
+                          >
+                            <ArchiveRestore className="size-3.5" />
+                          </button>
+                          {/* Permanent delete for archived clients */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteTarget({ id: client.id, name: client.name });
+                            }}
+                            className="p-1.5 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Permanently delete"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </>
+                      ) : (
+                        /* Archive button for active clients */
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setArchiveTarget({ id: client.id, name: client.name });
+                          }}
+                          className="p-1.5 rounded-md text-muted-foreground hover:text-amber-400 hover:bg-amber-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                          title="Archive client"
+                        >
+                          <Archive className="size-3.5" />
+                        </button>
+                      )}
                       <ChevronRight className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </td>
@@ -495,38 +634,79 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03, duration: 0.3 }}
               onClick={() => onNavigate(`/clients/${client.slug}`)}
-              className="bg-card border border-border rounded-xl p-5 cursor-pointer hover:border-primary/30 transition-all group relative"
+              className={cn(
+                "bg-card border border-border rounded-xl p-5 cursor-pointer hover:border-primary/30 transition-all group relative",
+                client.status === "archived" && "opacity-60 border-dashed"
+              )}
             >
-              {/* Delete button — top right */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDeleteTarget({ id: client.id, name: client.name });
-                }}
-                className="absolute top-3 right-3 p-1.5 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
-                title="Delete client"
-              >
-                <Trash2 className="size-3.5" />
-              </button>
+              {/* Action buttons — top right */}
+              <div className="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                {client.status === "archived" ? (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        restoreOrg.mutate({ id: client.id });
+                      }}
+                      className="p-1.5 rounded-md text-muted-foreground hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                      title="Restore client"
+                    >
+                      <ArchiveRestore className="size-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteTarget({ id: client.id, name: client.name });
+                      }}
+                      className="p-1.5 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                      title="Permanently delete"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setArchiveTarget({ id: client.id, name: client.name });
+                    }}
+                    className="p-1.5 rounded-md text-muted-foreground hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
+                    title="Archive client"
+                  >
+                    <Archive className="size-3.5" />
+                  </button>
+                )}
+              </div>
 
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className={cn(
                     "size-10 rounded-lg flex items-center justify-center",
+                    client.status === "archived" ? "bg-muted" :
                     client.avgHealth >= 70 ? "bg-emerald-500/10" :
                     client.avgHealth >= 40 ? "bg-amber-500/10" : "bg-red-500/10"
                   )}>
-                    <Building2 className={cn(
-                      "size-5",
-                      client.avgHealth >= 70 ? "text-emerald-400" :
-                      client.avgHealth >= 40 ? "text-amber-400" : "text-red-400"
-                    )} />
+                    {client.status === "archived" ? (
+                      <Archive className="size-4 text-muted-foreground" />
+                    ) : (
+                      <Building2 className={cn(
+                        "size-4",
+                        client.avgHealth >= 70 ? "text-emerald-400" :
+                        client.avgHealth >= 40 ? "text-amber-400" : "text-red-400"
+                      )} />
+                    )}
                   </div>
                   <div>
-                    <span className="font-medium text-foreground block">{client.name}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-foreground">{client.name}</span>
+                    </div>
                     <span className="text-[11px] text-muted-foreground">
-                      {client.sectors.slice(0, 2).join(", ")}
+                      {client.status === "archived" ? (
+                        <span className="text-amber-400">Archived</span>
+                      ) : (
+                        client.sectors.slice(0, 2).join(", ")
+                      )}
                     </span>
                   </div>
                 </div>
@@ -623,13 +803,35 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
         </DialogContent>
       </Dialog>
 
-      {/* ── Delete Client Confirmation ────────────────────────────── */}
+      {/* ── Archive Client Confirmation ───────────────────────────── */}
+      <AlertDialog open={!!archiveTarget} onOpenChange={(open) => !open && setArchiveTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive Client</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to archive <strong>{archiveTarget?.name}</strong>? The client and all their data will be preserved but hidden from the active view. You can restore them at any time from the Archived tab.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleArchiveClient}
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+            >
+              {archiveOrg.isPending ? <Loader2 className="size-4 animate-spin mr-1.5" /> : <Archive className="size-4 mr-1.5" />}
+              Archive Client
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ── Permanent Delete Confirmation ─────────────────────────── */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove Client</AlertDialogTitle>
+            <AlertDialogTitle>Permanently Delete Client</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove <strong>{deleteTarget?.name}</strong>? This will delete all venture access links and distributions associated with this client. This action cannot be undone.
+              Are you sure you want to <strong>permanently delete</strong> <strong>{deleteTarget?.name}</strong>? This will remove all venture access links, distributions, invitations, and API keys. <span className="text-red-400 font-medium">This action cannot be undone.</span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -639,7 +841,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               {deleteOrg.isPending ? <Loader2 className="size-4 animate-spin mr-1.5" /> : <Trash2 className="size-4 mr-1.5" />}
-              Delete Client
+              Delete Permanently
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

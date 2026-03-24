@@ -671,3 +671,15 @@
 - [x] Update ATLAS dashboard to show per-client distribution totals
 - [x] Rewrite Distributions page to use tRPC + workspace context for per-client scoping
 - [x] Tests for delete client and per-client distributions (8 new tests, 188 total passing)
+
+## Archive / Soft Delete Clients
+- [x] Backend: Add organizations.archive endpoint (sets status to "archived", logs activity)
+- [x] Backend: Add organizations.restore endpoint (sets status back to "active", logs activity)
+- [x] Update listWithMetrics to exclude archived clients by default, with optional includeArchived flag
+- [x] Update list endpoint to also support includeArchived flag
+- [x] Frontend: Replace "Remove Client" with "Archive Client" as primary action on active clients
+- [x] Frontend: Add "Archived" tab on ATLAS dashboard with archived client count badge
+- [x] Frontend: Add restore button + permanent delete button on archived client rows (table + grid)
+- [x] Frontend: Client detail page — archived banner with restore option, context-aware header actions
+- [x] Permanent delete only available on archived clients (safety net)
+- [x] Tests for archive, restore, includeArchived filtering (10 new tests, 198 total passing)

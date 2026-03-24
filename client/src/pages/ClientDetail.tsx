@@ -36,6 +36,8 @@ import {
   CheckCircle2,
   Trash2,
   Loader2,
+  Archive,
+  ArchiveRestore,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useCallback } from "react";
@@ -113,15 +115,33 @@ export default function ClientDetail() {
     },
   });
 
-  const deleteOrg = trpc.organizations.delete.useMutation({
+  const archiveOrg = trpc.organizations.archive.useMutation({
     onSuccess: (data) => {
-      toast.success(`"${data.name}" has been removed`);
+      toast.success(`"${data.name}" has been archived`);
       navigate("/dashboard");
     },
     onError: (err) => toast.error(err.message),
   });
 
+  const restoreOrg = trpc.organizations.restore.useMutation({
+    onSuccess: (data) => {
+      toast.success(`"${data.name}" has been restored`);
+      orgQ.refetch();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const deleteOrg = trpc.organizations.delete.useMutation({
+    onSuccess: (data) => {
+      toast.success(`"${data.name}" has been permanently deleted`);
+      navigate("/dashboard");
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const isArchived = org?.status === "archived";
 
   const pageLoading = orgQ.isLoading || venturesQ.isLoading || tasksQ.isLoading;
 
@@ -274,14 +294,39 @@ export default function ClientDetail() {
           >
             <ArrowLeft className="size-4 mr-1" /> All Clients
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowDeleteDialog(true)}
-            className="h-8 px-2 text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
-          >
-            <Trash2 className="size-4 mr-1" /> Remove Client
-          </Button>
+          <div className="flex items-center gap-2">
+            {isArchived ? (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => orgId && restoreOrg.mutate({ id: orgId })}
+                  className="h-8 px-2 text-muted-foreground hover:text-emerald-400 hover:bg-emerald-500/10"
+                  disabled={restoreOrg.isPending}
+                >
+                  {restoreOrg.isPending ? <Loader2 className="size-4 animate-spin mr-1" /> : <ArchiveRestore className="size-4 mr-1" />}
+                  Restore Client
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="h-8 px-2 text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
+                >
+                  <Trash2 className="size-4 mr-1" /> Delete Permanently
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowArchiveDialog(true)}
+                className="h-8 px-2 text-muted-foreground hover:text-amber-400 hover:bg-amber-500/10"
+              >
+                <Archive className="size-4 mr-1" /> Archive Client
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* ── KPI Summary — 4 cards ──────────────────────────────── */}
@@ -797,13 +842,58 @@ export default function ClientDetail() {
           </div>
         </div>
 
-        {/* ── Delete Client Confirmation ──────────────────────────── */}
+        {/* ── Archived Banner ──────────────────────────────────── */}
+        {isArchived && (
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Archive className="size-5 text-amber-400" />
+              <div>
+                <span className="text-sm font-medium text-amber-400">This client is archived</span>
+                <p className="text-[12px] text-muted-foreground">All data is preserved. Restore to move back to active clients.</p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => orgId && restoreOrg.mutate({ id: orgId })}
+              disabled={restoreOrg.isPending}
+              className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+            >
+              {restoreOrg.isPending ? <Loader2 className="size-4 animate-spin mr-1" /> : <ArchiveRestore className="size-4 mr-1" />}
+              Restore
+            </Button>
+          </div>
+        )}
+
+        {/* ── Archive Client Confirmation ─────────────────────────── */}
+        <AlertDialog open={showArchiveDialog} onOpenChange={setShowArchiveDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Archive Client</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to archive <strong>{clientName}</strong>? The client and all their data will be preserved but hidden from the active view. You can restore them at any time.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => orgId && archiveOrg.mutate({ id: orgId })}
+                className="bg-amber-600 hover:bg-amber-700 text-white"
+              >
+                {archiveOrg.isPending ? <Loader2 className="size-4 animate-spin mr-1.5" /> : <Archive className="size-4 mr-1.5" />}
+                Archive Client
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* ── Permanent Delete Confirmation ───────────────────────── */}
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Remove Client</AlertDialogTitle>
+              <AlertDialogTitle>Permanently Delete Client</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to remove <strong>{clientName}</strong>? This will delete all venture access links and distributions associated with this client. This action cannot be undone.
+                Are you sure you want to <strong>permanently delete</strong> <strong>{clientName}</strong>? This will remove all venture access links, distributions, invitations, and API keys. <span className="text-red-400 font-medium">This action cannot be undone.</span>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -813,7 +903,7 @@ export default function ClientDetail() {
                 className="bg-red-600 hover:bg-red-700 text-white"
               >
                 {deleteOrg.isPending ? <Loader2 className="size-4 animate-spin mr-1.5" /> : <Trash2 className="size-4 mr-1.5" />}
-                Delete Client
+                Delete Permanently
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

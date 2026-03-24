@@ -307,3 +307,192 @@ describe("distributions (per-client scoping)", () => {
     ).rejects.toThrow();
   });
 });
+
+describe("organizations.archive", () => {
+  it("rejects non-admin users", async () => {
+    const ctx = createRegularUserContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.organizations.archive({ id: 999999 })
+    ).rejects.toThrow();
+  });
+
+  it("throws for non-existent org", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.organizations.archive({ id: 999999 })
+    ).rejects.toThrow("Organization not found");
+  });
+
+  it("can create, archive, and verify status", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    // Create a temp org
+    const slug = "archive-test-" + Date.now();
+    const created = await caller.organizations.create({
+      name: "Archive Test Client",
+      slug,
+    });
+    expect(created).toBeTruthy();
+    expect(created.status).toBe("active");
+
+    // Archive it
+    const result = await caller.organizations.archive({ id: created.id });
+    expect(result.success).toBe(true);
+    expect(result.name).toBe("Archive Test Client");
+
+    // Verify it's archived
+    const found = await caller.organizations.bySlug({ slug });
+    expect(found).not.toBeNull();
+    expect(found!.status).toBe("archived");
+
+    // Clean up — delete it
+    await caller.organizations.delete({ id: created.id });
+  });
+
+  it("throws when archiving an already archived org", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const slug = "archive-double-" + Date.now();
+    const created = await caller.organizations.create({
+      name: "Double Archive Test",
+      slug,
+    });
+
+    await caller.organizations.archive({ id: created.id });
+
+    // Try to archive again
+    await expect(
+      caller.organizations.archive({ id: created.id })
+    ).rejects.toThrow("Organization is already archived");
+
+    // Clean up
+    await caller.organizations.delete({ id: created.id });
+  });
+});
+
+describe("organizations.restore", () => {
+  it("rejects non-admin users", async () => {
+    const ctx = createRegularUserContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.organizations.restore({ id: 999999 })
+    ).rejects.toThrow();
+  });
+
+  it("throws for non-existent org", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.organizations.restore({ id: 999999 })
+    ).rejects.toThrow("Organization not found");
+  });
+
+  it("can archive and then restore a client org", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const slug = "restore-test-" + Date.now();
+    const created = await caller.organizations.create({
+      name: "Restore Test Client",
+      slug,
+    });
+
+    // Archive
+    await caller.organizations.archive({ id: created.id });
+    let found = await caller.organizations.bySlug({ slug });
+    expect(found!.status).toBe("archived");
+
+    // Restore
+    const result = await caller.organizations.restore({ id: created.id });
+    expect(result.success).toBe(true);
+    expect(result.name).toBe("Restore Test Client");
+
+    // Verify it's active again
+    found = await caller.organizations.bySlug({ slug });
+    expect(found!.status).toBe("active");
+
+    // Clean up
+    await caller.organizations.delete({ id: created.id });
+  });
+
+  it("throws when restoring a non-archived org", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const slug = "restore-active-" + Date.now();
+    const created = await caller.organizations.create({
+      name: "Active Restore Test",
+      slug,
+    });
+
+    // Try to restore an active org
+    await expect(
+      caller.organizations.restore({ id: created.id })
+    ).rejects.toThrow("Organization is not archived");
+
+    // Clean up
+    await caller.organizations.delete({ id: created.id });
+  });
+});
+
+describe("organizations.listWithMetrics (includeArchived)", () => {
+  it("default excludes archived orgs", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const slug = "metrics-archived-" + Date.now();
+    const created = await caller.organizations.create({
+      name: "Metrics Archived Test",
+      slug,
+    });
+
+    // Archive it
+    await caller.organizations.archive({ id: created.id });
+
+    // Default list should NOT include it
+    const defaultList = await caller.organizations.listWithMetrics();
+    const found = defaultList.find(o => o.id === created.id);
+    expect(found).toBeUndefined();
+
+    // includeArchived should include it
+    const fullList = await caller.organizations.listWithMetrics({ includeArchived: true });
+    const foundFull = fullList.find(o => o.id === created.id);
+    expect(foundFull).toBeTruthy();
+    expect(foundFull!.status).toBe("archived");
+
+    // Clean up
+    await caller.organizations.delete({ id: created.id });
+  });
+});
+
+describe("organizations.list (includeArchived)", () => {
+  it("default excludes archived orgs", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const slug = "list-archived-" + Date.now();
+    const created = await caller.organizations.create({
+      name: "List Archived Test",
+      slug,
+    });
+
+    await caller.organizations.archive({ id: created.id });
+
+    // Default should exclude
+    const defaultList = await caller.organizations.list();
+    const found = defaultList.find(o => o.id === created.id);
+    expect(found).toBeUndefined();
+
+    // includeArchived should include
+    const fullList = await caller.organizations.list({ includeArchived: true });
+    const foundFull = fullList.find(o => o.id === created.id);
+    expect(foundFull).toBeTruthy();
+
+    // Clean up
+    await caller.organizations.delete({ id: created.id });
+  });
+});
