@@ -30,24 +30,34 @@ const WorkspaceContext = createContext<WorkspaceContextValue>({
 });
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
+  // NOTE: Do NOT set refetchOnWindowFocus: false — we need invalidation from
+  // the dashboard (utils.organizations.list.invalidate()) to trigger a refetch
+  // so the sidebar client list updates after archive/delete.
   const { data: orgs, isLoading, refetch } = trpc.organizations.list.useQuery(undefined, {
     retry: false,
-    refetchOnWindowFocus: false,
   });
 
   const [activeOrg, setActiveOrgState] = useState<Organization | null>(null);
 
   // Persist active org slug in localStorage
+  // Re-runs whenever orgs data changes (including after invalidation)
   useEffect(() => {
-    if (!orgs || orgs.length === 0) return;
+    if (!orgs) return;
+
+    if (orgs.length === 0) {
+      // All orgs removed/archived — clear active
+      setActiveOrgState(null);
+      return;
+    }
 
     const savedSlug = localStorage.getItem("atlas_active_org");
     const saved = orgs.find((o: Organization) => o.slug === savedSlug);
 
     if (saved) {
+      // Update reference with fresh data (e.g., updated ventureCount)
       setActiveOrgState(saved);
     } else {
-      // Default to first client org
+      // Saved org was archived/deleted — default to first available
       setActiveOrgState(orgs[0]);
       localStorage.setItem("atlas_active_org", orgs[0].slug);
     }

@@ -1,7 +1,7 @@
 // ============================================================================
-// ATLAS Admin Dashboard — Multi-Client Command Center
-// Overview of ALL clients with metrics, search, filter, drill-down
-// Supports archive/restore (soft delete) and permanent delete
+// ATLAS Admin Dashboard — Velocity AI Venture System
+// Premium CRM command center for managing 30+ UHNWI/HNWI clients
+// Velocity metrics, completion %, task velocity, progress trends per client
 // ============================================================================
 
 import { cn } from "@/lib/utils";
@@ -15,21 +15,20 @@ import {
   Plus,
   ChevronRight,
   AlertTriangle,
-  CheckCircle2,
-  Clock,
   Users,
   Layers3,
-  Briefcase,
   ListChecks,
   Activity,
   TrendingUp,
-  Filter,
   Loader2,
-  BarChart3,
   Trash2,
   Archive,
   ArchiveRestore,
-  RotateCcw,
+  Zap,
+  Target,
+  ArrowUp,
+  ArrowDown,
+  Minus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useCallback, useMemo } from "react";
@@ -57,7 +56,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 // ── Types ───────────────────────────────────────────────────────────────
-type SortField = "name" | "ventures" | "tasks" | "overdue" | "health" | "team";
+type SortField = "name" | "ventures" | "velocity" | "overdue" | "health" | "completion";
 type ViewMode = "grid" | "table";
 type TabMode = "active" | "archived";
 
@@ -65,21 +64,49 @@ interface AtlasDashboardProps {
   onNavigate: (path: string) => void;
 }
 
-// ── Health bar component ────────────────────────────────────────────────
-function HealthBar({ score, size = "md" }: { score: number; size?: "sm" | "md" }) {
-  const color = score >= 70 ? "#4ADE80" : score >= 40 ? "#F59E0B" : "#EF4444";
-  const label = score >= 70 ? "Healthy" : score >= 40 ? "At Risk" : "Critical";
-  const h = size === "sm" ? "h-1" : "h-1.5";
-  return (
-    <div className="flex items-center gap-2">
-      <div className={cn("flex-1 max-w-[60px] rounded-full bg-secondary overflow-hidden", h)}>
-        <div
-          className={cn("h-full rounded-full transition-all duration-500")}
-          style={{ width: `${score}%`, backgroundColor: color }}
-        />
+// ── Velocity indicator ──────────────────────────────────────────────────
+function VelocityBadge({ rate }: { rate: number }) {
+  if (rate >= 70) {
+    return (
+      <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-emerald-500/10">
+          <ArrowUp className="size-3 text-emerald-400" />
+          <span className="text-[11px] font-mono font-medium text-emerald-400">{rate}%</span>
+        </div>
       </div>
-      <span className="text-[10px] font-medium" style={{ color }}>{label}</span>
+    );
+  }
+  if (rate >= 40) {
+    return (
+      <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-500/10">
+          <Minus className="size-3 text-amber-400" />
+          <span className="text-[11px] font-mono font-medium text-amber-400">{rate}%</span>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-red-500/10">
+        <ArrowDown className="size-3 text-red-400" />
+        <span className="text-[11px] font-mono font-medium text-red-400">{rate}%</span>
+      </div>
     </div>
+  );
+}
+
+// ── Progress ring (mini) ────────────────────────────────────────────────
+function ProgressRing({ value, size = 32 }: { value: number; size?: number }) {
+  const r = (size - 4) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (value / 100) * circ;
+  const color = value >= 70 ? "#4ADE80" : value >= 40 ? "#F59E0B" : "#EF4444";
+  return (
+    <svg width={size} height={size} className="flex-shrink-0 -rotate-90">
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth={2.5} className="text-secondary" />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={2.5} strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" className="transition-all duration-700" />
+    </svg>
   );
 }
 
@@ -161,7 +188,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
   // ── UI state ───────────────────────────────────────────────────────
   const [tabMode, setTabMode] = useState<TabMode>("active");
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortField, setSortField] = useState<SortField>("overdue");
+  const [sortField, setSortField] = useState<SortField>("velocity");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [viewMode, setViewMode] = useState<ViewMode>("table");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -174,25 +201,52 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
   // Current tab's clients
   const clients = tabMode === "active" ? activeClients : archivedClients;
 
+  // ── Velocity calculation per client ───────────────────────────────
+  // Velocity = weighted score: 40% completion rate + 30% health + 30% (100 - overdue%)
+  const clientsWithVelocity = useMemo(() => {
+    return clients.map(c => {
+      const overdueRate = c.totalTasks > 0 ? (c.overdueTasks / c.totalTasks) * 100 : 0;
+      const velocity = Math.round(
+        c.completionRate * 0.4 +
+        c.avgHealth * 0.3 +
+        (100 - overdueRate) * 0.3
+      );
+      return { ...c, velocity };
+    });
+  }, [clients]);
+
   // ── Aggregate KPIs across ACTIVE clients only ─────────────────────
   const kpis = useMemo(() => {
+    const activeWithVelocity = activeClients.map(c => {
+      const overdueRate = c.totalTasks > 0 ? (c.overdueTasks / c.totalTasks) * 100 : 0;
+      const velocity = Math.round(c.completionRate * 0.4 + c.avgHealth * 0.3 + (100 - overdueRate) * 0.3);
+      return { ...c, velocity };
+    });
+
     const totalClients = activeClients.length;
     const totalVentures = activeClients.reduce((s, c) => s + c.ventureCount, 0);
     const totalOpenTasks = activeClients.reduce((s, c) => s + c.openTasks, 0);
     const totalOverdue = activeClients.reduce((s, c) => s + c.overdueTasks, 0);
-    const totalTeam = activeClients.reduce((s, c) => s + c.teamSize, 0);
-    const totalSpvs = activeClients.reduce((s, c) => s + c.spvCount, 0);
-    const avgHealth = activeClients.length > 0
-      ? Math.round(activeClients.reduce((s, c) => s + c.avgHealth, 0) / activeClients.length)
+    const totalCompleted = activeClients.reduce((s, c) => s + c.completedTasks, 0);
+    const totalTasks = activeClients.reduce((s, c) => s + c.totalTasks, 0);
+    const overallCompletion = totalTasks > 0 ? Math.round((totalCompleted / totalTasks) * 100) : 0;
+    const avgVelocity = activeWithVelocity.length > 0
+      ? Math.round(activeWithVelocity.reduce((s, c) => s + c.velocity, 0) / activeWithVelocity.length)
       : 0;
-    const clientsAtRisk = activeClients.filter(c => c.avgHealth < 40).length;
+    const highVelocity = activeWithVelocity.filter(c => c.velocity >= 70).length;
+    const lowVelocity = activeWithVelocity.filter(c => c.velocity < 40).length;
     const clientsNeedingAttention = activeClients.filter(c => c.overdueTasks > 0).length;
-    return { totalClients, totalVentures, totalOpenTasks, totalOverdue, totalTeam, totalSpvs, avgHealth, clientsAtRisk, clientsNeedingAttention };
+
+    return {
+      totalClients, totalVentures, totalOpenTasks, totalOverdue,
+      overallCompletion, avgVelocity, highVelocity, lowVelocity,
+      clientsNeedingAttention, totalTasks, totalCompleted,
+    };
   }, [activeClients]);
 
   // ── Filtered + sorted clients ─────────────────────────────────────
   const filteredClients = useMemo(() => {
-    let list = [...clients];
+    let list = [...clientsWithVelocity];
 
     // Search
     if (searchTerm) {
@@ -205,12 +259,12 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
 
     // Status filter (only for active tab)
     if (tabMode === "active") {
-      if (statusFilter === "at-risk") {
-        list = list.filter(c => c.avgHealth < 40);
+      if (statusFilter === "high-velocity") {
+        list = list.filter(c => c.velocity >= 70);
+      } else if (statusFilter === "low-velocity") {
+        list = list.filter(c => c.velocity < 40);
       } else if (statusFilter === "overdue") {
         list = list.filter(c => c.overdueTasks > 0);
-      } else if (statusFilter === "healthy") {
-        list = list.filter(c => c.avgHealth >= 70);
       }
     }
 
@@ -220,16 +274,16 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
       switch (sortField) {
         case "name": cmp = a.name.localeCompare(b.name); break;
         case "ventures": cmp = a.ventureCount - b.ventureCount; break;
-        case "tasks": cmp = a.openTasks - b.openTasks; break;
+        case "velocity": cmp = a.velocity - b.velocity; break;
         case "overdue": cmp = a.overdueTasks - b.overdueTasks; break;
         case "health": cmp = a.avgHealth - b.avgHealth; break;
-        case "team": cmp = a.teamSize - b.teamSize; break;
+        case "completion": cmp = a.completionRate - b.completionRate; break;
       }
       return sortDir === "desc" ? -cmp : cmp;
     });
 
     return list;
-  }, [clients, searchTerm, sortField, sortDir, statusFilter, tabMode]);
+  }, [clientsWithVelocity, searchTerm, sortField, sortDir, statusFilter, tabMode]);
 
   // ── Sort toggle ────────────────────────────────────────────────────
   const toggleSort = useCallback((field: SortField) => {
@@ -262,8 +316,8 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
   if (isLoading) {
     return (
       <div className="p-4 sm:p-5 md:p-6 space-y-5">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
         </div>
         <Skeleton className="h-12 rounded-xl" />
         <div className="space-y-2">
@@ -276,40 +330,43 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
   return (
     <div className="p-4 sm:p-5 md:p-6 space-y-5 pb-24 md:pb-6">
 
-      {/* ── Platform KPIs ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* ── Velocity System KPIs ──────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {[
+          {
+            label: "Avg Velocity",
+            value: `${kpis.avgVelocity}%`,
+            sub: `${kpis.highVelocity} high · ${kpis.lowVelocity} low`,
+            icon: <Zap className="size-4" />,
+            color: kpis.avgVelocity >= 70 ? "#4ADE80" : kpis.avgVelocity >= 40 ? "#F59E0B" : "#EF4444",
+          },
           {
             label: "Clients",
             value: kpis.totalClients,
-            sub: `${kpis.clientsNeedingAttention} need attention`,
+            sub: kpis.clientsNeedingAttention > 0 ? `${kpis.clientsNeedingAttention} need attention` : "all on track",
             icon: <Building2 className="size-4" />,
             color: "#5B8DBE",
-            alert: kpis.clientsNeedingAttention > 0,
           },
           {
-            label: "Total Ventures",
+            label: "Ventures",
             value: kpis.totalVentures,
             sub: `across ${kpis.totalClients} clients`,
             icon: <Layers3 className="size-4" />,
             color: "#8B5CF6",
-            alert: false,
           },
           {
-            label: "Open Tasks",
-            value: kpis.totalOpenTasks,
-            sub: kpis.totalOverdue > 0 ? `${kpis.totalOverdue} overdue` : "all on track",
-            icon: <ListChecks className="size-4" />,
-            color: kpis.totalOverdue > 0 ? "#EF4444" : "#F59E0B",
-            alert: kpis.totalOverdue > 0,
+            label: "Completion",
+            value: `${kpis.overallCompletion}%`,
+            sub: `${kpis.totalCompleted}/${kpis.totalTasks} tasks`,
+            icon: <Target className="size-4" />,
+            color: kpis.overallCompletion >= 70 ? "#4ADE80" : kpis.overallCompletion >= 40 ? "#F59E0B" : "#EF4444",
           },
           {
-            label: "Avg Health",
-            value: `${kpis.avgHealth}%`,
-            sub: kpis.clientsAtRisk > 0 ? `${kpis.clientsAtRisk} at risk` : "all healthy",
-            icon: <Activity className="size-4" />,
-            color: kpis.avgHealth >= 70 ? "#4ADE80" : kpis.avgHealth >= 40 ? "#F59E0B" : "#EF4444",
-            alert: kpis.clientsAtRisk > 0,
+            label: "Overdue",
+            value: kpis.totalOverdue,
+            sub: kpis.totalOverdue > 0 ? "require action" : "none pending",
+            icon: <AlertTriangle className="size-4" />,
+            color: kpis.totalOverdue > 0 ? "#EF4444" : "#4ADE80",
           },
         ].map((m, i) => (
           <motion.div
@@ -323,7 +380,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
               <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">
                 {m.label}
               </span>
-              <span className={cn("opacity-60")} style={{ color: m.color }}>{m.icon}</span>
+              <span className="opacity-60" style={{ color: m.color }}>{m.icon}</span>
             </div>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-semibold tracking-tight text-foreground font-mono">
@@ -331,7 +388,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
               </span>
               <span className={cn(
                 "text-[10px] font-mono",
-                m.alert ? "text-red-400" : "text-muted-foreground"
+                typeof m.value === "number" && m.value > 0 && m.label === "Overdue" ? "text-red-400" : "text-muted-foreground"
               )}>
                 {m.sub}
               </span>
@@ -394,9 +451,9 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
           <div className="flex items-center gap-1.5 overflow-x-auto">
             {[
               { key: "all", label: "All", count: activeClients.length },
+              { key: "high-velocity", label: "High Velocity", count: clientsWithVelocity.filter(c => c.velocity >= 70 && c.status !== "archived").length },
+              { key: "low-velocity", label: "Low Velocity", count: clientsWithVelocity.filter(c => c.velocity < 40 && c.status !== "archived").length },
               { key: "overdue", label: "Overdue", count: activeClients.filter(c => c.overdueTasks > 0).length },
-              { key: "at-risk", label: "At Risk", count: activeClients.filter(c => c.avgHealth < 40).length },
-              { key: "healthy", label: "Healthy", count: activeClients.filter(c => c.avgHealth >= 70).length },
             ].map(f => (
               <button
                 key={f.key}
@@ -477,9 +534,9 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                 {[
                   { field: "name" as SortField, label: "Client" },
                   { field: "ventures" as SortField, label: "Ventures" },
-                  { field: "tasks" as SortField, label: "Open Tasks" },
+                  { field: "velocity" as SortField, label: "Velocity" },
+                  { field: "completion" as SortField, label: "Completion" },
                   { field: "overdue" as SortField, label: "Overdue" },
-                  { field: "team" as SortField, label: "Team" },
                   { field: "health" as SortField, label: "Health" },
                 ].map(col => (
                   <th
@@ -493,9 +550,6 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                     </div>
                   </th>
                 ))}
-                <th className="text-left text-[11px] uppercase tracking-wider text-muted-foreground font-medium p-3 sm:p-4">
-                  Completion
-                </th>
                 <th className="p-3 sm:p-4 text-right text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
                   Actions
                 </th>
@@ -514,23 +568,14 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                     client.status === "archived" && "opacity-60"
                   )}
                 >
+                  {/* Client name + sectors */}
                   <td className="p-3 sm:p-4">
                     <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "size-9 rounded-lg flex items-center justify-center flex-shrink-0",
-                        client.status === "archived" ? "bg-muted" :
-                        client.avgHealth >= 70 ? "bg-emerald-500/10" :
-                        client.avgHealth >= 40 ? "bg-amber-500/10" : "bg-red-500/10"
-                      )}>
-                        {client.status === "archived" ? (
-                          <Archive className="size-4 text-muted-foreground" />
-                        ) : (
-                          <Building2 className={cn(
-                            "size-4",
-                            client.avgHealth >= 70 ? "text-emerald-400" :
-                            client.avgHealth >= 40 ? "text-amber-400" : "text-red-400"
-                          )} />
-                        )}
+                      <div className="relative">
+                        <ProgressRing value={client.velocity} size={36} />
+                        <span className="absolute inset-0 flex items-center justify-center text-[8px] font-mono font-bold text-foreground">
+                          {client.velocity}
+                        </span>
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
@@ -548,20 +593,21 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                       </div>
                     </div>
                   </td>
-                  <td className="p-3 sm:p-4 font-mono text-foreground">{client.ventureCount}</td>
-                  <td className="p-3 sm:p-4 font-mono text-foreground">{client.openTasks}</td>
-                  <td className="p-3 sm:p-4">
-                    <OverdueBadge count={client.overdueTasks} />
-                  </td>
+
+                  {/* Ventures */}
                   <td className="p-3 sm:p-4">
                     <div className="flex items-center gap-1.5">
-                      <Users className="size-3 text-muted-foreground" />
-                      <span className="font-mono text-foreground">{client.teamSize}</span>
+                      <Layers3 className="size-3 text-muted-foreground" />
+                      <span className="font-mono text-foreground">{client.ventureCount}</span>
                     </div>
                   </td>
+
+                  {/* Velocity */}
                   <td className="p-3 sm:p-4">
-                    <HealthBar score={client.avgHealth} size="sm" />
+                    <VelocityBadge rate={client.velocity} />
                   </td>
+
+                  {/* Completion */}
                   <td className="p-3 sm:p-4">
                     <div className="flex items-center gap-2">
                       <div className="w-16 h-1.5 rounded-full bg-secondary overflow-hidden">
@@ -576,27 +622,46 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                       <span className="font-mono text-[11px] text-muted-foreground">{client.completionRate}%</span>
                     </div>
                   </td>
+
+                  {/* Overdue */}
+                  <td className="p-3 sm:p-4">
+                    <OverdueBadge count={client.overdueTasks} />
+                  </td>
+
+                  {/* Health */}
+                  <td className="p-3 sm:p-4">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 max-w-[60px] h-1.5 rounded-full bg-secondary overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${client.avgHealth}%`,
+                            backgroundColor: client.avgHealth >= 70 ? "#4ADE80" : client.avgHealth >= 40 ? "#F59E0B" : "#EF4444",
+                          }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-medium" style={{
+                        color: client.avgHealth >= 70 ? "#4ADE80" : client.avgHealth >= 40 ? "#F59E0B" : "#EF4444"
+                      }}>
+                        {client.avgHealth >= 70 ? "Healthy" : client.avgHealth >= 40 ? "At Risk" : "Critical"}
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Actions */}
                   <td className="p-3 sm:p-4">
                     <div className="flex items-center justify-end gap-1.5">
                       {client.status === "archived" ? (
                         <>
-                          {/* Restore button for archived clients */}
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              restoreOrg.mutate({ id: client.id });
-                            }}
+                            onClick={(e) => { e.stopPropagation(); restoreOrg.mutate({ id: client.id }); }}
                             className="p-1.5 rounded-md text-muted-foreground hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors opacity-0 group-hover:opacity-100"
                             title="Restore client"
                           >
                             <ArchiveRestore className="size-3.5" />
                           </button>
-                          {/* Permanent delete for archived clients */}
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeleteTarget({ id: client.id, name: client.name });
-                            }}
+                            onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: client.id, name: client.name }); }}
                             className="p-1.5 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
                             title="Permanently delete"
                           >
@@ -604,12 +669,8 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                           </button>
                         </>
                       ) : (
-                        /* Archive button for active clients */
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setArchiveTarget({ id: client.id, name: client.name });
-                          }}
+                          onClick={(e) => { e.stopPropagation(); setArchiveTarget({ id: client.id, name: client.name }); }}
                           className="p-1.5 rounded-md text-muted-foreground hover:text-amber-400 hover:bg-amber-500/10 transition-colors opacity-0 group-hover:opacity-100"
                           title="Archive client"
                         >
@@ -644,20 +705,14 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                 {client.status === "archived" ? (
                   <>
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        restoreOrg.mutate({ id: client.id });
-                      }}
+                      onClick={(e) => { e.stopPropagation(); restoreOrg.mutate({ id: client.id }); }}
                       className="p-1.5 rounded-md text-muted-foreground hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
                       title="Restore client"
                     >
                       <ArchiveRestore className="size-3.5" />
                     </button>
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDeleteTarget({ id: client.id, name: client.name });
-                      }}
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: client.id, name: client.name }); }}
                       className="p-1.5 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
                       title="Permanently delete"
                     >
@@ -666,10 +721,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                   </>
                 ) : (
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setArchiveTarget({ id: client.id, name: client.name });
-                    }}
+                    onClick={(e) => { e.stopPropagation(); setArchiveTarget({ id: client.id, name: client.name }); }}
                     className="p-1.5 rounded-md text-muted-foreground hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
                     title="Archive client"
                   >
@@ -678,42 +730,50 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                 )}
               </div>
 
-              {/* Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className={cn(
-                    "size-10 rounded-lg flex items-center justify-center",
-                    client.status === "archived" ? "bg-muted" :
-                    client.avgHealth >= 70 ? "bg-emerald-500/10" :
-                    client.avgHealth >= 40 ? "bg-amber-500/10" : "bg-red-500/10"
-                  )}>
+              {/* Header with velocity ring */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="relative">
+                  <ProgressRing value={client.velocity} size={44} />
+                  <span className="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-bold text-foreground">
+                    {client.velocity}
+                  </span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-foreground">{client.name}</span>
+                  </div>
+                  <span className="text-[11px] text-muted-foreground">
                     {client.status === "archived" ? (
-                      <Archive className="size-4 text-muted-foreground" />
+                      <span className="text-amber-400">Archived</span>
                     ) : (
-                      <Building2 className={cn(
-                        "size-4",
-                        client.avgHealth >= 70 ? "text-emerald-400" :
-                        client.avgHealth >= 40 ? "text-amber-400" : "text-red-400"
-                      )} />
+                      client.sectors.slice(0, 2).join(", ") || "No sectors"
                     )}
+                  </span>
+                </div>
+              </div>
+
+              {/* Velocity + Completion bar */}
+              <div className="mb-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Velocity</span>
+                  <VelocityBadge rate={client.velocity} />
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${client.completionRate}%`,
+                        backgroundColor: client.completionRate >= 70 ? "#4ADE80" : client.completionRate >= 40 ? "#F59E0B" : "#EF4444",
+                      }}
+                    />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-foreground">{client.name}</span>
-                    </div>
-                    <span className="text-[11px] text-muted-foreground">
-                      {client.status === "archived" ? (
-                        <span className="text-amber-400">Archived</span>
-                      ) : (
-                        client.sectors.slice(0, 2).join(", ")
-                      )}
-                    </span>
-                  </div>
+                  <span className="text-[10px] font-mono text-muted-foreground">{client.completionRate}%</span>
                 </div>
               </div>
 
               {/* Metrics grid */}
-              <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="grid grid-cols-3 gap-3 mb-3">
                 <div>
                   <span className="text-lg font-mono font-semibold text-foreground">{client.ventureCount}</span>
                   <p className="text-[10px] text-muted-foreground">Ventures</p>
@@ -728,7 +788,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                 </div>
               </div>
 
-              {/* Distributions amount */}
+              {/* Distributions */}
               {client.totalDistributions > 0 && (
                 <div className="mb-3 flex items-center gap-1.5">
                   <span className="text-[11px] text-muted-foreground">Distributions:</span>
@@ -738,26 +798,25 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                 </div>
               )}
 
-              {/* Health + Overdue + Completion */}
-              <div className="pt-3 border-t border-border/50 space-y-2">
-                <div className="flex items-center justify-between">
-                  <HealthBar score={client.avgHealth} />
-                  {client.overdueTasks > 0 && (
-                    <OverdueBadge count={client.overdueTasks} />
-                  )}
-                </div>
+              {/* Health + Overdue */}
+              <div className="pt-3 border-t border-border/50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 h-1 rounded-full bg-secondary overflow-hidden">
+                  <div className="w-12 h-1 rounded-full bg-secondary overflow-hidden">
                     <div
-                      className="h-full rounded-full transition-all duration-500"
+                      className="h-full rounded-full"
                       style={{
-                        width: `${client.completionRate}%`,
-                        backgroundColor: client.completionRate >= 70 ? "#4ADE80" : client.completionRate >= 40 ? "#F59E0B" : "#EF4444",
+                        width: `${client.avgHealth}%`,
+                        backgroundColor: client.avgHealth >= 70 ? "#4ADE80" : client.avgHealth >= 40 ? "#F59E0B" : "#EF4444",
                       }}
                     />
                   </div>
-                  <span className="text-[10px] font-mono text-muted-foreground">{client.completionRate}% done</span>
+                  <span className="text-[10px] font-medium" style={{
+                    color: client.avgHealth >= 70 ? "#4ADE80" : client.avgHealth >= 40 ? "#F59E0B" : "#EF4444"
+                  }}>
+                    {client.avgHealth}%
+                  </span>
                 </div>
+                {client.overdueTasks > 0 && <OverdueBadge count={client.overdueTasks} />}
               </div>
             </motion.div>
           ))}
@@ -777,7 +836,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">Client Name</label>
               <Input
-                placeholder="e.g., Meridian Capital Holdings"
+                placeholder="e.g., FL1 Capital"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddClient()}

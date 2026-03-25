@@ -763,3 +763,25 @@
 - [x] Premium aesthetic — clean, minimal navigation
 - [x] Seamless navigation — click client → see everything about them
 - [x] All 218 tests passing
+
+## Fix: Sidebar Client List — Hide Archived/Deleted Clients
+- [x] Filter sidebar quick client list to only show active clients (exclude archived)
+
+## Fix: Sidebar Refresh After Archive/Delete
+- [x] Removed refetchOnWindowFocus:false from WorkspaceContext so invalidation propagates
+- [x] Added proper cleanup when active org is archived/deleted (falls back to first available)
+- [x] Dashboard invalidateAll() now correctly triggers sidebar refresh
+- [x] 3 new sidebar refresh tests (archived disappears, deleted disappears, restored reappears)
+
+## Velocity AI Metrics on Admin Dashboard
+- [x] Added velocity calculation per client: 40% completion + 30% health + 30% (100 - overdue%)
+- [x] Velocity KPI card in dashboard summary bar (Avg Velocity across all clients)
+- [x] Velocity badge per client row (green arrow up ≥70%, amber dash ≥40%, red arrow down <40%)
+- [x] Progress ring with velocity score next to each client name
+- [x] Completion progress bar per client in table and grid views
+- [x] Health indicator per client (Healthy/At Risk/Critical)
+- [x] Filter pills: High Velocity, Low Velocity, Overdue
+- [x] Sort by velocity column
+- [x] Grid view with velocity rings, completion bars, metrics
+- [x] 4 new velocity metric tests (data validation, bounds checks, task math)
+- [x] All 225 tests passing

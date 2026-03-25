@@ -496,3 +496,131 @@ describe("organizations.list (includeArchived)", () => {
     await caller.organizations.delete({ id: created.id });
   });
 });
+
+describe("velocity metrics calculation", () => {
+  it("listWithMetrics returns data needed for velocity calculation", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.organizations.listWithMetrics();
+    for (const org of result) {
+      // All fields needed for velocity formula exist and are numbers
+      expect(typeof org.completionRate).toBe("number");
+      expect(typeof org.avgHealth).toBe("number");
+      expect(typeof org.overdueTasks).toBe("number");
+      expect(typeof org.totalTasks).toBe("number");
+
+      // Velocity = 40% completionRate + 30% avgHealth + 30% (100 - overdueRate)
+      const overdueRate = org.totalTasks > 0 ? (org.overdueTasks / org.totalTasks) * 100 : 0;
+      const velocity = Math.round(
+        org.completionRate * 0.4 +
+        org.avgHealth * 0.3 +
+        (100 - overdueRate) * 0.3
+      );
+      // Velocity should be between 0 and 100
+      expect(velocity).toBeGreaterThanOrEqual(0);
+      expect(velocity).toBeLessThanOrEqual(100);
+    }
+  });
+
+  it("avgHealth is between 0 and 100", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.organizations.listWithMetrics();
+    for (const org of result) {
+      expect(org.avgHealth).toBeGreaterThanOrEqual(0);
+      expect(org.avgHealth).toBeLessThanOrEqual(100);
+    }
+  });
+
+  it("overdueTasks is non-negative and <= totalTasks", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.organizations.listWithMetrics();
+    for (const org of result) {
+      expect(org.overdueTasks).toBeGreaterThanOrEqual(0);
+      expect(org.overdueTasks).toBeLessThanOrEqual(org.totalTasks);
+    }
+  });
+
+  it("completedTasks + openTasks equals totalTasks", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.organizations.listWithMetrics();
+    for (const org of result) {
+      expect(org.completedTasks + org.openTasks).toBe(org.totalTasks);
+    }
+  });
+});
+
+describe("sidebar refresh: list excludes archived after archive", () => {
+  it("archived org disappears from default list (sidebar source)", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const slug = "sidebar-refresh-" + Date.now();
+    const created = await caller.organizations.create({
+      name: "Sidebar Refresh Test",
+      slug,
+    });
+
+    // Verify it appears in default list
+    let list = await caller.organizations.list();
+    expect(list.some(o => o.id === created.id)).toBe(true);
+
+    // Archive it
+    await caller.organizations.archive({ id: created.id });
+
+    // Verify it no longer appears in default list (this is what the sidebar reads)
+    list = await caller.organizations.list();
+    expect(list.some(o => o.id === created.id)).toBe(false);
+
+    // Clean up
+    await caller.organizations.delete({ id: created.id });
+  });
+
+  it("deleted org disappears from default list (sidebar source)", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const slug = "sidebar-delete-" + Date.now();
+    const created = await caller.organizations.create({
+      name: "Sidebar Delete Test",
+      slug,
+    });
+
+    // Verify it appears in default list
+    let list = await caller.organizations.list();
+    expect(list.some(o => o.id === created.id)).toBe(true);
+
+    // Delete it
+    await caller.organizations.delete({ id: created.id });
+
+    // Verify it no longer appears in default list
+    list = await caller.organizations.list();
+    expect(list.some(o => o.id === created.id)).toBe(false);
+  });
+
+  it("restored org reappears in default list (sidebar source)", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const slug = "sidebar-restore-" + Date.now();
+    const created = await caller.organizations.create({
+      name: "Sidebar Restore Test",
+      slug,
+    });
+
+    // Archive
+    await caller.organizations.archive({ id: created.id });
+    let list = await caller.organizations.list();
+    expect(list.some(o => o.id === created.id)).toBe(false);
+
+    // Restore
+    await caller.organizations.restore({ id: created.id });
+    list = await caller.organizations.list();
+    expect(list.some(o => o.id === created.id)).toBe(true);
+
+    // Clean up
+    await caller.organizations.delete({ id: created.id });
+  });
+});
