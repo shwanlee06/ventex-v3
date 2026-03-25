@@ -87,9 +87,18 @@ export const teamRouter = router({
   listInternal: publicProcedure.query(async () => {
     const db = await getDb();
     if (!db) return [];
+    // Sort by role hierarchy: Founder/CEO first, then Partners, then others, then alphabetical
     return db.select().from(teamMembers)
       .where(eq(teamMembers.type, "Internal"))
-      .orderBy(desc(teamMembers.createdAt));
+      .orderBy(
+        sql`CASE
+          WHEN ${teamMembers.role} LIKE '%Founder%' OR ${teamMembers.role} LIKE '%CEO%' THEN 1
+          WHEN ${teamMembers.role} LIKE '%Partner%' THEN 2
+          WHEN ${teamMembers.role} LIKE '%Director%' OR ${teamMembers.role} LIKE '%VP%' THEN 3
+          ELSE 4
+        END`,
+        teamMembers.name
+      );
   }),
 
   /**

@@ -1,0 +1,31 @@
+{
+  "query": "SELECT id, name, role, type, createdAt FROM team_members WHERE type = 'Internal' ORDER BY createdAt DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, role, type, createdAt FROM team_members WHERE type = 'Internal' ORDER BY createdAt DESC;",
+  "rows": [
+    {
+      "id": "60010",
+      "name": "Brian Chen",
+      "role": "Partner",
+      "type": "Internal",
+      "createdAt": "2026-03-25 23:08:02"
+    },
+    {
+      "id": "60011",
+      "name": "Chris Phelps",
+      "role": "Partner",
+      "type": "Internal",
+      "createdAt": "2026-03-25 23:08:02"
+    },
+    {
+      "id": "11",
+      "name": "Shwan Lee",
+      "role": "Founder & CEO",
+      "type": "Internal",
+      "createdAt": "2026-03-15 19:19:20"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\trole\ttype\tcreatedAt\n60010\tBrian Chen\tPartner\tInternal\t2026-03-25 23:08:02\n60011\tChris Phelps\tPartner\tInternal\t2026-03-25 23:08:02\n11\tShwan Lee\tFounder & CEO\tInternal\t2026-03-15 19:19:20\n",
+  "stderr": "",
+  "execution_time_ms": 402
+}

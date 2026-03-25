@@ -900,3 +900,7 @@
 
 ## Remove WorkloadCapacity from ATLAS Team Page
 - [x] Remove WorkloadCapacity import and component from AtlasTeam.tsx
+
+## Fix: ATLAS Team Sort Order
+- [x] Investigate why Brian Chen appears at top of ATLAS Team page
+- [x] Fix sort order so Shwan Lee (Founder & CEO) appears first, then by role hierarchy
