@@ -1,10 +1,31 @@
 import { z } from "zod";
-import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { tasks, activityLog, ventures } from "../../drizzle/schema";
-import { eq, desc, and, sql, inArray, isNull } from "drizzle-orm";
+import { tasks, activityLog, ventures, orgVentureAccess, organizations, ventureTeam, teamMembers } from "../../drizzle/schema";
+import { eq, desc, and, sql, inArray, isNull, ne } from "drizzle-orm";
 import { isAtlasTeam, getOrgVentureIds, resolveVentureScope } from "../security/rbac";
-import { createNotification, NOTIF_TYPES } from "../notificationHelper";
+import { createNotification, createBulkNotifications, NOTIF_TYPES } from "../notificationHelper";
+
+/**
+ * Calculate days overdue for a task.
+ * Returns 0 if not overdue, positive number = days past due.
+ */
+export function calculateDaysOverdue(dueDate: string | null, now: Date = new Date()): number {
+  if (!dueDate) return 0;
+  const due = new Date(dueDate);
+  const diffMs = now.getTime() - due.getTime();
+  if (diffMs <= 0) return 0;
+  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * Get overdue severity based on days overdue.
+ */
+export function getOverdueSeverity(daysOverdue: number): "critical" | "warning" | "info" {
+  if (daysOverdue >= 14) return "critical";
+  if (daysOverdue >= 7) return "warning";
+  return "info";
+}
 
 export const tasksRouter = router({
   // List tasks — scoped by org for clients, optionally scoped for ATLAS admin
@@ -165,4 +186,216 @@ export const tasksRouter = router({
       }
       return { total: all.length, open, complete, overdue };
     }),
+
+  /**
+   * List all overdue tasks with enriched data (venture name, client name, days overdue).
+   * Admin only — returns all overdue tasks across all clients.
+   */
+  listOverdue: adminProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+
+    const now = new Date();
+    const allTasks = await db.select().from(tasks);
+    const allVentures = await db.select().from(ventures);
+    const allAccess = await db.select().from(orgVentureAccess);
+    const allOrgs = await db.select().from(organizations);
+
+    // Build lookup maps
+    const ventureMap = new Map(allVentures.map(v => [v.id, v]));
+    const orgMap = new Map(allOrgs.map(o => [o.id, o]));
+    const ventureToOrg = new Map<number, number>();
+    for (const a of allAccess) {
+      ventureToOrg.set(a.ventureId, a.organizationId);
+    }
+
+    // Filter overdue tasks
+    const overdueTasks = allTasks
+      .filter(t => t.status !== "complete" && t.dueDate && new Date(t.dueDate) < now)
+      .map(t => {
+        const daysOverdue = calculateDaysOverdue(t.dueDate, now);
+        const severity = getOverdueSeverity(daysOverdue);
+        const venture = t.ventureId ? ventureMap.get(t.ventureId) : null;
+        const orgId = t.ventureId ? ventureToOrg.get(t.ventureId) : null;
+        const org = orgId ? orgMap.get(orgId) : null;
+
+        return {
+          ...t,
+          daysOverdue,
+          severity,
+          ventureName: venture?.name || null,
+          ventureSlug: venture?.slug || null,
+          clientName: org?.name || null,
+          clientSlug: org?.slug || null,
+        };
+      })
+      .sort((a, b) => b.daysOverdue - a.daysOverdue); // Most overdue first
+
+    return overdueTasks;
+  }),
+
+  /**
+   * Get overdue task summary grouped by client organization.
+   * Admin only — for the ATLAS dashboard overview.
+   */
+  overdueByClient: adminProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+
+    const now = new Date();
+    const allTasks = await db.select().from(tasks);
+    const allAccess = await db.select().from(orgVentureAccess);
+    const allOrgs = await db.select().from(organizations)
+      .where(and(eq(organizations.type, "client"), ne(organizations.status, "archived")));
+
+    // Build venture -> org mapping
+    const ventureToOrg = new Map<number, number>();
+    for (const a of allAccess) {
+      ventureToOrg.set(a.ventureId, a.organizationId);
+    }
+
+    // Group overdue tasks by org
+    const orgOverdue = new Map<number, { count: number; maxDays: number; criticalCount: number; tasks: { id: number; title: string; daysOverdue: number; priority: string | null; severity: string }[] }>();
+
+    for (const t of allTasks) {
+      if (t.status === "complete" || !t.dueDate) continue;
+      const daysOverdue = calculateDaysOverdue(t.dueDate, now);
+      if (daysOverdue <= 0) continue;
+
+      const orgId = t.ventureId ? ventureToOrg.get(t.ventureId) : null;
+      if (!orgId) continue;
+
+      const severity = getOverdueSeverity(daysOverdue);
+      const existing = orgOverdue.get(orgId) || { count: 0, maxDays: 0, criticalCount: 0, tasks: [] };
+      existing.count++;
+      existing.maxDays = Math.max(existing.maxDays, daysOverdue);
+      if (severity === "critical") existing.criticalCount++;
+      existing.tasks.push({
+        id: t.id,
+        title: t.title,
+        daysOverdue,
+        priority: t.priority,
+        severity,
+      });
+      orgOverdue.set(orgId, existing);
+    }
+
+    return allOrgs.map(org => {
+      const data = orgOverdue.get(org.id);
+      return {
+        orgId: org.id,
+        orgName: org.name,
+        orgSlug: org.slug,
+        overdueCount: data?.count || 0,
+        maxDaysOverdue: data?.maxDays || 0,
+        criticalCount: data?.criticalCount || 0,
+        overdueTasks: data?.tasks?.sort((a, b) => b.daysOverdue - a.daysOverdue).slice(0, 5) || [],
+      };
+    }).filter(o => o.overdueCount > 0).sort((a, b) => b.maxDaysOverdue - a.maxDaysOverdue);
+  }),
+
+  /**
+   * Scan for overdue tasks and create notifications for newly overdue ones.
+   * Admin only — should be called periodically (e.g., daily) or on-demand.
+   * Returns count of new notifications created.
+   */
+  scanAndNotify: adminProcedure.mutation(async () => {
+    const db = await getDb();
+    if (!db) return { notified: 0 };
+
+    const now = new Date();
+    const allTasks = await db.select().from(tasks);
+    const allVentures = await db.select().from(ventures);
+    const ventureMap = new Map(allVentures.map(v => [v.id, v]));
+
+    const overdueTasks = allTasks.filter(t =>
+      t.status !== "complete" && t.dueDate && new Date(t.dueDate) < now
+    );
+
+    if (overdueTasks.length === 0) return { notified: 0 };
+
+    // Create notifications for overdue tasks
+    const notifs = overdueTasks.map(t => {
+      const daysOverdue = calculateDaysOverdue(t.dueDate, now);
+      const severity = getOverdueSeverity(daysOverdue);
+      const venture = t.ventureId ? ventureMap.get(t.ventureId) : null;
+
+      return {
+        type: NOTIF_TYPES.TASK_OVERDUE,
+        category: severity as "info" | "warning" | "critical",
+        title: `Overdue: ${t.title}`,
+        message: `${daysOverdue} day${daysOverdue !== 1 ? "s" : ""} past due${venture ? ` (${venture.name})` : ""}`,
+        entityType: "task" as const,
+        entityId: t.id,
+        entityName: t.title,
+        actorName: "System",
+      };
+    });
+
+    await createBulkNotifications(notifs);
+
+    return { notified: notifs.length, overdueTasks: overdueTasks.length };
+  }),
+
+  /**
+   * Get workload summary per team member — tasks assigned, overdue, completion rate.
+   * Admin only — for ATLAS Team capacity view.
+   */
+  workloadSummary: adminProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+
+    const now = new Date();
+    const allTasks = await db.select().from(tasks);
+    const allMembers = await db.select().from(teamMembers);
+
+    // Build a map of member name -> workload stats
+    const workload = new Map<string, {
+      assigned: number;
+      completed: number;
+      overdue: number;
+      highPriority: number;
+    }>();
+
+    for (const t of allTasks) {
+      const assignees = t.assigneeNames || [];
+      for (const name of assignees) {
+        const existing = workload.get(name) || { assigned: 0, completed: 0, overdue: 0, highPriority: 0 };
+        existing.assigned++;
+        if (t.status === "complete") {
+          existing.completed++;
+        } else {
+          if (t.dueDate && new Date(t.dueDate) < now) existing.overdue++;
+          if (t.priority === "High") existing.highPriority++;
+        }
+        workload.set(name, existing);
+      }
+    }
+
+    // Merge with team member data
+    return allMembers.map(m => {
+      const stats = workload.get(m.name) || { assigned: 0, completed: 0, overdue: 0, highPriority: 0 };
+      const completionRate = stats.assigned > 0 ? Math.round((stats.completed / stats.assigned) * 100) : 0;
+
+      // Capacity indicator: green (<5 open), amber (5-10), red (>10 or any overdue)
+      const openTasks = stats.assigned - stats.completed;
+      let capacityStatus: "available" | "busy" | "overloaded" = "available";
+      if (stats.overdue > 0 || openTasks > 10) capacityStatus = "overloaded";
+      else if (openTasks >= 5) capacityStatus = "busy";
+
+      return {
+        memberId: m.id,
+        memberName: m.name,
+        memberType: m.type,
+        memberFunction: m.memberFunction,
+        organizationId: m.organizationId,
+        assigned: stats.assigned,
+        completed: stats.completed,
+        overdue: stats.overdue,
+        highPriority: stats.highPriority,
+        completionRate,
+        capacityStatus,
+      };
+    }).filter(m => m.assigned > 0 || m.memberType === "Internal"); // Show all internal + anyone with tasks
+  }),
 });

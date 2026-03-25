@@ -1,0 +1,59 @@
+{
+  "query": "SELECT id, name, type, role, organizationId FROM team_members ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, type, role, organizationId FROM team_members ORDER BY id;",
+  "rows": [
+    {
+      "id": "6",
+      "name": "Carl Frangi",
+      "type": "Advisor",
+      "role": "Member",
+      "organizationId": "2"
+    },
+    {
+      "id": "7",
+      "name": "Leonidas Kyrris",
+      "type": "Advisor",
+      "role": "Legal (maritime focus)",
+      "organizationId": "2"
+    },
+    {
+      "id": "8",
+      "name": "Igor",
+      "type": "External Partner",
+      "role": "Deck Design",
+      "organizationId": "2"
+    },
+    {
+      "id": "9",
+      "name": "Sohail",
+      "type": "External Partner",
+      "role": "Financial Modeling",
+      "organizationId": "2"
+    },
+    {
+      "id": "10",
+      "name": "Ruwaida",
+      "type": "External Partner",
+      "role": "Yacht Design",
+      "organizationId": "2"
+    },
+    {
+      "id": "11",
+      "name": "Shwan Lee",
+      "type": "Internal",
+      "role": "Founder & CEO",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "12",
+      "name": "Najib",
+      "type": "Advisor",
+      "role": "Advisor",
+      "organizationId": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\ttype\trole\torganizationId\n6\tCarl Frangi\tAdvisor\tMember\t2\n7\tLeonidas Kyrris\tAdvisor\tLegal (maritime focus)\t2\n8\tIgor\tExternal Partner\tDeck Design\t2\n9\tSohail\tExternal Partner\tFinancial Modeling\t2\n10\tRuwaida\tExternal Partner\tYacht Design\t2\n11\tShwan Lee\tInternal\tFounder & CEO\tNULL\n12\tNajib\tAdvisor\tAdvisor\t2\n",
+  "stderr": "",
+  "execution_time_ms": 345
+}

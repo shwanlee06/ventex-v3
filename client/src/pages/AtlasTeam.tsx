@@ -38,6 +38,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import LiveStatusDot from "@/components/LiveStatusDot";
 import type { LiveStatus } from "@/components/LiveStatusDot";
+import WorkloadCapacity from "@/components/WorkloadCapacity";
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -285,7 +286,10 @@ export default function AtlasTeam() {
           )}
         </div>
 
-        {/* ── Header + Actions ───────────────────────────────────── */}
+        {/* ── Workload Capacity ─────────────────────────────── */}
+        <WorkloadCapacity />
+
+        {/* ── Header + Actions ───────────────────────────────── */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Shield className="size-4 text-primary" />

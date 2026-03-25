@@ -1,0 +1,234 @@
+{
+  "query": "SELECT * FROM org_venture_access WHERE organizationId >= 30000 OR ventureId >= 30000;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT * FROM org_venture_access WHERE organizationId >= 30000 OR ventureId >= 30000;",
+  "rows": [
+    {
+      "id": "30001",
+      "organizationId": "2",
+      "ventureId": "30002",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 01:51:19"
+    },
+    {
+      "id": "30002",
+      "organizationId": "2",
+      "ventureId": "30005",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 01:56:31"
+    },
+    {
+      "id": "30003",
+      "organizationId": "2",
+      "ventureId": "30008",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 02:07:54"
+    },
+    {
+      "id": "30004",
+      "organizationId": "2",
+      "ventureId": "30011",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 02:21:26"
+    },
+    {
+      "id": "30005",
+      "organizationId": "2",
+      "ventureId": "30014",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 02:27:43"
+    },
+    {
+      "id": "30006",
+      "organizationId": "2",
+      "ventureId": "30017",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 02:28:15"
+    },
+    {
+      "id": "30007",
+      "organizationId": "2",
+      "ventureId": "30020",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 02:38:41"
+    },
+    {
+      "id": "30008",
+      "organizationId": "2",
+      "ventureId": "30023",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 02:39:02"
+    },
+    {
+      "id": "30009",
+      "organizationId": "2",
+      "ventureId": "30026",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 02:52:49"
+    },
+    {
+      "id": "30010",
+      "organizationId": "2",
+      "ventureId": "30029",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 02:53:25"
+    },
+    {
+      "id": "30011",
+      "organizationId": "2",
+      "ventureId": "30032",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 02:59:08"
+    },
+    {
+      "id": "30012",
+      "organizationId": "2",
+      "ventureId": "30035",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 03:06:08"
+    },
+    {
+      "id": "30013",
+      "organizationId": "2",
+      "ventureId": "30038",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 03:15:21"
+    },
+    {
+      "id": "30014",
+      "organizationId": "2",
+      "ventureId": "30041",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 03:33:18"
+    },
+    {
+      "id": "30015",
+      "organizationId": "2",
+      "ventureId": "30044",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 03:38:29"
+    },
+    {
+      "id": "30016",
+      "organizationId": "2",
+      "ventureId": "30047",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 03:38:49"
+    },
+    {
+      "id": "30017",
+      "organizationId": "2",
+      "ventureId": "30050",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 03:39:32"
+    },
+    {
+      "id": "30018",
+      "organizationId": "2",
+      "ventureId": "30053",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 03:39:52"
+    },
+    {
+      "id": "30019",
+      "organizationId": "2",
+      "ventureId": "30056",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 03:40:24"
+    },
+    {
+      "id": "30020",
+      "organizationId": "2",
+      "ventureId": "30059",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 03:58:30"
+    },
+    {
+      "id": "30021",
+      "organizationId": "2",
+      "ventureId": "30062",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 03:58:52"
+    },
+    {
+      "id": "30022",
+      "organizationId": "2",
+      "ventureId": "30065",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 03:59:39"
+    },
+    {
+      "id": "30023",
+      "organizationId": "2",
+      "ventureId": "30068",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 04:00:00"
+    },
+    {
+      "id": "30024",
+      "organizationId": "2",
+      "ventureId": "30071",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 04:00:24"
+    },
+    {
+      "id": "30025",
+      "organizationId": "2",
+      "ventureId": "30074",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 04:01:13"
+    },
+    {
+      "id": "60001",
+      "organizationId": "2",
+      "ventureId": "60002",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 22:56:18"
+    },
+    {
+      "id": "60002",
+      "organizationId": "2",
+      "ventureId": "60005",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 22:58:53"
+    },
+    {
+      "id": "60003",
+      "organizationId": "2",
+      "ventureId": "60008",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-03-25 23:00:02"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\torganizationId\tventureId\torgPermission\tgrantedBy\tcreatedAt\n30001\t2\t30002\tfull\t1\t2026-03-25 01:51:19\n30002\t2\t30005\tfull\t1\t2026-03-25 01:56:31\n30003\t2\t30008\tfull\t1\t2026-03-25 02:07:54\n30004\t2\t30011\tfull\t1\t2026-03-25 02:21:26\n30005\t2\t30014\tfull\t1\t2026-03-25 02:27:43\n30006\t2\t30017\tfull\t1\t2026-03-25 02:28:15\n30007\t2\t30020\tfull\t1\t2026-03-25 02:38:41\n30008\t2\t30023\tfull\t1\t2026-03-25 02:39:02\n30009\t2\t30026\tfull\t1\t2026-03-25 02:52:49\n30010\t2\t30029\tfull\t1\t2026-03-25 02:53:25\n30011\t2\t30032\tfull\t1\t2026-03-25 02:59:08\n30012\t2\t30035\tfull\t1\t2026-03-25 03:06:08\n30013\t2\t30038\tfull\t1\t2026-03-25 03:15:21\n30014\t2\t30041\tfull\t1\t2026-03-25 03:33:18\n30015\t2\t30044\tfull\t1\t2026-03-25 03:38:29\n30016\t2\t30047\tfull\t1\t2026-03-25 03:38:49\n30017\t2\t30050\tfull\t1\t2026-03-25 03:39:32\n30018\t2\t30053\tfull\t1\t2026-03-25 03:39:52\n30019\t2\t30056\tfull\t1\t2026-03-25 03:40:24\n30020\t2\t30059\tfull\t1\t2026-03-25 03:58:30\n30021\t2\t30062\tfull\t1\t2026-03-25 03:58:52\n30022\t2\t30065\tfull\t1\t2026-03-25 03:59:39\n30023\t2\t30068\tfull\t1\t2026-03-25 04:00:00\n30024\t2\t30071\tfull\t1\t2026-03-25 04:00:24\n30025\t2\t30074\tfull\t1\t2026-03-25 04:01:13\n60001\t2\t60002\tfull\t1\t2026-03-25 22:56:18\n60002\t2\t60005\tfull\t1\t2026-03-25 22:58:53\n60003\t2\t60008\tfull\t1\t2026-03-25 23:00:02\n",
+  "stderr": "",
+  "execution_time_ms": 382
+}

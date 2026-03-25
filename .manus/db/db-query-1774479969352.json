@@ -1,0 +1,122 @@
+{
+  "query": "SELECT id, name FROM ventures WHERE name LIKE '%Venture%' AND id >= 30000 ORDER BY id; SELECT id, name FROM team_members WHERE id >= 30000 AND name LIKE '%Test%' ORDER BY id; SELECT id, title FROM tasks WHERE id >= 30000 ORDER BY id; SELECT id, title FROM notifications WHERE id >= 30000 ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name FROM ventures WHERE name LIKE '%Venture%' AND id >= 30000 ORDER BY id; SELECT id, name FROM team_members WHERE id >= 30000 AND name LIKE '%Test%' ORDER BY id; SELECT id, title FROM tasks WHERE id >= 30000 ORDER BY id; SELECT id, title FROM notifications WHERE id >= 30000 ORDER BY id;",
+  "rows": [
+    {
+      "id": "60007",
+      "name": "Test Venture 1774479602320"
+    },
+    {
+      "id": "60008",
+      "name": "OrgLinked Venture 1774479602657"
+    },
+    {
+      "id": "60009",
+      "name": "Unassigned Venture 1774479603141"
+    },
+    {
+      "id": "id",
+      "name": "name"
+    },
+    {
+      "id": "60007",
+      "name": "Test ATLAS Member 1774479603833"
+    },
+    {
+      "id": "60008",
+      "name": "Test Client Contact 1774479604179"
+    },
+    {
+      "id": "id",
+      "name": "title"
+    },
+    {
+      "id": "360007",
+      "name": "AI Generated: Review Q2 financials"
+    },
+    {
+      "id": "360008",
+      "name": "Test task from vitest"
+    },
+    {
+      "id": "360009",
+      "name": "AI Generated: Follow up on permit renewal"
+    },
+    {
+      "id": "id",
+      "name": "title"
+    },
+    {
+      "id": "330033",
+      "name": "New Task: Test task from vitest"
+    },
+    {
+      "id": "330034",
+      "name": "New Venture: Test Venture 1774479602320"
+    },
+    {
+      "id": "330035",
+      "name": "New Venture: OrgLinked Venture 1774479602657"
+    },
+    {
+      "id": "330036",
+      "name": "New Venture: Unassigned Venture 1774479603141"
+    },
+    {
+      "id": "330037",
+      "name": "New Team Member: Test ATLAS Member 1774479603833"
+    },
+    {
+      "id": "330038",
+      "name": "New Team Member: Test Client Contact 1774479604179"
+    },
+    {
+      "id": "330039",
+      "name": "New Team Member: Delete Me 1774479604420"
+    },
+    {
+      "id": "330040",
+      "name": "Client Archived: Archive Test Client"
+    },
+    {
+      "id": "330041",
+      "name": "Member Removed: Delete Me 1774479604420"
+    },
+    {
+      "id": "330042",
+      "name": "Client Archived: Double Archive Test"
+    },
+    {
+      "id": "330043",
+      "name": "Client Archived: Restore Test Client"
+    },
+    {
+      "id": "330044",
+      "name": "Client Restored: Restore Test Client"
+    },
+    {
+      "id": "330045",
+      "name": "Client Archived: Metrics Archived Test"
+    },
+    {
+      "id": "330046",
+      "name": "Client Archived: List Archived Test"
+    },
+    {
+      "id": "330047",
+      "name": "Client Archived: Sidebar Refresh Test"
+    },
+    {
+      "id": "330048",
+      "name": "Client Archived: Sidebar Restore Test"
+    },
+    {
+      "id": "330049",
+      "name": "Client Restored: Sidebar Restore Test"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n60007\tTest Venture 1774479602320\n60008\tOrgLinked Venture 1774479602657\n60009\tUnassigned Venture 1774479603141\nid\tname\n60007\tTest ATLAS Member 1774479603833\n60008\tTest Client Contact 1774479604179\nid\ttitle\n360007\tAI Generated: Review Q2 financials\n360008\tTest task from vitest\n360009\tAI Generated: Follow up on permit renewal\nid\ttitle\n330033\tNew Task: Test task from vitest\n330034\tNew Venture: Test Venture 1774479602320\n330035\tNew Venture: OrgLinked Venture 1774479602657\n330036\tNew Venture: Unassigned Venture 1774479603141\n330037\tNew Team Member: Test ATLAS Member 1774479603833\n330038\tNew Team Member: Test Client Contact 1774479604179\n330039\tNew Team Member: Delete Me 1774479604420\n330040\tClient Archived: Archive Test Client\n330041\tMember Removed: Delete Me 1774479604420\n330042\tClient Archived: Double Archive Test\n330043\tClient Archived: Restore Test Client\n330044\tClient Restored: Restore Test Client\n330045\tClient Archived: Metrics Archived Test\n330046\tClient Archived: List Archived Test\n330047\tClient Archived: Sidebar Refresh Test\n330048\tClient Archived: Sidebar Restore Test\n330049\tClient Restored: Sidebar Restore Test\n",
+  "stderr": "",
+  "execution_time_ms": 532
+}

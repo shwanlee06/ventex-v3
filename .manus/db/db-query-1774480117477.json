@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM venture_team WHERE id >= 30000; DELETE FROM spv_team WHERE id >= 30000; DELETE FROM spv_ventures WHERE id >= 30000; DELETE FROM venture_files WHERE id >= 30000; DELETE FROM venture_folders WHERE id >= 30000; DELETE FROM activity_log WHERE id >= 30000; DELETE FROM user_venture_access WHERE id >= 30000; DELETE FROM audit_log WHERE id >= 30000;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute DELETE FROM venture_team WHERE id >= 30000; DELETE FROM spv_team WHERE id >= 30000; DELETE FROM spv_ventures WHERE id >= 30000; DELETE FROM venture_files WHERE id >= 30000; DELETE FROM venture_folders WHERE id >= 30000; DELETE FROM activity_log WHERE id >= 30000; DELETE FROM user_venture_access WHERE id >= 30000; DELETE FROM audit_log WHERE id >= 30000;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 855
+}

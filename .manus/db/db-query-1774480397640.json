@@ -1,0 +1,80 @@
+{
+  "query": "SELECT id, name, type FROM team_members ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, type FROM team_members ORDER BY id;",
+  "rows": [
+    {
+      "id": "6",
+      "name": "Carl Frangi",
+      "type": "Advisor"
+    },
+    {
+      "id": "7",
+      "name": "Leonidas Kyrris",
+      "type": "Advisor"
+    },
+    {
+      "id": "8",
+      "name": "Igor",
+      "type": "External Partner"
+    },
+    {
+      "id": "9",
+      "name": "Sohail",
+      "type": "External Partner"
+    },
+    {
+      "id": "10",
+      "name": "Ruwaida",
+      "type": "External Partner"
+    },
+    {
+      "id": "11",
+      "name": "Shwan Lee",
+      "type": "Internal"
+    },
+    {
+      "id": "12",
+      "name": "Najib",
+      "type": "Advisor"
+    },
+    {
+      "id": "60010",
+      "name": "Brian Chen",
+      "type": "Internal"
+    },
+    {
+      "id": "60011",
+      "name": "Chris Phelps",
+      "type": "Internal"
+    },
+    {
+      "id": "60012",
+      "name": "Jimmy Frangi",
+      "type": "Contributor"
+    },
+    {
+      "id": "60013",
+      "name": "Anton Maghami",
+      "type": "Contributor"
+    },
+    {
+      "id": "60014",
+      "name": "Jon Eichner",
+      "type": "Contributor"
+    },
+    {
+      "id": "60015",
+      "name": "Maher Abou Chakra",
+      "type": "Contributor"
+    },
+    {
+      "id": "60016",
+      "name": "Angie Samadi",
+      "type": "Contributor"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\ttype\n6\tCarl Frangi\tAdvisor\n7\tLeonidas Kyrris\tAdvisor\n8\tIgor\tExternal Partner\n9\tSohail\tExternal Partner\n10\tRuwaida\tExternal Partner\n11\tShwan Lee\tInternal\n12\tNajib\tAdvisor\n60010\tBrian Chen\tInternal\n60011\tChris Phelps\tInternal\n60012\tJimmy Frangi\tContributor\n60013\tAnton Maghami\tContributor\n60014\tJon Eichner\tContributor\n60015\tMaher Abou Chakra\tContributor\n60016\tAngie Samadi\tContributor\n",
+  "stderr": "",
+  "execution_time_ms": 363
+}

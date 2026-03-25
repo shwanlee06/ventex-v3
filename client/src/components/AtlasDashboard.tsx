@@ -56,6 +56,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import AITaskGenerator from "@/components/AITaskGenerator";
+import OverdueAlertBanner from "@/components/OverdueAlertBanner";
 
 // ── Types ───────────────────────────────────────────────────────────────
 type SortField = "name" | "ventures" | "velocity" | "overdue" | "health" | "completion";
@@ -399,6 +400,9 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
           </motion.div>
         ))}
       </div>
+
+      {/* ── Overdue Alert Banner ────────────────────────────────── */}
+      <OverdueAlertBanner onNavigate={onNavigate} />
 
       {/* ── Active / Archived Tabs ────────────────────────────────── */}
       <div className="flex items-center gap-1 border-b border-border">

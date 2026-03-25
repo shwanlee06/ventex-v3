@@ -882,3 +882,18 @@
 - [x] Added global test teardown (server/test-global-teardown.ts) that auto-cleans after all tests
 - [x] Real counts: 20 ventures, 10 SPVs, 9 tasks, 14 team members, 4 distributions
 - [x] All 235 tests passing
+
+## Overdue Task Auto-Detection & Notification System
+- [x] Backend: Add tasks.listOverdue endpoint — returns all overdue tasks grouped by client with days overdue
+- [x] Backend: Add tasks.overdueByClient endpoint — returns per-client overdue summary for dashboard
+- [x] Backend: Add tasks.scanAndNotify mutation — scans for newly overdue tasks and creates notifications
+- [x] Frontend: Add overdue task section to ATLAS dashboard (OverdueAlertBanner with expandable per-client detail)
+- [x] Frontend: Overdue badge per client row already exists; OverdueAlertBanner adds drill-down detail
+- [ ] Frontend: Add overdue task detail drawer with reassign/extend/complete actions (deferred — click navigates to client page)
+- [x] Tests: 12 vitest tests for overdue detection (pure functions + integration) — all passing
+
+## ATLAS Team Capacity & Workload View
+- [x] Backend: Add tasks.workloadSummary endpoint — returns per-member task counts, overdue, completion rate, capacity status
+- [x] Frontend: Add WorkloadCapacity component to ATLAS Team page (per-member grid with assigned/done/overdue/completion/capacity)
+- [x] Frontend: Capacity indicator (Available/Busy/Overloaded) with color-coded badges
+- [x] Tests: workloadSummary integration test included in overdue.test.ts — all 247 tests passing
