@@ -396,12 +396,15 @@ export default function VerticalsPage() {
                     </div>
                   )}
                   {group.orgSlug && (
-                    <button
+                    <span
+                      role="link"
+                      tabIndex={0}
                       onClick={(e) => { e.stopPropagation(); navigate(`/clients/${group.orgSlug}`); }}
-                      className="text-[10px] text-primary/70 hover:text-primary transition-colors font-medium"
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); navigate(`/clients/${group.orgSlug}`); } }}
+                      className="text-[10px] text-primary/70 hover:text-primary transition-colors font-medium cursor-pointer"
                     >
                       View client →
-                    </button>
+                    </span>
                   )}
                 </div>
               </button>
