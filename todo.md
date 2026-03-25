@@ -741,3 +741,10 @@
 - [x] New ventures appear under the correct client section on the Ventures tab
 - [x] Activity log includes client name when venture is created for a client
 - [x] Tests for venture creation with org assignment (4 new tests, 218 total passing)
+
+## Remove Standalone Ventures Page from Admin
+- [x] Remove Ventures nav item from admin sidebar
+- [x] Remove /ventures route — redirects to /dashboard (ventures only accessible via client detail)
+- [x] Removed unused Layers3 import from AppSidebar
+- [x] /ventures/:slug still works for individual venture detail pages
+- [x] All 218 tests passing
