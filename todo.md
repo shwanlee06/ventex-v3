@@ -819,3 +819,10 @@
 - [x] Added Chris Phelps (Partner, Operations & Systems) as ATLAS internal member
 - [x] Removed all test data from team_members table (12 stale test records)
 - [x] All 235 tests passing
+
+## Fix: Reclassify Royalton Members
+- [x] Moved Jimmy Frangi, Anton Maghami, Jon Eichner, Angie Samadi, Maher Abou Chakra to Royalton (orgId=2, type=External Partner)
+- [x] Cleaned up stale test record
+- [x] ATLAS Team: 3 members (Shwan Lee, Brian Chen, Chris Phelps)
+- [x] Client Contacts: 11 Royalton members (Jimmy, Anton, Jon, Maher, Angie, Carl, Leonidas, Najib, Igor, Sohail, Ruwaida)
+- [x] All 235 tests passing

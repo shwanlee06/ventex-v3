@@ -1,0 +1,58 @@
+{
+  "query": "SELECT id, name, role, type, organizationId, status FROM team_members WHERE organizationId IS NOT NULL ORDER BY type, name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, role, type, organizationId, status FROM team_members WHERE organizationId IS NOT NULL ORDER BY type, name;",
+  "rows": [
+    {
+      "id": "6",
+      "name": "Carl Frangi",
+      "role": "Member",
+      "type": "Advisor",
+      "organizationId": "2",
+      "status": "Advisor"
+    },
+    {
+      "id": "7",
+      "name": "Leonidas Kyrris",
+      "role": "Legal (maritime focus)",
+      "type": "Advisor",
+      "organizationId": "2",
+      "status": "Advisor"
+    },
+    {
+      "id": "12",
+      "name": "Najib",
+      "role": "Advisor",
+      "type": "Advisor",
+      "organizationId": "2",
+      "status": "Active"
+    },
+    {
+      "id": "8",
+      "name": "Igor",
+      "role": "Deck Design",
+      "type": "External Partner",
+      "organizationId": "2",
+      "status": "Contributor"
+    },
+    {
+      "id": "10",
+      "name": "Ruwaida",
+      "role": "Yacht Design",
+      "type": "External Partner",
+      "organizationId": "2",
+      "status": "Contributor"
+    },
+    {
+      "id": "9",
+      "name": "Sohail",
+      "role": "Financial Modeling",
+      "type": "External Partner",
+      "organizationId": "2",
+      "status": "Contributor"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\trole\ttype\torganizationId\tstatus\n6\tCarl Frangi\tMember\tAdvisor\t2\tAdvisor\n7\tLeonidas Kyrris\tLegal (maritime focus)\tAdvisor\t2\tAdvisor\n12\tNajib\tAdvisor\tAdvisor\t2\tActive\n8\tIgor\tDeck Design\tExternal Partner\t2\tContributor\n10\tRuwaida\tYacht Design\tExternal Partner\t2\tContributor\n9\tSohail\tFinancial Modeling\tExternal Partner\t2\tContributor\n",
+  "stderr": "",
+  "execution_time_ms": 468
+}

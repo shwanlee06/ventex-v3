@@ -1,0 +1,108 @@
+{
+  "query": "SELECT id, name, type, organizationId, role FROM team_members ORDER BY type, name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, type, organizationId, role FROM team_members ORDER BY type, name;",
+  "rows": [
+    {
+      "id": "6",
+      "name": "Carl Frangi",
+      "type": "Advisor",
+      "organizationId": "2",
+      "role": "Member"
+    },
+    {
+      "id": "7",
+      "name": "Leonidas Kyrris",
+      "type": "Advisor",
+      "organizationId": "2",
+      "role": "Legal (maritime focus)"
+    },
+    {
+      "id": "12",
+      "name": "Najib",
+      "type": "Advisor",
+      "organizationId": "2",
+      "role": "Advisor"
+    },
+    {
+      "id": "30052",
+      "name": "Angie Samadi",
+      "type": "External Partner",
+      "organizationId": "2",
+      "role": "HR"
+    },
+    {
+      "id": "30049",
+      "name": "Anton Maghami",
+      "type": "External Partner",
+      "organizationId": "2",
+      "role": "Vice President"
+    },
+    {
+      "id": "8",
+      "name": "Igor",
+      "type": "External Partner",
+      "organizationId": "2",
+      "role": "Deck Design"
+    },
+    {
+      "id": "30048",
+      "name": "Jimmy Frangi",
+      "type": "External Partner",
+      "organizationId": "2",
+      "role": "Founder"
+    },
+    {
+      "id": "30050",
+      "name": "Jon Eichner",
+      "type": "External Partner",
+      "organizationId": "2",
+      "role": "COO"
+    },
+    {
+      "id": "30051",
+      "name": "Maher Abou Chakra",
+      "type": "External Partner",
+      "organizationId": "2",
+      "role": "Accounting"
+    },
+    {
+      "id": "10",
+      "name": "Ruwaida",
+      "type": "External Partner",
+      "organizationId": "2",
+      "role": "Yacht Design"
+    },
+    {
+      "id": "9",
+      "name": "Sohail",
+      "type": "External Partner",
+      "organizationId": "2",
+      "role": "Financial Modeling"
+    },
+    {
+      "id": "30043",
+      "name": "Brian Chen",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "role": "Partner"
+    },
+    {
+      "id": "30044",
+      "name": "Chris Phelps",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "role": "Co-Founder"
+    },
+    {
+      "id": "11",
+      "name": "Shwan Lee",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "role": "Founder & CEO"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\ttype\torganizationId\trole\n6\tCarl Frangi\tAdvisor\t2\tMember\n7\tLeonidas Kyrris\tAdvisor\t2\tLegal (maritime focus)\n12\tNajib\tAdvisor\t2\tAdvisor\n30052\tAngie Samadi\tExternal Partner\t2\tHR\n30049\tAnton Maghami\tExternal Partner\t2\tVice President\n8\tIgor\tExternal Partner\t2\tDeck Design\n30048\tJimmy Frangi\tExternal Partner\t2\tFounder\n30050\tJon Eichner\tExternal Partner\t2\tCOO\n30051\tMaher Abou Chakra\tExternal Partner\t2\tAccounting\n10\tRuwaida\tExternal Partner\t2\tYacht Design\n9\tSohail\tExternal Partner\t2\tFinancial Modeling\n30043\tBrian Chen\tInternal\tNULL\tPartner\n30044\tChris Phelps\tInternal\tNULL\tCo-Founder\n11\tShwan Lee\tInternal\tNULL\tFounder & CEO\n",
+  "stderr": "",
+  "execution_time_ms": 479
+}
