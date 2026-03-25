@@ -1,7 +1,7 @@
 // ============================================================================
-// AppSidebar — Role-based navigation
-// ATLAS team (owner/admin): full navigation with all pages
-// Client users: scoped portal with limited navigation
+// AppSidebar — CRM-focused navigation
+// ATLAS admin: clean command center nav for managing 30+ clients
+// Client users: scoped portal with their own nav
 // Mobile: bottom tab bar | Desktop: collapsible left rail
 // ============================================================================
 
@@ -9,15 +9,12 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { usePreviewMode } from "@/contexts/PreviewMode";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { THEME_COLORS } from "@/lib/data";
 import { trpc } from "@/lib/trpc";
 import {
   LayoutDashboard,
   Bot,
   Layers3,
   Briefcase,
-  Shield,
-  Lock,
   ChevronLeft,
   ChevronRight,
   Users,
@@ -26,12 +23,11 @@ import {
   Activity,
   MoreHorizontal,
   X,
-  KeyRound,
   Building2,
-  FileText,
   User,
   Plus,
   Loader2,
+  Settings,
 } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useState, useMemo } from "react";
@@ -45,33 +41,24 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
-  atlasOnly?: boolean; // Only visible to ATLAS team (owner/admin)
-  clientOnly?: boolean; // Only visible to client users
+  atlasOnly?: boolean;
+  clientOnly?: boolean;
 }
 
-// Full navigation — items marked atlasOnly are hidden from clients
+// ── Admin nav: clean CRM command center ─────────────────────────────────
+// SPVs, Tasks, Distributions removed from admin — they live inside client detail
 const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="size-5" /> },
-  { label: "AI Agent", href: "/agent", icon: <Bot className="size-5" />, atlasOnly: true },
-  { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-5" />, clientOnly: true },
-  { label: "SPVs & Deals", href: "/spvs", icon: <Briefcase className="size-5" /> },
+  { label: "AI Concierge", href: "/agent", icon: <Bot className="size-5" />, atlasOnly: true },
   { label: "People", href: "/team", icon: <Users className="size-5" />, atlasOnly: true },
-  { label: "Tasks", href: "/tasks", icon: <ListChecks className="size-5" /> },
-  { label: "Distributions", href: "/distributions", icon: <DollarSign className="size-5" /> },
   { label: "Activity", href: "/activity", icon: <Activity className="size-5" /> },
-  { label: "Security", href: "/security", icon: <Lock className="size-5" />, atlasOnly: true },
-  { label: "Access", href: "/access", icon: <KeyRound className="size-5" />, atlasOnly: true },
-  { label: "Settings", href: "/settings", icon: <Shield className="size-5" />, atlasOnly: true },
+  { label: "Settings", href: "/settings", icon: <Settings className="size-5" />, atlasOnly: true },
+  // Client-only nav items
+  { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-5" />, clientOnly: true },
+  { label: "SPVs & Deals", href: "/spvs", icon: <Briefcase className="size-5" />, clientOnly: true },
+  { label: "Tasks", href: "/tasks", icon: <ListChecks className="size-5" />, clientOnly: true },
+  { label: "Distributions", href: "/distributions", icon: <DollarSign className="size-5" />, clientOnly: true },
   { label: "My Profile", href: "/profile", icon: <User className="size-5" />, clientOnly: true },
-];
-
-const THEME_DOTS = [
-  { key: "Real Estate", abbr: "RE" },
-  { key: "Yacht", abbr: "YT" },
-  { key: "F&B", abbr: "FB" },
-  { key: "Entertainment", abbr: "EN" },
-  { key: "Oil & Gas", abbr: "OG" },
-  { key: "Others", abbr: "OT" },
 ];
 
 /** Check if user is ATLAS internal team */
@@ -85,8 +72,7 @@ export default function AppSidebar() {
   const [moreOpen, setMoreOpen] = useState(false);
   const { user } = useAuth();
   const { isPreviewMode } = usePreviewMode();
-  const { organizations, activeOrg, setActiveOrg, refetchOrgs } = useWorkspace();
-  const [orgDropdownOpen, setOrgDropdownOpen] = useState(false);
+  const { organizations, refetchOrgs } = useWorkspace();
   const [showAddClient, setShowAddClient] = useState(false);
   const [newClientName, setNewClientName] = useState("");
   const [addingClient, setAddingClient] = useState(false);
@@ -129,308 +115,239 @@ export default function AppSidebar() {
   const mobilePrimary = navItems.slice(0, 5);
   const mobileSecondary = navItems.slice(5);
 
-  const isActive = (href: string) =>
-    location === href || (href !== "/dashboard" && location.startsWith(href)) ||
-    (href === "/dashboard" && location.startsWith("/clients/"));
-
-  const secondaryActive = mobileSecondary.some(item => isActive(item.href));
-
-  // Sidebar header text
-  const sidebarTitle = isAtlas ? "ATLAS" : (user?.name?.split(" ")[0] || "Portal");
+  // Active check
+  const isActive = (href: string) => {
+    if (href === "/dashboard") return location === "/dashboard" || location.startsWith("/clients/");
+    return location === href || location.startsWith(href + "/");
+  };
 
   return (
     <>
-      {/* ========== Desktop sidebar ========== */}
-      <motion.aside
-        className="hidden md:flex flex-col h-screen fixed left-0 top-0 z-40 border-r border-border bg-sidebar"
-        animate={{ width: expanded ? 240 : 64 }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
+      {/* ── Desktop Sidebar ──────────────────────────────────────────── */}
+      <aside
+        className={cn(
+          "hidden md:flex flex-col h-screen bg-card border-r border-border transition-all duration-300 ease-in-out flex-shrink-0 z-30",
+          expanded ? "w-[220px]" : "w-[68px]"
+        )}
       >
-        {/* Logo / Branding */}
-        <div className="flex items-center h-14 px-4 border-b border-border">
-          {isAtlas ? (
+        {/* Logo */}
+        <div className={cn(
+          "flex items-center h-14 border-b border-border px-3 flex-shrink-0",
+          expanded ? "justify-between" : "justify-center"
+        )}>
+          <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0">
             <img
               src={ATLAS_LOGO_URL}
               alt="ATLAS"
-              className="size-8 rounded-md flex-shrink-0"
+              className="size-8 rounded-lg object-cover flex-shrink-0"
             />
-          ) : (
-            <div className="size-8 rounded-md flex-shrink-0 bg-primary/10 flex items-center justify-center">
-              <Building2 className="size-4 text-primary" />
-            </div>
-          )}
-          <AnimatePresence>
             {expanded && (
-              <motion.div
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -8 }}
-                transition={{ duration: 0.15 }}
-                className="ml-3 overflow-hidden"
-              >
-                <span className="text-sm font-semibold tracking-tight text-foreground whitespace-nowrap block">
-                  {sidebarTitle}
-                </span>
-                {isAtlas ? (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setOrgDropdownOpen(!orgDropdownOpen); }}
-                    className="text-[10px] text-muted-foreground font-mono whitespace-nowrap block hover:text-foreground transition-colors flex items-center gap-1"
-                  >
-                    {activeOrg?.name || "Select Client"}
-                    <svg className={cn("size-3 transition-transform", orgDropdownOpen && "rotate-180")} viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 5l3 3 3-3" /></svg>
-                  </button>
-                ) : (
-                  <span className="text-[10px] text-muted-foreground font-mono whitespace-nowrap block">
-                    Client Portal
-                  </span>
-                )}
-              </motion.div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[13px] font-semibold text-foreground tracking-wide truncate">ATLAS</span>
+                <span className="text-[9px] text-muted-foreground font-mono tracking-widest uppercase truncate">by Aurovia</span>
+              </div>
             )}
-          </AnimatePresence>
+          </Link>
+          {expanded && (
+            <button
+              onClick={() => setExpanded(false)}
+              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors flex-shrink-0"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
+          )}
         </div>
 
-        {/* Client workspace dropdown */}
-        <AnimatePresence>
-          {expanded && orgDropdownOpen && isAtlas && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.15 }}
-              className="border-b border-border overflow-hidden"
-            >
-              <div className="p-2 space-y-1">
-                <p className="text-[9px] uppercase tracking-[0.1em] text-muted-foreground px-2 py-1 font-medium">Client Workspaces</p>
-                {organizations.map((org) => (
-                  <button
-                    key={org.id}
-                    onClick={() => { setActiveOrg(org); setOrgDropdownOpen(false); }}
-                    className={cn(
-                      "w-full flex items-center gap-2 px-2 py-2 rounded-md text-xs transition-colors",
-                      activeOrg?.id === org.id
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                    )}
-                  >
-                    <div className="size-6 rounded-md bg-accent flex items-center justify-center flex-shrink-0">
-                      <Building2 className="size-3" />
-                    </div>
-                    <div className="text-left min-w-0">
-                      <span className="block truncate font-medium">{org.name}</span>
-                      <span className="block text-[10px] text-muted-foreground font-mono">{org.ventureCount} ventures</span>
-                    </div>
-                    {activeOrg?.id === org.id && (
-                      <div className="ml-auto size-1.5 rounded-full bg-primary flex-shrink-0" />
-                    )}
-                  </button>
-                ))}
-                {organizations.length === 0 && (
-                  <p className="text-[10px] text-muted-foreground px-2 py-2">No client workspaces yet</p>
-                )}
-
-                {/* Add Client */}
-                {!showAddClient ? (
-                  <button
-                    onClick={() => setShowAddClient(true)}
-                    className="w-full flex items-center gap-2 px-2 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  >
-                    <div className="size-6 rounded-md bg-accent/50 border border-dashed border-border flex items-center justify-center flex-shrink-0">
-                      <Plus className="size-3" />
-                    </div>
-                    <span className="font-medium">Add Client</span>
-                  </button>
-                ) : (
-                  <div className="px-2 py-2 space-y-2">
-                    <input
-                      type="text"
-                      value={newClientName}
-                      onChange={(e) => setNewClientName(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleAddClient()}
-                      placeholder="Client name..."
-                      autoFocus
-                      className="w-full px-2 py-1.5 text-xs bg-accent/50 border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
-                    <div className="flex gap-1">
-                      <button
-                        onClick={handleAddClient}
-                        disabled={!newClientName.trim() || addingClient}
-                        className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[10px] font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 transition-colors"
-                      >
-                        {addingClient ? <Loader2 className="size-3 animate-spin" /> : "Create"}
-                      </button>
-                      <button
-                        onClick={() => { setShowAddClient(false); setNewClientName(""); }}
-                        className="px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:text-foreground rounded-md hover:bg-accent transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* Nav items */}
-        <nav className="flex-1 flex flex-col gap-1 px-2 py-3 overflow-y-auto">
+        <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
           {navItems.map((item) => {
             const active = isActive(item.href);
-            return (
-              <Tooltip key={item.href}>
+            return expanded ? (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all",
+                  active
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                )}
+              >
+                <span className="flex-shrink-0">{item.icon}</span>
+                <span className="truncate">{item.label}</span>
+              </Link>
+            ) : (
+              <Tooltip key={item.href} delayDuration={0}>
                 <TooltipTrigger asChild>
-                  <Link href={item.href}>
-                    <div
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors duration-150 relative group",
-                        active
-                          ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                      )}
-                    >
-                      {active && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 bg-primary rounded-r" />
-                      )}
-                      <span className="flex-shrink-0">{item.icon}</span>
-                      <AnimatePresence>
-                        {expanded && (
-                          <motion.span
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.1 }}
-                            className="whitespace-nowrap font-medium"
-                          >
-                            {item.label}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    </div>
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "flex items-center justify-center p-2.5 rounded-lg transition-all",
+                      active
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    )}
+                  >
+                    {item.icon}
                   </Link>
                 </TooltipTrigger>
-                {!expanded && (
-                  <TooltipContent side="right" className="text-xs">
-                    {item.label}
-                  </TooltipContent>
-                )}
+                <TooltipContent side="right" className="text-xs">
+                  {item.label}
+                </TooltipContent>
               </Tooltip>
             );
           })}
-
-          {/* Theme dots — ATLAS team only */}
-          {isAtlas && (
-            <div className="mt-4 pt-4 border-t border-border">
-              <AnimatePresence>
-                {expanded && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground px-3 mb-2 font-medium"
-                  >
-                    Sectors
-                  </motion.p>
-                )}
-              </AnimatePresence>
-              <div className={cn("flex gap-2 px-3", expanded ? "flex-col gap-1" : "flex-col items-center")}>
-                {THEME_DOTS.map((v) => {
-                  const tc = THEME_COLORS[v.key];
-                  return (
-                    <div key={v.key} className="flex items-center gap-3">
-                      <div
-                        className="size-[6px] rounded-full flex-shrink-0"
-                        style={{ backgroundColor: tc?.color || "#888" }}
-                      />
-                      <AnimatePresence>
-                        {expanded && (
-                          <motion.span
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="text-xs text-muted-foreground"
-                          >
-                            {tc?.label || v.key}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Client portal info */}
-          {!isAtlas && expanded && (
-            <div className="mt-4 pt-4 border-t border-border px-3">
-              <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground mb-2 font-medium">
-                Your Access
-              </p>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <div className="size-1.5 rounded-full bg-emerald-400" />
-                  <span className="text-xs text-muted-foreground">
-                    {user?.role === "manager" ? "Manager" : user?.role === "client" ? "Client" : user?.role === "viewer" ? "Viewer" : "User"} Access
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
         </nav>
 
-        {/* Expand toggle */}
-        <div className="px-2 py-3 border-t border-border">
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="flex items-center justify-center w-full h-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-          >
-            {expanded ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}
-          </button>
-        </div>
-      </motion.aside>
+        {/* Quick client list — admin only */}
+        {isAtlas && expanded && (
+          <div className="px-2 pb-2 border-t border-border pt-2">
+            <div className="flex items-center justify-between px-2 mb-1.5">
+              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Clients</span>
+              <button
+                onClick={() => setShowAddClient(!showAddClient)}
+                className="p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Plus className="size-3.5" />
+              </button>
+            </div>
 
-      {/* ========== Mobile bottom tab bar ========== */}
-      <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-sidebar/95 backdrop-blur-md border-t border-border"
-        style={{ paddingBottom: "max(0.25rem, env(safe-area-inset-bottom))" }}
-      >
-        <div className="flex items-center justify-around px-1 pt-1">
+            {showAddClient && (
+              <div className="px-1 mb-2">
+                <div className="flex gap-1">
+                  <input
+                    type="text"
+                    placeholder="Client name..."
+                    value={newClientName}
+                    onChange={(e) => setNewClientName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleAddClient()}
+                    className="flex-1 h-7 px-2 text-[11px] bg-background border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleAddClient}
+                    disabled={addingClient || !newClientName.trim()}
+                    className="h-7 px-2 rounded-md bg-primary text-primary-foreground text-[11px] font-medium disabled:opacity-50 hover:bg-primary/90 transition-colors"
+                  >
+                    {addingClient ? <Loader2 className="size-3 animate-spin" /> : "Add"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-0.5 max-h-[180px] overflow-y-auto">
+              {organizations.filter(o => o.status === "active").slice(0, 10).map((org) => {
+                const active = location === `/clients/${org.slug}`;
+                return (
+                  <Link
+                    key={org.id}
+                    href={`/clients/${org.slug}`}
+                    className={cn(
+                      "flex items-center gap-2 px-2 py-1.5 rounded-md text-[12px] transition-colors",
+                      active
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                    )}
+                  >
+                    <Building2 className="size-3.5 flex-shrink-0" />
+                    <span className="truncate">{org.name}</span>
+                  </Link>
+                );
+              })}
+              {organizations.filter(o => o.status === "active").length > 10 && (
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-2 px-2 py-1.5 rounded-md text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  View all →
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Expand button + user */}
+        <div className="border-t border-border p-2 flex-shrink-0">
+          {!expanded ? (
+            <div className="space-y-1">
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setExpanded(true)}
+                    className="flex items-center justify-center p-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors w-full"
+                  >
+                    <ChevronRight className="size-5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="text-xs">Expand sidebar</TooltipContent>
+              </Tooltip>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/profile"
+                    className="flex items-center justify-center p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+                  >
+                    <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-[10px] font-semibold text-primary">
+                        {user?.name?.split(" ").map(w => w[0]).join("").slice(0, 2) || "?"}
+                      </span>
+                    </div>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="text-xs">{user?.name || "Profile"}</TooltipContent>
+              </Tooltip>
+            </div>
+          ) : (
+            <Link
+              href="/profile"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+            >
+              <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-[10px] font-semibold text-primary">
+                  {user?.name?.split(" ").map(w => w[0]).join("").slice(0, 2) || "?"}
+                </span>
+              </div>
+              <div className="min-w-0">
+                <span className="text-[12px] font-medium text-foreground block truncate">{user?.name || "User"}</span>
+                <span className="text-[10px] text-muted-foreground block truncate">{user?.email}</span>
+              </div>
+            </Link>
+          )}
+        </div>
+      </aside>
+
+      {/* ── Mobile Bottom Tab Bar ────────────────────────────────────── */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-t border-border">
+        <div className="flex items-center justify-around h-16 px-1">
           {mobilePrimary.map((item) => {
             const active = isActive(item.href);
             return (
-              <Link key={item.href} href={item.href}>
-                <button
-                  className={cn(
-                    "flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[48px] rounded-lg transition-colors",
-                    active ? "text-primary" : "text-muted-foreground active:text-foreground"
-                  )}
-                >
-                  <span className={cn("transition-transform", active && "scale-110")}>{item.icon}</span>
-                  <span className={cn("text-[10px] font-medium leading-tight", active && "font-semibold")}>
-                    {item.label.length > 8 ? item.label.slice(0, 7) + "…" : item.label}
-                  </span>
-                </button>
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex flex-col items-center gap-0.5 py-1.5 px-2 rounded-lg transition-colors min-w-[56px]",
+                  active ? "text-primary" : "text-muted-foreground"
+                )}
+              >
+                <span className={cn("transition-transform", active && "scale-110")}>{item.icon}</span>
+                <span className="text-[10px] font-medium">{item.label}</span>
               </Link>
             );
           })}
-
-          {/* More button — only if there are secondary items */}
           {mobileSecondary.length > 0 && (
             <button
               onClick={() => setMoreOpen(true)}
-              className={cn(
-                "flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[48px] rounded-lg transition-colors",
-                secondaryActive ? "text-primary" : "text-muted-foreground active:text-foreground"
-              )}
+              className="flex flex-col items-center gap-0.5 py-1.5 px-2 text-muted-foreground min-w-[56px]"
             >
               <MoreHorizontal className="size-5" />
-              <span className="text-[10px] font-medium leading-tight">More</span>
+              <span className="text-[10px] font-medium">More</span>
             </button>
           )}
         </div>
       </nav>
 
-      {/* ========== Mobile "More" bottom sheet ========== */}
+      {/* ── Mobile "More" Sheet ──────────────────────────────────────── */}
       <AnimatePresence>
         {moreOpen && (
           <>
@@ -438,43 +355,37 @@ export default function AppSidebar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="md:hidden fixed inset-0 z-[60] bg-black/50"
+              className="md:hidden fixed inset-0 bg-black/40 z-50"
               onClick={() => setMoreOpen(false)}
             />
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="md:hidden fixed bottom-0 left-0 right-0 z-[61] bg-card rounded-t-2xl border-t border-border"
-              style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border rounded-t-2xl"
             >
               <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                 <span className="text-sm font-semibold text-foreground">More</span>
-                <button
-                  onClick={() => setMoreOpen(false)}
-                  className="flex items-center justify-center size-8 rounded-full bg-secondary text-muted-foreground"
-                >
-                  <X className="size-4" />
+                <button onClick={() => setMoreOpen(false)} className="p-1 rounded-md text-muted-foreground hover:text-foreground">
+                  <X className="size-5" />
                 </button>
               </div>
-              <div className="grid grid-cols-3 gap-2 p-4">
+              <div className="p-3 space-y-1 pb-8">
                 {mobileSecondary.map((item) => {
                   const active = isActive(item.href);
                   return (
-                    <Link key={item.href} href={item.href}>
-                      <button
-                        onClick={() => setMoreOpen(false)}
-                        className={cn(
-                          "flex flex-col items-center justify-center gap-2 p-4 rounded-xl transition-colors min-h-[80px]",
-                          active
-                            ? "bg-primary/10 text-primary"
-                            : "bg-secondary/50 text-muted-foreground active:bg-secondary"
-                        )}
-                      >
-                        {item.icon}
-                        <span className="text-xs font-medium">{item.label}</span>
-                      </button>
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMoreOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+                        active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                      )}
+                    >
+                      {item.icon}
+                      <span>{item.label}</span>
                     </Link>
                   );
                 })}

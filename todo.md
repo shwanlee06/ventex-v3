@@ -753,3 +753,13 @@
 - [x] Add Ventures back to sidebar as clientOnly (hidden from admin, visible to clients)
 - [x] Restore /ventures route for client users
 - [x] Admin sees ventures only within client detail pages
+
+## ATLAS Admin CRM Redesign — Premium Command Center
+- [x] Clean admin sidebar: Dashboard, AI Concierge, People, Activity, Settings (5 items only)
+- [x] Move SPVs, Tasks, Distributions, Ventures to client-only in sidebar
+- [x] Admin sidebar has quick client list when expanded (top 10 clients with links)
+- [x] Quick "Add Client" inline from sidebar
+- [x] Client detail page is the full workspace for each client
+- [x] Premium aesthetic — clean, minimal navigation
+- [x] Seamless navigation — click client → see everything about them
+- [x] All 218 tests passing

@@ -6,6 +6,7 @@ interface Organization {
   name: string;
   slug: string;
   type: "core" | "partner" | "client";
+  status: "active" | "suspended" | "archived";
   description: string | null;
   ventureCount: number;
 }
