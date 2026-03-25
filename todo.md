@@ -720,3 +720,16 @@
 - [x] History drawer (right sheet) instead of always-visible sidebar
 - [x] Clean input area with subtle border, no visual noise
 - [x] All 208 tests passing
+
+## Ventures Tab — Organized by Client Sub-Sections
+- [x] Audit current Ventures page structure and data flow
+- [x] Backend: Add ventures.listWithOrgs endpoint — returns all ventures with their org assignments
+- [x] Redesign Ventures page with collapsible sub-sections per client
+- [x] Each client section shows ventures with status, stage, location, open tasks, overdue
+- [x] Global search across ventures, clients, locations
+- [x] Client filter dropdown + sector filter + status filter
+- [x] Collapse/expand all toggle for managing 30+ client sections
+- [x] Venture count, active count, task count, overdue count per client section header
+- [x] "View client →" link in each section header to jump to client detail
+- [x] Summary KPI bar: Total ventures, Active, Open Tasks, Overdue
+- [x] Tests for listWithOrgs endpoint (6 new tests, 214 total passing)

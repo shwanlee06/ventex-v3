@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { ventures, ventureTeam, teamMembers, tasks, ventureFiles, ventureFolders, activityLog } from "../../drizzle/schema";
+import { ventures, ventureTeam, teamMembers, tasks, ventureFiles, ventureFolders, activityLog, orgVentureAccess, organizations } from "../../drizzle/schema";
 import { eq, and, sql, desc, like, inArray } from "drizzle-orm";
 import { storagePut } from "../storage";
 import { nanoid } from "nanoid";
@@ -12,6 +12,34 @@ function slugify(name: string) {
 }
 
 export const venturesRouter = router({
+  // List all ventures with their org assignments — for ATLAS admin grouped view
+  listWithOrgs: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) return [];
+    if (!isAtlasTeam(ctx.user)) return []; // admin only
+
+    const allVentures = await db.select().from(ventures).orderBy(desc(ventures.createdAt));
+    const allAccess = await db.select().from(orgVentureAccess);
+    const allOrgs = await db.select().from(organizations);
+
+    const orgMap = new Map(allOrgs.map(o => [o.id, o]));
+
+    // Build venture -> orgs mapping
+    const ventureOrgMap = new Map<number, { orgId: number; orgName: string; orgSlug: string }[]>();
+    for (const a of allAccess) {
+      const org = orgMap.get(a.organizationId);
+      if (!org || org.status === "archived") continue;
+      const existing = ventureOrgMap.get(a.ventureId) || [];
+      existing.push({ orgId: org.id, orgName: org.name, orgSlug: org.slug });
+      ventureOrgMap.set(a.ventureId, existing);
+    }
+
+    return allVentures.map(v => ({
+      ...v,
+      organizations: ventureOrgMap.get(v.id) || [],
+    }));
+  }),
+
   // List ventures — scoped by org for clients, optionally scoped for ATLAS admin
   list: protectedProcedure
     .input(z.object({ organizationId: z.number().optional() }).optional())
