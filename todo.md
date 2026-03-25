@@ -897,3 +897,6 @@
 - [x] Frontend: Add WorkloadCapacity component to ATLAS Team page (per-member grid with assigned/done/overdue/completion/capacity)
 - [x] Frontend: Capacity indicator (Available/Busy/Overloaded) with color-coded badges
 - [x] Tests: workloadSummary integration test included in overdue.test.ts — all 247 tests passing
+
+## Remove WorkloadCapacity from ATLAS Team Page
+- [x] Remove WorkloadCapacity import and component from AtlasTeam.tsx
