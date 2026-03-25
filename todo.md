@@ -792,3 +792,16 @@
 - [x] Cleaned up stale test data from database
 - [x] Added test for idempotent delete behavior
 - [x] All 226 tests passing
+
+## AI-Powered Task Generation Engine
+- [x] Audit current task creation flow and venture data structure
+- [x] Build backend: export all venture data per client (ventures, SPVs, team, distributions, documents, health scores)
+- [x] Build backend: send venture data to LLM to analyze and determine what tasks are needed
+- [x] Build backend: AI returns structured task suggestions with title, description, priority, due date, venture link
+- [x] Build frontend: "Generate Tasks" button on client detail and dashboard (Brain icon per-row + toolbar)
+- [x] Build frontend: review/approve flow — show AI-suggested tasks, let admin approve/edit/reject before creating
+- [x] Build frontend: progress indicator during AI analysis (animated step-by-step loading)
+- [x] Prevent duplicate tasks — AI checks existing tasks before suggesting new ones
+- [x] Integrate into AtlasDashboard (table view + grid view per-row actions)
+- [x] Write tests for AI task generation endpoint (9 tests: auth, export, approve, validation)
+- [x] All 235 tests passing

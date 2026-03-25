@@ -29,6 +29,7 @@ import {
   ArrowUp,
   ArrowDown,
   Minus,
+  Brain,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useCallback, useMemo } from "react";
@@ -54,6 +55,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
+import AITaskGenerator from "@/components/AITaskGenerator";
 
 // ── Types ───────────────────────────────────────────────────────────────
 type SortField = "name" | "ventures" | "velocity" | "overdue" | "health" | "completion";
@@ -197,6 +199,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
   const [newDesc, setNewDesc] = useState("");
   const [archiveTarget, setArchiveTarget] = useState<{ id: number; name: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
+  const [aiTaskTarget, setAiTaskTarget] = useState<{ id: number; name: string } | null>(null);
 
   // Current tab's clients
   const clients = tabMode === "active" ? activeClients : archivedClients;
@@ -489,14 +492,31 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
             </button>
           </div>
           {tabMode === "active" && (
-            <Button
-              size="sm"
-              onClick={() => setAddDialogOpen(true)}
-              className="h-9 gap-1.5"
-            >
-              <Plus className="size-4" />
-              <span className="hidden sm:inline">Add Client</span>
-            </Button>
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  if (filteredClients.length === 1) {
+                    setAiTaskTarget({ id: filteredClients[0].id, name: filteredClients[0].name });
+                  } else {
+                    toast.info("Select a client row to generate AI tasks for them");
+                  }
+                }}
+                className="h-9 gap-1.5 border-primary/20 text-primary hover:bg-primary/10"
+              >
+                <Brain className="size-4" />
+                <span className="hidden sm:inline">AI Tasks</span>
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setAddDialogOpen(true)}
+                className="h-9 gap-1.5"
+              >
+                <Plus className="size-4" />
+                <span className="hidden sm:inline">Add Client</span>
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -669,13 +689,22 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                           </button>
                         </>
                       ) : (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setArchiveTarget({ id: client.id, name: client.name }); }}
-                          className="p-1.5 rounded-md text-muted-foreground hover:text-amber-400 hover:bg-amber-500/10 transition-colors opacity-0 group-hover:opacity-100"
-                          title="Archive client"
-                        >
-                          <Archive className="size-3.5" />
-                        </button>
+                        <>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setAiTaskTarget({ id: client.id, name: client.name }); }}
+                            className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Generate AI tasks"
+                          >
+                            <Brain className="size-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setArchiveTarget({ id: client.id, name: client.name }); }}
+                            className="p-1.5 rounded-md text-muted-foreground hover:text-amber-400 hover:bg-amber-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Archive client"
+                          >
+                            <Archive className="size-3.5" />
+                          </button>
+                        </>
                       )}
                       <ChevronRight className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
@@ -720,13 +749,22 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                     </button>
                   </>
                 ) : (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setArchiveTarget({ id: client.id, name: client.name }); }}
-                    className="p-1.5 rounded-md text-muted-foreground hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
-                    title="Archive client"
-                  >
-                    <Archive className="size-3.5" />
-                  </button>
+                  <>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setAiTaskTarget({ id: client.id, name: client.name }); }}
+                      className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      title="Generate AI tasks"
+                    >
+                      <Brain className="size-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setArchiveTarget({ id: client.id, name: client.name }); }}
+                      className="p-1.5 rounded-md text-muted-foreground hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
+                      title="Archive client"
+                    >
+                      <Archive className="size-3.5" />
+                    </button>
+                  </>
                 )}
               </div>
 
@@ -905,6 +943,21 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ── AI Task Generator Dialog ──────────────────────────────── */}
+      {aiTaskTarget && (
+        <AITaskGenerator
+          open={!!aiTaskTarget}
+          onOpenChange={(open) => !open && setAiTaskTarget(null)}
+          organizationId={aiTaskTarget.id}
+          organizationName={aiTaskTarget.name}
+          onTasksCreated={() => {
+            invalidateAll();
+            utils.tasks.list.invalidate();
+            utils.tasks.metrics.invalidate();
+          }}
+        />
+      )}
     </div>
   );
 }
