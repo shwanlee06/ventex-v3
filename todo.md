@@ -709,3 +709,14 @@
 - [x] Compact row design with avatar initials, client badge (clickable to client detail), contact icons
 - [x] Quick-add contact dialog with required client selector
 - [x] All 208 tests passing
+
+## AI Agent — Premium UHNWI/HNWI Redesign
+- [x] Audit current AI agent chat interface (1115 lines of cluttered code)
+- [x] Redesign for premium, minimal, private-banking aesthetic — stripped all technical indicators
+- [x] Clean typography, generous whitespace, centered max-w-2xl message thread
+- [x] Seamless feel — no model names, no streaming badges, no portfolio sidebar, no quick action chips
+- [x] Anchor icon as assistant avatar (per previous requirement)
+- [x] Understated suggestion pills: Portfolio overview, Open tasks, Draft LP update, SPV pipeline
+- [x] History drawer (right sheet) instead of always-visible sidebar
+- [x] Clean input area with subtle border, no visual noise
+- [x] All 208 tests passing
