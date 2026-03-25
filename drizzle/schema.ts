@@ -115,6 +115,7 @@ export const teamMembers = mysqlTable("team_members", {
   memberFunction: varchar("memberFunction", { length: 128 }),
   status: varchar("status", { length: 64 }).default("Active"),
   type: varchar("type", { length: 64 }).default("Internal"),
+  organizationId: int("organizationId"), // null = ATLAS/Aurovia internal member
   notes: text("notes"),
   email: varchar("email", { length: 320 }),
   phone: varchar("phone", { length: 64 }),

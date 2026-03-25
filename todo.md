@@ -683,3 +683,19 @@
 - [x] Frontend: Client detail page — archived banner with restore option, context-aware header actions
 - [x] Permanent delete only available on archived clients (safety net)
 - [x] Tests for archive, restore, includeArchived filtering (10 new tests, 198 total passing)
+
+## Team & Contacts Redesign — Client-by-Client + ATLAS Members
+- [x] Audit current Team page, schema, and data model
+- [x] Add organizationId to teamMembers schema so contacts belong to specific clients
+- [x] Create separate concept: ATLAS/Aurovia internal members (organizationId = null)
+- [x] Backend: Add team.listInternal endpoint (ATLAS members only, org = null)
+- [x] Backend: Add team.listByOrganization endpoint (client contacts grouped by org with orgName/orgSlug)
+- [x] Backend: Update team.create to accept organizationId (null = ATLAS, set = client)
+- [x] Backend: Add team.delete endpoint with cascade (removes venture assignments)
+- [x] Frontend: Redesign Team page with two tabs — "ATLAS Team" and "Client Contacts"
+- [x] Frontend: ATLAS Team tab — table view of internal members with search/filter
+- [x] Frontend: Client Contacts tab — collapsible groups per client org with member tables
+- [x] Frontend: Add Member dialog with org selector (ATLAS vs specific client)
+- [x] Frontend: Member detail drawer with contact info, type, status, org badge
+- [x] Frontend: Sidebar nav renamed from "Team" to "People"
+- [x] Tests for org-scoped team queries (10 new tests, 208 total passing)

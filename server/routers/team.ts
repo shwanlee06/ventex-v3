@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, router, adminProcedure } from "../_core/trpc";
 import { getDb } from "../db";
-import { teamMembers, activityLog, ventureTeam, ventures } from "../../drizzle/schema";
-import { eq, desc, inArray } from "drizzle-orm";
+import { teamMembers, activityLog, ventureTeam, ventures, organizations } from "../../drizzle/schema";
+import { eq, desc, inArray, isNull, isNotNull, and } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { resolveVentureScope, getVentureIdsForOrg } from "../security/rbac";
 
@@ -11,36 +11,105 @@ function slugify(name: string) {
 }
 
 export const teamRouter = router({
+  /**
+   * List all team members — supports org-scoped filtering
+   * If organizationId is provided, returns members belonging to that org
+   * If no filter, returns all members
+   */
   list: publicProcedure
     .input(z.object({ organizationId: z.number().optional() }).optional())
     .query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) return [];
 
-      // If org-scoped, only return members assigned to that org's ventures
+      // If org-scoped, return members that belong to that org (by organizationId field)
+      // PLUS members assigned to that org's ventures via ventureTeam
       if (input?.organizationId) {
+        // Direct org members
+        const directMembers = await db.select().from(teamMembers)
+          .where(eq(teamMembers.organizationId, input.organizationId))
+          .orderBy(desc(teamMembers.createdAt));
+
+        // Also get members assigned to this org's ventures
         const ventureIds = ctx.user
           ? await resolveVentureScope(ctx.user, input.organizationId)
           : await getVentureIdsForOrg(input.organizationId);
-        if (ventureIds === null) {
-          return db.select().from(teamMembers).orderBy(desc(teamMembers.createdAt));
+
+        let ventureMembers: typeof directMembers = [];
+        if (ventureIds !== null && ventureIds.length > 0) {
+          const assignments = await db.select({ memberId: ventureTeam.memberId })
+            .from(ventureTeam)
+            .where(inArray(ventureTeam.ventureId, ventureIds));
+          const memberIds = Array.from(new Set(assignments.map(a => a.memberId)));
+          if (memberIds.length > 0) {
+            ventureMembers = await db.select().from(teamMembers)
+              .where(inArray(teamMembers.id, memberIds))
+              .orderBy(desc(teamMembers.createdAt));
+          }
         }
-        if (ventureIds.length === 0) return [];
 
-        // Get member IDs assigned to these ventures
-        const assignments = await db.select({ memberId: ventureTeam.memberId })
-          .from(ventureTeam)
-          .where(inArray(ventureTeam.ventureId, ventureIds));
-        const memberIds = Array.from(new Set(assignments.map(a => a.memberId)));
-        if (memberIds.length === 0) return [];
-
-        return db.select().from(teamMembers)
-          .where(inArray(teamMembers.id, memberIds))
-          .orderBy(desc(teamMembers.createdAt));
+        // Merge and deduplicate
+        const seen = new Set<number>();
+        const merged = [];
+        for (const m of [...directMembers, ...ventureMembers]) {
+          if (!seen.has(m.id)) {
+            seen.add(m.id);
+            merged.push(m);
+          }
+        }
+        return merged;
       }
 
       return db.select().from(teamMembers).orderBy(desc(teamMembers.createdAt));
     }),
+
+  /**
+   * List ATLAS/Aurovia internal members only (organizationId IS NULL)
+   */
+  listInternal: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    return db.select().from(teamMembers)
+      .where(isNull(teamMembers.organizationId))
+      .orderBy(desc(teamMembers.createdAt));
+  }),
+
+  /**
+   * List client contacts grouped by organization
+   * Returns all members that have an organizationId set
+   */
+  listByOrganization: adminProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+
+    // Get all members with an org
+    const members = await db.select({
+      id: teamMembers.id,
+      name: teamMembers.name,
+      role: teamMembers.role,
+      memberFunction: teamMembers.memberFunction,
+      status: teamMembers.status,
+      type: teamMembers.type,
+      organizationId: teamMembers.organizationId,
+      email: teamMembers.email,
+      phone: teamMembers.phone,
+      telegram: teamMembers.telegram,
+      whatsapp: teamMembers.whatsapp,
+      linkedin: teamMembers.linkedin,
+      location: teamMembers.location,
+      notes: teamMembers.notes,
+      slug: teamMembers.slug,
+      createdAt: teamMembers.createdAt,
+      orgName: organizations.name,
+      orgSlug: organizations.slug,
+    })
+      .from(teamMembers)
+      .leftJoin(organizations, eq(teamMembers.organizationId, organizations.id))
+      .where(isNotNull(teamMembers.organizationId))
+      .orderBy(organizations.name, desc(teamMembers.createdAt));
+
+    return members;
+  }),
 
   getBySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
     const db = await getDb();
@@ -56,12 +125,13 @@ export const teamRouter = router({
     return rows[0] || null;
   }),
 
-  create: publicProcedure.input(z.object({
+  create: adminProcedure.input(z.object({
     name: z.string(),
     role: z.string().optional(),
     memberFunction: z.string().optional(),
     status: z.string().default("Active"),
     type: z.string().default("Internal"),
+    organizationId: z.number().nullable().optional(), // null = ATLAS internal
     notes: z.string().optional(),
     email: z.string().optional(),
     phone: z.string().optional(),
@@ -73,10 +143,16 @@ export const teamRouter = router({
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const slug = slugify(input.name) + "-" + nanoid(4);
-    await db.insert(teamMembers).values({ ...input, slug });
+    const { organizationId, ...rest } = input;
+    await db.insert(teamMembers).values({
+      ...rest,
+      organizationId: organizationId ?? null,
+      slug,
+    });
     await db.insert(activityLog).values({
       entityType: "team", entityName: input.name, action: "Member Added",
-      detail: `${input.name} added as ${input.role || input.type}`, userName: "System",
+      detail: `${input.name} added as ${input.role || input.type}${organizationId ? ` (client contact)` : ` (ATLAS internal)`}`,
+      userName: "System",
     });
     return { success: true };
   }),
@@ -141,13 +217,14 @@ export const teamRouter = router({
     return { success: true };
   }),
 
-  update: publicProcedure.input(z.object({
+  update: adminProcedure.input(z.object({
     id: z.number(),
     name: z.string().optional(),
     role: z.string().optional(),
     memberFunction: z.string().optional(),
     status: z.string().optional(),
     type: z.string().optional(),
+    organizationId: z.number().nullable().optional(),
     notes: z.string().optional(),
     email: z.string().optional(),
     phone: z.string().optional(),
@@ -159,7 +236,35 @@ export const teamRouter = router({
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const { id, ...data } = input;
-    await db.update(teamMembers).set(data).where(eq(teamMembers.id, id));
+    // Handle explicit null for organizationId (move to ATLAS internal)
+    const updateData: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(data)) {
+      if (val !== undefined) updateData[key] = val;
+    }
+    await db.update(teamMembers).set(updateData).where(eq(teamMembers.id, id));
     return { success: true };
+  }),
+
+  /** Delete a team member */
+  delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+
+    // Get member info for activity log
+    const [member] = await db.select().from(teamMembers).where(eq(teamMembers.id, input.id)).limit(1);
+    if (!member) throw new Error("Member not found");
+
+    // Remove venture assignments
+    await db.delete(ventureTeam).where(eq(ventureTeam.memberId, input.id));
+
+    // Delete member
+    await db.delete(teamMembers).where(eq(teamMembers.id, input.id));
+
+    await db.insert(activityLog).values({
+      entityType: "team", entityName: member.name, action: "Member Removed",
+      detail: `${member.name} removed from the system`, userName: "System",
+    });
+
+    return { success: true, name: member.name };
   }),
 });
