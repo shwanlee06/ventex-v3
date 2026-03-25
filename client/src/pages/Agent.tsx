@@ -23,9 +23,9 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Send, Anchor, User, FileText, Paperclip, X, Download,
+  Send, User, FileText, Paperclip, X, Download,
   Image, FileSpreadsheet, Plus, MoreHorizontal, Trash2,
-  MessageSquare, PenLine, StopCircle, History,
+  MessageSquare, PenLine, StopCircle, History, Sparkles,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -567,7 +567,7 @@ export default function Agent() {
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-border/50">
           <div className="flex items-center gap-3">
             <div className="size-8 rounded-full bg-foreground/5 flex items-center justify-center">
-              <Anchor className="size-4 text-foreground/70" />
+              <Sparkles className="size-4 text-foreground/70" />
             </div>
             <div>
               <span className="text-sm font-medium text-foreground tracking-tight">
@@ -615,7 +615,7 @@ export default function Agent() {
               >
                 <div className="flex justify-center mb-6">
                   <div className="size-12 rounded-full bg-foreground/5 flex items-center justify-center">
-                    <Anchor className="size-6 text-foreground/40" />
+                <span className="text-2xl font-light text-foreground/30 tracking-widest">A</span>
                   </div>
                 </div>
                 <p className="text-center text-foreground/80 text-lg font-light tracking-tight">
@@ -650,7 +650,7 @@ export default function Agent() {
                 >
                   {msg.role === "assistant" && (
                     <div className="flex-shrink-0 size-7 rounded-full bg-foreground/5 flex items-center justify-center mt-1">
-                      <Anchor className={cn("size-3.5 text-foreground/50", msg.isStreaming && "animate-pulse")} />
+                      <Sparkles className={cn("size-3.5 text-foreground/50", msg.isStreaming && "animate-pulse")} />
                     </div>
                   )}
 
