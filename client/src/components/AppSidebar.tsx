@@ -14,6 +14,7 @@ import { trpc } from "@/lib/trpc";
 import {
   LayoutDashboard,
   Bot,
+  Layers3,
   Briefcase,
   Shield,
   Lock,
@@ -52,6 +53,7 @@ interface NavItem {
 const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="size-5" /> },
   { label: "AI Agent", href: "/agent", icon: <Bot className="size-5" />, atlasOnly: true },
+  { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-5" />, clientOnly: true },
   { label: "SPVs & Deals", href: "/spvs", icon: <Briefcase className="size-5" /> },
   { label: "People", href: "/team", icon: <Users className="size-5" />, atlasOnly: true },
   { label: "Tasks", href: "/tasks", icon: <ListChecks className="size-5" /> },

@@ -748,3 +748,8 @@
 - [x] Removed unused Layers3 import from AppSidebar
 - [x] /ventures/:slug still works for individual venture detail pages
 - [x] All 218 tests passing
+
+## Ventures Tab — Client-Only (Not Admin)
+- [x] Add Ventures back to sidebar as clientOnly (hidden from admin, visible to clients)
+- [x] Restore /ventures route for client users
+- [x] Admin sees ventures only within client detail pages

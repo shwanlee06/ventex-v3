@@ -10,6 +10,7 @@ import { WorkspaceProvider } from "./contexts/WorkspaceContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import Home from "./pages/Home";
 import Agent from "./pages/Agent";
+import Verticals from "./pages/Verticals";
 import Onboard from "./pages/Onboard";
 import SpvDeals from "./pages/Settings";
 import Distributions from "./pages/Distributions";
@@ -90,7 +91,7 @@ function Router() {
         <RequireAuth><VentureDetail /></RequireAuth>
       </Route>
       <Route path="/ventures">
-        <Redirect to="/dashboard" />
+        <RequireAuth><Verticals /></RequireAuth>
       </Route>
       <Route path="/tasks">
         <RequireAuth><TasksPage /></RequireAuth>
