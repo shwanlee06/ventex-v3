@@ -1,0 +1,94 @@
+{
+  "query": "SELECT tm.id, tm.name, tm.role, tm.organizationId, o.name as orgName FROM team_members tm LEFT JOIN organizations o ON tm.organizationId = o.id ORDER BY tm.organizationId, tm.name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT tm.id, tm.name, tm.role, tm.organizationId, o.name as orgName FROM team_members tm LEFT JOIN organizations o ON tm.organizationId = o.id ORDER BY tm.organizationId, tm.name;",
+  "rows": [
+    {
+      "id": "11",
+      "name": "Shwan Lee",
+      "role": "Founder & CEO",
+      "organizationId": "NULL",
+      "orgName": "NULL"
+    },
+    {
+      "id": "5",
+      "name": "Angie Samadi",
+      "role": "HR",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "2",
+      "name": "Anton Maghami",
+      "role": "Vice President",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "6",
+      "name": "Carl Frangi",
+      "role": "Member",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "8",
+      "name": "Igor",
+      "role": "Deck Design",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1",
+      "name": "Jimmy Frangi",
+      "role": "Founder",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "3",
+      "name": "Jon Eichner",
+      "role": "COO",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "7",
+      "name": "Leonidas Kyrris",
+      "role": "Legal (maritime focus)",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "4",
+      "name": "Maher Abou Chakra",
+      "role": "Accounting",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "12",
+      "name": "Najib",
+      "role": "Advisor",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "10",
+      "name": "Ruwaida",
+      "role": "Yacht Design",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "9",
+      "name": "Sohail",
+      "role": "Financial Modeling",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\trole\torganizationId\torgName\n11\tShwan Lee\tFounder & CEO\tNULL\tNULL\n5\tAngie Samadi\tHR\t2\tRoyalton Venture Holding\n2\tAnton Maghami\tVice President\t2\tRoyalton Venture Holding\n6\tCarl Frangi\tMember\t2\tRoyalton Venture Holding\n8\tIgor\tDeck Design\t2\tRoyalton Venture Holding\n1\tJimmy Frangi\tFounder\t2\tRoyalton Venture Holding\n3\tJon Eichner\tCOO\t2\tRoyalton Venture Holding\n7\tLeonidas Kyrris\tLegal (maritime focus)\t2\tRoyalton Venture Holding\n4\tMaher Abou Chakra\tAccounting\t2\tRoyalton Venture Holding\n12\tNajib\tAdvisor\t2\tRoyalton Venture Holding\n10\tRuwaida\tYacht Design\t2\tRoyalton Venture Holding\n9\tSohail\tFinancial Modeling\t2\tRoyalton Venture Holding\n",
+  "stderr": "",
+  "execution_time_ms": 373
+}

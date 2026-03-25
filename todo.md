@@ -699,3 +699,13 @@
 - [x] Frontend: Member detail drawer with contact info, type, status, org badge
 - [x] Frontend: Sidebar nav renamed from "Team" to "People"
 - [x] Tests for org-scoped team queries (10 new tests, 208 total passing)
+
+## Simplify People Page — ATLAS = Just Shwan, Condense Client Contacts
+- [x] Migrate all existing team members (except Shwan) to Royalton org as client contacts
+- [x] ATLAS section = compact operator card showing Shwan + stats (managing X clients, Y contacts)
+- [x] Redesign Client Contacts — single unified table with Client column, search, client filter, type filter
+- [x] Client filter dropdown to scope contacts to any one client instantly
+- [x] Type filter (Internal / External Partner / Advisor)
+- [x] Compact row design with avatar initials, client badge (clickable to client detail), contact icons
+- [x] Quick-add contact dialog with required client selector
+- [x] All 208 tests passing

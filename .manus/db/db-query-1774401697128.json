@@ -1,0 +1,122 @@
+{
+  "query": "SELECT tm.id, tm.name, tm.role, tm.type, tm.organizationId, o.name as orgName FROM team_members tm LEFT JOIN organizations o ON tm.organizationId = o.id ORDER BY tm.organizationId, tm.name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT tm.id, tm.name, tm.role, tm.type, tm.organizationId, o.name as orgName FROM team_members tm LEFT JOIN organizations o ON tm.organizationId = o.id ORDER BY tm.organizationId, tm.name;",
+  "rows": [
+    {
+      "id": "5",
+      "name": "Angie Samadi",
+      "role": "HR",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "orgName": "NULL"
+    },
+    {
+      "id": "2",
+      "name": "Anton Maghami",
+      "role": "Vice President",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "orgName": "NULL"
+    },
+    {
+      "id": "6",
+      "name": "Carl Frangi",
+      "role": "Member",
+      "type": "Advisor",
+      "organizationId": "NULL",
+      "orgName": "NULL"
+    },
+    {
+      "id": "8",
+      "name": "Igor",
+      "role": "Deck Design",
+      "type": "External Partner",
+      "organizationId": "NULL",
+      "orgName": "NULL"
+    },
+    {
+      "id": "1",
+      "name": "Jimmy Frangi",
+      "role": "Founder",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "orgName": "NULL"
+    },
+    {
+      "id": "3",
+      "name": "Jon Eichner",
+      "role": "COO",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "orgName": "NULL"
+    },
+    {
+      "id": "7",
+      "name": "Leonidas Kyrris",
+      "role": "Legal (maritime focus)",
+      "type": "Advisor",
+      "organizationId": "NULL",
+      "orgName": "NULL"
+    },
+    {
+      "id": "4",
+      "name": "Maher Abou Chakra",
+      "role": "Accounting",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "orgName": "NULL"
+    },
+    {
+      "id": "12",
+      "name": "Najib",
+      "role": "Advisor",
+      "type": "Advisor",
+      "organizationId": "NULL",
+      "orgName": "NULL"
+    },
+    {
+      "id": "10",
+      "name": "Ruwaida",
+      "role": "Yacht Design",
+      "type": "External Partner",
+      "organizationId": "NULL",
+      "orgName": "NULL"
+    },
+    {
+      "id": "11",
+      "name": "Shwan Lee",
+      "role": "Founder & CEO",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "orgName": "NULL"
+    },
+    {
+      "id": "9",
+      "name": "Sohail",
+      "role": "Financial Modeling",
+      "type": "External Partner",
+      "organizationId": "NULL",
+      "orgName": "NULL"
+    },
+    {
+      "id": "30001",
+      "name": "Test ATLAS Member 1774400907239",
+      "role": "Test Role",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "orgName": "NULL"
+    },
+    {
+      "id": "30002",
+      "name": "Test Client Contact 1774400907534",
+      "role": "Client Liaison",
+      "type": "External Partner",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\trole\ttype\torganizationId\torgName\n5\tAngie Samadi\tHR\tInternal\tNULL\tNULL\n2\tAnton Maghami\tVice President\tInternal\tNULL\tNULL\n6\tCarl Frangi\tMember\tAdvisor\tNULL\tNULL\n8\tIgor\tDeck Design\tExternal Partner\tNULL\tNULL\n1\tJimmy Frangi\tFounder\tInternal\tNULL\tNULL\n3\tJon Eichner\tCOO\tInternal\tNULL\tNULL\n7\tLeonidas Kyrris\tLegal (maritime focus)\tAdvisor\tNULL\tNULL\n4\tMaher Abou Chakra\tAccounting\tInternal\tNULL\tNULL\n12\tNajib\tAdvisor\tAdvisor\tNULL\tNULL\n10\tRuwaida\tYacht Design\tExternal Partner\tNULL\tNULL\n11\tShwan Lee\tFounder & CEO\tInternal\tNULL\tNULL\n9\tSohail\tFinancial Modeling\tExternal Partner\tNULL\tNULL\n30001\tTest ATLAS Member 1774400907239\tTest Role\tInternal\tNULL\tNULL\n30002\tTest Client Contact 1774400907534\tClient Liaison\tExternal Partner\t2\tRoyalton Venture Holding\n",
+  "stderr": "",
+  "execution_time_ms": 424
+}

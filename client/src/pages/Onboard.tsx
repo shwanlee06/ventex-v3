@@ -1,7 +1,7 @@
 // ============================================================================
-// People & Teams — Two clear sections:
-// 1. ATLAS Team — Aurovia/ATLAS internal members (no org)
-// 2. Client Contacts — grouped by client organization
+// People — Condensed view for managing contacts across 30+ clients
+// ATLAS section = just you (the operator)
+// Client Contacts = unified searchable table with client filter
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
@@ -10,8 +10,9 @@ import { trpc } from "@/lib/trpc";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, UserCircle, Building2, Phone,
-  Plus, MessageCircle, Send, ChevronDown, ChevronRight,
-  Search, Trash2, Pencil, Loader2, Shield,
+  Plus, MessageCircle, Send, Search, Trash2,
+  Loader2, Shield, Filter, ChevronDown,
+  Mail, X,
 } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -35,11 +36,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
-
-type Tab = "atlas" | "clients";
 
 const MEMBER_TYPES = ["Internal", "External Partner", "Advisor"];
 const FUNCTIONS = [
@@ -49,31 +49,24 @@ const FUNCTIONS = [
   "Technology", "Marketing", "Sales",
 ];
 
-function MemberTypeBadge({ type }: { type: string }) {
-  const config: Record<string, { bg: string; text: string }> = {
-    "Internal": { bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-400" },
-    "External Partner": { bg: "bg-blue-500/10 border-blue-500/20", text: "text-blue-400" },
-    "Advisor": { bg: "bg-amber-500/10 border-amber-500/20", text: "text-amber-400" },
+function TypeBadge({ type }: { type: string }) {
+  const config: Record<string, string> = {
+    "Internal": "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    "External Partner": "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    "Advisor": "bg-amber-500/10 text-amber-400 border-amber-500/20",
   };
-  const c = config[type] || config["Internal"];
   return (
-    <span className={cn("inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium border", c.bg, c.text)}>
+    <span className={cn("inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border", config[type] || config["Internal"])}>
       {type}
     </span>
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const color = status === "Active" ? "bg-emerald-500/10 text-emerald-400" :
-    status === "Advisor" ? "bg-amber-500/10 text-amber-400" :
-    "bg-secondary text-muted-foreground";
-  return <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded", color)}>{status}</span>;
-}
-
 export default function OnboardPage() {
   const [, navigate] = useLocation();
-  const [tab, setTab] = useState<Tab>("atlas");
   const [search, setSearch] = useState("");
+  const [clientFilter, setClientFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
   const [addOpen, setAddOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [drawerMember, setDrawerMember] = useState<any>(null);
@@ -88,7 +81,7 @@ export default function OnboardPage() {
   const [newPhone, setNewPhone] = useState("");
   const [newTelegram, setNewTelegram] = useState("");
   const [newWhatsapp, setNewWhatsapp] = useState("");
-  const [newOrgId, setNewOrgId] = useState<string>("none"); // "none" = ATLAS internal
+  const [newOrgId, setNewOrgId] = useState<string>("none");
 
   // Data queries
   const atlasTeamQ = trpc.team.listInternal.useQuery();
@@ -98,7 +91,7 @@ export default function OnboardPage() {
 
   const createMember = trpc.team.create.useMutation({
     onSuccess: () => {
-      toast.success("Member added");
+      toast.success("Contact added");
       setAddOpen(false);
       resetForm();
       utils.team.listInternal.invalidate();
@@ -126,6 +119,7 @@ export default function OnboardPage() {
 
   function handleAdd() {
     if (!newName.trim()) { toast.error("Name is required"); return; }
+    if (newOrgId === "none") { toast.error("Please select a client"); return; }
     createMember.mutate({
       name: newName.trim(),
       role: newRole.trim() || undefined,
@@ -141,285 +135,349 @@ export default function OnboardPage() {
     });
   }
 
-  // Filter ATLAS team by search
-  const atlasTeam = useMemo(() => {
-    const members = atlasTeamQ.data || [];
-    if (!search.trim()) return members;
-    const q = search.toLowerCase();
-    return members.filter(m =>
-      m.name.toLowerCase().includes(q) ||
-      m.role?.toLowerCase().includes(q) ||
-      m.memberFunction?.toLowerCase().includes(q)
-    );
-  }, [atlasTeamQ.data, search]);
-
-  // Group client contacts by org
-  const clientContactsByOrg = useMemo(() => {
+  // All client contacts, filtered
+  const allContacts = useMemo(() => {
     const contacts = clientContactsQ.data || [];
-    const q = search.toLowerCase();
-    const filtered = q
-      ? contacts.filter(c =>
-          c.name.toLowerCase().includes(q) ||
-          c.role?.toLowerCase().includes(q) ||
-          c.orgName?.toLowerCase().includes(q)
-        )
-      : contacts;
+    let filtered = contacts;
 
-    const grouped: Record<string, { orgName: string; orgSlug: string | null; orgId: number | null; members: typeof filtered }> = {};
-    for (const c of filtered) {
-      const key = c.orgName || "Unassigned";
-      if (!grouped[key]) {
-        grouped[key] = { orgName: key, orgSlug: c.orgSlug, orgId: c.organizationId, members: [] };
-      }
-      grouped[key].members.push(c);
+    // Search filter
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      filtered = filtered.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        c.role?.toLowerCase().includes(q) ||
+        c.orgName?.toLowerCase().includes(q) ||
+        c.email?.toLowerCase().includes(q)
+      );
     }
-    return Object.values(grouped).sort((a, b) => a.orgName.localeCompare(b.orgName));
-  }, [clientContactsQ.data, search]);
 
-  const totalAtlas = atlasTeamQ.data?.length ?? 0;
-  const totalClientContacts = clientContactsQ.data?.length ?? 0;
+    // Client filter
+    if (clientFilter !== "all") {
+      filtered = filtered.filter(c => String(c.organizationId) === clientFilter);
+    }
+
+    // Type filter
+    if (typeFilter !== "all") {
+      filtered = filtered.filter(c => c.type === typeFilter);
+    }
+
+    return filtered;
+  }, [clientContactsQ.data, search, clientFilter, typeFilter]);
+
+  // Unique clients for the filter dropdown
+  const clientOptions = useMemo(() => {
+    const contacts = clientContactsQ.data || [];
+    const map = new Map<string, string>();
+    for (const c of contacts) {
+      if (c.organizationId && c.orgName) {
+        map.set(String(c.organizationId), c.orgName);
+      }
+    }
+    return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]));
+  }, [clientContactsQ.data]);
+
+  // Stats
+  const atlasMembers = atlasTeamQ.data || [];
+  const totalContacts = clientContactsQ.data?.length ?? 0;
+  const uniqueClients = clientOptions.length;
   const isLoading = atlasTeamQ.isLoading || clientContactsQ.isLoading;
 
-  const TABS: { id: Tab; label: string; count: number; icon: React.ReactNode }[] = [
-    { id: "atlas", label: "ATLAS Team", count: totalAtlas, icon: <Shield className="size-4" /> },
-    { id: "clients", label: "Client Contacts", count: totalClientContacts, icon: <Building2 className="size-4" /> },
-  ];
+  const hasActiveFilters = clientFilter !== "all" || typeFilter !== "all" || search.trim() !== "";
 
   return (
-    <DashboardLayout title="People & Teams" subtitle="ATLAS TEAM & CLIENT CONTACTS">
-      <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
-        {/* Summary metrics */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {isLoading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />) : [
-            { label: "ATLAS Members", value: totalAtlas, icon: <Shield className="size-4 text-primary" /> },
-            { label: "Client Contacts", value: totalClientContacts, icon: <Building2 className="size-4 text-blue-400" /> },
-            { label: "Client Orgs", value: clientContactsByOrg.length, icon: <Users className="size-4 text-emerald-400" /> },
-            { label: "Total People", value: totalAtlas + totalClientContacts, icon: <UserCircle className="size-4 text-amber-400" /> },
-          ].map((m, i) => (
-            <motion.div
-              key={m.label}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.3 }}
-              className="bg-card border border-border rounded-lg p-4"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                {m.icon}
-                <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">{m.label}</span>
+    <DashboardLayout title="People" subtitle="CONTACTS & TEAM DIRECTORY">
+      <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5 pb-24 md:pb-6">
+
+        {/* ── Your Profile (ATLAS Operator) ──────────────────────── */}
+        <div className="bg-card border border-border rounded-lg p-4">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Shield className="size-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-foreground">
+                  {atlasMembers.length > 0 ? atlasMembers[0].name : "ATLAS Operator"}
+                </span>
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                  ATLAS
+                </span>
               </div>
-              <span className="text-2xl font-mono font-semibold text-foreground">{m.value}</span>
-            </motion.div>
-          ))}
+              <span className="text-xs text-muted-foreground">
+                {atlasMembers.length > 0 ? atlasMembers[0].role : "Founder & CEO"} · Managing {uniqueClients} client{uniqueClients !== 1 ? "s" : ""} · {totalContacts} contact{totalContacts !== 1 ? "s" : ""}
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* Tab bar + search + add */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-1">
-            {TABS.map(t => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={cn(
-                  "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
-                  tab === t.id
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {t.icon}
-                <span>{t.label}</span>
-                <span className={cn(
-                  "text-[10px] font-mono px-1.5 py-0.5 rounded",
-                  tab === t.id ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"
-                )}>
-                  {t.count}
-                </span>
-              </button>
-            ))}
+        {/* ── Client Contacts Header ─────────────────────────────── */}
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Users className="size-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold text-foreground">Client Contacts</h2>
+              <span className="text-[10px] font-mono text-muted-foreground">
+                {allContacts.length}{hasActiveFilters ? ` of ${totalContacts}` : ""} contacts · {uniqueClients} clients
+              </span>
+            </div>
+            <Button size="sm" className="text-xs h-8 gap-1.5" onClick={() => setAddOpen(true)}>
+              <Plus className="size-3.5" />
+              Add Contact
+            </Button>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-64">
+          {/* Filters row */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[180px] max-w-xs">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search people..."
+                placeholder="Search name, role, email..."
                 className="h-8 text-xs pl-8"
               />
             </div>
-            <Button size="sm" className="text-xs h-8 min-h-[32px] gap-1.5" onClick={() => {
-              setNewOrgId(tab === "atlas" ? "none" : "none");
-              setAddOpen(true);
-            }}>
-              <Plus className="size-3.5" />
-              <span className="hidden sm:inline">Add {tab === "atlas" ? "Member" : "Contact"}</span>
-              <span className="sm:hidden">Add</span>
-            </Button>
+
+            <Select value={clientFilter} onValueChange={setClientFilter}>
+              <SelectTrigger className="h-8 text-xs w-[180px]">
+                <div className="flex items-center gap-1.5">
+                  <Building2 className="size-3 text-muted-foreground" />
+                  <SelectValue placeholder="All Clients" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Clients</SelectItem>
+                {clientOptions.map(([id, name]) => (
+                  <SelectItem key={id} value={id}>{name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="h-8 text-xs w-[150px]">
+                <div className="flex items-center gap-1.5">
+                  <Filter className="size-3 text-muted-foreground" />
+                  <SelectValue placeholder="All Types" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                {MEMBER_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs text-muted-foreground gap-1"
+                onClick={() => { setSearch(""); setClientFilter("all"); setTypeFilter("all"); }}
+              >
+                <X className="size-3" />
+                Clear
+              </Button>
+            )}
           </div>
         </div>
 
-        {/* ATLAS Team Tab */}
-        <AnimatePresence mode="wait">
-          {tab === "atlas" && (
-            <motion.div
-              key="atlas"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="bg-card border border-border rounded-lg overflow-hidden">
-                <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Shield className="size-4 text-primary" />
-                    <h2 className="text-sm font-semibold text-foreground">ATLAS / Aurovia Team</h2>
-                  </div>
-                  <span className="text-[10px] font-mono text-muted-foreground">{atlasTeam.length} members</span>
-                </div>
-
-                {isLoading ? (
-                  <div className="p-6 space-y-3">
-                    {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 rounded" />)}
-                  </div>
-                ) : atlasTeam.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Users className="size-8 mx-auto mb-3 opacity-40" />
-                    <p className="text-sm">{search ? "No members match your search" : "No ATLAS team members yet"}</p>
-                    <p className="text-xs mt-1">Add your first ATLAS team member to get started</p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="hover:bg-transparent">
-                          <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Name</TableHead>
-                          <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Role</TableHead>
-                          <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden md:table-cell">Function</TableHead>
-                          <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden sm:table-cell">Type</TableHead>
-                          <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Status</TableHead>
-                          <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground w-10"></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {atlasTeam.map((member) => (
-                          <TableRow
-                            key={member.id}
-                            className="cursor-pointer hover:bg-accent/30 group"
-                            onClick={() => setDrawerMember(member)}
-                          >
-                            <TableCell>
-                              <div>
-                                <span className="text-xs text-foreground font-medium">{member.name}</span>
-                                {member.email && (
-                                  <p className="text-[10px] text-muted-foreground mt-0.5">{member.email}</p>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-xs text-muted-foreground">{member.role || "—"}</TableCell>
-                            <TableCell className="text-xs text-muted-foreground hidden md:table-cell">{member.memberFunction || "—"}</TableCell>
-                            <TableCell className="hidden sm:table-cell"><MemberTypeBadge type={member.type || "Internal"} /></TableCell>
-                            <TableCell><StatusBadge status={member.status || "Active"} /></TableCell>
-                            <TableCell>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); setDeleteConfirm(member.id); }}
-                                className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-400 transition-all p-1"
-                              >
-                                <Trash2 className="size-3.5" />
-                              </button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </div>
-            </motion.div>
+        {/* ── Unified Contacts Table ─────────────────────────────── */}
+        <div className="bg-card border border-border rounded-lg overflow-hidden">
+          {isLoading ? (
+            <div className="p-4 space-y-2">
+              {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-10 rounded" />)}
+            </div>
+          ) : allContacts.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Users className="size-8 mx-auto mb-3 opacity-40" />
+              <p className="text-sm">{hasActiveFilters ? "No contacts match your filters" : "No client contacts yet"}</p>
+              <p className="text-xs mt-1">
+                {hasActiveFilters ? "Try adjusting your search or filters" : "Add contacts to your client organizations"}
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Name</TableHead>
+                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Client</TableHead>
+                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden md:table-cell">Role</TableHead>
+                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden lg:table-cell">Function</TableHead>
+                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden sm:table-cell">Type</TableHead>
+                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden lg:table-cell">Contact</TableHead>
+                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground w-10"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {allContacts.map((member) => (
+                    <TableRow
+                      key={member.id}
+                      className="cursor-pointer hover:bg-accent/30 group"
+                      onClick={() => setDrawerMember(member)}
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-2.5">
+                          <div className="size-7 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                            <span className="text-[10px] font-medium text-foreground">
+                              {member.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
+                            </span>
+                          </div>
+                          <span className="text-xs font-medium text-foreground">{member.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 cursor-pointer hover:bg-blue-500/20 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (member.orgSlug) navigate(`/clients/${member.orgSlug}`);
+                          }}
+                        >
+                          {member.orgName || "—"}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground hidden md:table-cell">
+                        {member.role || "—"}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">
+                        {member.memberFunction || "—"}
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        <TypeBadge type={member.type || "Internal"} />
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <div className="flex items-center gap-1.5">
+                          {member.email && (
+                            <a
+                              href={`mailto:${member.email}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-muted-foreground hover:text-blue-400 transition-colors"
+                              title={member.email}
+                            >
+                              <Mail className="size-3.5" />
+                            </a>
+                          )}
+                          {member.telegram && (
+                            <a
+                              href={`https://t.me/${member.telegram.replace("@", "")}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-muted-foreground hover:text-blue-400 transition-colors"
+                              title={`Telegram: ${member.telegram}`}
+                            >
+                              <Send className="size-3.5" />
+                            </a>
+                          )}
+                          {member.whatsapp && (
+                            <a
+                              href={`https://wa.me/${member.whatsapp.replace(/[^0-9]/g, "")}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-muted-foreground hover:text-emerald-400 transition-colors"
+                              title={`WhatsApp: ${member.whatsapp}`}
+                            >
+                              <MessageCircle className="size-3.5" />
+                            </a>
+                          )}
+                          {member.phone && (
+                            <a
+                              href={`tel:${member.phone}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-muted-foreground hover:text-amber-400 transition-colors"
+                              title={member.phone}
+                            >
+                              <Phone className="size-3.5" />
+                            </a>
+                          )}
+                          {!member.email && !member.telegram && !member.whatsapp && !member.phone && (
+                            <span className="text-[10px] text-muted-foreground/50">—</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setDeleteConfirm(member.id); }}
+                          className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-400 transition-all p-1"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
 
-          {/* Client Contacts Tab */}
-          {tab === "clients" && (
-            <motion.div
-              key="clients"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-4"
-            >
-              {isLoading ? (
-                <div className="space-y-4">
-                  {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-48 rounded-lg" />)}
-                </div>
-              ) : clientContactsByOrg.length === 0 ? (
-                <div className="bg-card border border-border rounded-lg text-center py-12 text-muted-foreground">
-                  <Building2 className="size-8 mx-auto mb-3 opacity-40" />
-                  <p className="text-sm">{search ? "No contacts match your search" : "No client contacts yet"}</p>
-                  <p className="text-xs mt-1">Add contacts to your client organizations</p>
-                </div>
-              ) : (
-                clientContactsByOrg.map((group) => (
-                  <ClientOrgGroup
-                    key={group.orgName}
-                    orgName={group.orgName}
-                    orgSlug={group.orgSlug}
-                    members={group.members}
-                    onMemberClick={setDrawerMember}
-                    onDeleteClick={setDeleteConfirm}
-                    onNavigate={navigate}
-                  />
-                ))
+          {/* Results summary footer */}
+          {allContacts.length > 0 && (
+            <div className="px-4 py-2 border-t border-border flex items-center justify-between">
+              <span className="text-[10px] font-mono text-muted-foreground">
+                Showing {allContacts.length} of {totalContacts} contacts
+              </span>
+              {hasActiveFilters && (
+                <span className="text-[10px] text-muted-foreground">
+                  Filtered by: {clientFilter !== "all" ? clientOptions.find(([id]) => id === clientFilter)?.[1] : ""} {typeFilter !== "all" ? typeFilter : ""}
+                </span>
               )}
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
+        </div>
       </div>
 
-      {/* Member Detail Drawer */}
+      {/* ── Member Detail Drawer ───────────────────────────────── */}
       <Sheet open={!!drawerMember} onOpenChange={(open) => !open && setDrawerMember(null)}>
-        <SheetContent side="right" className="w-[420px] sm:max-w-[420px] bg-card border-border p-0">
+        <SheetContent side="right" className="w-full sm:w-[400px] sm:max-w-[400px] bg-card border-border p-0">
           {drawerMember && (
             <>
               <SheetHeader className="px-4 pt-4 pb-3 border-b border-border">
-                <SheetTitle className="text-sm font-semibold">{drawerMember.name}</SheetTitle>
-                <SheetDescription className="text-[10px] font-mono text-muted-foreground">
-                  {drawerMember.role || "Member"} {drawerMember.memberFunction ? `· ${drawerMember.memberFunction}` : ""}
-                </SheetDescription>
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-full bg-secondary flex items-center justify-center">
+                    <span className="text-sm font-medium text-foreground">
+                      {drawerMember.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <SheetTitle className="text-sm font-semibold">{drawerMember.name}</SheetTitle>
+                    <SheetDescription className="text-[10px] font-mono text-muted-foreground">
+                      {drawerMember.role || "Contact"} {drawerMember.memberFunction ? `· ${drawerMember.memberFunction}` : ""}
+                    </SheetDescription>
+                  </div>
+                </div>
               </SheetHeader>
               <ScrollArea className="h-[calc(100vh-140px)]">
                 <div className="p-4 space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Type</span>
-                      <MemberTypeBadge type={drawerMember.type || "Internal"} />
-                    </div>
-                    <div>
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Status</span>
-                      <StatusBadge status={drawerMember.status || "Active"} />
-                    </div>
-                    {drawerMember.organizationId && (
-                      <div>
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Client</span>
-                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
-                          {drawerMember.orgName || "Client"}
-                        </span>
-                      </div>
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-2">
+                    <TypeBadge type={drawerMember.type || "Internal"} />
+                    {drawerMember.orgName && (
+                      <span
+                        className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 cursor-pointer hover:bg-blue-500/20 transition-colors"
+                        onClick={() => {
+                          if (drawerMember.orgSlug) {
+                            setDrawerMember(null);
+                            navigate(`/clients/${drawerMember.orgSlug}`);
+                          }
+                        }}
+                      >
+                        {drawerMember.orgName}
+                      </span>
                     )}
-                    {!drawerMember.organizationId && (
-                      <div>
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Org</span>
-                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary">
-                          ATLAS
-                        </span>
-                      </div>
-                    )}
+                    <span className={cn(
+                      "text-[10px] font-medium px-1.5 py-0.5 rounded",
+                      drawerMember.status === "Active" ? "bg-emerald-500/10 text-emerald-400" : "bg-secondary text-muted-foreground"
+                    )}>
+                      {drawerMember.status || "Active"}
+                    </span>
                   </div>
 
+                  {/* Notes */}
                   {drawerMember.notes && (
                     <div>
                       <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Notes</span>
-                      <p className="text-xs text-foreground bg-secondary/30 rounded-md p-2">{drawerMember.notes}</p>
+                      <p className="text-xs text-foreground bg-secondary/30 rounded-md p-2.5">{drawerMember.notes}</p>
                     </div>
                   )}
 
@@ -428,47 +486,37 @@ export default function OnboardPage() {
                     <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-2">Contact</span>
                     <div className="space-y-2">
                       {drawerMember.email && (
-                        <a href={`mailto:${drawerMember.email}`} className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors">
-                          <Phone className="size-3.5" />
-                          <span>Email: {drawerMember.email}</span>
+                        <a href={`mailto:${drawerMember.email}`} className="flex items-center gap-2.5 text-xs text-blue-400 hover:text-blue-300 transition-colors p-2 rounded-md hover:bg-secondary/30">
+                          <Mail className="size-4 flex-shrink-0" />
+                          <span>{drawerMember.email}</span>
                         </a>
                       )}
                       {drawerMember.telegram && (
-                        <a
-                          href={`https://t.me/${drawerMember.telegram.replace("@", "")}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                        >
-                          <Send className="size-3.5" />
+                        <a href={`https://t.me/${drawerMember.telegram.replace("@", "")}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-xs text-blue-400 hover:text-blue-300 transition-colors p-2 rounded-md hover:bg-secondary/30">
+                          <Send className="size-4 flex-shrink-0" />
                           <span>Telegram: {drawerMember.telegram}</span>
                         </a>
                       )}
                       {drawerMember.whatsapp && (
-                        <a
-                          href={`https://wa.me/${drawerMember.whatsapp.replace(/[^0-9]/g, "")}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
-                        >
-                          <MessageCircle className="size-3.5" />
+                        <a href={`https://wa.me/${drawerMember.whatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-xs text-emerald-400 hover:text-emerald-300 transition-colors p-2 rounded-md hover:bg-secondary/30">
+                          <MessageCircle className="size-4 flex-shrink-0" />
                           <span>WhatsApp: {drawerMember.whatsapp}</span>
                         </a>
                       )}
                       {drawerMember.phone && (
-                        <a href={`tel:${drawerMember.phone}`} className="flex items-center gap-2 text-xs text-amber-400 hover:text-amber-300 transition-colors">
-                          <Phone className="size-3.5" />
-                          <span>Phone: {drawerMember.phone}</span>
+                        <a href={`tel:${drawerMember.phone}`} className="flex items-center gap-2.5 text-xs text-amber-400 hover:text-amber-300 transition-colors p-2 rounded-md hover:bg-secondary/30">
+                          <Phone className="size-4 flex-shrink-0" />
+                          <span>{drawerMember.phone}</span>
                         </a>
                       )}
                       {!drawerMember.email && !drawerMember.telegram && !drawerMember.whatsapp && !drawerMember.phone && (
-                        <p className="text-xs text-muted-foreground">No contact methods on file.</p>
+                        <p className="text-xs text-muted-foreground p-2">No contact methods on file.</p>
                       )}
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="pt-2 border-t border-border flex gap-2">
+                  <div className="pt-3 border-t border-border">
                     <Button
                       variant="destructive"
                       size="sm"
@@ -476,7 +524,7 @@ export default function OnboardPage() {
                       onClick={() => setDeleteConfirm(drawerMember.id)}
                     >
                       <Trash2 className="size-3" />
-                      Remove
+                      Remove Contact
                     </Button>
                   </div>
                 </div>
@@ -486,24 +534,24 @@ export default function OnboardPage() {
         </SheetContent>
       </Sheet>
 
-      {/* Add Member Dialog */}
+      {/* ── Add Contact Dialog ─────────────────────────────────── */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-sm">Add {newOrgId === "none" ? "ATLAS Team Member" : "Client Contact"}</DialogTitle>
+            <DialogTitle className="text-sm">Add Client Contact</DialogTitle>
             <DialogDescription className="text-[10px] font-mono">
-              {newOrgId === "none" ? "Add an Aurovia/ATLAS internal team member" : "Add a contact to a client organization"}
+              Add a contact to one of your client organizations
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-2">
+          <div className="space-y-3 py-2">
             <div>
-              <Label className="text-xs mb-1">Assign To</Label>
+              <Label className="text-xs mb-1">Client *</Label>
               <Select value={newOrgId} onValueChange={setNewOrgId}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select a client..." /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">ATLAS / Aurovia (Internal)</SelectItem>
+                  <SelectItem value="none" disabled>Select a client...</SelectItem>
                   {(orgsQ.data || []).map(org => (
-                    <SelectItem key={org.id} value={String(org.id)}>{org.name} (Client)</SelectItem>
+                    <SelectItem key={org.id} value={String(org.id)}>{org.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -562,22 +610,22 @@ export default function OnboardPage() {
             </div>
           </div>
           <DialogFooter>
+            <Button variant="ghost" size="sm" className="text-xs" onClick={() => setAddOpen(false)}>Cancel</Button>
             <Button size="sm" className="text-xs gap-1.5" onClick={handleAdd} disabled={createMember.isPending}>
               {createMember.isPending ? <Loader2 className="size-3 animate-spin" /> : <Plus className="size-3.5" />}
-              {createMember.isPending ? "Adding..." : "Add Member"}
+              {createMember.isPending ? "Adding..." : "Add Contact"}
             </Button>
-            <Button variant="ghost" size="sm" className="text-xs" onClick={() => setAddOpen(false)}>Cancel</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
+      {/* ── Delete Confirmation ────────────────────────────────── */}
       <AlertDialog open={deleteConfirm !== null} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove Team Member</AlertDialogTitle>
+            <AlertDialogTitle>Remove Contact</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove this person and their venture assignments. This action cannot be undone.
+              This will permanently remove this contact and their venture assignments. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -592,113 +640,5 @@ export default function OnboardPage() {
         </AlertDialogContent>
       </AlertDialog>
     </DashboardLayout>
-  );
-}
-
-// ════════════════════════════════════════════════════════════════════════
-// Client Org Group — Collapsible section for each client's contacts
-// ════════════════════════════════════════════════════════════════════════
-
-function ClientOrgGroup({
-  orgName,
-  orgSlug,
-  members,
-  onMemberClick,
-  onDeleteClick,
-  onNavigate,
-}: {
-  orgName: string;
-  orgSlug: string | null;
-  members: any[];
-  onMemberClick: (m: any) => void;
-  onDeleteClick: (id: number) => void;
-  onNavigate: (path: string) => void;
-}) {
-  const [expanded, setExpanded] = useState(true);
-
-  return (
-    <div className="bg-card border border-border rounded-lg overflow-hidden">
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full px-4 py-3 border-b border-border flex items-center justify-between hover:bg-accent/20 transition-colors"
-      >
-        <div className="flex items-center gap-2">
-          <Building2 className="size-4 text-blue-400" />
-          <h3 className="text-sm font-semibold text-foreground">{orgName}</h3>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
-            {members.length} {members.length === 1 ? "contact" : "contacts"}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          {orgSlug && (
-            <span
-              onClick={(e) => { e.stopPropagation(); onNavigate(`/clients/${orgSlug}`); }}
-              className="text-[10px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-            >
-              View Client →
-            </span>
-          )}
-          <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-            <ChevronDown className="size-4 text-muted-foreground" />
-          </motion.div>
-        </div>
-      </button>
-
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Name</TableHead>
-                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Role</TableHead>
-                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden md:table-cell">Function</TableHead>
-                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden sm:table-cell">Type</TableHead>
-                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Status</TableHead>
-                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground w-10"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {members.map((member) => (
-                    <TableRow
-                      key={member.id}
-                      className="cursor-pointer hover:bg-accent/30 group"
-                      onClick={() => onMemberClick(member)}
-                    >
-                      <TableCell>
-                        <div>
-                          <span className="text-xs text-foreground font-medium">{member.name}</span>
-                          {member.email && (
-                            <p className="text-[10px] text-muted-foreground mt-0.5">{member.email}</p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{member.role || "—"}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground hidden md:table-cell">{member.memberFunction || "—"}</TableCell>
-                      <TableCell className="hidden sm:table-cell"><MemberTypeBadge type={member.type || "Internal"} /></TableCell>
-                      <TableCell><StatusBadge status={member.status || "Active"} /></TableCell>
-                      <TableCell>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); onDeleteClick(member.id); }}
-                          className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-400 transition-all p-1"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
   );
 }
