@@ -63,8 +63,10 @@ export default function VerticalsPage() {
   // ── Live data ──────────────────────────────────────────────────────
   const venturesQ = trpc.ventures.listWithOrgs.useQuery();
   const tasksQ = trpc.tasks.list.useQuery();
+  const orgsQ = trpc.organizations.list.useQuery({ includeArchived: false });
   const allVentures = (venturesQ.data || []) as VentureWithOrgs[];
   const allTasks = tasksQ.data || [];
+  const activeOrgs = (orgsQ.data || []).filter((o: any) => o.status === "active");
   const loading = venturesQ.isLoading;
 
   // ── Mutations ──────────────────────────────────────────────────────
@@ -72,6 +74,7 @@ export default function VerticalsPage() {
     onSuccess: () => {
       utils.ventures.listWithOrgs.invalidate();
       utils.ventures.list.invalidate();
+      utils.organizations.listWithMetrics.invalidate();
       utils.activity.recent.invalidate();
       toast.success("Venture created");
     },
@@ -92,6 +95,7 @@ export default function VerticalsPage() {
   const [newLocation, setNewLocation] = useState("");
   const [newStage, setNewStage] = useState("In Validation");
   const [newDescription, setNewDescription] = useState("");
+  const [newOrgId, setNewOrgId] = useState<string>("");
 
   // ── Derived data ───────────────────────────────────────────────────
   const now = useMemo(() => new Date(), []);
@@ -204,6 +208,7 @@ export default function VerticalsPage() {
 
   const handleAddVenture = () => {
     if (!newName.trim()) { toast.error("Name is required"); return; }
+    if (!newOrgId) { toast.error("Please select a client"); return; }
     createVenture.mutate({
       name: newName.trim(),
       sector: newTheme,
@@ -211,9 +216,10 @@ export default function VerticalsPage() {
       stage: newStage,
       status: "In progress",
       description: newDescription.trim() || undefined,
+      organizationId: Number(newOrgId),
     });
     setAddOpen(false);
-    setNewName(""); setNewLocation(""); setNewDescription("");
+    setNewName(""); setNewLocation(""); setNewDescription(""); setNewOrgId("");
   };
 
   function getStatusClasses(status: string) {
@@ -484,7 +490,21 @@ export default function VerticalsPage() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <Label className="text-xs mb-1">Name</Label>
+              <Label className="text-xs mb-1">Client <span className="text-red-400">*</span></Label>
+              <Select value={newOrgId} onValueChange={setNewOrgId}>
+                <SelectTrigger className="h-9 text-xs">
+                  <Building2 className="size-3 mr-1.5 text-muted-foreground" />
+                  <SelectValue placeholder="Select a client..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeOrgs.map((org: any) => (
+                    <SelectItem key={org.id} value={String(org.id)}>{org.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs mb-1">Name <span className="text-red-400">*</span></Label>
               <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Venture name" className="h-9 text-xs" />
             </div>
             <div>

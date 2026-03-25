@@ -120,3 +120,70 @@ describe("ventures.listWithOrgs", () => {
     }
   });
 });
+
+describe("ventures.create with organizationId", () => {
+  const caller = appRouter.createCaller(createAdminContext());
+
+  it("creates a venture and returns it", async () => {
+    const result = await caller.ventures.create({
+      name: "Test Venture " + Date.now(),
+      sector: "Real Estate",
+      location: "Dubai",
+      stage: "In Validation",
+      status: "In progress",
+    });
+    expect(result).toBeTruthy();
+    expect(result!.name).toContain("Test Venture");
+    expect(result!.sector).toBe("Real Estate");
+    expect(result!.slug).toBeTruthy();
+  });
+
+  it("creates a venture with organizationId and auto-links to org", async () => {
+    // First get an org to link to
+    const orgs = await caller.organizations.list({ includeArchived: false });
+    if (orgs.length === 0) return; // skip if no orgs
+
+    const orgId = orgs[0].id;
+    const ventureName = "OrgLinked Venture " + Date.now();
+
+    const result = await caller.ventures.create({
+      name: ventureName,
+      sector: "F&B",
+      location: "New York",
+      organizationId: orgId,
+    });
+
+    expect(result).toBeTruthy();
+    expect(result!.name).toBe(ventureName);
+
+    // Verify it shows up in listWithOrgs with the org
+    const allVentures = await caller.ventures.listWithOrgs();
+    const created = allVentures.find((v: any) => v.name === ventureName);
+    expect(created).toBeTruthy();
+    expect(created!.organizations.length).toBeGreaterThanOrEqual(1);
+    expect(created!.organizations.some((o: any) => o.orgId === orgId)).toBe(true);
+  });
+
+  it("creates a venture without organizationId (unassigned)", async () => {
+    const ventureName = "Unassigned Venture " + Date.now();
+    const result = await caller.ventures.create({
+      name: ventureName,
+      sector: "Others",
+    });
+
+    expect(result).toBeTruthy();
+
+    // Should appear in listWithOrgs with empty organizations
+    const allVentures = await caller.ventures.listWithOrgs();
+    const created = allVentures.find((v: any) => v.name === ventureName);
+    expect(created).toBeTruthy();
+    expect(created!.organizations.length).toBe(0);
+  });
+
+  it("rejects venture creation from non-admin users", async () => {
+    const clientCaller = appRouter.createCaller(createClientContext());
+    await expect(
+      clientCaller.ventures.create({ name: "Should Fail", sector: "Real Estate" })
+    ).rejects.toThrow();
+  });
+});

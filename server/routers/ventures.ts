@@ -104,20 +104,42 @@ export const venturesRouter = router({
     nextStep: z.string().optional(),
     nextMilestone: z.string().optional(),
     priority: z.string().default("Medium"),
+    organizationId: z.number().optional(),
   })).mutation(async ({ input, ctx }) => {
     if (!isAtlasTeam(ctx.user)) {
       throw new Error("Only ATLAS team can create ventures");
     }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
-    const slug = slugify(input.name) + "-" + nanoid(4);
-    await db.insert(ventures).values({ ...input, slug });
-    await db.insert(activityLog).values({
-      entityType: "venture", entityName: input.name, action: "Venture Created",
-      detail: `New venture "${input.name}" added in ${input.sector}`, userName: ctx.user.name || "System", sector: input.sector,
-    });
+    const { organizationId, ...ventureData } = input;
+    const slug = slugify(ventureData.name) + "-" + nanoid(4);
+    await db.insert(ventures).values({ ...ventureData, slug });
     const rows = await db.select().from(ventures).where(eq(ventures.slug, slug)).limit(1);
-    return rows[0];
+    const newVenture = rows[0];
+
+    // Auto-link to client org if provided
+    if (organizationId && newVenture) {
+      await db.insert(orgVentureAccess).values({
+        organizationId,
+        ventureId: newVenture.id,
+        permission: "full",
+        grantedBy: ctx.user.id,
+      });
+    }
+
+    // Get org name for activity log
+    let orgName = "";
+    if (organizationId) {
+      const orgRows = await db.select().from(organizations).where(eq(organizations.id, organizationId)).limit(1);
+      orgName = orgRows[0]?.name || "";
+    }
+
+    await db.insert(activityLog).values({
+      entityType: "venture", entityName: ventureData.name, action: "Venture Created",
+      detail: `New venture "${ventureData.name}" added in ${ventureData.sector}${orgName ? ` for ${orgName}` : ""}`,
+      userName: ctx.user.name || "System", sector: ventureData.sector,
+    });
+    return newVenture;
   }),
 
   // Update venture — ATLAS team only

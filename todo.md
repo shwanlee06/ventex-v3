@@ -733,3 +733,11 @@
 - [x] "View client →" link in each section header to jump to client detail
 - [x] Summary KPI bar: Total ventures, Active, Open Tasks, Overdue
 - [x] Tests for listWithOrgs endpoint (6 new tests, 214 total passing)
+
+## Add Venture with Client Assignment
+- [x] Backend: Update ventures.create to accept organizationId and auto-link via orgVentureAccess
+- [x] Frontend: Add client selector dropdown as first field in Add Venture dialog (required)
+- [x] Fetch active client orgs for the dropdown (excludes archived)
+- [x] New ventures appear under the correct client section on the Ventures tab
+- [x] Activity log includes client name when venture is created for a client
+- [x] Tests for venture creation with org assignment (4 new tests, 218 total passing)
