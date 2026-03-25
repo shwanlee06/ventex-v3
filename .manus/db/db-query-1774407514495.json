@@ -1,0 +1,226 @@
+{
+  "query": "SELECT id, name, role, type, organizationId, status, memberFunction FROM team_members ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, role, type, organizationId, status, memberFunction FROM team_members ORDER BY id;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Jimmy Frangi",
+      "role": "Founder",
+      "type": "Internal",
+      "organizationId": "2",
+      "status": "Active",
+      "memberFunction": "Finance & Capital"
+    },
+    {
+      "id": "2",
+      "name": "Anton Maghami",
+      "role": "Vice President",
+      "type": "Internal",
+      "organizationId": "2",
+      "status": "Active",
+      "memberFunction": "Operations & Systems"
+    },
+    {
+      "id": "3",
+      "name": "Jon Eichner",
+      "role": "COO",
+      "type": "Internal",
+      "organizationId": "2",
+      "status": "Active",
+      "memberFunction": "Operations"
+    },
+    {
+      "id": "4",
+      "name": "Maher Abou Chakra",
+      "role": "Accounting",
+      "type": "Internal",
+      "organizationId": "2",
+      "status": "Active",
+      "memberFunction": "Finance / Accounting"
+    },
+    {
+      "id": "5",
+      "name": "Angie Samadi",
+      "role": "HR",
+      "type": "Internal",
+      "organizationId": "2",
+      "status": "Active",
+      "memberFunction": "People Ops / HR"
+    },
+    {
+      "id": "6",
+      "name": "Carl Frangi",
+      "role": "Member",
+      "type": "Advisor",
+      "organizationId": "2",
+      "status": "Advisor",
+      "memberFunction": "Investor Relations"
+    },
+    {
+      "id": "7",
+      "name": "Leonidas Kyrris",
+      "role": "Legal (maritime focus)",
+      "type": "Advisor",
+      "organizationId": "2",
+      "status": "Advisor",
+      "memberFunction": "Legal"
+    },
+    {
+      "id": "8",
+      "name": "Igor",
+      "role": "Deck Design",
+      "type": "External Partner",
+      "organizationId": "2",
+      "status": "Contributor",
+      "memberFunction": "Design"
+    },
+    {
+      "id": "9",
+      "name": "Sohail",
+      "role": "Financial Modeling",
+      "type": "External Partner",
+      "organizationId": "2",
+      "status": "Contributor",
+      "memberFunction": "Financial Modeling"
+    },
+    {
+      "id": "10",
+      "name": "Ruwaida",
+      "role": "Yacht Design",
+      "type": "External Partner",
+      "organizationId": "2",
+      "status": "Contributor",
+      "memberFunction": "Design"
+    },
+    {
+      "id": "11",
+      "name": "Shwan Lee",
+      "role": "Founder & CEO",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "status": "Active",
+      "memberFunction": "Strategy & Vision"
+    },
+    {
+      "id": "12",
+      "name": "Najib",
+      "role": "Advisor",
+      "type": "Advisor",
+      "organizationId": "2",
+      "status": "Active",
+      "memberFunction": "Legal & Compliance"
+    },
+    {
+      "id": "30025",
+      "name": "Test ATLAS Member 1774405663479",
+      "role": "Test Role",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "status": "Active",
+      "memberFunction": "NULL"
+    },
+    {
+      "id": "30026",
+      "name": "Test Client Contact 1774405663752",
+      "role": "Client Liaison",
+      "type": "External Partner",
+      "organizationId": "2",
+      "status": "Active",
+      "memberFunction": "NULL"
+    },
+    {
+      "id": "30028",
+      "name": "Test ATLAS Member 1774405695066",
+      "role": "Test Role",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "status": "Active",
+      "memberFunction": "NULL"
+    },
+    {
+      "id": "30029",
+      "name": "Test Client Contact 1774405695335",
+      "role": "Client Liaison",
+      "type": "External Partner",
+      "organizationId": "2",
+      "status": "Active",
+      "memberFunction": "NULL"
+    },
+    {
+      "id": "30031",
+      "name": "Test ATLAS Member 1774406322483",
+      "role": "Test Role",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "status": "Active",
+      "memberFunction": "NULL"
+    },
+    {
+      "id": "30032",
+      "name": "Test Client Contact 1774406322759",
+      "role": "Client Liaison",
+      "type": "External Partner",
+      "organizationId": "2",
+      "status": "Active",
+      "memberFunction": "NULL"
+    },
+    {
+      "id": "30034",
+      "name": "Test ATLAS Member 1774406343319",
+      "role": "Test Role",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "status": "Active",
+      "memberFunction": "NULL"
+    },
+    {
+      "id": "30035",
+      "name": "Test Client Contact 1774406343601",
+      "role": "Client Liaison",
+      "type": "External Partner",
+      "organizationId": "2",
+      "status": "Active",
+      "memberFunction": "NULL"
+    },
+    {
+      "id": "30037",
+      "name": "Test ATLAS Member 1774407170450",
+      "role": "Test Role",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "status": "Active",
+      "memberFunction": "NULL"
+    },
+    {
+      "id": "30038",
+      "name": "Test Client Contact 1774407170719",
+      "role": "Client Liaison",
+      "type": "External Partner",
+      "organizationId": "2",
+      "status": "Active",
+      "memberFunction": "NULL"
+    },
+    {
+      "id": "30040",
+      "name": "Test ATLAS Member 1774407206658",
+      "role": "Test Role",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "status": "Active",
+      "memberFunction": "NULL"
+    },
+    {
+      "id": "30041",
+      "name": "Test Client Contact 1774407206931",
+      "role": "Client Liaison",
+      "type": "External Partner",
+      "organizationId": "2",
+      "status": "Active",
+      "memberFunction": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\trole\ttype\torganizationId\tstatus\tmemberFunction\n1\tJimmy Frangi\tFounder\tInternal\t2\tActive\tFinance & Capital\n2\tAnton Maghami\tVice President\tInternal\t2\tActive\tOperations & Systems\n3\tJon Eichner\tCOO\tInternal\t2\tActive\tOperations\n4\tMaher Abou Chakra\tAccounting\tInternal\t2\tActive\tFinance / Accounting\n5\tAngie Samadi\tHR\tInternal\t2\tActive\tPeople Ops / HR\n6\tCarl Frangi\tMember\tAdvisor\t2\tAdvisor\tInvestor Relations\n7\tLeonidas Kyrris\tLegal (maritime focus)\tAdvisor\t2\tAdvisor\tLegal\n8\tIgor\tDeck Design\tExternal Partner\t2\tContributor\tDesign\n9\tSohail\tFinancial Modeling\tExternal Partner\t2\tContributor\tFinancial Modeling\n10\tRuwaida\tYacht Design\tExternal Partner\t2\tContributor\tDesign\n11\tShwan Lee\tFounder & CEO\tInternal\tNULL\tActive\tStrategy & Vision\n12\tNajib\tAdvisor\tAdvisor\t2\tActive\tLegal & Compliance\n30025\tTest ATLAS Member 1774405663479\tTest Role\tInternal\tNULL\tActive\tNULL\n30026\tTest Client Contact 1774405663752\tClient Liaison\tExternal Partner\t2\tActive\tNULL\n30028\tTest ATLAS Member 1774405695066\tTest Role\tInternal\tNULL\tActive\tNULL\n30029\tTest Client Contact 1774405695335\tClient Liaison\tExternal Partner\t2\tActive\tNULL\n30031\tTest ATLAS Member 1774406322483\tTest Role\tInternal\tNULL\tActive\tNULL\n30032\tTest Client Contact 1774406322759\tClient Liaison\tExternal Partner\t2\tActive\tNULL\n30034\tTest ATLAS Member 1774406343319\tTest Role\tInternal\tNULL\tActive\tNULL\n30035\tTest Client Contact 1774406343601\tClient Liaison\tExternal Partner\t2\tActive\tNULL\n30037\tTest ATLAS Member 1774407170450\tTest Role\tInternal\tNULL\tActive\tNULL\n30038\tTest Client Contact 1774407170719\tClient Liaison\tExternal Partner\t2\tActive\tNULL\n30040\tTest ATLAS Member 1774407206658\tTest Role\tInternal\tNULL\tActive\tNULL\n30041\tTest Client Contact 1774407206931\tClient Liaison\tExternal Partner\t2\tActive\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 355
+}

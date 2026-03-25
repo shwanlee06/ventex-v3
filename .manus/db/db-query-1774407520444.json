@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM team_members WHERE id >= 30000; INSERT INTO team_members (name, role, type, organizationId, status, memberFunction, slug) VALUES ('Brian Chen', 'Partner', 'Internal', NULL, 'Active', 'Finance & Capital', 'brian-chen'), ('Chris Phelps', 'Partner', 'Internal', NULL, 'Active', 'Operations & Systems', 'chris-phelps');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute DELETE FROM team_members WHERE id >= 30000; INSERT INTO team_members (name, role, type, organizationId, status, memberFunction, slug) VALUES ('Brian Chen', 'Partner', 'Internal', NULL, 'Active', 'Finance & Capital', 'brian-chen'), ('Chris Phelps', 'Partner', 'Internal', NULL, 'Active', 'Operations & Systems', 'chris-phelps');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 418
+}

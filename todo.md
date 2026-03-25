@@ -813,3 +813,9 @@
 - [x] Added ATLAS Team (shield icon) nav item to sidebar, separate from Client Contacts (users icon)
 - [x] Shows member role, function, venture assignments count, contact info, status with colored dots
 - [x] Updated test to match new behavior, all 235 tests passing
+
+## Add ATLAS Members: Brian Chen & Chris Phelps
+- [x] Added Brian Chen (Partner, Finance & Capital) as ATLAS internal member
+- [x] Added Chris Phelps (Partner, Operations & Systems) as ATLAS internal member
+- [x] Removed all test data from team_members table (12 stale test records)
+- [x] All 235 tests passing
