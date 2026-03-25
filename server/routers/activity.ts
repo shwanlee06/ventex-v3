@@ -2,7 +2,7 @@ import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { activityLog, ventures } from "../../drizzle/schema";
-import { desc, eq, and, gte, sql, inArray } from "drizzle-orm";
+import { desc, eq, and, gte, sql, inArray, ne } from "drizzle-orm";
 import { resolveVentureScope } from "../security/rbac";
 
 export const activityRouter = router({
@@ -16,17 +16,29 @@ export const activityRouter = router({
     const db = await getDb();
     if (!db) return { items: [], total: 0 };
 
+    const isAdmin = ctx.user.role === "admin";
+
+    // Non-admin users are scoped to their organization
+    let effectiveOrgId = input.organizationId;
+    if (!isAdmin && ctx.user.organizationId) {
+      effectiveOrgId = ctx.user.organizationId;
+    }
+
     // If org-scoped, filter activity by venture entity IDs
     let ventureIds: number[] | null = null;
-    if (input.organizationId) {
-      ventureIds = await resolveVentureScope(ctx.user, input.organizationId);
+    if (effectiveOrgId) {
+      ventureIds = await resolveVentureScope(ctx.user, effectiveOrgId);
     }
 
     const conditions = [];
     if (input.entityType) {
       conditions.push(eq(activityLog.entityType, input.entityType));
     }
-    if (input.source !== "all") {
+
+    // Non-admin users NEVER see atlas_ops
+    if (!isAdmin) {
+      conditions.push(ne(activityLog.activitySource, "atlas_ops"));
+    } else if (input.source !== "all") {
       conditions.push(eq(activityLog.activitySource, input.source));
     }
 
@@ -77,7 +89,7 @@ export const activityRouter = router({
     return { items: filteredItems, total };
   }),
 
-  recent: publicProcedure.input(z.object({
+  recent: protectedProcedure.input(z.object({
     limit: z.number().default(10),
     organizationId: z.number().optional(),
     source: z.enum(["all", "atlas_ops", "client_business", "system"]).default("all"),
@@ -85,20 +97,35 @@ export const activityRouter = router({
     const db = await getDb();
     if (!db) return [];
 
+    const isAdmin = ctx.user.role === "admin";
+
+    // Build base conditions
+    const conditions = [];
+
+    // Non-admin users NEVER see atlas_ops
+    if (!isAdmin) {
+      conditions.push(ne(activityLog.activitySource, "atlas_ops"));
+    } else if (input.source !== "all") {
+      conditions.push(eq(activityLog.activitySource, input.source));
+    }
+
     let baseQuery = db.select().from(activityLog);
-    if (input.source !== "all") {
-      baseQuery = baseQuery.where(eq(activityLog.activitySource, input.source)) as typeof baseQuery;
+    if (conditions.length > 0) {
+      baseQuery = baseQuery.where(and(...conditions)) as typeof baseQuery;
     }
     const all = await baseQuery.orderBy(desc(activityLog.createdAt)).limit(input.limit * 3);
 
-    if (!input.organizationId) {
+    // Non-admin users are scoped to their organization
+    const effectiveOrgId = (!isAdmin && ctx.user.organizationId) ? ctx.user.organizationId : input.organizationId;
+
+    if (!effectiveOrgId) {
       return all.slice(0, input.limit);
     }
 
     // Org-scoped filtering
     const ventureIds = ctx.user
-      ? await resolveVentureScope(ctx.user, input.organizationId)
-      : await (await import("../security/rbac")).getVentureIdsForOrg(input.organizationId);
+      ? await resolveVentureScope(ctx.user, effectiveOrgId)
+      : await (await import("../security/rbac")).getVentureIdsForOrg(effectiveOrgId);
     if (ventureIds === null) return all.slice(0, input.limit);
     if (ventureIds.length === 0) return [];
 

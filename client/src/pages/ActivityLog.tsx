@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 // ── Icons & Colors ──────────────────────────────────────────────────────
 
@@ -95,6 +96,9 @@ function getSourceBadge(source: string | null) {
 // ── Main Component ──────────────────────────────────────────────────────
 
 export default function ActivityLog() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+
   const activityQ = trpc.activity.recent.useQuery({ limit: 300 });
   const entries = activityQ.data || [];
 
@@ -179,11 +183,11 @@ export default function ActivityLog() {
   ];
 
   return (
-    <DashboardLayout title="Activity Log" subtitle="SYSTEM AUDIT TRAIL">
+    <DashboardLayout title="Activity Log" subtitle={isAdmin ? "SYSTEM AUDIT TRAIL" : "YOUR BUSINESS ACTIVITY"}>
       <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5 pb-24 md:pb-6">
 
-        {/* ── Source Tabs — Primary split ─────────────────────────────── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+        {/* ── Source Tabs — Primary split (admin sees all 4, clients see 3) ── */}
+        <div className={cn("grid gap-2 sm:gap-3", isAdmin ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3")}>
           {/* All */}
           <motion.button
             initial={{ opacity: 0, y: 8 }}
@@ -201,32 +205,34 @@ export default function ActivityLog() {
             <span className="text-xl font-mono font-semibold text-foreground">{entries.length}</span>
           </motion.button>
 
-          {/* ATLAS Ops */}
-          <motion.button
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.03 }}
-            onClick={() => { setSourceFilter("atlas_ops"); setTypeFilter("all"); }}
-            className={cn(
-              "bg-card border rounded-lg p-3 text-left transition-all touch-manipulation active:scale-[0.97]",
-              sourceFilter === "atlas_ops" ? SOURCE_STYLES.atlas_ops.bgActive : "border-border hover:border-primary/20"
-            )}
-          >
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <Shield className="size-3.5 text-primary" />
-              <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">ATLAS Ops</span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl font-mono font-semibold text-foreground">{sourceCounts.atlas_ops}</span>
-              <span className="text-[10px] font-mono text-primary">admin</span>
-            </div>
-          </motion.button>
+          {/* ATLAS Ops — admin only */}
+          {isAdmin && (
+            <motion.button
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.03 }}
+              onClick={() => { setSourceFilter("atlas_ops"); setTypeFilter("all"); }}
+              className={cn(
+                "bg-card border rounded-lg p-3 text-left transition-all touch-manipulation active:scale-[0.97]",
+                sourceFilter === "atlas_ops" ? SOURCE_STYLES.atlas_ops.bgActive : "border-border hover:border-primary/20"
+              )}
+            >
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Shield className="size-3.5 text-primary" />
+                <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">ATLAS Ops</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-xl font-mono font-semibold text-foreground">{sourceCounts.atlas_ops}</span>
+                <span className="text-[10px] font-mono text-primary">admin</span>
+              </div>
+            </motion.button>
+          )}
 
           {/* Client Business */}
           <motion.button
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.06 }}
+            transition={{ delay: isAdmin ? 0.06 : 0.03 }}
             onClick={() => { setSourceFilter("client_business"); setTypeFilter("all"); }}
             className={cn(
               "bg-card border rounded-lg p-3 text-left transition-all touch-manipulation active:scale-[0.97]",
@@ -235,7 +241,7 @@ export default function ActivityLog() {
           >
             <div className="flex items-center gap-1.5 mb-1.5">
               <Building2 className="size-3.5 text-blue-400" />
-              <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Business</span>
+              <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">{isAdmin ? "Business" : "Ventures"}</span>
             </div>
             <div className="flex items-baseline gap-2">
               <span className="text-xl font-mono font-semibold text-foreground">{sourceCounts.client_business}</span>
@@ -247,7 +253,7 @@ export default function ActivityLog() {
           <motion.button
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.09 }}
+            transition={{ delay: isAdmin ? 0.09 : 0.06 }}
             onClick={() => { setSourceFilter("system"); setTypeFilter("all"); }}
             className={cn(
               "bg-card border rounded-lg p-3 text-left transition-all touch-manipulation active:scale-[0.97]",
@@ -383,8 +389,8 @@ export default function ActivityLog() {
                             {entry.entityName && (
                               <span className="text-[10px] font-mono text-primary truncate max-w-[200px]">{entry.entityName}</span>
                             )}
-                            {/* Source badge — only show in "all" view */}
-                            {sourceFilter === "all" && (
+                            {/* Source badge — only show in "all" view for admins */}
+                            {sourceFilter === "all" && isAdmin && (
                               <span className={cn(
                                 "text-[9px] font-medium px-1.5 py-0.5 rounded border inline-flex items-center gap-1 flex-shrink-0",
                                 badge.className

@@ -849,3 +849,12 @@
 - [x] Source badges on each entry in "all" view, contextual description banner per source
 - [x] Entity type sub-filters + search within each source view
 - [x] All 235 tests passing
+
+## Fix: Client POV — Hide ATLAS Ops Activity
+- [x] Backend: activity.list and activity.recent now filter out atlas_ops for non-admin users (ne condition)
+- [x] Backend: non-admin users auto-scoped to their organizationId
+- [x] Frontend: ATLAS Ops tab hidden for client users, grid shows 3 tabs instead of 4
+- [x] Frontend: subtitle changes to "YOUR BUSINESS ACTIVITY" for clients
+- [x] Frontend: source badges hidden in "all" view for non-admins
+- [x] Updated test to use authenticated caller (activity.recent is now protectedProcedure)
+- [x] All 235 tests passing

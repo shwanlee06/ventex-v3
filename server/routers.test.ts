@@ -176,7 +176,7 @@ describe("distributions router", () => {
 
 describe("activity router", () => {
   it("lists recent activity entries", async () => {
-    const caller = createPublicCaller();
+    const caller = createAuthCaller();
     const activity = await caller.activity.recent({ limit: 10 });
     expect(Array.isArray(activity)).toBe(true);
     // Seeded data should have entries
