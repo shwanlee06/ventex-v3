@@ -4,6 +4,7 @@ import { getDb } from "../db";
 import { tasks, activityLog, ventures } from "../../drizzle/schema";
 import { eq, desc, and, sql, inArray, isNull } from "drizzle-orm";
 import { isAtlasTeam, getOrgVentureIds, resolveVentureScope } from "../security/rbac";
+import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
 export const tasksRouter = router({
   // List tasks — scoped by org for clients, optionally scoped for ATLAS admin
@@ -72,6 +73,17 @@ export const tasksRouter = router({
       detail: `New task "${input.title}" created`, userName: ctx.user.name || "System",
       activitySource: "client_business",
     });
+
+    await createNotification({
+      type: NOTIF_TYPES.TASK_CREATED,
+      category: "info",
+      title: `New Task: ${input.title}`,
+      message: `Task created${input.priority === "High" ? " (High Priority)" : ""}`,
+      entityType: "task",
+      entityName: input.title,
+      actorName: ctx.user.name || "System",
+    });
+
     return { success: true };
   }),
 
@@ -99,6 +111,19 @@ export const tasksRouter = router({
         userName: ctx.user.name || "System",
         activitySource: "client_business",
       });
+
+      if (input.status === "complete") {
+        await createNotification({
+          type: NOTIF_TYPES.TASK_COMPLETED,
+          category: "success",
+          title: `Task Completed: ${rows[0].title}`,
+          message: `Marked complete by ${ctx.user.name || "System"}`,
+          entityType: "task",
+          entityId: id,
+          entityName: rows[0].title,
+          actorName: ctx.user.name || "System",
+        });
+      }
     }
     return rows[0] || null;
   }),

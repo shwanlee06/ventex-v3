@@ -858,3 +858,20 @@
 - [x] Frontend: source badges hidden in "all" view for non-admins
 - [x] Updated test to use authenticated caller (activity.recent is now protectedProcedure)
 - [x] All 235 tests passing
+
+## Live Notification System
+- [x] Enhanced notifications table: added organizationId, priority, link, category, entityType/Id/Name, actorName
+- [x] Built createNotification helper (server/notificationHelper.ts) with NOTIF_TYPES constants
+- [x] Built notification endpoints: list (cursor-based pagination), unreadCount (30s polling), markRead, markAllRead, dismiss
+- [x] Built frontend: notification bell with unread badge, dropdown panel with category filters (All/Critical/Info/Success/Warning)
+- [x] Built frontend: click-to-navigate on notifications with link, mark as read on click, mark all read, dismiss
+- [x] Built frontend: real-time polling every 30s for unread count
+- [x] Wired triggers: venture create/status change/file upload (ventures.ts)
+- [x] Wired triggers: task create/complete (tasks.ts)
+- [x] Wired triggers: SPV create/stage change (spvs.ts)
+- [x] Wired triggers: distribution create (distributions.ts)
+- [x] Wired triggers: document analyzed + high-risk document alert (documentIntelligence.ts)
+- [x] Wired triggers: team member added/removed (team.ts)
+- [x] Wired triggers: client archived/restored (organizations.ts)
+- [x] Role-based: admins see all, clients scoped to their org
+- [x] Updated tests: all 235 passing

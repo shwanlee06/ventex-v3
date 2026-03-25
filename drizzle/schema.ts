@@ -266,22 +266,23 @@ export const ventureFolders = mysqlTable("venture_folders", {
   name: varchar("name", { length: 255 }).notNull(),
   color: varchar("color", { length: 32 }).default("blue"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-
-// ── Notifications ───────────────────────────────────────────────────────
+});// ── Notifications ───────────────────────────────────────────────────────────
 export const notifications = mysqlTable("notifications", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId"),
+  organizationId: int("notifOrgId"),
   type: varchar("type", { length: 64 }).notNull(),
+  category: varchar("notifCategory", { length: 32 }).default("info").notNull(), // info, warning, critical, success
   title: varchar("title", { length: 255 }).notNull(),
   message: text("message"),
   entityType: varchar("entityType", { length: 64 }),
   entityId: int("entityId"),
+  entityName: varchar("notifEntityName", { length: 255 }),
+  link: varchar("notifLink", { length: 500 }),
+  actorName: varchar("actorName", { length: 255 }),
   read: int("isRead").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-
-export type Notification = typeof notifications.$inferSelect;
+});export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
 
 // ── Contacts ────────────────────────────────────────────────────────────

@@ -6,6 +6,7 @@ import { eq, and, sql, desc, like, inArray } from "drizzle-orm";
 import { storagePut } from "../storage";
 import { nanoid } from "nanoid";
 import { isAtlasTeam, getOrgVentureIds, resolveVentureScope } from "../security/rbac";
+import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
 function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -140,6 +141,21 @@ export const venturesRouter = router({
       userName: ctx.user.name || "System", sector: ventureData.sector,
       activitySource: "client_business", organizationId: organizationId || null,
     });
+
+    // Notification
+    await createNotification({
+      type: NOTIF_TYPES.VENTURE_CREATED,
+      category: "info",
+      title: `New Venture: ${ventureData.name}`,
+      message: `${ventureData.name} created in ${ventureData.sector}${orgName ? ` for ${orgName}` : ""}`,
+      entityType: "venture",
+      entityId: newVenture?.id,
+      entityName: ventureData.name,
+      link: newVenture ? `/ventures/${newVenture.slug}` : undefined,
+      actorName: ctx.user.name || "System",
+      organizationId: organizationId || undefined,
+    });
+
     return newVenture;
   }),
 
@@ -171,6 +187,21 @@ export const venturesRouter = router({
         action: "Venture Updated", detail: `Venture "${rows[0].name}" updated`, userName: ctx.user.name || "System", sector: rows[0].sector,
         activitySource: "client_business",
       });
+
+      // Notification for status changes
+      if (data.status) {
+        await createNotification({
+          type: NOTIF_TYPES.VENTURE_STATUS_CHANGE,
+          category: data.status === "On hold" || data.status === "Cancelled" ? "warning" : "info",
+          title: `Venture Status: ${rows[0].name}`,
+          message: `Status changed to "${data.status}"`,
+          entityType: "venture",
+          entityId: id,
+          entityName: rows[0].name,
+          link: `/ventures/${rows[0].slug}`,
+          actorName: ctx.user.name || "System",
+        });
+      }
     }
     return rows[0] || null;
   }),
@@ -281,6 +312,18 @@ export const venturesRouter = router({
         entityType: "venture", entityId: input.ventureId, entityName: v.name,
         action: "File Uploaded", detail: `File "${input.filename}" uploaded to ${v.name}`, userName: ctx.user.name || "System", sector: v.sector,
         activitySource: "client_business",
+      });
+
+      await createNotification({
+        type: NOTIF_TYPES.DOCUMENT_UPLOADED,
+        category: "info",
+        title: `File Uploaded: ${input.filename}`,
+        message: `New file uploaded to ${v.name}`,
+        entityType: "venture",
+        entityId: input.ventureId,
+        entityName: v.name,
+        link: `/ventures/${v.slug}`,
+        actorName: ctx.user.name || "System",
       });
     }
     return { success: true, url };

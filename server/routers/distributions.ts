@@ -4,6 +4,7 @@ import { getDb } from "../db";
 import { distributions, activityLog } from "../../drizzle/schema";
 import { eq, desc } from "drizzle-orm";
 import { isAtlasTeam } from "../security/rbac";
+import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
 export const distributionsRouter = router({
   // List distributions — scoped by organizationId
@@ -49,6 +50,18 @@ export const distributionsRouter = router({
       detail: `Distribution "${input.name}" — $${input.amount.toLocaleString()} ${input.status}`, userName: ctx.user.name || "System",
       activitySource: "client_business",
     });
+
+    await createNotification({
+      type: input.status === "Paid" ? NOTIF_TYPES.DISTRIBUTION_PAID : NOTIF_TYPES.DISTRIBUTION_SCHEDULED,
+      category: input.status === "Paid" ? "success" : "info",
+      title: `Distribution: ${input.name}`,
+      message: `$${input.amount.toLocaleString()} — ${input.status}`,
+      entityType: "distribution",
+      entityName: input.name,
+      link: "/distributions",
+      actorName: ctx.user.name || "System",
+    });
+
     return { success: true };
   }),
 

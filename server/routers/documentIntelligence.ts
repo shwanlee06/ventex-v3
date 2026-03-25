@@ -7,6 +7,7 @@ import {
 } from "../../drizzle/schema";
 import { eq, desc, and, sql, like, or } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
+import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
 // ── Text extraction helpers ────────────────────────────────────────────
 
@@ -619,5 +620,33 @@ async function processDocumentAsync(db: any, docIntelId: number, input: {
       sector: v?.sector || "",
       activitySource: "system",
     });
+
+    // Notification for document analysis
+    await createNotification({
+      type: NOTIF_TYPES.DOCUMENT_ANALYZED,
+      category: classification.risks_mentioned.length > 2 ? "critical" : "info",
+      title: `Document Analyzed: ${input.filename}`,
+      message: `${classification.document_type} — ${tasksCreated} tasks, ${classification.deadlines.length} deadlines, ${classification.risks_mentioned.length} risks`,
+      entityType: "document",
+      entityId: input.fileId,
+      entityName: input.filename,
+      link: v ? `/ventures/${v.slug}` : undefined,
+      actorName: "AI System",
+    });
+
+    // Extra notification for high-risk documents (3+ risks mentioned)
+    if (classification.risks_mentioned.length >= 3) {
+      await createNotification({
+        type: NOTIF_TYPES.DOCUMENT_URGENT,
+        category: "critical",
+        title: `HIGH RISK: ${input.filename}`,
+        message: `${classification.risks_mentioned.length} risks detected — ${classification.summary?.slice(0, 120)}`,
+        entityType: "document",
+        entityId: input.fileId,
+        entityName: input.filename,
+        link: v ? `/ventures/${v.slug}` : undefined,
+        actorName: "AI System",
+      });
+    }
   }
 }

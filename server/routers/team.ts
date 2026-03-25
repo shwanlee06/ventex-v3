@@ -5,6 +5,7 @@ import { teamMembers, activityLog, ventureTeam, ventures, organizations, users }
 import { eq, desc, inArray, isNull, isNotNull, and, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { resolveVentureScope, getVentureIdsForOrg } from "../security/rbac";
+import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
 /**
  * Calculate live status from lastSeenAt timestamp and adminStatus.
@@ -171,6 +172,18 @@ export const teamRouter = router({
       detail: `${input.name} added as ${input.role || input.type}${organizationId ? ` (client contact)` : ` (ATLAS internal)`}`,
       userName: "System",
       activitySource: "atlas_ops",
+    });
+
+    await createNotification({
+      type: NOTIF_TYPES.TEAM_MEMBER_ADDED,
+      category: "info",
+      title: `New Team Member: ${input.name}`,
+      message: `${input.name} added as ${input.role || input.type}`,
+      entityType: "team",
+      entityName: input.name,
+      link: organizationId ? "/team" : "/atlas-team",
+      actorName: "System",
+      organizationId: organizationId || undefined,
     });
     return { success: true };
   }),
@@ -365,6 +378,16 @@ export const teamRouter = router({
       entityType: "team", entityName: member.name, action: "Member Removed",
       detail: `${member.name} removed from the system`, userName: "System",
       activitySource: "atlas_ops",
+    });
+
+    await createNotification({
+      type: NOTIF_TYPES.TEAM_MEMBER_REMOVED,
+      category: "warning",
+      title: `Member Removed: ${member.name}`,
+      message: `${member.name} has been removed from the system`,
+      entityType: "team",
+      entityName: member.name,
+      actorName: "System",
     });
 
     return { success: true, name: member.name };

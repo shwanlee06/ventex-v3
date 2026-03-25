@@ -6,6 +6,7 @@ import { eq, desc, and, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { storagePut } from "../storage";
 import { isAtlasTeam, getOrgSpvIds, resolveSpvScope } from "../security/rbac";
+import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
 function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -81,6 +82,18 @@ export const spvsRouter = router({
       activitySource: "client_business",
     });
     const rows = await db.select().from(spvs).where(eq(spvs.slug, slug)).limit(1);
+
+    await createNotification({
+      type: NOTIF_TYPES.SPV_CREATED,
+      category: "info",
+      title: `New SPV: ${input.name}`,
+      message: `SPV created in ${input.sector}`,
+      entityType: "spv",
+      entityId: rows[0]?.id,
+      entityName: input.name,
+      link: rows[0] ? `/spvs/${rows[0].slug}` : undefined,
+      actorName: ctx.user.name || "System",
+    });
     return rows[0];
   }),
 
@@ -108,6 +121,20 @@ export const spvsRouter = router({
         action: "SPV Updated", detail: `SPV "${rows[0].name}" updated`, userName: ctx.user.name || "System", sector: rows[0].sector,
         activitySource: "client_business",
       });
+
+      if (data.stage) {
+        await createNotification({
+          type: NOTIF_TYPES.SPV_STAGE_CHANGE,
+          category: data.stage === "Closed" ? "success" : "info",
+          title: `SPV Stage: ${rows[0].name}`,
+          message: `Stage changed to "${data.stage}"`,
+          entityType: "spv",
+          entityId: id,
+          entityName: rows[0].name,
+          link: `/spvs/${rows[0].slug}`,
+          actorName: ctx.user.name || "System",
+        });
+      }
     }
     return rows[0] || null;
   }),

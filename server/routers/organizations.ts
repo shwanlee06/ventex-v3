@@ -14,6 +14,7 @@ import {
   invitations,
   apiKeys,
 } from "../../drizzle/schema";
+import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
 export const organizationsRouter = router({
   // List all client organizations (admin only) — basic list
@@ -319,6 +320,18 @@ export const organizationsRouter = router({
         activitySource: "atlas_ops",
       });
 
+      await createNotification({
+        type: "client_archived",
+        category: "warning",
+        title: `Client Archived: ${org.name}`,
+        message: `${org.name} has been archived`,
+        entityType: "organization",
+        entityId: input.id,
+        entityName: org.name,
+        link: "/dashboard",
+        actorName: "ATLAS Admin",
+      });
+
       return { success: true, name: org.name };
     }),
 
@@ -350,6 +363,18 @@ export const organizationsRouter = router({
         detail: `Client "${org.name}" was restored from archive`,
         userName: "ATLAS Admin",
         activitySource: "atlas_ops",
+      });
+
+      await createNotification({
+        type: "client_restored",
+        category: "success",
+        title: `Client Restored: ${org.name}`,
+        message: `${org.name} has been restored from archive`,
+        entityType: "organization",
+        entityId: input.id,
+        entityName: org.name,
+        link: "/dashboard",
+        actorName: "ATLAS Admin",
       });
 
       return { success: true, name: org.name };
