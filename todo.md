@@ -785,3 +785,10 @@
 - [x] Grid view with velocity rings, completion bars, metrics
 - [x] 4 new velocity metric tests (data validation, bounds checks, task math)
 - [x] All 225 tests passing
+
+## Fix: "Member not found" Error on Team Delete
+- [x] Investigated: error was team.delete mutation called with stale id 30008 (already deleted by test run)
+- [x] Made team.delete idempotent — returns success instead of throwing when member already gone
+- [x] Cleaned up stale test data from database
+- [x] Added test for idempotent delete behavior
+- [x] All 226 tests passing

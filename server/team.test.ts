@@ -163,4 +163,11 @@ describe("Team Router — Org-scoped queries", () => {
   it("delete requires admin role", async () => {
     await expect(publicCaller.team.delete({ id: 999999 })).rejects.toThrow();
   });
+
+  it("delete of non-existent member returns success idempotently", async () => {
+    // Deleting a member that doesn't exist should not throw — it's idempotent
+    const result = await caller.team.delete({ id: 999999 });
+    expect(result.success).toBe(true);
+    expect(result.name).toBe("Unknown");
+  });
 });

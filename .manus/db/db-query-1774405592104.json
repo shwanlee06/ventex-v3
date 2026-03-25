@@ -1,0 +1,110 @@
+{
+  "query": "SELECT id, name, role FROM team_members ORDER BY id DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, role FROM team_members ORDER BY id DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "30022",
+      "name": "Test ATLAS Member 1774405286391",
+      "role": "Test Role"
+    },
+    {
+      "id": "30019",
+      "name": "Test ATLAS Member 1774404473807",
+      "role": "Test Role"
+    },
+    {
+      "id": "30016",
+      "name": "Test ATLAS Member 1774403790845",
+      "role": "Test Role"
+    },
+    {
+      "id": "30013",
+      "name": "Test ATLAS Member 1774403479688",
+      "role": "Test Role"
+    },
+    {
+      "id": "30010",
+      "name": "Test ATLAS Member 1774402989494",
+      "role": "Test Role"
+    },
+    {
+      "id": "30007",
+      "name": "Test ATLAS Member 1774402286924",
+      "role": "Test Role"
+    },
+    {
+      "id": "30005",
+      "name": "Test Client Contact 1774401847413",
+      "role": "Client Liaison"
+    },
+    {
+      "id": "30004",
+      "name": "Test ATLAS Member 1774401847129",
+      "role": "Test Role"
+    },
+    {
+      "id": "12",
+      "name": "Najib",
+      "role": "Advisor"
+    },
+    {
+      "id": "11",
+      "name": "Shwan Lee",
+      "role": "Founder & CEO"
+    },
+    {
+      "id": "10",
+      "name": "Ruwaida",
+      "role": "Yacht Design"
+    },
+    {
+      "id": "9",
+      "name": "Sohail",
+      "role": "Financial Modeling"
+    },
+    {
+      "id": "8",
+      "name": "Igor",
+      "role": "Deck Design"
+    },
+    {
+      "id": "7",
+      "name": "Leonidas Kyrris",
+      "role": "Legal (maritime focus)"
+    },
+    {
+      "id": "6",
+      "name": "Carl Frangi",
+      "role": "Member"
+    },
+    {
+      "id": "5",
+      "name": "Angie Samadi",
+      "role": "HR"
+    },
+    {
+      "id": "4",
+      "name": "Maher Abou Chakra",
+      "role": "Accounting"
+    },
+    {
+      "id": "3",
+      "name": "Jon Eichner",
+      "role": "COO"
+    },
+    {
+      "id": "2",
+      "name": "Anton Maghami",
+      "role": "Vice President"
+    },
+    {
+      "id": "1",
+      "name": "Jimmy Frangi",
+      "role": "Founder"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\trole\n30022\tTest ATLAS Member 1774405286391\tTest Role\n30019\tTest ATLAS Member 1774404473807\tTest Role\n30016\tTest ATLAS Member 1774403790845\tTest Role\n30013\tTest ATLAS Member 1774403479688\tTest Role\n30010\tTest ATLAS Member 1774402989494\tTest Role\n30007\tTest ATLAS Member 1774402286924\tTest Role\n30005\tTest Client Contact 1774401847413\tClient Liaison\n30004\tTest ATLAS Member 1774401847129\tTest Role\n12\tNajib\tAdvisor\n11\tShwan Lee\tFounder & CEO\n10\tRuwaida\tYacht Design\n9\tSohail\tFinancial Modeling\n8\tIgor\tDeck Design\n7\tLeonidas Kyrris\tLegal (maritime focus)\n6\tCarl Frangi\tMember\n5\tAngie Samadi\tHR\n4\tMaher Abou Chakra\tAccounting\n3\tJon Eichner\tCOO\n2\tAnton Maghami\tVice President\n1\tJimmy Frangi\tFounder\n",
+  "stderr": "",
+  "execution_time_ms": 375
+}

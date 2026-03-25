@@ -252,7 +252,10 @@ export const teamRouter = router({
 
     // Get member info for activity log
     const [member] = await db.select().from(teamMembers).where(eq(teamMembers.id, input.id)).limit(1);
-    if (!member) throw new Error("Member not found");
+    if (!member) {
+      // Member already deleted (e.g., stale UI data) — return success idempotently
+      return { success: true, name: "Unknown" };
+    }
 
     // Remove venture assignments
     await db.delete(ventureTeam).where(eq(ventureTeam.memberId, input.id));
