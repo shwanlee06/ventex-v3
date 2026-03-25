@@ -11,6 +11,7 @@ export const activityRouter = router({
     offset: z.number().default(0),
     entityType: z.string().optional(),
     organizationId: z.number().optional(),
+    source: z.enum(["all", "atlas_ops", "client_business", "system"]).default("all"),
   })).query(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) return { items: [], total: 0 };
@@ -21,10 +22,17 @@ export const activityRouter = router({
       ventureIds = await resolveVentureScope(ctx.user, input.organizationId);
     }
 
-    let query = db.select().from(activityLog);
-
+    const conditions = [];
     if (input.entityType) {
-      query = query.where(eq(activityLog.entityType, input.entityType)) as typeof query;
+      conditions.push(eq(activityLog.entityType, input.entityType));
+    }
+    if (input.source !== "all") {
+      conditions.push(eq(activityLog.activitySource, input.source));
+    }
+
+    let query = db.select().from(activityLog);
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as typeof query;
     }
 
     // For org-scoped, filter by entityId matching venture IDs for venture-type activities
@@ -72,11 +80,16 @@ export const activityRouter = router({
   recent: publicProcedure.input(z.object({
     limit: z.number().default(10),
     organizationId: z.number().optional(),
+    source: z.enum(["all", "atlas_ops", "client_business", "system"]).default("all"),
   })).query(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) return [];
 
-    const all = await db.select().from(activityLog).orderBy(desc(activityLog.createdAt)).limit(input.limit * 3);
+    let baseQuery = db.select().from(activityLog);
+    if (input.source !== "all") {
+      baseQuery = baseQuery.where(eq(activityLog.activitySource, input.source)) as typeof baseQuery;
+    }
+    const all = await baseQuery.orderBy(desc(activityLog.createdAt)).limit(input.limit * 3);
 
     if (!input.organizationId) {
       return all.slice(0, input.limit);

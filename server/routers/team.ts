@@ -170,6 +170,7 @@ export const teamRouter = router({
       entityType: "team", entityName: input.name, action: "Member Added",
       detail: `${input.name} added as ${input.role || input.type}${organizationId ? ` (client contact)` : ` (ATLAS internal)`}`,
       userName: "System",
+      activitySource: "atlas_ops",
     });
     return { success: true };
   }),
@@ -324,6 +325,7 @@ export const teamRouter = router({
     await db.insert(activityLog).values({
       entityType: "team", entityId: input.id, action: "Status Changed",
       detail: `Admin status set to ${input.adminStatus}`, userName: "System",
+      activitySource: "atlas_ops",
     });
     return { success: true };
   }),
@@ -362,6 +364,7 @@ export const teamRouter = router({
     await db.insert(activityLog).values({
       entityType: "team", entityName: member.name, action: "Member Removed",
       detail: `${member.name} removed from the system`, userName: "System",
+      activitySource: "atlas_ops",
     });
 
     return { success: true, name: member.name };

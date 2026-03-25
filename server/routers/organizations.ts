@@ -316,6 +316,7 @@ export const organizationsRouter = router({
         action: "Client Archived",
         detail: `Client "${org.name}" was archived`,
         userName: "ATLAS Admin",
+        activitySource: "atlas_ops",
       });
 
       return { success: true, name: org.name };
@@ -348,6 +349,7 @@ export const organizationsRouter = router({
         action: "Client Restored",
         detail: `Client "${org.name}" was restored from archive`,
         userName: "ATLAS Admin",
+        activitySource: "atlas_ops",
       });
 
       return { success: true, name: org.name };
@@ -390,6 +392,7 @@ export const organizationsRouter = router({
         action: "Client Deleted",
         detail: `Client "${org.name}" was permanently removed from the system`,
         userName: "ATLAS Admin",
+        activitySource: "atlas_ops",
       });
 
       // 6. Delete the organization itself

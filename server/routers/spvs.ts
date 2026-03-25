@@ -78,6 +78,7 @@ export const spvsRouter = router({
     await db.insert(activityLog).values({
       entityType: "spv", entityName: input.name, action: "SPV Created",
       detail: `New SPV "${input.name}" created`, userName: ctx.user.name || "System", sector: input.sector,
+      activitySource: "client_business",
     });
     const rows = await db.select().from(spvs).where(eq(spvs.slug, slug)).limit(1);
     return rows[0];
@@ -105,6 +106,7 @@ export const spvsRouter = router({
       await db.insert(activityLog).values({
         entityType: "spv", entityId: id, entityName: rows[0].name,
         action: "SPV Updated", detail: `SPV "${rows[0].name}" updated`, userName: ctx.user.name || "System", sector: rows[0].sector,
+        activitySource: "client_business",
       });
     }
     return rows[0] || null;
@@ -236,6 +238,7 @@ export const spvsRouter = router({
       await db.insert(activityLog).values({
         entityType: "spv", entityId: input.spvId, entityName: s.name,
         action: "File Uploaded", detail: `File "${input.filename}" uploaded to ${s.name}`, userName: ctx.user.name || "System", sector: s.sector,
+        activitySource: "client_business",
       });
     }
     return { success: true, url };

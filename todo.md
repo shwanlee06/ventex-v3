@@ -839,3 +839,13 @@
 - [x] useHeartbeat hook at App root level, polls every 2 minutes
 - [x] liveStatuses query polls every 30 seconds for near-real-time updates
 - [x] All 235 tests passing
+
+## Activity Feed — Separate Admin vs Client Activities
+- [x] Added activitySource column to activity_log (atlas_ops, client_business, system)
+- [x] Classified all 18 activity log inserts across 8 files with correct source
+- [x] Classified existing DB entries retroactively
+- [x] Redesigned activity page with 4 source tabs: All, ATLAS Ops (shield), Business (building), System (bot)
+- [x] Distinct visual treatment: ATLAS = primary accent, Business = blue, System = cyan
+- [x] Source badges on each entry in "all" view, contextual description banner per source
+- [x] Entity type sub-filters + search within each source view
+- [x] All 235 tests passing

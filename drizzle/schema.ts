@@ -234,6 +234,8 @@ export const activityLog = mysqlTable("activity_log", {
   detail: text("detail"),
   userName: varchar("userName", { length: 255 }),
   sector: varchar("sector", { length: 64 }),
+  activitySource: mysqlEnum("activitySource", ["atlas_ops", "client_business", "system"]).default("atlas_ops").notNull(),
+  organizationId: int("activityOrgId"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

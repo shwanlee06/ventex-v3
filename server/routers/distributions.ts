@@ -47,6 +47,7 @@ export const distributionsRouter = router({
     await db.insert(activityLog).values({
       entityType: "distribution", entityName: input.name, action: "Distribution Created",
       detail: `Distribution "${input.name}" — $${input.amount.toLocaleString()} ${input.status}`, userName: ctx.user.name || "System",
+      activitySource: "client_business",
     });
     return { success: true };
   }),

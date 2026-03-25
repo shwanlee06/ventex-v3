@@ -617,6 +617,7 @@ async function processDocumentAsync(db: any, docIntelId: number, input: {
       action: "Document analyzed",
       detail: `${classification.document_type} — ${classification.summary?.slice(0, 100)}. ${tasksCreated} tasks created, ${classification.deadlines.length} deadlines, ${classification.risks_mentioned.length} risks.`,
       sector: v?.sector || "",
+      activitySource: "system",
     });
   }
 }

@@ -138,6 +138,7 @@ export const venturesRouter = router({
       entityType: "venture", entityName: ventureData.name, action: "Venture Created",
       detail: `New venture "${ventureData.name}" added in ${ventureData.sector}${orgName ? ` for ${orgName}` : ""}`,
       userName: ctx.user.name || "System", sector: ventureData.sector,
+      activitySource: "client_business", organizationId: organizationId || null,
     });
     return newVenture;
   }),
@@ -168,6 +169,7 @@ export const venturesRouter = router({
       await db.insert(activityLog).values({
         entityType: "venture", entityId: id, entityName: rows[0].name,
         action: "Venture Updated", detail: `Venture "${rows[0].name}" updated`, userName: ctx.user.name || "System", sector: rows[0].sector,
+        activitySource: "client_business",
       });
     }
     return rows[0] || null;
@@ -213,6 +215,7 @@ export const venturesRouter = router({
       await db.insert(activityLog).values({
         entityType: "venture", entityId: input.ventureId, entityName: v.name,
         action: "Team Assigned", detail: `${m.name} assigned to ${v.name}`, userName: ctx.user.name || "System", sector: v.sector,
+        activitySource: "atlas_ops",
       });
     }
     return { success: true };
@@ -277,6 +280,7 @@ export const venturesRouter = router({
       await db.insert(activityLog).values({
         entityType: "venture", entityId: input.ventureId, entityName: v.name,
         action: "File Uploaded", detail: `File "${input.filename}" uploaded to ${v.name}`, userName: ctx.user.name || "System", sector: v.sector,
+        activitySource: "client_business",
       });
     }
     return { success: true, url };

@@ -1,0 +1,90 @@
+{
+  "query": "SELECT DISTINCT action, entityType, COUNT(*) as cnt FROM activity_log GROUP BY action, entityType ORDER BY cnt DESC LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT DISTINCT action, entityType, COUNT(*) as cnt FROM activity_log GROUP BY action, entityType ORDER BY cnt DESC LIMIT 30;",
+  "rows": [
+    {
+      "action": "Client Deleted",
+      "entityType": "organization",
+      "cnt": "173"
+    },
+    {
+      "action": "Client Archived",
+      "entityType": "organization",
+      "cnt": "111"
+    },
+    {
+      "action": "Member Added",
+      "entityType": "team",
+      "cnt": "51"
+    },
+    {
+      "action": "Task Created",
+      "entityType": "task",
+      "cnt": "48"
+    },
+    {
+      "action": "Venture Created",
+      "entityType": "venture",
+      "cnt": "39"
+    },
+    {
+      "action": "Member Removed",
+      "entityType": "team",
+      "cnt": "30"
+    },
+    {
+      "action": "Client Restored",
+      "entityType": "organization",
+      "cnt": "28"
+    },
+    {
+      "action": "AI Tasks Generated",
+      "entityType": "task",
+      "cnt": "14"
+    },
+    {
+      "action": "Deal Structure",
+      "entityType": "venture",
+      "cnt": "1"
+    },
+    {
+      "action": "Deck Drafted",
+      "entityType": "venture",
+      "cnt": "1"
+    },
+    {
+      "action": "Distribution Paid",
+      "entityType": "distribution",
+      "cnt": "1"
+    },
+    {
+      "action": "Task Completed",
+      "entityType": "task",
+      "cnt": "1"
+    },
+    {
+      "action": "File Uploaded",
+      "entityType": "venture",
+      "cnt": "1"
+    },
+    {
+      "action": "SPV Update",
+      "entityType": "spv",
+      "cnt": "1"
+    },
+    {
+      "action": "Workshop Scheduled",
+      "entityType": "venture",
+      "cnt": "1"
+    },
+    {
+      "action": "Task Updated",
+      "entityType": "task",
+      "cnt": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "action\tentityType\tcnt\nClient Deleted\torganization\t173\nClient Archived\torganization\t111\nMember Added\tteam\t51\nTask Created\ttask\t48\nVenture Created\tventure\t39\nMember Removed\tteam\t30\nClient Restored\torganization\t28\nAI Tasks Generated\ttask\t14\nDeal Structure\tventure\t1\nDeck Drafted\tventure\t1\nDistribution Paid\tdistribution\t1\nTask Completed\ttask\t1\nFile Uploaded\tventure\t1\nSPV Update\tspv\t1\nWorkshop Scheduled\tventure\t1\nTask Updated\ttask\t1\n",
+  "stderr": "",
+  "execution_time_ms": 708
+}

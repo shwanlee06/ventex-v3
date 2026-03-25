@@ -70,6 +70,7 @@ export const tasksRouter = router({
     await db.insert(activityLog).values({
       entityType: "task", entityName: input.title, action: "Task Created",
       detail: `New task "${input.title}" created`, userName: ctx.user.name || "System",
+      activitySource: "client_business",
     });
     return { success: true };
   }),
@@ -96,6 +97,7 @@ export const tasksRouter = router({
         action: input.status === "complete" ? "Task Completed" : "Task Updated",
         detail: `Task "${rows[0].title}" ${input.status === "complete" ? "marked complete" : "updated"}`,
         userName: ctx.user.name || "System",
+        activitySource: "client_business",
       });
     }
     return rows[0] || null;
