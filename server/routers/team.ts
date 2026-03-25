@@ -1,10 +1,26 @@
 import { z } from "zod";
 import { publicProcedure, protectedProcedure, router, adminProcedure } from "../_core/trpc";
 import { getDb } from "../db";
-import { teamMembers, activityLog, ventureTeam, ventures, organizations } from "../../drizzle/schema";
-import { eq, desc, inArray, isNull, isNotNull, and } from "drizzle-orm";
+import { teamMembers, activityLog, ventureTeam, ventures, organizations, users } from "../../drizzle/schema";
+import { eq, desc, inArray, isNull, isNotNull, and, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { resolveVentureScope, getVentureIdsForOrg } from "../security/rbac";
+
+/**
+ * Calculate live status from lastSeenAt timestamp and adminStatus.
+ * - If adminStatus is "on_leave" or "deactivated", that takes priority.
+ * - Otherwise: Online (<5min), Away (<30min), Offline (>30min or null)
+ */
+export function calculateLiveStatus(lastSeenAt: Date | null, adminStatus: string | null): "online" | "away" | "offline" | "on_leave" | "deactivated" {
+  if (adminStatus === "on_leave") return "on_leave";
+  if (adminStatus === "deactivated") return "deactivated";
+  if (!lastSeenAt) return "offline";
+  const diffMs = Date.now() - lastSeenAt.getTime();
+  const diffMin = diffMs / 60000;
+  if (diffMin < 5) return "online";
+  if (diffMin < 30) return "away";
+  return "offline";
+}
 
 function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -243,6 +259,85 @@ export const teamRouter = router({
       if (val !== undefined) updateData[key] = val;
     }
     await db.update(teamMembers).set(updateData).where(eq(teamMembers.id, id));
+    return { success: true };
+  }),
+
+  /**
+   * Heartbeat — called by frontend every 2 minutes to update lastSeenAt.
+   * Links the current user to their team member record and updates lastSeenAt.
+   */
+  heartbeat: protectedProcedure.mutation(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) return { success: false };
+    const userId = ctx.user.id;
+    const now = new Date();
+
+    // Update lastSignedIn on users table
+    await db.update(users).set({ lastSignedIn: now }).where(eq(users.id, userId));
+
+    // Find linked team member and update lastSeenAt
+    const [member] = await db.select().from(teamMembers)
+      .where(eq(teamMembers.userId, userId)).limit(1);
+    if (member) {
+      await db.update(teamMembers).set({ lastSeenAt: now }).where(eq(teamMembers.id, member.id));
+    }
+
+    return { success: true };
+  }),
+
+  /**
+   * Get live status for all team members (Internal + client contacts).
+   * Returns id, name, liveStatus, lastSeenAt, adminStatus.
+   */
+  liveStatuses: protectedProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    const members = await db.select({
+      id: teamMembers.id,
+      name: teamMembers.name,
+      type: teamMembers.type,
+      lastSeenAt: teamMembers.lastSeenAt,
+      adminStatus: teamMembers.adminStatus,
+      userId: teamMembers.userId,
+    }).from(teamMembers);
+
+    return members.map(m => ({
+      id: m.id,
+      name: m.name,
+      type: m.type,
+      liveStatus: calculateLiveStatus(m.lastSeenAt, m.adminStatus),
+      lastSeenAt: m.lastSeenAt?.toISOString() || null,
+      adminStatus: m.adminStatus,
+    }));
+  }),
+
+  /**
+   * Admin: set a member's adminStatus (active, on_leave, deactivated)
+   */
+  setAdminStatus: adminProcedure.input(z.object({
+    id: z.number(),
+    adminStatus: z.enum(["active", "on_leave", "deactivated"]),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.update(teamMembers).set({ adminStatus: input.adminStatus }).where(eq(teamMembers.id, input.id));
+    await db.insert(activityLog).values({
+      entityType: "team", entityId: input.id, action: "Status Changed",
+      detail: `Admin status set to ${input.adminStatus}`, userName: "System",
+    });
+    return { success: true };
+  }),
+
+  /**
+   * Link a team member to a user account (for login-based status tracking)
+   */
+  linkUser: adminProcedure.input(z.object({
+    memberId: z.number(),
+    userId: z.number(),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.update(teamMembers).set({ userId: input.userId }).where(eq(teamMembers.id, input.memberId));
     return { success: true };
   }),
 

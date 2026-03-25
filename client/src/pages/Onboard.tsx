@@ -37,6 +37,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import LiveStatusDot from "@/components/LiveStatusDot";
+import type { LiveStatus } from "@/components/LiveStatusDot";
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -87,7 +89,17 @@ export default function OnboardPage() {
   const atlasTeamQ = trpc.team.listInternal.useQuery();
   const clientContactsQ = trpc.team.listByOrganization.useQuery();
   const orgsQ = trpc.organizations.list.useQuery();
+  const liveStatusesQ = trpc.team.liveStatuses.useQuery(undefined, { refetchInterval: 30000 });
   const utils = trpc.useUtils();
+
+  // Build a map of member id -> live status info
+  const statusMap = useMemo(() => {
+    const map = new Map<number, { liveStatus: LiveStatus; lastSeenAt: string | null; adminStatus: string | null }>();
+    for (const s of liveStatusesQ.data || []) {
+      map.set(s.id, { liveStatus: s.liveStatus as LiveStatus, lastSeenAt: s.lastSeenAt, adminStatus: s.adminStatus });
+    }
+    return map;
+  }, [liveStatusesQ.data]);
 
   const createMember = trpc.team.create.useMutation({
     onSuccess: () => {
@@ -305,6 +317,7 @@ export default function OnboardPage() {
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden lg:table-cell">Function</TableHead>
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden sm:table-cell">Type</TableHead>
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden lg:table-cell">Contact</TableHead>
+                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden md:table-cell">Status</TableHead>
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground w-10"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -396,6 +409,13 @@ export default function OnboardPage() {
                           )}
                         </div>
                       </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <LiveStatusDot
+                          status={statusMap.get(member.id)?.liveStatus || "offline"}
+                          lastSeenAt={statusMap.get(member.id)?.lastSeenAt}
+                          showLabel
+                        />
+                      </TableCell>
                       <TableCell>
                         <button
                           onClick={(e) => { e.stopPropagation(); setDeleteConfirm(member.id); }}
@@ -465,12 +485,11 @@ export default function OnboardPage() {
                         {drawerMember.orgName}
                       </span>
                     )}
-                    <span className={cn(
-                      "text-[10px] font-medium px-1.5 py-0.5 rounded",
-                      drawerMember.status === "Active" ? "bg-emerald-500/10 text-emerald-400" : "bg-secondary text-muted-foreground"
-                    )}>
-                      {drawerMember.status || "Active"}
-                    </span>
+                    <LiveStatusDot
+                      status={statusMap.get(drawerMember.id)?.liveStatus || "offline"}
+                      lastSeenAt={statusMap.get(drawerMember.id)?.lastSeenAt}
+                      showLabel
+                    />
                   </div>
 
                   {/* Notes */}

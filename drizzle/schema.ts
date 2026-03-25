@@ -124,6 +124,9 @@ export const teamMembers = mysqlTable("team_members", {
   linkedin: varchar("linkedin", { length: 255 }),
   location: varchar("location", { length: 128 }),
   photoUrl: text("photoUrl"),
+  userId: int("userId"),  // link to users table for login-based status tracking
+  lastSeenAt: timestamp("lastSeenAt"),  // updated by heartbeat or manual activity
+  adminStatus: varchar("adminStatus", { length: 32 }).default("active"),  // admin-set: active, on_leave, deactivated
   slug: varchar("slug", { length: 255 }).notNull().unique(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

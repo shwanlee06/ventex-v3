@@ -36,6 +36,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import LiveStatusDot from "@/components/LiveStatusDot";
+import type { LiveStatus } from "@/components/LiveStatusDot";
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -47,10 +49,7 @@ const FUNCTIONS = [
   "Technology", "Marketing", "Sales",
 ];
 
-function StatusDot({ status }: { status: string }) {
-  const color = status === "Active" ? "bg-emerald-400" : status === "On Leave" ? "bg-amber-400" : "bg-zinc-400";
-  return <span className={cn("size-1.5 rounded-full inline-block", color)} />;
-}
+// Removed static StatusDot — now using LiveStatusDot component
 
 export default function AtlasTeam() {
   const [, navigate] = useLocation();
@@ -87,7 +86,26 @@ export default function AtlasTeam() {
   // Data queries
   const atlasTeamQ = trpc.team.listInternal.useQuery();
   const ventureAssignmentsQ = trpc.team.ventureAssignments.useQuery();
+  const liveStatusesQ = trpc.team.liveStatuses.useQuery(undefined, { refetchInterval: 30000 }); // poll every 30s
   const utils = trpc.useUtils();
+
+  const setAdminStatus = trpc.team.setAdminStatus.useMutation({
+    onSuccess: () => {
+      toast.success("Status updated");
+      utils.team.liveStatuses.invalidate();
+      utils.team.listInternal.invalidate();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  // Build a map of member id -> live status info
+  const statusMap = useMemo(() => {
+    const map = new Map<number, { liveStatus: LiveStatus; lastSeenAt: string | null; adminStatus: string | null }>();
+    for (const s of liveStatusesQ.data || []) {
+      map.set(s.id, { liveStatus: s.liveStatus as LiveStatus, lastSeenAt: s.lastSeenAt, adminStatus: s.adminStatus });
+    }
+    return map;
+  }, [liveStatusesQ.data]);
 
   const createMember = trpc.team.create.useMutation({
     onSuccess: () => {
@@ -236,9 +254,9 @@ export default function AtlasTeam() {
                 transition={{ delay: 0.1 }}
                 className="bg-card border border-border rounded-lg p-3"
               >
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Active</span>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Online Now</span>
                 <div className="text-xl font-semibold text-emerald-400 font-mono mt-1">
-                  {members.filter(m => m.status === "Active").length}
+                  {members.filter(m => statusMap.get(m.id)?.liveStatus === "online").length}
                 </div>
               </motion.div>
               <motion.div
@@ -395,8 +413,11 @@ export default function AtlasTeam() {
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           <div className="flex items-center gap-1.5">
-                            <StatusDot status={member.status || "Active"} />
-                            <span className="text-[10px] text-muted-foreground">{member.status || "Active"}</span>
+                            <LiveStatusDot
+                              status={statusMap.get(member.id)?.liveStatus || "offline"}
+                              lastSeenAt={statusMap.get(member.id)?.lastSeenAt}
+                              showLabel
+                            />
                           </div>
                         </TableCell>
                         <TableCell>
@@ -453,13 +474,33 @@ export default function AtlasTeam() {
               </div>
 
               {/* Status */}
-              <div className="bg-secondary/30 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <StatusDot status={drawerMember.status || "Active"} />
-                  <span className="text-xs font-medium text-foreground">{drawerMember.status || "Active"}</span>
+              <div className="bg-secondary/30 rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <LiveStatusDot
+                    status={statusMap.get(drawerMember.id)?.liveStatus || "offline"}
+                    lastSeenAt={statusMap.get(drawerMember.id)?.lastSeenAt}
+                    size="md"
+                    showLabel
+                  />
                   <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
                     ATLAS Internal
                   </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground">Admin Status:</span>
+                  <Select
+                    value={statusMap.get(drawerMember.id)?.adminStatus || "active"}
+                    onValueChange={(val) => setAdminStatus.mutate({ id: drawerMember.id, adminStatus: val as "active" | "on_leave" | "deactivated" })}
+                  >
+                    <SelectTrigger className="h-6 text-[10px] w-[120px] border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="on_leave">On Leave</SelectItem>
+                      <SelectItem value="deactivated">Deactivated</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 {drawerMember.location && (
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

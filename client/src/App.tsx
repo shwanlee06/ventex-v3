@@ -27,6 +27,7 @@ import AccessManagement from "./pages/AccessManagement";
 import InviteAccept from "./pages/InviteAccept";
 import ClientDetail from "./pages/ClientDetail";
 import AtlasTeam from "./pages/AtlasTeam";
+import { useHeartbeat } from "./hooks/useHeartbeat";
 
 /* Auth guard — redirects to login if no operator in localStorage */
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -142,6 +143,11 @@ function Router() {
   );
 }
 
+function HeartbeatProvider({ children }: { children: React.ReactNode }) {
+  useHeartbeat();
+  return <>{children}</>;
+}
+
 function App() {
   return (
     <ErrorBoundary>
@@ -149,8 +155,10 @@ function App() {
         <PreviewModeProvider>
           <WorkspaceProvider>
             <TooltipProvider>
-              <Toaster />
-              <Router />
+              <HeartbeatProvider>
+                <Toaster />
+                <Router />
+              </HeartbeatProvider>
             </TooltipProvider>
           </WorkspaceProvider>
         </PreviewModeProvider>

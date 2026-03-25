@@ -1,0 +1,16 @@
+{
+  "query": "\n-- First find Shwan Lee's team member ID\nSELECT id, name, type, userId FROM team_members WHERE name LIKE '%Shwan%' OR name LIKE '%shwan%';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \n-- First find Shwan Lee's team member ID\nSELECT id, name, type, userId FROM team_members WHERE name LIKE '%Shwan%' OR name LIKE '%shwan%';\n",
+  "rows": [
+    {
+      "id": "11",
+      "name": "Shwan Lee",
+      "type": "Internal",
+      "userId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\ttype\tuserId\n11\tShwan Lee\tInternal\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 433
+}

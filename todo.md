@@ -826,3 +826,16 @@
 - [x] ATLAS Team: 3 members (Shwan Lee, Brian Chen, Chris Phelps)
 - [x] Client Contacts: 11 Royalton members (Jimmy, Anton, Jon, Maher, Angie, Carl, Leonidas, Najib, Igor, Sohail, Ruwaida)
 - [x] All 235 tests passing
+
+## Live Member Status Tracking
+- [x] Added lastSeenAt + adminStatus columns to team_members table, pushed migration
+- [x] Built heartbeat endpoint that updates lastSeenAt every 2 minutes from frontend
+- [x] Calculate real status: Online (<5min), Away (<30min), Offline (>30min)
+- [x] Admin can set status (Active, On Leave, Deactivated) via dropdown in ATLAS Team drawer
+- [x] Live status dots (green pulse/amber/gray) on both ATLAS Team and Client Contacts pages
+- [x] Show "last seen" relative time with tooltip (e.g., "2 min ago", "3 hours ago")
+- [x] Linked Shwan Lee's user account (userId=1) to team member for live heartbeat
+- [x] LiveStatusDot reusable component with sm/md sizes, pulse animation for online
+- [x] useHeartbeat hook at App root level, polls every 2 minutes
+- [x] liveStatuses query polls every 30 seconds for near-real-time updates
+- [x] All 235 tests passing
