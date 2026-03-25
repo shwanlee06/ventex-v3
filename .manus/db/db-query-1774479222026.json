@@ -1,0 +1,26 @@
+{
+  "query": "SELECT 'notifications' as tbl, COUNT(*) as cnt FROM notifications WHERE title LIKE 'Test%' UNION ALL SELECT 'ventures', COUNT(*) FROM ventures WHERE name LIKE 'Test%' UNION ALL SELECT 'tasks', COUNT(*) FROM tasks WHERE title LIKE 'Test%' UNION ALL SELECT 'spvs', COUNT(*) FROM spvs WHERE name LIKE 'Test%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT 'notifications' as tbl, COUNT(*) as cnt FROM notifications WHERE title LIKE 'Test%' UNION ALL SELECT 'ventures', COUNT(*) FROM ventures WHERE name LIKE 'Test%' UNION ALL SELECT 'tasks', COUNT(*) FROM tasks WHERE title LIKE 'Test%' UNION ALL SELECT 'spvs', COUNT(*) FROM spvs WHERE name LIKE 'Test%';",
+  "rows": [
+    {
+      "tbl": "ventures",
+      "cnt": "25"
+    },
+    {
+      "tbl": "notifications",
+      "cnt": "55"
+    },
+    {
+      "tbl": "spvs",
+      "cnt": "0"
+    },
+    {
+      "tbl": "tasks",
+      "cnt": "59"
+    }
+  ],
+  "messages": [],
+  "stdout": "tbl\tcnt\nventures\t25\nnotifications\t55\nspvs\t0\ntasks\t59\n",
+  "stderr": "",
+  "execution_time_ms": 353
+}

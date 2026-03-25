@@ -1,0 +1,90 @@
+{
+  "query": "SELECT id, name FROM ventures WHERE id > 20 ORDER BY id LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name FROM ventures WHERE id > 20 ORDER BY id LIMIT 20;",
+  "rows": [
+    {
+      "id": "30002",
+      "name": "OrgLinked Venture 1774403479696"
+    },
+    {
+      "id": "30003",
+      "name": "Unassigned Venture 1774403480134"
+    },
+    {
+      "id": "30005",
+      "name": "OrgLinked Venture 1774403791045"
+    },
+    {
+      "id": "30006",
+      "name": "Unassigned Venture 1774403791497"
+    },
+    {
+      "id": "30008",
+      "name": "OrgLinked Venture 1774404473988"
+    },
+    {
+      "id": "30009",
+      "name": "Unassigned Venture 1774404474404"
+    },
+    {
+      "id": "30011",
+      "name": "OrgLinked Venture 1774405286492"
+    },
+    {
+      "id": "30012",
+      "name": "Unassigned Venture 1774405286903"
+    },
+    {
+      "id": "30014",
+      "name": "OrgLinked Venture 1774405663569"
+    },
+    {
+      "id": "30015",
+      "name": "Unassigned Venture 1774405664003"
+    },
+    {
+      "id": "30017",
+      "name": "OrgLinked Venture 1774405695402"
+    },
+    {
+      "id": "30018",
+      "name": "Unassigned Venture 1774405695836"
+    },
+    {
+      "id": "30020",
+      "name": "OrgLinked Venture 1774406321507"
+    },
+    {
+      "id": "30021",
+      "name": "Unassigned Venture 1774406321943"
+    },
+    {
+      "id": "30023",
+      "name": "OrgLinked Venture 1774406342355"
+    },
+    {
+      "id": "30024",
+      "name": "Unassigned Venture 1774406342817"
+    },
+    {
+      "id": "30026",
+      "name": "OrgLinked Venture 1774407169352"
+    },
+    {
+      "id": "30027",
+      "name": "Unassigned Venture 1774407169779"
+    },
+    {
+      "id": "30029",
+      "name": "OrgLinked Venture 1774407205555"
+    },
+    {
+      "id": "30030",
+      "name": "Unassigned Venture 1774407205989"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n30002\tOrgLinked Venture 1774403479696\n30003\tUnassigned Venture 1774403480134\n30005\tOrgLinked Venture 1774403791045\n30006\tUnassigned Venture 1774403791497\n30008\tOrgLinked Venture 1774404473988\n30009\tUnassigned Venture 1774404474404\n30011\tOrgLinked Venture 1774405286492\n30012\tUnassigned Venture 1774405286903\n30014\tOrgLinked Venture 1774405663569\n30015\tUnassigned Venture 1774405664003\n30017\tOrgLinked Venture 1774405695402\n30018\tUnassigned Venture 1774405695836\n30020\tOrgLinked Venture 1774406321507\n30021\tUnassigned Venture 1774406321943\n30023\tOrgLinked Venture 1774406342355\n30024\tUnassigned Venture 1774406342817\n30026\tOrgLinked Venture 1774407169352\n30027\tUnassigned Venture 1774407169779\n30029\tOrgLinked Venture 1774407205555\n30030\tUnassigned Venture 1774407205989\n",
+  "stderr": "",
+  "execution_time_ms": 410
+}

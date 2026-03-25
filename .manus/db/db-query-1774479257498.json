@@ -1,0 +1,90 @@
+{
+  "query": "SELECT id, name FROM ventures ORDER BY id LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name FROM ventures ORDER BY id LIMIT 20;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Nammos - Barcelona"
+    },
+    {
+      "id": "2",
+      "name": "Nammos - Lagonissi"
+    },
+    {
+      "id": "3",
+      "name": "Muscat Bay"
+    },
+    {
+      "id": "4",
+      "name": "Chekka Land - Resort"
+    },
+    {
+      "id": "5",
+      "name": "Shady Hotel"
+    },
+    {
+      "id": "6",
+      "name": "Nammos - Watson Island"
+    },
+    {
+      "id": "7",
+      "name": "Zarka City"
+    },
+    {
+      "id": "8",
+      "name": "Berbara - Lebanon"
+    },
+    {
+      "id": "9",
+      "name": "Nammos - Ibiza"
+    },
+    {
+      "id": "10",
+      "name": "Nammos Lebanon"
+    },
+    {
+      "id": "11",
+      "name": "Mar-a-Lago Yacht Club"
+    },
+    {
+      "id": "12",
+      "name": "Bagatelle"
+    },
+    {
+      "id": "13",
+      "name": "JV Yacht - Nammos"
+    },
+    {
+      "id": "14",
+      "name": "Berlin"
+    },
+    {
+      "id": "15",
+      "name": "KTL-Dubai Casino License"
+    },
+    {
+      "id": "16",
+      "name": "Casino - Malaysia"
+    },
+    {
+      "id": "17",
+      "name": "Kazzafi Daughter"
+    },
+    {
+      "id": "18",
+      "name": "Shady Project"
+    },
+    {
+      "id": "19",
+      "name": "P430"
+    },
+    {
+      "id": "20",
+      "name": "Venezuela Mining Rights"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n1\tNammos - Barcelona\n2\tNammos - Lagonissi\n3\tMuscat Bay\n4\tChekka Land - Resort\n5\tShady Hotel\n6\tNammos - Watson Island\n7\tZarka City\n8\tBerbara - Lebanon\n9\tNammos - Ibiza\n10\tNammos Lebanon\n11\tMar-a-Lago Yacht Club\n12\tBagatelle\n13\tJV Yacht - Nammos\n14\tBerlin\n15\tKTL-Dubai Casino License\n16\tCasino - Malaysia\n17\tKazzafi Daughter\n18\tShady Project\n19\tP430\n20\tVenezuela Mining Rights\n",
+  "stderr": "",
+  "execution_time_ms": 371
+}

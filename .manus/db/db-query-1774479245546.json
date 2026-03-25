@@ -1,0 +1,31 @@
+{
+  "query": "SELECT COUNT(*) as total_ventures FROM ventures; SELECT COUNT(*) as total_tasks FROM tasks; SELECT COUNT(*) as total_notifications FROM notifications; SELECT COUNT(*) as total_team FROM team_members;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT COUNT(*) as total_ventures FROM ventures; SELECT COUNT(*) as total_tasks FROM tasks; SELECT COUNT(*) as total_notifications FROM notifications; SELECT COUNT(*) as total_team FROM team_members;",
+  "rows": [
+    {
+      "total_ventures": "70"
+    },
+    {
+      "total_ventures": "total_tasks"
+    },
+    {
+      "total_ventures": "48"
+    },
+    {
+      "total_ventures": "total_notifications"
+    },
+    {
+      "total_ventures": "102"
+    },
+    {
+      "total_ventures": "total_team"
+    },
+    {
+      "total_ventures": "14"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_ventures\n70\ntotal_tasks\n48\ntotal_notifications\n102\ntotal_team\n14\n",
+  "stderr": "",
+  "execution_time_ms": 494
+}

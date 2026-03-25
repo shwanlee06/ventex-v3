@@ -875,3 +875,10 @@
 - [x] Wired triggers: client archived/restored (organizations.ts)
 - [x] Role-based: admins see all, clients scoped to their org
 - [x] Updated tests: all 235 passing
+
+## Fix: Incorrect Client Count (Test Data Pollution)
+- [x] Found 27 stale test team members, 50 test ventures, 59 test tasks, 55 test notifications in DB
+- [x] Cleaned up all test records (IDs >= 30000) from all tables
+- [x] Added global test teardown (server/test-global-teardown.ts) that auto-cleans after all tests
+- [x] Real counts: 20 ventures, 10 SPVs, 9 tasks, 14 team members, 4 distributions
+- [x] All 235 tests passing
