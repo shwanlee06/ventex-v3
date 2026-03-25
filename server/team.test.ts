@@ -51,12 +51,12 @@ const caller = appRouter.createCaller(createAdminContext());
 const publicCaller = appRouter.createCaller(createPublicContext());
 
 describe("Team Router — Org-scoped queries", () => {
-  it("listInternal returns only members without organizationId", async () => {
+  it("listInternal returns only Internal type members", async () => {
     const members = await caller.team.listInternal();
     expect(Array.isArray(members)).toBe(true);
-    // All returned members should have null organizationId
+    // All returned members should have type "Internal"
     for (const m of members) {
-      expect(m.organizationId).toBeNull();
+      expect(m.type).toBe("Internal");
     }
   });
 

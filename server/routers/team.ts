@@ -64,13 +64,14 @@ export const teamRouter = router({
     }),
 
   /**
-   * List ATLAS/Aurovia internal members only (organizationId IS NULL)
+   * List ATLAS/Aurovia internal members (type = 'Internal')
+   * Includes members with any orgId as long as they are Internal type
    */
   listInternal: publicProcedure.query(async () => {
     const db = await getDb();
     if (!db) return [];
     return db.select().from(teamMembers)
-      .where(isNull(teamMembers.organizationId))
+      .where(eq(teamMembers.type, "Internal"))
       .orderBy(desc(teamMembers.createdAt));
   }),
 

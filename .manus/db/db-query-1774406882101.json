@@ -1,0 +1,37 @@
+{
+  "query": "SELECT id, name, email, role, organizationId, userStatus, lastSignedIn FROM users ORDER BY role, name LIMIT 50;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, email, role, organizationId, userStatus, lastSignedIn FROM users ORDER BY role, name LIMIT 50;",
+  "rows": [
+    {
+      "id": "390151",
+      "name": "Jason Yu",
+      "email": "jason41659@gmail.com",
+      "role": "user",
+      "organizationId": "NULL",
+      "userStatus": "active",
+      "lastSignedIn": "2026-03-25 02:26:08"
+    },
+    {
+      "id": "750035",
+      "name": "Brian Chen",
+      "email": "bchen2561@gmail.com",
+      "role": "admin",
+      "organizationId": "1",
+      "userStatus": "active",
+      "lastSignedIn": "2026-03-24 20:54:59"
+    },
+    {
+      "id": "1",
+      "name": "Shwan lee",
+      "email": "slee72106@gmail.com",
+      "role": "admin",
+      "organizationId": "NULL",
+      "userStatus": "active",
+      "lastSignedIn": "2026-03-25 02:47:54"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\trole\torganizationId\tuserStatus\tlastSignedIn\n390151\tJason Yu\tjason41659@gmail.com\tuser\tNULL\tactive\t2026-03-25 02:26:08\n750035\tBrian Chen\tbchen2561@gmail.com\tadmin\t1\tactive\t2026-03-24 20:54:59\n1\tShwan lee\tslee72106@gmail.com\tadmin\tNULL\tactive\t2026-03-25 02:47:54\n",
+  "stderr": "",
+  "execution_time_ms": 362
+}

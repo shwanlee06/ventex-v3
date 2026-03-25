@@ -1,0 +1,110 @@
+{
+  "query": "SELECT id, name, role, memberFunction, type, organizationId, email, status FROM team_members WHERE organizationId IS NULL OR type = 'Internal' ORDER BY name LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, role, memberFunction, type, organizationId, email, status FROM team_members WHERE organizationId IS NULL OR type = 'Internal' ORDER BY name LIMIT 30;",
+  "rows": [
+    {
+      "id": "5",
+      "name": "Angie Samadi",
+      "role": "HR",
+      "memberFunction": "People Ops / HR",
+      "type": "Internal",
+      "organizationId": "2",
+      "email": "NULL",
+      "status": "Active"
+    },
+    {
+      "id": "2",
+      "name": "Anton Maghami",
+      "role": "Vice President",
+      "memberFunction": "Operations & Systems",
+      "type": "Internal",
+      "organizationId": "2",
+      "email": "NULL",
+      "status": "Active"
+    },
+    {
+      "id": "1",
+      "name": "Jimmy Frangi",
+      "role": "Founder",
+      "memberFunction": "Finance & Capital",
+      "type": "Internal",
+      "organizationId": "2",
+      "email": "NULL",
+      "status": "Active"
+    },
+    {
+      "id": "3",
+      "name": "Jon Eichner",
+      "role": "COO",
+      "memberFunction": "Operations",
+      "type": "Internal",
+      "organizationId": "2",
+      "email": "NULL",
+      "status": "Active"
+    },
+    {
+      "id": "4",
+      "name": "Maher Abou Chakra",
+      "role": "Accounting",
+      "memberFunction": "Finance / Accounting",
+      "type": "Internal",
+      "organizationId": "2",
+      "email": "NULL",
+      "status": "Active"
+    },
+    {
+      "id": "11",
+      "name": "Shwan Lee",
+      "role": "Founder & CEO",
+      "memberFunction": "Strategy & Vision",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "email": "NULL",
+      "status": "Active"
+    },
+    {
+      "id": "30025",
+      "name": "Test ATLAS Member 1774405663479",
+      "role": "Test Role",
+      "memberFunction": "NULL",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "email": "NULL",
+      "status": "Active"
+    },
+    {
+      "id": "30028",
+      "name": "Test ATLAS Member 1774405695066",
+      "role": "Test Role",
+      "memberFunction": "NULL",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "email": "NULL",
+      "status": "Active"
+    },
+    {
+      "id": "30031",
+      "name": "Test ATLAS Member 1774406322483",
+      "role": "Test Role",
+      "memberFunction": "NULL",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "email": "NULL",
+      "status": "Active"
+    },
+    {
+      "id": "30034",
+      "name": "Test ATLAS Member 1774406343319",
+      "role": "Test Role",
+      "memberFunction": "NULL",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "email": "NULL",
+      "status": "Active"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\trole\tmemberFunction\ttype\torganizationId\temail\tstatus\n5\tAngie Samadi\tHR\tPeople Ops / HR\tInternal\t2\tNULL\tActive\n2\tAnton Maghami\tVice President\tOperations & Systems\tInternal\t2\tNULL\tActive\n1\tJimmy Frangi\tFounder\tFinance & Capital\tInternal\t2\tNULL\tActive\n3\tJon Eichner\tCOO\tOperations\tInternal\t2\tNULL\tActive\n4\tMaher Abou Chakra\tAccounting\tFinance / Accounting\tInternal\t2\tNULL\tActive\n11\tShwan Lee\tFounder & CEO\tStrategy & Vision\tInternal\tNULL\tNULL\tActive\n30025\tTest ATLAS Member 1774405663479\tTest Role\tNULL\tInternal\tNULL\tNULL\tActive\n30028\tTest ATLAS Member 1774405695066\tTest Role\tNULL\tInternal\tNULL\tNULL\tActive\n30031\tTest ATLAS Member 1774406322483\tTest Role\tNULL\tInternal\tNULL\tNULL\tActive\n30034\tTest ATLAS Member 1774406343319\tTest Role\tNULL\tInternal\tNULL\tNULL\tActive\n",
+  "stderr": "",
+  "execution_time_ms": 353
+}

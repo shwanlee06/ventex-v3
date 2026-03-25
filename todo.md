@@ -805,3 +805,11 @@
 - [x] Integrate into AtlasDashboard (table view + grid view per-row actions)
 - [x] Write tests for AI task generation endpoint (9 tests: auth, export, approve, validation)
 - [x] All 235 tests passing
+
+## ATLAS Members — Separate from Client List
+- [x] Audited data model: Internal members have type="Internal" in team_members table
+- [x] Fixed listInternal endpoint to filter by type="Internal" (not orgId=NULL) to capture all ATLAS members
+- [x] Built dedicated ATLAS Members page at /atlas-team with stats bar, member table, detail drawer, add/edit/remove
+- [x] Added ATLAS Team (shield icon) nav item to sidebar, separate from Client Contacts (users icon)
+- [x] Shows member role, function, venture assignments count, contact info, status with colored dots
+- [x] Updated test to match new behavior, all 235 tests passing

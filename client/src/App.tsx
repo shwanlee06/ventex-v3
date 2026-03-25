@@ -26,6 +26,7 @@ import SecurityPage from "./pages/SecurityPage";
 import AccessManagement from "./pages/AccessManagement";
 import InviteAccept from "./pages/InviteAccept";
 import ClientDetail from "./pages/ClientDetail";
+import AtlasTeam from "./pages/AtlasTeam";
 
 /* Auth guard — redirects to login if no operator in localStorage */
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -121,6 +122,9 @@ function Router() {
       </Route>
       <Route path="/team">
         <RequireAuth><RequireAtlas><Onboard /></RequireAtlas></RequireAuth>
+      </Route>
+      <Route path="/atlas-team">
+        <RequireAuth><RequireAtlas><AtlasTeam /></RequireAtlas></RequireAuth>
       </Route>
       <Route path="/security">
         <RequireAuth><RequireAtlas><SecurityPage /></RequireAtlas></RequireAuth>
