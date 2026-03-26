@@ -27,6 +27,7 @@ import AccessManagement from "./pages/AccessManagement";
 import InviteAccept from "./pages/InviteAccept";
 import ClientDetail from "./pages/ClientDetail";
 import AtlasTeam from "./pages/AtlasTeam";
+import AcceptInvite from "./pages/AcceptInvite";
 import { useHeartbeat } from "./hooks/useHeartbeat";
 
 /* Auth guard — redirects to login if no operator in localStorage */
@@ -81,6 +82,9 @@ function Router() {
 
       {/* Partner invite acceptance — public, no auth */}
       <Route path="/invite/:orgSlug/:token" component={InviteAccept} />
+
+      {/* Team member invite acceptance — public, no auth */}
+      <Route path="/accept-invite" component={AcceptInvite} />
 
       {/* Protected dashboard pages — available to all authenticated users */}
       <Route path="/dashboard">

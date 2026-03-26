@@ -470,6 +470,15 @@ export const accessRouter = router({
         ventureIds: invite.ventureIds ?? null,
       });
 
+      // If this invitation is linked to a team member, update their status
+      if (invite.teamMemberId) {
+        const { teamMembers } = await import("../../drizzle/schema");
+        await db
+          .update(teamMembers)
+          .set({ invitationStatus: "accepted" })
+          .where(eq(teamMembers.id, invite.teamMemberId));
+      }
+
       await logAudit({
         userId: ctx.user.id,
         userName: ctx.user.name,

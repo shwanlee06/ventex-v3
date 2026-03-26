@@ -8,6 +8,7 @@ import { nanoid } from "nanoid";
 import { resolveVentureScope, getVentureIdsForOrg } from "../security/rbac";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { storagePut } from "../storage";
+import { sendInvitationEmail, buildInviteLink } from "../invitationEmail";
 
 /**
  * Calculate live status from lastSeenAt timestamp and adminStatus.
@@ -215,6 +216,27 @@ export const teamRouter = router({
         }
 
         inviteToken = token;
+
+        // Send invitation email notification
+        if (origin) {
+          const inviteLink = buildInviteLink(origin, token);
+          // Get org name for the email
+          let orgNameForEmail = "ATLAS / Royalton";
+          if (organizationId) {
+            const [org] = await db.select({ name: organizations.name })
+              .from(organizations).where(eq(organizations.id, organizationId)).limit(1);
+            if (org) orgNameForEmail = org.name;
+          }
+          // Fire and forget — don't block on email delivery
+          sendInvitationEmail({
+            recipientEmail: input.email!.trim(),
+            recipientName: input.name,
+            role: inviteRole,
+            inviterName: ctx.user.name ?? "Admin",
+            inviteLink,
+            organizationName: orgNameForEmail,
+          }).catch(err => console.error("[Team] Email notification failed:", err));
+        }
       } catch (err) {
         console.error("[Team] Failed to create invitation:", err);
         // Don't fail the member creation if invitation fails
@@ -559,6 +581,25 @@ export const teamRouter = router({
       await db.update(teamMembers)
         .set({ invitationId: inv.id, invitationStatus: "pending" })
         .where(eq(teamMembers.id, member.id));
+    }
+
+    // Send invitation email notification
+    if (input.origin) {
+      const inviteLink = buildInviteLink(input.origin, token);
+      let orgNameForEmail = "ATLAS / Royalton";
+      if (member.organizationId && member.organizationId !== 1) {
+        const [org] = await db.select({ name: organizations.name })
+          .from(organizations).where(eq(organizations.id, member.organizationId)).limit(1);
+        if (org) orgNameForEmail = org.name;
+      }
+      sendInvitationEmail({
+        recipientEmail: member.email.trim(),
+        recipientName: member.name,
+        role: inviteRole,
+        inviterName: ctx.user.name ?? "Admin",
+        inviteLink,
+        organizationName: orgNameForEmail,
+      }).catch(err => console.error("[Team] Resend email notification failed:", err));
     }
 
     await db.insert(activityLog).values({

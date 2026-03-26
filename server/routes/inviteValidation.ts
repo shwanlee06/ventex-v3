@@ -114,4 +114,84 @@ inviteValidationRouter.get("/api/invite/validate", async (req: Request, res: Res
   }
 });
 
+/**
+ * Token-only validation — used by team member invitations.
+ * GET /api/invite/validate-token?token=abc123...
+ * Does NOT require orgSlug — looks up the org from the invitation record.
+ */
+inviteValidationRouter.get("/api/invite/validate-token", async (req: Request, res: Response) => {
+  try {
+    const token = typeof req.query.token === "string" ? req.query.token : "";
+
+    if (!token) {
+      res.json({ valid: false, reason: "Missing token" });
+      return;
+    }
+
+    const db = await getDb();
+    if (!db) {
+      res.json({ valid: false, reason: "Service unavailable" });
+      return;
+    }
+
+    // Look up the invitation by token
+    const [invite] = await db
+      .select()
+      .from(invitations)
+      .where(eq(invitations.token, token))
+      .limit(1);
+
+    if (!invite) {
+      res.json({ valid: false, reason: "Invalid invitation token" });
+      return;
+    }
+
+    if (invite.status !== "pending") {
+      res.json({ valid: false, reason: `Invitation has already been ${invite.status}` });
+      return;
+    }
+
+    if (new Date() > invite.expiresAt) {
+      await db
+        .update(invitations)
+        .set({ status: "expired" })
+        .where(eq(invitations.id, invite.id));
+      res.json({ valid: false, reason: "Invitation has expired" });
+      return;
+    }
+
+    // Look up the organization
+    const [org] = await db
+      .select({
+        id: organizations.id,
+        name: organizations.name,
+        slug: organizations.slug,
+        type: organizations.type,
+      })
+      .from(organizations)
+      .where(eq(organizations.id, invite.organizationId))
+      .limit(1);
+
+    // Mask the email
+    const emailParts = invite.email.split("@");
+    const maskedEmail =
+      emailParts[0].substring(0, 2) +
+      "***@" +
+      (emailParts[1] || "");
+
+    res.json({
+      valid: true,
+      organizationName: org?.name ?? "ATLAS",
+      organizationType: org?.type ?? "core",
+      organizationSlug: org?.slug ?? "atlas",
+      email: maskedEmail,
+      role: invite.role,
+      invitedByName: invite.invitedByName,
+    });
+  } catch (error) {
+    console.error("[InviteValidation] Token validation error:", error);
+    res.json({ valid: false, reason: "Validation failed" });
+  }
+});
+
 export default inviteValidationRouter;

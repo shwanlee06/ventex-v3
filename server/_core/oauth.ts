@@ -5,7 +5,7 @@ import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
 import { ENV } from "./env";
 import { getDb } from "../db";
-import { invitations, users, organizations } from "../../drizzle/schema";
+import { invitations, users, organizations, teamMembers } from "../../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 
 function getQueryParam(req: Request, key: string): string | undefined {
@@ -133,6 +133,14 @@ export function registerOAuthRoutes(app: Express) {
             .update(invitations)
             .set({ status: "accepted", acceptedAt: new Date() })
             .where(eq(invitations.id, pendingInvite.id));
+
+          // If this invitation is linked to a team member, update their status too
+          if (pendingInvite.teamMemberId) {
+            await database
+              .update(teamMembers)
+              .set({ invitationStatus: "accepted" })
+              .where(eq(teamMembers.id, pendingInvite.teamMemberId));
+          }
         }
       } else {
         // No database — can't verify invitation

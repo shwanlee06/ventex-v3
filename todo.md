@@ -942,3 +942,15 @@
 - [x] Frontend: Show invitation status badges on team member table rows (Invited/Active/Expired + system role)
 - [x] Frontend: Add "Resend" / "Invite" button in member drawer with invitation status card
 - [x] Tests: 8 vitest tests for invitation flow — create with email, auto-send, resend, revoke old, status query — all 276 passing
+
+## Feature: Invitation Acceptance Flow
+- [x] Backend: Updated `access.acceptInvitation` to also update teamMembers.invitationStatus when linked
+- [x] Backend: Updated OAuth callback to detect teamMemberId on invitation and auto-update team member status
+- [x] Backend: Added `/api/invite/validate-token` public endpoint for token-only validation (no orgSlug needed)
+- [x] Frontend: `/accept-invite?token=...` page — ATLAS-branded, validates token, shows role/org/email, redirects to OAuth
+- [ ] Frontend: Post-acceptance redirect to dashboard with welcome message (deferred — requires OAuth integration testing)
+
+## Feature: Email Delivery for Invitations
+- [x] Backend: Created `invitationEmail.ts` helper with `sendInvitationEmail` and `buildInviteLink`
+- [x] Backend: Wired email into `team.create` (auto-send when origin provided) and `team.resendInvitation`
+- [x] Tests: 11 vitest tests for acceptance flow, buildInviteLink, token validation — all 287 passing
