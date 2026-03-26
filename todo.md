@@ -954,3 +954,12 @@
 - [x] Backend: Created `invitationEmail.ts` helper with `sendInvitationEmail` and `buildInviteLink`
 - [x] Backend: Wired email into `team.create` (auto-send when origin provided) and `team.resendInvitation`
 - [x] Tests: 11 vitest tests for acceptance flow, buildInviteLink, token validation — all 287 passing
+
+## Bug Fix: Add Member Button Not Visible on ATLAS Team Page
+- [ ] Investigate and fix the Add Member button visibility issue
+
+## Bug Fix: Invitation Email Not Reaching Invitee
+- [ ] Investigate: notifyOwner sends to project owner, not to the invitee's email
+- [ ] Fix: Use proper email sending API to deliver invitation to the invitee's actual email address
+- [x] Workaround: Show copyable invite link in Add Member dialog after successful creation
+- [x] Workaround: Show copyable invite link in the member drawer invitation status card (Copy Link button)

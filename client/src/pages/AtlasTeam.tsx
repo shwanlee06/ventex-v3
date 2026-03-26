@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 import {
   Shield, Users, Search, Plus, Trash2,
   Loader2, Mail, Phone, MessageCircle, Send,
-  Briefcase, MapPin, ChevronRight, X,
+  Briefcase, MapPin, ChevronRight, X, Copy, Check, Link2,
   Linkedin, Edit2, UserCircle, Camera, ArrowUp, ArrowDown, GripVertical,
 } from "lucide-react";
 import {
@@ -71,6 +71,8 @@ export default function AtlasTeam() {
   const [newLinkedin, setNewLinkedin] = useState("");
   const [newLocation, setNewLocation] = useState("");
   const [newSystemRole, setNewSystemRole] = useState<string>("partner");
+  const [lastInviteLink, setLastInviteLink] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   // Edit form state
   const [editName, setEditName] = useState("");
@@ -183,10 +185,17 @@ export default function AtlasTeam() {
   }, [liveStatusesQ.data]);
 
   const createMember = trpc.team.create.useMutation({
-    onSuccess: () => {
-      toast.success("ATLAS member added");
-      setAddOpen(false);
-      resetForm();
+    onSuccess: (data) => {
+      if (data.inviteToken) {
+        const link = `${window.location.origin}/accept-invite?token=${encodeURIComponent(data.inviteToken)}`;
+        setLastInviteLink(link);
+        setLinkCopied(false);
+        toast.success("ATLAS member added — invitation link ready to share");
+      } else {
+        toast.success("ATLAS member added");
+        setAddOpen(false);
+        resetForm();
+      }
       utils.team.listInternal.invalidate();
     },
     onError: (err) => toast.error(err.message),
@@ -662,6 +671,45 @@ export default function AtlasTeam() {
                     {drawerMember.invitationStatus === "accepted" && `${drawerMember.email} has system access`}
                     {drawerMember.invitationStatus === "expired" && `Invitation to ${drawerMember.email} has expired — resend to renew`}
                   </p>
+                  {drawerMember.invitationStatus === "pending" && drawerMember.invitationId && (
+                    <div className="mt-2 pt-2 border-t border-amber-500/10">
+                      <p className="text-[10px] text-muted-foreground mb-1.5">Share this link with {drawerMember.name}:</p>
+                      <div className="flex items-center gap-1.5">
+                        <Input
+                          readOnly
+                          value={`${window.location.origin}/accept-invite?token=pending`}
+                          className="h-6 text-[9px] font-mono bg-background/50 flex-1"
+                          onClick={(e) => {
+                            // Fetch the actual token when clicked
+                            (e.target as HTMLInputElement).select();
+                          }}
+                        />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-6 px-1.5 text-[9px] gap-1 shrink-0"
+                          onClick={() => {
+                            // Use the resend mutation which returns a new token
+                            resendInvitation.mutate(
+                              { memberId: drawerMember.id, origin: window.location.origin },
+                              {
+                                onSuccess: (data: any) => {
+                                  if (data.inviteToken) {
+                                    const link = `${window.location.origin}/accept-invite?token=${encodeURIComponent(data.inviteToken)}`;
+                                    navigator.clipboard.writeText(link);
+                                    toast.success("Fresh invite link copied to clipboard");
+                                  }
+                                },
+                              }
+                            );
+                          }}
+                        >
+                          <Copy className="size-2.5" />
+                          Copy Link
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -922,12 +970,53 @@ export default function AtlasTeam() {
               <Textarea value={newNotes} onChange={e => setNewNotes(e.target.value)} className="text-xs mt-1 min-h-[60px]" placeholder="Internal notes..." />
             </div>
           </div>
+          {/* ── Invite Link Display (shown after successful creation) ── */}
+          {lastInviteLink && (
+            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <Link2 className="size-3.5 text-emerald-400" />
+                <span className="text-[11px] font-semibold text-emerald-400">Invitation Link Ready</span>
+              </div>
+              <p className="text-[10px] text-muted-foreground">Copy this link and send it to the invitee so they can accept and create their account.</p>
+              <div className="flex items-center gap-2">
+                <Input
+                  readOnly
+                  value={lastInviteLink}
+                  className="h-7 text-[10px] font-mono bg-background/50 flex-1"
+                  onClick={(e) => (e.target as HTMLInputElement).select()}
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 px-2 text-[10px] gap-1 shrink-0"
+                  onClick={() => {
+                    navigator.clipboard.writeText(lastInviteLink);
+                    setLinkCopied(true);
+                    toast.success("Invite link copied to clipboard");
+                    setTimeout(() => setLinkCopied(false), 2000);
+                  }}
+                >
+                  {linkCopied ? <Check className="size-3 text-emerald-400" /> : <Copy className="size-3" />}
+                  {linkCopied ? "Copied" : "Copy"}
+                </Button>
+              </div>
+            </div>
+          )}
+
           <DialogFooter>
-            <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => setAddOpen(false)}>Cancel</Button>
-            <Button size="sm" className="text-xs h-8 gap-1.5" onClick={handleAdd} disabled={createMember.isPending}>
-              {createMember.isPending ? <Loader2 className="size-3 animate-spin" /> : <Plus className="size-3" />}
-              Add Member
-            </Button>
+            {lastInviteLink ? (
+              <Button size="sm" className="text-xs h-8" onClick={() => { setAddOpen(false); resetForm(); setLastInviteLink(null); }}>
+                Done
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => setAddOpen(false)}>Cancel</Button>
+                <Button size="sm" className="text-xs h-8 gap-1.5" onClick={handleAdd} disabled={createMember.isPending}>
+                  {createMember.isPending ? <Loader2 className="size-3 animate-spin" /> : <Plus className="size-3" />}
+                  Add Member
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
