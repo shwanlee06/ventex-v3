@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, email, organizationId, inviteRole, inviteStatus, teamMemberId, invitedByName, expiresAt FROM invitations WHERE email = 'hanna1@gmail.com' AND inviteStatus = 'pending';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, email, organizationId, inviteRole, inviteStatus, teamMemberId, invitedByName, expiresAt FROM invitations WHERE email = 'hanna1@gmail.com' AND inviteStatus = 'pending';",
+  "rows": [
+    {
+      "id": "60007",
+      "email": "hanna1@gmail.com",
+      "organizationId": "2",
+      "inviteRole": "client",
+      "inviteStatus": "pending",
+      "teamMemberId": "12",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-25 14:59:08"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\torganizationId\tinviteRole\tinviteStatus\tteamMemberId\tinvitedByName\texpiresAt\n60007\thanna1@gmail.com\t2\tclient\tpending\t12\tShwan lee\t2026-04-25 14:59:08\n",
+  "stderr": "",
+  "execution_time_ms": 346
+}

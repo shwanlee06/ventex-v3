@@ -1,0 +1,21 @@
+{
+  "query": "SELECT id, name, email, type, systemRole, invitationStatus, adminStatus, userId, organizationId FROM team_members WHERE name LIKE '%Najib%' OR name LIKE '%najib%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, email, type, systemRole, invitationStatus, adminStatus, userId, organizationId FROM team_members WHERE name LIKE '%Najib%' OR name LIKE '%najib%';",
+  "rows": [
+    {
+      "id": "12",
+      "name": "Najib",
+      "email": "NULL",
+      "type": "Advisor",
+      "systemRole": "NULL",
+      "invitationStatus": "NULL",
+      "adminStatus": "active",
+      "userId": "NULL",
+      "organizationId": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\ttype\tsystemRole\tinvitationStatus\tadminStatus\tuserId\torganizationId\n12\tNajib\tNULL\tAdvisor\tNULL\tNULL\tactive\tNULL\t2\n",
+  "stderr": "",
+  "execution_time_ms": 374
+}

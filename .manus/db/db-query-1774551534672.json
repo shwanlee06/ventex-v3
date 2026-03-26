@@ -1,0 +1,30 @@
+{
+  "query": "SELECT id, name, role FROM users ORDER BY id LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, role FROM users ORDER BY id LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Shwan lee",
+      "role": "admin"
+    },
+    {
+      "id": "390151",
+      "name": "Jason Yu",
+      "role": "user"
+    },
+    {
+      "id": "750035",
+      "name": "Brian Chen",
+      "role": "admin"
+    },
+    {
+      "id": "840001",
+      "name": "Christopher Phelps",
+      "role": "partner"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\trole\n1\tShwan lee\tadmin\n390151\tJason Yu\tuser\n750035\tBrian Chen\tadmin\n840001\tChristopher Phelps\tpartner\n",
+  "stderr": "",
+  "execution_time_ms": 470
+}

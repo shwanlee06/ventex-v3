@@ -1003,3 +1003,11 @@
 - [x] Added "last active" timestamps in expanded widget (Active now, Active 1m ago, Never connected)
 - [x] Ensure dashboard widget shows accurate active/idle/offline states
 - [x] Verified with real data: Shwan Lee (Active now), Chris Phelps (Active 1m ago), Brian Chen (Never connected)
+
+## Enable Najib to Log In on Royalton Client Side
+- [x] Investigate Najib's records in the database (team member ID 12, org ID 2 Royalton, type Advisor)
+- [x] Set Najib's email to hanna1@gmail.com and systemRole to client
+- [x] Create invitation (ID 60007) with token, linked to team member, expires 2026-04-25
+- [x] Verify validate-token endpoint returns correct data (CLIENT ACCESS, Royalton Venture Holding)
+- [x] Verify accept-invite page renders correctly with invitation card and ACCEPT & SIGN IN button
+- [x] Invite link ready: /accept-invite?token=gos3p0Anx4G4A2pakSi6Ufq9ULueF_RUtovK47lyyj1Oy0kR7x04WSVySgSDhbHw
