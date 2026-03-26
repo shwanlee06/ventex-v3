@@ -22,6 +22,7 @@ export const ROLE_HIERARCHY: Record<string, number> = {
   viewer: 10,
   client: 20,
   user: 30,
+  partner: 35,
   manager: 40,
   admin: 50,
   owner: 60,
@@ -49,6 +50,11 @@ const PERMISSION_MATRIX: Record<string, Set<Action>> = {
   viewer: new Set<Action>(["read"]),
   client: new Set<Action>(["read"]),
   user: new Set<Action>(["read", "create", "update", "process_documents"]),
+  partner: new Set<Action>([
+    "read", "create", "update",
+    "process_documents", "export_data",
+    "view_audit_log",
+  ]),
   manager: new Set<Action>([
     "read", "create", "update", "delete",
     "manage_team", "process_documents", "manage_spvs",
@@ -74,7 +80,7 @@ const PERMISSION_MATRIX: Record<string, Set<Action>> = {
  * ATLAS team sees everything; clients see only their org's data.
  */
 export function isAtlasTeam(user: { role: string }): boolean {
-  return user.role === "owner" || user.role === "admin";
+  return user.role === "owner" || user.role === "admin" || user.role === "partner";
 }
 
 /**

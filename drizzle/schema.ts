@@ -7,7 +7,7 @@ export const users = mysqlTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["viewer", "client", "user", "manager", "admin", "owner"]).default("user").notNull(),
+  role: mysqlEnum("role", ["viewer", "client", "user", "partner", "manager", "admin", "owner"]).default("user").notNull(),
   organizationId: int("organizationId"),
   status: mysqlEnum("userStatus", ["active", "pending", "suspended", "blocked"]).default("active").notNull(),
   invitationId: int("invitationId"),
@@ -124,6 +124,8 @@ export const teamMembers = mysqlTable("team_members", {
   linkedin: varchar("linkedin", { length: 255 }),
   location: varchar("location", { length: 128 }),
   photoUrl: text("photoUrl"),
+  avatarUrl: text("avatarUrl"),  // S3 URL for profile photo
+  sortOrder: int("sortOrder").default(100),  // custom sort order (lower = higher in list)
   userId: int("userId"),  // link to users table for login-based status tracking
   lastSeenAt: timestamp("lastSeenAt"),  // updated by heartbeat or manual activity
   adminStatus: varchar("adminStatus", { length: 32 }).default("active"),  // admin-set: active, on_leave, deactivated

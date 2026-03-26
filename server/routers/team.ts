@@ -1,11 +1,12 @@
 import { z } from "zod";
-import { publicProcedure, protectedProcedure, router, adminProcedure } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, router, adminProcedure, partnerProcedure } from "../_core/trpc";
 import { getDb } from "../db";
 import { teamMembers, activityLog, ventureTeam, ventures, organizations, users } from "../../drizzle/schema";
-import { eq, desc, inArray, isNull, isNotNull, and, sql } from "drizzle-orm";
+import { eq, desc, asc, inArray, isNull, isNotNull, and, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { resolveVentureScope, getVentureIdsForOrg } from "../security/rbac";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
+import { storagePut } from "../storage";
 
 /**
  * Calculate live status from lastSeenAt timestamp and adminStatus.
@@ -87,18 +88,10 @@ export const teamRouter = router({
   listInternal: publicProcedure.query(async () => {
     const db = await getDb();
     if (!db) return [];
-    // Sort by role hierarchy: Founder/CEO first, then Partners, then others, then alphabetical
+    // Sort by custom sortOrder (lower = higher in list), then by name
     return db.select().from(teamMembers)
       .where(eq(teamMembers.type, "Internal"))
-      .orderBy(
-        sql`CASE
-          WHEN ${teamMembers.role} LIKE '%Founder%' OR ${teamMembers.role} LIKE '%CEO%' THEN 1
-          WHEN ${teamMembers.role} LIKE '%Partner%' THEN 2
-          WHEN ${teamMembers.role} LIKE '%Director%' OR ${teamMembers.role} LIKE '%VP%' THEN 3
-          ELSE 4
-        END`,
-        teamMembers.name
-      );
+      .orderBy(asc(teamMembers.sortOrder), teamMembers.name);
   }),
 
   /**
@@ -272,6 +265,8 @@ export const teamRouter = router({
     whatsapp: z.string().optional(),
     linkedin: z.string().optional(),
     location: z.string().optional(),
+    avatarUrl: z.string().nullable().optional(),
+    sortOrder: z.number().optional(),
   })).mutation(async ({ input }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
@@ -400,5 +395,54 @@ export const teamRouter = router({
     });
 
     return { success: true, name: member.name };
+  }),
+
+  /**
+   * Reorder team members — accepts an array of { id, sortOrder } pairs.
+   * Admin only.
+   */
+  reorder: adminProcedure.input(z.object({
+    items: z.array(z.object({
+      id: z.number(),
+      sortOrder: z.number(),
+    })),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    for (const item of input.items) {
+      await db.update(teamMembers)
+        .set({ sortOrder: item.sortOrder })
+        .where(eq(teamMembers.id, item.id));
+    }
+    return { success: true };
+  }),
+
+  /**
+   * Upload avatar for a team member.
+   * Accepts base64-encoded image data, uploads to S3, saves URL.
+   */
+  uploadAvatar: adminProcedure.input(z.object({
+    memberId: z.number(),
+    base64: z.string(),
+    mimeType: z.string().default("image/png"),
+    filename: z.string().default("avatar.png"),
+  })).mutation(async ({ input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+
+    // Decode base64 to buffer
+    const buffer = Buffer.from(input.base64, "base64");
+
+    // Upload to S3 with unique key
+    const ext = input.filename.split(".").pop() || "png";
+    const fileKey = `avatars/member-${input.memberId}-${nanoid(8)}.${ext}`;
+    const { url } = await storagePut(fileKey, buffer, input.mimeType);
+
+    // Save URL to team member
+    await db.update(teamMembers)
+      .set({ avatarUrl: url })
+      .where(eq(teamMembers.id, input.memberId));
+
+    return { success: true, avatarUrl: url };
   }),
 });

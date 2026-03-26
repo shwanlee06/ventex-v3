@@ -12,7 +12,7 @@ import {
   Shield, Users, Search, Plus, Trash2,
   Loader2, Mail, Phone, MessageCircle, Send,
   Briefcase, MapPin, ChevronRight, X,
-  Linkedin, Edit2, UserCircle,
+  Linkedin, Edit2, UserCircle, Camera, ArrowUp, ArrowDown, GripVertical,
 } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -38,7 +38,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import LiveStatusDot from "@/components/LiveStatusDot";
 import type { LiveStatus } from "@/components/LiveStatusDot";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 
@@ -88,6 +88,72 @@ export default function AtlasTeam() {
   const ventureAssignmentsQ = trpc.team.ventureAssignments.useQuery();
   const liveStatusesQ = trpc.team.liveStatuses.useQuery(undefined, { refetchInterval: 30000 }); // poll every 30s
   const utils = trpc.useUtils();
+
+  const uploadAvatar = trpc.team.uploadAvatar.useMutation({
+    onSuccess: (data) => {
+      toast.success("Avatar uploaded");
+      utils.team.listInternal.invalidate();
+      if (drawerMember) {
+        setDrawerMember({ ...drawerMember, avatarUrl: data.avatarUrl });
+      }
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const reorderMembers = trpc.team.reorder.useMutation({
+    onSuccess: () => {
+      utils.team.listInternal.invalidate();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !drawerMember) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(",")[1];
+      uploadAvatar.mutate({
+        memberId: drawerMember.id,
+        base64,
+        mimeType: file.type,
+        filename: file.name,
+      });
+    };
+    reader.readAsDataURL(file);
+    // Reset input so same file can be re-selected
+    e.target.value = "";
+  }, [drawerMember, uploadAvatar]);
+
+  const handleMoveUp = useCallback((memberId: number) => {
+    const all = atlasTeamQ.data || [];
+    const idx = all.findIndex(m => m.id === memberId);
+    if (idx <= 0) return;
+    const items = all.map((m, i) => ({ id: m.id, sortOrder: i * 10 }));
+    // Swap
+    const temp = items[idx].sortOrder;
+    items[idx].sortOrder = items[idx - 1].sortOrder;
+    items[idx - 1].sortOrder = temp;
+    reorderMembers.mutate({ items });
+  }, [atlasTeamQ.data, reorderMembers]);
+
+  const handleMoveDown = useCallback((memberId: number) => {
+    const all = atlasTeamQ.data || [];
+    const idx = all.findIndex(m => m.id === memberId);
+    if (idx < 0 || idx >= all.length - 1) return;
+    const items = all.map((m, i) => ({ id: m.id, sortOrder: i * 10 }));
+    // Swap
+    const temp = items[idx].sortOrder;
+    items[idx].sortOrder = items[idx + 1].sortOrder;
+    items[idx + 1].sortOrder = temp;
+    reorderMembers.mutate({ items });
+  }, [atlasTeamQ.data, reorderMembers]);
 
   const setAdminStatus = trpc.team.setAdminStatus.useMutation({
     onSuccess: () => {
@@ -351,11 +417,19 @@ export default function AtlasTeam() {
                       >
                         <TableCell>
                           <div className="flex items-center gap-2.5">
-                            <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-[11px] font-semibold text-primary">
-                                {member.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
-                              </span>
-                            </div>
+                            {member.avatarUrl ? (
+                              <img
+                                src={member.avatarUrl}
+                                alt={member.name}
+                                className="size-8 rounded-full object-cover flex-shrink-0"
+                              />
+                            ) : (
+                              <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <span className="text-[11px] font-semibold text-primary">
+                                  {member.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
                             <div>
                               <span className="text-xs font-medium text-foreground block">{member.name}</span>
                               {member.location && (
@@ -439,10 +513,38 @@ export default function AtlasTeam() {
           <SheetHeader className="pb-4 border-b border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-sm font-semibold text-primary">
-                    {drawerMember?.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
-                  </span>
+                <div className="relative group/avatar">
+                  {drawerMember?.avatarUrl ? (
+                    <img
+                      src={drawerMember.avatarUrl}
+                      alt={drawerMember.name}
+                      className="size-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-sm font-semibold text-primary">
+                        {drawerMember?.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                  <button
+                    onClick={() => avatarInputRef.current?.click()}
+                    className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer"
+                    title="Upload photo"
+                  >
+                    {uploadAvatar.isPending ? (
+                      <Loader2 className="size-4 text-white animate-spin" />
+                    ) : (
+                      <Camera className="size-4 text-white" />
+                    )}
+                  </button>
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarUpload}
+                  />
                 </div>
                 <div>
                   <SheetTitle className="text-sm font-semibold text-foreground">{drawerMember?.name}</SheetTitle>
@@ -450,6 +552,22 @@ export default function AtlasTeam() {
                     {drawerMember?.role || "ATLAS Member"} · {drawerMember?.memberFunction || "—"}
                   </SheetDescription>
                 </div>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <button
+                  onClick={(e) => { e.stopPropagation(); if (drawerMember) handleMoveUp(drawerMember.id); }}
+                  className="p-1 rounded hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"
+                  title="Move up"
+                >
+                  <ArrowUp className="size-3.5" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); if (drawerMember) handleMoveDown(drawerMember.id); }}
+                  className="p-1 rounded hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"
+                  title="Move down"
+                >
+                  <ArrowDown className="size-3.5" />
+                </button>
               </div>
             </div>
           </SheetHeader>

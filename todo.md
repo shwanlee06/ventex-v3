@@ -904,3 +904,28 @@
 ## Fix: ATLAS Team Sort Order
 - [x] Investigate why Brian Chen appears at top of ATLAS Team page
 - [x] Fix sort order so Shwan Lee (Founder & CEO) appears first, then by role hierarchy
+
+## Feature: Custom Sort Order for Team Members
+- [x] Add `sortOrder` integer column to team_members schema
+- [x] Run db:push migration
+- [x] Set initial sortOrder values (Shwan=1, Brian=2, Chris=3, etc.)
+- [x] Update listInternal to sort by sortOrder ascending
+- [x] Add `team.reorder` mutation for batch reordering
+- [x] Frontend: Add up/down arrows in member detail drawer for reordering
+- [x] Tests: 4 vitest tests for reorder and sortOrder
+
+## Feature: Team Member Profile Photos
+- [x] Add `avatarUrl` text column to team_members schema
+- [x] Run db:push migration
+- [x] Add `team.uploadAvatar` mutation (accepts base64, uploads to S3, saves URL)
+- [x] Frontend: Display avatar images instead of initials in table and drawer
+- [x] Frontend: Add avatar upload overlay (camera icon on hover) in member drawer
+- [x] Tests: 3 vitest tests for avatar upload and avatarUrl management
+
+## Feature: Partner Role-Based Access
+- [x] Add 'partner' to user role enum in schema (db:push migrated)
+- [x] Create partnerProcedure middleware (partner + admin + owner)
+- [x] Update RBAC: partner in hierarchy (35), isAtlasTeam includes partner, partner permissions (read, create, update, process_documents, export_data, view_audit_log)
+- [ ] Link Brian Chen and Chris Phelps team_members to user accounts when they log in (requires them to sign up first)
+- [ ] Frontend: Show partner-specific navigation (deferred — requires partner users to exist)
+- [x] Tests: 14 vitest tests for partner access control — all passing
