@@ -23,7 +23,7 @@ interface TopbarProps {
 }
 
 function isAtlasRole(role?: string): boolean {
-  return role === "owner" || role === "admin";
+  return role === "owner" || role === "admin" || role === "partner";
 }
 
 export default function Topbar({ title, subtitle }: TopbarProps) {
@@ -50,6 +50,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
     if (!user?.role) return "";
     if (user.role === "owner") return "Platform Admin";
     if (user.role === "admin") return "ATLAS Operator";
+    if (user.role === "partner") return "ATLAS Partner";
     return user.role.charAt(0).toUpperCase() + user.role.slice(1);
   }, [user?.role, isPreviewMode]);
 

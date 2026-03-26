@@ -1019,3 +1019,11 @@
 - [x] Mark invitation 60008 as accepted
 - [x] Fix OAuth callback: existing users with no org now auto-accept pending invitations on login
 - [x] All 293 tests passing
+
+## Fix: ATLAS Members Seeing Client Portal Instead of Command Center
+- [x] Investigate: Home.tsx isAtlas only checked owner/admin, missing partner role
+- [x] Investigate: Topbar.tsx isAtlasRole only checked owner/admin, missing partner role
+- [x] Fix Home.tsx: added partner to isAtlas check → partners see AtlasDashboard
+- [x] Fix Topbar.tsx: added partner to isAtlasRole → partners see Preview toggle, Settings, ATLAS Partner label
+- [x] Verified: App.tsx and AppSidebar.tsx already included partner (from earlier fix)
+- [x] All 293 tests passing
