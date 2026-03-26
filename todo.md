@@ -929,3 +929,16 @@
 - [ ] Link Brian Chen and Chris Phelps team_members to user accounts when they log in (requires them to sign up first)
 - [ ] Frontend: Show partner-specific navigation (deferred — requires partner users to exist)
 - [x] Tests: 14 vitest tests for partner access control — all passing
+
+## Feature: Team Member Invitation System
+- [x] Add `teamMemberId` to invitations table, `invitationStatus`/`invitationId`/`systemRole` to team_members, `partner` to inviteRole enum
+- [x] Run db:push migration
+- [x] Update `team.create` to auto-send invitation when email is provided (creates invitation record with token)
+- [x] Add `team.resendInvitation` mutation — revokes old invitation, creates new one
+- [x] Add `team.getInvitationStatus` query — returns invitation details for a member
+- [ ] Add `team.acceptInvitation` endpoint — validates token, creates/links user account with correct role (deferred — requires OAuth callback integration)
+- [ ] Add invitation acceptance page on frontend (deferred — requires acceptInvitation endpoint)
+- [x] Frontend: Add system role selector to Add Member dialog (partner, admin, manager, user, viewer) — shown when email is entered
+- [x] Frontend: Show invitation status badges on team member table rows (Invited/Active/Expired + system role)
+- [x] Frontend: Add "Resend" / "Invite" button in member drawer with invitation status card
+- [x] Tests: 8 vitest tests for invitation flow — create with email, auto-send, resend, revoke old, status query — all 276 passing

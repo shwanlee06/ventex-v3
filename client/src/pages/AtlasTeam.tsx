@@ -70,6 +70,7 @@ export default function AtlasTeam() {
   const [newWhatsapp, setNewWhatsapp] = useState("");
   const [newLinkedin, setNewLinkedin] = useState("");
   const [newLocation, setNewLocation] = useState("");
+  const [newSystemRole, setNewSystemRole] = useState<string>("partner");
 
   // Edit form state
   const [editName, setEditName] = useState("");
@@ -102,6 +103,14 @@ export default function AtlasTeam() {
 
   const reorderMembers = trpc.team.reorder.useMutation({
     onSuccess: () => {
+      utils.team.listInternal.invalidate();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const resendInvitation = trpc.team.resendInvitation.useMutation({
+    onSuccess: () => {
+      toast.success("Invitation resent");
       utils.team.listInternal.invalidate();
     },
     onError: (err) => toast.error(err.message),
@@ -211,6 +220,7 @@ export default function AtlasTeam() {
     setNewName(""); setNewRole(""); setNewFunc("Operations");
     setNewNotes(""); setNewEmail(""); setNewPhone("");
     setNewTelegram(""); setNewWhatsapp(""); setNewLinkedin(""); setNewLocation("");
+    setNewSystemRole("partner");
   }
 
   function handleAdd() {
@@ -229,6 +239,8 @@ export default function AtlasTeam() {
       whatsapp: newWhatsapp.trim() || undefined,
       linkedin: newLinkedin.trim() || undefined,
       location: newLocation.trim() || undefined,
+      systemRole: newEmail.trim() ? (newSystemRole as any) : undefined,
+      origin: window.location.origin,
     });
   }
 
@@ -431,7 +443,21 @@ export default function AtlasTeam() {
                               </div>
                             )}
                             <div>
-                              <span className="text-xs font-medium text-foreground block">{member.name}</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-medium text-foreground">{member.name}</span>
+                                {member.invitationStatus === "pending" && (
+                                  <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-amber-500/30 text-amber-400 bg-amber-500/10">Invited</Badge>
+                                )}
+                                {member.invitationStatus === "accepted" && (
+                                  <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-emerald-500/30 text-emerald-400 bg-emerald-500/10">Active</Badge>
+                                )}
+                                {member.invitationStatus === "expired" && (
+                                  <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-red-500/30 text-red-400 bg-red-500/10">Expired</Badge>
+                                )}
+                                {member.systemRole && (
+                                  <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/30 text-primary/70">{member.systemRole}</Badge>
+                                )}
+                              </div>
                               {member.location && (
                                 <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
                                   <MapPin className="size-2.5" />{member.location}
@@ -580,6 +606,18 @@ export default function AtlasTeam() {
                   <Edit2 className="size-3" />
                   Edit
                 </Button>
+                {drawerMember.email && drawerMember.invitationStatus !== "accepted" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-8 gap-1.5 text-primary hover:text-primary/80 border-primary/20"
+                    onClick={() => resendInvitation.mutate({ memberId: drawerMember.id, origin: window.location.origin })}
+                    disabled={resendInvitation.isPending}
+                  >
+                    {resendInvitation.isPending ? <Loader2 className="size-3 animate-spin" /> : <Send className="size-3" />}
+                    {drawerMember.invitationStatus === "pending" ? "Resend" : "Invite"}
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -590,6 +628,42 @@ export default function AtlasTeam() {
                   Remove
                 </Button>
               </div>
+
+              {/* Invitation Status */}
+              {drawerMember.invitationStatus && (
+                <div className={cn(
+                  "rounded-lg p-3 border",
+                  drawerMember.invitationStatus === "pending" && "bg-amber-500/5 border-amber-500/20",
+                  drawerMember.invitationStatus === "accepted" && "bg-emerald-500/5 border-emerald-500/20",
+                  drawerMember.invitationStatus === "expired" && "bg-red-500/5 border-red-500/20",
+                )}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Send className={cn(
+                        "size-3.5",
+                        drawerMember.invitationStatus === "pending" && "text-amber-400",
+                        drawerMember.invitationStatus === "accepted" && "text-emerald-400",
+                        drawerMember.invitationStatus === "expired" && "text-red-400",
+                      )} />
+                      <span className="text-xs font-medium text-foreground">
+                        {drawerMember.invitationStatus === "pending" && "Invitation Pending"}
+                        {drawerMember.invitationStatus === "accepted" && "Invitation Accepted"}
+                        {drawerMember.invitationStatus === "expired" && "Invitation Expired"}
+                      </span>
+                    </div>
+                    {drawerMember.systemRole && (
+                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/30 text-primary/70">
+                        {drawerMember.systemRole}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {drawerMember.invitationStatus === "pending" && `Waiting for ${drawerMember.email} to accept`}
+                    {drawerMember.invitationStatus === "accepted" && `${drawerMember.email} has system access`}
+                    {drawerMember.invitationStatus === "expired" && `Invitation to ${drawerMember.email} has expired — resend to renew`}
+                  </p>
+                </div>
+              )}
 
               {/* Status */}
               <div className="bg-secondary/30 rounded-lg p-3 space-y-2">
@@ -800,13 +874,35 @@ export default function AtlasTeam() {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label className="text-xs text-muted-foreground">Email</Label>
-                <Input value={newEmail} onChange={e => setNewEmail(e.target.value)} className="h-8 text-xs mt-1" />
+                <Input value={newEmail} onChange={e => setNewEmail(e.target.value)} className="h-8 text-xs mt-1" placeholder="name@company.com" />
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Phone</Label>
                 <Input value={newPhone} onChange={e => setNewPhone(e.target.value)} className="h-8 text-xs mt-1" />
               </div>
             </div>
+            {newEmail.trim() && (
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Send className="size-3 text-primary" />
+                  <span className="text-[11px] font-medium text-primary">Invitation will be sent to {newEmail.trim()}</span>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">System Access Role</Label>
+                  <Select value={newSystemRole} onValueChange={setNewSystemRole}>
+                    <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="partner">Partner</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="viewer">Viewer</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[10px] text-muted-foreground mt-1">This sets the access level when they accept the invitation</p>
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label className="text-xs text-muted-foreground">Telegram</Label>

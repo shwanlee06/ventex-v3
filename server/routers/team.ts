@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { publicProcedure, protectedProcedure, router, adminProcedure, partnerProcedure } from "../_core/trpc";
 import { getDb } from "../db";
-import { teamMembers, activityLog, ventureTeam, ventures, organizations, users } from "../../drizzle/schema";
+import { teamMembers, activityLog, ventureTeam, ventures, organizations, users, invitations } from "../../drizzle/schema";
+import crypto from "crypto";
 import { eq, desc, asc, inArray, isNull, isNotNull, and, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { resolveVentureScope, getVentureIdsForOrg } from "../security/rbac";
@@ -159,20 +160,71 @@ export const teamRouter = router({
     whatsapp: z.string().optional(),
     linkedin: z.string().optional(),
     location: z.string().optional(),
-  })).mutation(async ({ input }) => {
+    systemRole: z.enum(["admin", "partner", "manager", "user", "viewer", "client"]).optional(),
+    origin: z.string().optional(), // frontend origin for building invite link
+  })).mutation(async ({ ctx, input }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const slug = slugify(input.name) + "-" + nanoid(4);
-    const { organizationId, ...rest } = input;
-    await db.insert(teamMembers).values({
+    const { organizationId, systemRole, origin, ...rest } = input;
+
+    // Determine invitation status
+    const hasEmail = !!input.email?.trim();
+    const invitationStatus = hasEmail ? "pending" : null;
+
+    const [insertResult] = await db.insert(teamMembers).values({
       ...rest,
       organizationId: organizationId ?? null,
+      systemRole: systemRole ?? null,
+      invitationStatus,
       slug,
     });
+
+    const memberId = insertResult.insertId;
+
+    // Auto-send invitation if email is provided
+    let inviteToken: string | null = null;
+    if (hasEmail && input.email) {
+      try {
+        const token = crypto.randomBytes(48).toString("base64url");
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 30); // 30 day expiry
+
+        // Use ATLAS org (id=1) for internal members, or the member's org
+        const inviteOrgId = organizationId ?? 1;
+        const inviteRole = systemRole ?? "user";
+
+        await db.insert(invitations).values({
+          email: input.email.trim().toLowerCase(),
+          organizationId: inviteOrgId,
+          role: inviteRole as any,
+          token,
+          teamMemberId: memberId,
+          invitedBy: ctx.user.id,
+          invitedByName: ctx.user.name ?? "Admin",
+          expiresAt,
+        });
+
+        // Update team member with invitation link
+        const [inv] = await db.select({ id: invitations.id })
+          .from(invitations).where(eq(invitations.token, token)).limit(1);
+        if (inv) {
+          await db.update(teamMembers)
+            .set({ invitationId: inv.id })
+            .where(eq(teamMembers.id, memberId));
+        }
+
+        inviteToken = token;
+      } catch (err) {
+        console.error("[Team] Failed to create invitation:", err);
+        // Don't fail the member creation if invitation fails
+      }
+    }
+
     await db.insert(activityLog).values({
       entityType: "team", entityName: input.name, action: "Member Added",
-      detail: `${input.name} added as ${input.role || input.type}${organizationId ? ` (client contact)` : ` (ATLAS internal)`}`,
-      userName: "System",
+      detail: `${input.name} added as ${input.role || input.type}${organizationId ? ` (client contact)` : ` (ATLAS internal)`}${hasEmail ? ` — invitation sent to ${input.email}` : ""}`,
+      userName: ctx.user.name ?? "System",
       activitySource: "atlas_ops",
     });
 
@@ -180,14 +232,15 @@ export const teamRouter = router({
       type: NOTIF_TYPES.TEAM_MEMBER_ADDED,
       category: "info",
       title: `New Team Member: ${input.name}`,
-      message: `${input.name} added as ${input.role || input.type}`,
+      message: `${input.name} added as ${input.role || input.type}${hasEmail ? `. Invitation sent to ${input.email}` : ""}`,
       entityType: "team",
       entityName: input.name,
       link: organizationId ? "/team" : "/atlas-team",
-      actorName: "System",
+      actorName: ctx.user.name ?? "System",
       organizationId: organizationId || undefined,
     });
-    return { success: true };
+
+    return { success: true, memberId, inviteToken, invitationSent: hasEmail };
   }),
 
   // Venture team assignments — optionally scoped by org
@@ -444,5 +497,106 @@ export const teamRouter = router({
       .where(eq(teamMembers.id, input.memberId));
 
     return { success: true, avatarUrl: url };
+  }),
+
+  /**
+   * Resend invitation to a team member.
+   * Revokes old invitation and creates a new one.
+   */
+  resendInvitation: adminProcedure.input(z.object({
+    memberId: z.number(),
+    origin: z.string().optional(),
+  })).mutation(async ({ ctx, input }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+
+    // Get the team member
+    const [member] = await db.select().from(teamMembers)
+      .where(eq(teamMembers.id, input.memberId)).limit(1);
+    if (!member) throw new Error("Team member not found");
+    if (!member.email) throw new Error("Team member has no email address");
+
+    // Revoke any existing pending invitations for this member
+    if (member.invitationId) {
+      await db.update(invitations)
+        .set({ status: "revoked" })
+        .where(and(
+          eq(invitations.id, member.invitationId),
+          eq(invitations.status, "pending")
+        ));
+    }
+    // Also revoke any pending invitations by email
+    await db.update(invitations)
+      .set({ status: "revoked" })
+      .where(and(
+        eq(invitations.email, member.email.toLowerCase()),
+        eq(invitations.status, "pending")
+      ));
+
+    // Create new invitation
+    const token = crypto.randomBytes(48).toString("base64url");
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30);
+
+    const inviteOrgId = member.organizationId ?? 1;
+    const inviteRole = (member.systemRole ?? "user") as any;
+
+    await db.insert(invitations).values({
+      email: member.email.toLowerCase(),
+      organizationId: inviteOrgId,
+      role: inviteRole,
+      token,
+      teamMemberId: member.id,
+      invitedBy: ctx.user.id,
+      invitedByName: ctx.user.name ?? "Admin",
+      expiresAt,
+    });
+
+    // Update team member
+    const [inv] = await db.select({ id: invitations.id })
+      .from(invitations).where(eq(invitations.token, token)).limit(1);
+    if (inv) {
+      await db.update(teamMembers)
+        .set({ invitationId: inv.id, invitationStatus: "pending" })
+        .where(eq(teamMembers.id, member.id));
+    }
+
+    await db.insert(activityLog).values({
+      entityType: "team", entityName: member.name, action: "Invitation Resent",
+      detail: `Invitation resent to ${member.email}`,
+      userName: ctx.user.name ?? "System",
+      activitySource: "atlas_ops",
+    });
+
+    return { success: true, token };
+  }),
+
+  /**
+   * Get invitation status for a team member.
+   */
+  getInvitationStatus: adminProcedure.input(z.object({
+    memberId: z.number(),
+  })).query(async ({ input }) => {
+    const db = await getDb();
+    if (!db) return null;
+
+    const [member] = await db.select().from(teamMembers)
+      .where(eq(teamMembers.id, input.memberId)).limit(1);
+    if (!member || !member.invitationId) return null;
+
+    const [inv] = await db.select().from(invitations)
+      .where(eq(invitations.id, member.invitationId)).limit(1);
+    if (!inv) return null;
+
+    // Check if expired
+    const isExpired = inv.status === "pending" && new Date() > inv.expiresAt;
+    return {
+      status: isExpired ? "expired" : inv.status,
+      email: inv.email,
+      role: inv.role,
+      expiresAt: inv.expiresAt,
+      createdAt: inv.createdAt,
+      acceptedAt: inv.acceptedAt,
+    };
   }),
 });

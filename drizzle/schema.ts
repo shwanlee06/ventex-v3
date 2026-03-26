@@ -39,10 +39,11 @@ export const invitations = mysqlTable("invitations", {
   id: int("id").autoincrement().primaryKey(),
   email: varchar("email", { length: 320 }).notNull(),
   organizationId: int("organizationId").notNull(),
-  role: mysqlEnum("inviteRole", ["viewer", "client", "user", "manager", "admin"]).default("user").notNull(),
+  role: mysqlEnum("inviteRole", ["viewer", "client", "user", "partner", "manager", "admin"]).default("user").notNull(),
   token: varchar("token", { length: 128 }).notNull().unique(),
   status: mysqlEnum("inviteStatus", ["pending", "accepted", "expired", "revoked"]).default("pending").notNull(),
   ventureIds: json("ventureIds").$type<number[]>(),
+  teamMemberId: int("teamMemberId"),  // link back to team_members record
   invitedBy: int("invitedBy").notNull(),
   invitedByName: varchar("invitedByName", { length: 255 }),
   acceptedAt: timestamp("acceptedAt"),
@@ -126,6 +127,9 @@ export const teamMembers = mysqlTable("team_members", {
   photoUrl: text("photoUrl"),
   avatarUrl: text("avatarUrl"),  // S3 URL for profile photo
   sortOrder: int("sortOrder").default(100),  // custom sort order (lower = higher in list)
+  invitationStatus: varchar("invitationStatus", { length: 32 }),  // pending, accepted, expired, none
+  invitationId: int("invitationId"),  // link to invitations table
+  systemRole: varchar("systemRole", { length: 32 }),  // intended user role: admin, partner, user, etc.
   userId: int("userId"),  // link to users table for login-based status tracking
   lastSeenAt: timestamp("lastSeenAt"),  // updated by heartbeat or manual activity
   adminStatus: varchar("adminStatus", { length: 32 }).default("active"),  // admin-set: active, on_leave, deactivated
