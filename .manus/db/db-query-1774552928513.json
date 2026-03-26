@@ -1,0 +1,24 @@
+{
+  "query": "SELECT id, name, email, systemRole, organizationId, userId, invitationStatus, adminStatus FROM team_members WHERE name LIKE '%Jason%' OR name LIKE '%Yu%';\nSELECT id, name, slug, type, orgStatus FROM organizations ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, email, systemRole, organizationId, userId, invitationStatus, adminStatus FROM team_members WHERE name LIKE '%Jason%' OR name LIKE '%Yu%';\nSELECT id, name, slug, type, orgStatus FROM organizations ORDER BY id;",
+  "rows": [
+    {
+      "id": "90007",
+      "name": "Jason Yu",
+      "email": "Jason41659@gmail.com",
+      "systemRole": "partner",
+      "organizationId": "NULL",
+      "userId": "NULL",
+      "invitationStatus": "pending",
+      "adminStatus": "active"
+    }
+  ],
+  "messages": [
+    "id\tname\tslug\ttype\torgStatus",
+    "1\tATLAS\tatlas\tcore\tactive",
+    "2\tRoyalton Venture Holding\troyalton\tclient\tactive"
+  ],
+  "stdout": "id\tname\temail\tsystemRole\torganizationId\tuserId\tinvitationStatus\tadminStatus\n90007\tJason Yu\tJason41659@gmail.com\tpartner\tNULL\tNULL\tpending\tactive\nid\tname\tslug\ttype\torgStatus\n1\tATLAS\tatlas\tcore\tactive\n2\tRoyalton Venture Holding\troyalton\tclient\tactive\n",
+  "stderr": "",
+  "execution_time_ms": 445
+}

@@ -1011,3 +1011,11 @@
 - [x] Verify validate-token endpoint returns correct data (CLIENT ACCESS, Royalton Venture Holding)
 - [x] Verify accept-invite page renders correctly with invitation card and ACCEPT & SIGN IN button
 - [x] Invite link ready: /accept-invite?token=gos3p0Anx4G4A2pakSi6Ufq9ULueF_RUtovK47lyyj1Oy0kR7x04WSVySgSDhbHw
+
+## Fix Jason Yu — Should Be ATLAS Member, Not Client
+- [x] Investigate Jason Yu's records: user ID 390151 (role: user, org: NULL), team member ID 90007 (role: partner, org: NULL, userId: NULL)
+- [x] Fix user role to partner, set organizationId to 1 (ATLAS), link invitationId 60008
+- [x] Fix team member: link userId 390151, set organizationId to 1, mark invitation accepted
+- [x] Mark invitation 60008 as accepted
+- [x] Fix OAuth callback: existing users with no org now auto-accept pending invitations on login
+- [x] All 293 tests passing

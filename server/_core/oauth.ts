@@ -13,6 +13,46 @@ function getQueryParam(req: Request, key: string): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+/**
+ * Accept a pending invitation for a user — updates user record, invitation status,
+ * and team member linkage. Reusable for both new and existing users.
+ */
+async function acceptPendingInvitation(
+  database: NonNullable<Awaited<ReturnType<typeof getDb>>>,
+  userId: number,
+  pendingInvite: {
+    id: number;
+    organizationId: number;
+    role: string;
+    teamMemberId: number | null;
+  }
+) {
+  // Update user with organization, role, and invitation reference
+  await database
+    .update(users)
+    .set({
+      organizationId: pendingInvite.organizationId,
+      role: pendingInvite.role as any,
+      status: "active",
+      invitationId: pendingInvite.id,
+    })
+    .where(eq(users.id, userId));
+
+  // Mark invitation as accepted
+  await database
+    .update(invitations)
+    .set({ status: "accepted", acceptedAt: new Date() })
+    .where(eq(invitations.id, pendingInvite.id));
+
+  // If this invitation is linked to a team member, update their status and link user
+  if (pendingInvite.teamMemberId) {
+    await database
+      .update(teamMembers)
+      .set({ invitationStatus: "accepted", userId })
+      .where(eq(teamMembers.id, pendingInvite.teamMemberId));
+  }
+}
+
 export function registerOAuthRoutes(app: Express) {
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
     const code = getQueryParam(req, "code");
@@ -51,7 +91,7 @@ export function registerOAuthRoutes(app: Express) {
           return;
         }
 
-        // Active or pending user — update and proceed
+        // Active or pending user — update basic info
         await db.upsertUser({
           openId: userInfo.openId,
           name: userInfo.name || null,
@@ -59,6 +99,30 @@ export function registerOAuthRoutes(app: Express) {
           loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
           lastSignedIn: new Date(),
         });
+
+        // ── Check if existing user has a pending invitation to accept ──
+        // This handles the case where a user logged in before their invitation
+        // was created, or the invitation wasn't matched on first login.
+        if (!existingUser.organizationId && database) {
+          const email = (userInfo.email ?? existingUser.email ?? "").toLowerCase();
+          if (email) {
+            const [pendingInvite] = await database
+              .select()
+              .from(invitations)
+              .where(
+                and(
+                  eq(invitations.email, email),
+                  eq(invitations.status, "pending")
+                )
+              )
+              .limit(1);
+
+            if (pendingInvite && new Date() <= pendingInvite.expiresAt) {
+              await acceptPendingInvitation(database, existingUser.id, pendingInvite);
+              console.log(`[OAuth] Auto-accepted pending invitation for existing user ${existingUser.name} (${email})`);
+            }
+          }
+        }
       } else if (isOwner) {
         // Owner first login — auto-create with admin role
         await db.upsertUser({
@@ -105,8 +169,7 @@ export function registerOAuthRoutes(app: Express) {
           return;
         }
 
-        // ── Valid invitation — create user with pending status ──────────
-        // User will need to "accept" the invitation to get their API key
+        // ── Valid invitation — create user ──────────────────────────────
         await db.upsertUser({
           openId: userInfo.openId,
           name: userInfo.name || null,
@@ -116,31 +179,10 @@ export function registerOAuthRoutes(app: Express) {
           lastSignedIn: new Date(),
         });
 
-        // Update the user record with organization and invitation reference
+        // Accept the invitation for the new user
         const newUser = await db.getUserByOpenId(userInfo.openId);
         if (newUser && database) {
-          await database
-            .update(users)
-            .set({
-              organizationId: pendingInvite.organizationId,
-              status: "active",
-              invitationId: pendingInvite.id,
-            })
-            .where(eq(users.id, newUser.id));
-
-          // Mark invitation as accepted
-          await database
-            .update(invitations)
-            .set({ status: "accepted", acceptedAt: new Date() })
-            .where(eq(invitations.id, pendingInvite.id));
-
-          // If this invitation is linked to a team member, update their status and link user
-          if (pendingInvite.teamMemberId) {
-            await database
-              .update(teamMembers)
-              .set({ invitationStatus: "accepted", userId: newUser.id })
-              .where(eq(teamMembers.id, pendingInvite.teamMemberId));
-          }
+          await acceptPendingInvitation(database, newUser.id, pendingInvite);
         }
       } else {
         // No database — can't verify invitation
