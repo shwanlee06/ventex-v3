@@ -348,7 +348,7 @@ export default function AtlasTeam() {
                 transition={{ delay: 0.1 }}
                 className="bg-card border border-border rounded-lg p-3"
               >
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Online Now</span>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Active Now</span>
                 <div className="text-xl font-semibold text-emerald-400 font-mono mt-1">
                   {members.filter(m => statusMap.get(m.id)?.liveStatus === "online").length}
                 </div>

@@ -1,0 +1,26 @@
+{
+  "query": "SELECT id, name, userId, lastSeenAt, adminStatus, invitationStatus FROM team_members WHERE name LIKE '%Chris%' OR name LIKE '%Phelps%' OR userId IS NOT NULL ORDER BY lastSeenAt DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, userId, lastSeenAt, adminStatus, invitationStatus FROM team_members WHERE name LIKE '%Chris%' OR name LIKE '%Phelps%' OR userId IS NOT NULL ORDER BY lastSeenAt DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "60049",
+      "name": "Chris Phelps",
+      "userId": "840001",
+      "lastSeenAt": "2026-03-26 14:31:00",
+      "adminStatus": "active",
+      "invitationStatus": "accepted"
+    },
+    {
+      "id": "11",
+      "name": "Shwan Lee",
+      "userId": "1",
+      "lastSeenAt": "2026-03-26 14:30:27",
+      "adminStatus": "active",
+      "invitationStatus": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tuserId\tlastSeenAt\tadminStatus\tinvitationStatus\n60049\tChris Phelps\t840001\t2026-03-26 14:31:00\tactive\taccepted\n11\tShwan Lee\t1\t2026-03-26 14:30:27\tactive\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 440
+}

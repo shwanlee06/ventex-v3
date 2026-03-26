@@ -8,15 +8,15 @@ import {
 type LiveStatus = "online" | "away" | "offline" | "on_leave" | "deactivated";
 
 const STATUS_CONFIG: Record<LiveStatus, { color: string; pulse: boolean; label: string }> = {
-  online: { color: "bg-emerald-400", pulse: true, label: "Online" },
-  away: { color: "bg-amber-400", pulse: false, label: "Away" },
+  online: { color: "bg-emerald-400", pulse: true, label: "Active" },
+  away: { color: "bg-amber-400", pulse: false, label: "Idle" },
   offline: { color: "bg-zinc-500", pulse: false, label: "Offline" },
   on_leave: { color: "bg-blue-400", pulse: false, label: "On Leave" },
   deactivated: { color: "bg-red-400", pulse: false, label: "Deactivated" },
 };
 
 function formatLastSeen(lastSeenAt: string | null): string {
-  if (!lastSeenAt) return "Never seen";
+  if (!lastSeenAt) return "Never connected";
   const diff = Date.now() - new Date(lastSeenAt).getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return "Just now";

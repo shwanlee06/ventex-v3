@@ -992,3 +992,14 @@
 - [x] Fix AppSidebar isAtlasRole to include partner role (partners see ATLAS nav items)
 - [x] Write vitest tests for the fixes (6 new tests, all 293 tests passing)
 - [x] Test end-to-end: add member → copy link → open link → validate → accept
+
+## Bug Fix: Live Presence Status Showing False Active Status
+- [x] Investigate how live status is calculated (heartbeat, lastSignedIn, liveStatuses)
+- [x] Determine why Chris (or other members) show as "active" when they're not really online
+- [x] Fix heartbeat to use Page Visibility API + user activity detection (mouse/keyboard/scroll)
+- [x] Heartbeat only fires when tab is visible AND user interacted within last 5 minutes
+- [x] If user is idle 5+ min: heartbeat stops → status transitions to Idle then Offline
+- [x] Updated labels: Online→Active, Away→Idle, "Online Now"→"Active Now"
+- [x] Added "last active" timestamps in expanded widget (Active now, Active 1m ago, Never connected)
+- [x] Ensure dashboard widget shows accurate active/idle/offline states
+- [x] Verified with real data: Shwan Lee (Active now), Chris Phelps (Active 1m ago), Brian Chen (Never connected)

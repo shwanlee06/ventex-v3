@@ -1,0 +1,122 @@
+{
+  "query": "SELECT id, name, userId, lastSeenAt, adminStatus, type FROM team_members ORDER BY lastSeenAt DESC LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, userId, lastSeenAt, adminStatus, type FROM team_members ORDER BY lastSeenAt DESC LIMIT 30;",
+  "rows": [
+    {
+      "id": "60049",
+      "name": "Chris Phelps",
+      "userId": "840001",
+      "lastSeenAt": "2026-03-26 14:31:00",
+      "adminStatus": "active",
+      "type": "Internal"
+    },
+    {
+      "id": "11",
+      "name": "Shwan Lee",
+      "userId": "1",
+      "lastSeenAt": "2026-03-26 14:30:27",
+      "adminStatus": "active",
+      "type": "Internal"
+    },
+    {
+      "id": "60012",
+      "name": "Jimmy Frangi",
+      "userId": "NULL",
+      "lastSeenAt": "NULL",
+      "adminStatus": "active",
+      "type": "Contributor"
+    },
+    {
+      "id": "60014",
+      "name": "Jon Eichner",
+      "userId": "NULL",
+      "lastSeenAt": "NULL",
+      "adminStatus": "active",
+      "type": "Contributor"
+    },
+    {
+      "id": "7",
+      "name": "Leonidas Kyrris",
+      "userId": "NULL",
+      "lastSeenAt": "NULL",
+      "adminStatus": "active",
+      "type": "Advisor"
+    },
+    {
+      "id": "60016",
+      "name": "Angie Samadi",
+      "userId": "NULL",
+      "lastSeenAt": "NULL",
+      "adminStatus": "active",
+      "type": "Contributor"
+    },
+    {
+      "id": "10",
+      "name": "Ruwaida",
+      "userId": "NULL",
+      "lastSeenAt": "NULL",
+      "adminStatus": "active",
+      "type": "External Partner"
+    },
+    {
+      "id": "9",
+      "name": "Sohail",
+      "userId": "NULL",
+      "lastSeenAt": "NULL",
+      "adminStatus": "active",
+      "type": "External Partner"
+    },
+    {
+      "id": "60013",
+      "name": "Anton Maghami",
+      "userId": "NULL",
+      "lastSeenAt": "NULL",
+      "adminStatus": "active",
+      "type": "Contributor"
+    },
+    {
+      "id": "60015",
+      "name": "Maher Abou Chakra",
+      "userId": "NULL",
+      "lastSeenAt": "NULL",
+      "adminStatus": "active",
+      "type": "Contributor"
+    },
+    {
+      "id": "12",
+      "name": "Najib",
+      "userId": "NULL",
+      "lastSeenAt": "NULL",
+      "adminStatus": "active",
+      "type": "Advisor"
+    },
+    {
+      "id": "8",
+      "name": "Igor",
+      "userId": "NULL",
+      "lastSeenAt": "NULL",
+      "adminStatus": "active",
+      "type": "External Partner"
+    },
+    {
+      "id": "60068",
+      "name": "Brian Chen",
+      "userId": "NULL",
+      "lastSeenAt": "NULL",
+      "adminStatus": "active",
+      "type": "Internal"
+    },
+    {
+      "id": "6",
+      "name": "Carl Frangi",
+      "userId": "NULL",
+      "lastSeenAt": "NULL",
+      "adminStatus": "active",
+      "type": "Advisor"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tuserId\tlastSeenAt\tadminStatus\ttype\n60049\tChris Phelps\t840001\t2026-03-26 14:31:00\tactive\tInternal\n11\tShwan Lee\t1\t2026-03-26 14:30:27\tactive\tInternal\n60012\tJimmy Frangi\tNULL\tNULL\tactive\tContributor\n60014\tJon Eichner\tNULL\tNULL\tactive\tContributor\n7\tLeonidas Kyrris\tNULL\tNULL\tactive\tAdvisor\n60016\tAngie Samadi\tNULL\tNULL\tactive\tContributor\n10\tRuwaida\tNULL\tNULL\tactive\tExternal Partner\n9\tSohail\tNULL\tNULL\tactive\tExternal Partner\n60013\tAnton Maghami\tNULL\tNULL\tactive\tContributor\n60015\tMaher Abou Chakra\tNULL\tNULL\tactive\tContributor\n12\tNajib\tNULL\tNULL\tactive\tAdvisor\n8\tIgor\tNULL\tNULL\tactive\tExternal Partner\n60068\tBrian Chen\tNULL\tNULL\tactive\tInternal\n6\tCarl Frangi\tNULL\tNULL\tactive\tAdvisor\n",
+  "stderr": "",
+  "execution_time_ms": 362
+}

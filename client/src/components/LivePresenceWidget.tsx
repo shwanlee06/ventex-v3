@@ -1,6 +1,9 @@
 /**
- * LivePresenceWidget — Shows who's currently online in the system.
+ * LivePresenceWidget — Shows who's currently active in the system.
  * Polls team.liveStatuses every 15 seconds for real-time presence.
+ * "Online" = actively using the system (heartbeat within 5 min + user interaction)
+ * "Away" = tab open but idle or heartbeat 5-30 min ago
+ * "Offline" = no heartbeat for 30+ min or never logged in
  */
 
 import { trpc } from "@/lib/trpc";
@@ -14,6 +17,19 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+function formatLastActive(lastSeenAt: string | null): string {
+  if (!lastSeenAt) return "Never connected";
+  const diff = Date.now() - new Date(lastSeenAt).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Active now";
+  if (mins < 5) return `Active ${mins}m ago`;
+  if (mins < 60) return `Last seen ${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `Last seen ${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `Last seen ${days}d ago`;
+}
 
 export default function LivePresenceWidget() {
   const liveQ = trpc.team.liveStatuses.useQuery(undefined, {
@@ -68,7 +84,7 @@ export default function LivePresenceWidget() {
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-foreground">Live</span>
             <span className="text-[11px] font-mono text-muted-foreground">
-              {onlineCount} online{awayCount > 0 ? ` · ${awayCount} away` : ""}
+              {onlineCount} active{awayCount > 0 ? ` · ${awayCount} idle` : ""}
             </span>
           </div>
           {/* Stacked avatars for online users */}
@@ -91,7 +107,8 @@ export default function LivePresenceWidget() {
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
-                    {m.name} — Online
+                    <p className="font-medium">{m.name}</p>
+                    <p className="text-muted-foreground">{formatLastActive(m.lastSeenAt)}</p>
                   </TooltipContent>
                 </Tooltip>
               ))}
@@ -141,7 +158,12 @@ export default function LivePresenceWidget() {
                             .slice(0, 2)}
                         </div>
                       </div>
-                      <span className="text-xs font-medium text-foreground">{m.name}</span>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-medium text-foreground">{m.name}</span>
+                        <span className="text-[9px] font-mono text-muted-foreground/60">
+                          {formatLastActive(m.lastSeenAt)}
+                        </span>
+                      </div>
                     </div>
                     <LiveStatusDot
                       status={m.liveStatus}
