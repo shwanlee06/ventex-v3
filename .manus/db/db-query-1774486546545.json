@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, name, email, role, memberFunction, type, systemRole, invitationStatus FROM team_members WHERE id = 60049;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, email, role, memberFunction, type, systemRole, invitationStatus FROM team_members WHERE id = 60049;",
+  "rows": [
+    {
+      "id": "60049",
+      "name": "Chris Phelps",
+      "email": "ccphelps15@gmail.com",
+      "role": "CRO",
+      "memberFunction": "Operations & Systems",
+      "type": "Internal",
+      "systemRole": "partner",
+      "invitationStatus": "pending"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\trole\tmemberFunction\ttype\tsystemRole\tinvitationStatus\n60049\tChris Phelps\tccphelps15@gmail.com\tCRO\tOperations & Systems\tInternal\tpartner\tpending\n",
+  "stderr": "",
+  "execution_time_ms": 354
+}

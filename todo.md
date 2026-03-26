@@ -963,3 +963,11 @@
 - [ ] Fix: Use proper email sending API to deliver invitation to the invitee's actual email address
 - [x] Workaround: Show copyable invite link in Add Member dialog after successful creation
 - [x] Workaround: Show copyable invite link in the member drawer invitation status card (Copy Link button)
+
+## Feature: Resend Email Integration
+- [ ] Store RESEND_API_KEY as environment secret
+- [ ] Install Resend SDK
+- [ ] Update invitationEmail.ts to send via Resend API directly to invitee
+- [ ] Design professional HTML email template for invitations
+- [ ] Write vitest for email sending logic
+- [ ] Verify end-to-end: add member → email arrives in invitee's inbox

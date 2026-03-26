@@ -1,0 +1,21 @@
+{
+  "query": "SELECT id, name, email, role, type, organizationId, systemRole, invitationStatus, sortOrder FROM team_members WHERE name LIKE '%Chris%' OR email LIKE '%ccphelps%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, email, role, type, organizationId, systemRole, invitationStatus, sortOrder FROM team_members WHERE name LIKE '%Chris%' OR email LIKE '%ccphelps%';",
+  "rows": [
+    {
+      "id": "60049",
+      "name": "Chris Phelps",
+      "email": "ccphelps15@gmail.com",
+      "role": "CRO",
+      "type": "Internal",
+      "organizationId": "NULL",
+      "systemRole": "partner",
+      "invitationStatus": "pending",
+      "sortOrder": "20"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\trole\ttype\torganizationId\tsystemRole\tinvitationStatus\tsortOrder\n60049\tChris Phelps\tccphelps15@gmail.com\tCRO\tInternal\tNULL\tpartner\tpending\t20\n",
+  "stderr": "",
+  "execution_time_ms": 366
+}

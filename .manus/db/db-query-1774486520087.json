@@ -1,0 +1,64 @@
+{
+  "query": "SELECT id, email, inviteRole, token, inviteStatus, teamMemberId, expiresAt FROM invitations WHERE email = 'ccphelps15@gmail.com' OR teamMemberId = 60049;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, email, inviteRole, token, inviteStatus, teamMemberId, expiresAt FROM invitations WHERE email = 'ccphelps15@gmail.com' OR teamMemberId = 60049;",
+  "rows": [
+    {
+      "id": "2",
+      "email": "ccphelps15@gmail.com",
+      "inviteRole": "admin",
+      "token": "nFmpgEylR2-K-HHpnUH-GA5M1hyojbo69-7TNg5d1jZRYdbn_lKdM9HcdjNOVrMD",
+      "inviteStatus": "revoked",
+      "teamMemberId": "NULL",
+      "expiresAt": "2026-04-23 20:49:07"
+    },
+    {
+      "id": "30003",
+      "email": "ccphelps15@gmail.com",
+      "inviteRole": "user",
+      "token": "leiV6-i-hG2ObRJhWw5EDWpqoDjUk6EbLJL6vN0tC4z0MzDl-8NW7XdBNLwMVGLo",
+      "inviteStatus": "revoked",
+      "teamMemberId": "60011",
+      "expiresAt": "2026-04-25 00:22:30"
+    },
+    {
+      "id": "30009",
+      "email": "ccphelps15@gmail.com",
+      "inviteRole": "partner",
+      "token": "AVDgItWT9YufgLz8VtEhojCHMlx-KX5z_4rQnoYU1RrrDHKpcb5jenvhcZGyW-dO",
+      "inviteStatus": "revoked",
+      "teamMemberId": "60049",
+      "expiresAt": "2026-04-25 00:37:26"
+    },
+    {
+      "id": "30015",
+      "email": "ccphelps15@gmail.com",
+      "inviteRole": "partner",
+      "token": "csBq2VFvEpfmozzPa6YppCt4C8fI33yPdkWNXxtuCGmOMDZ7g8eR3piNyRfXHAzx",
+      "inviteStatus": "revoked",
+      "teamMemberId": "60049",
+      "expiresAt": "2026-04-25 00:47:41"
+    },
+    {
+      "id": "30016",
+      "email": "ccphelps15@gmail.com",
+      "inviteRole": "partner",
+      "token": "YMV4eehRsGq6PYhIyMMZUKLiAfM4AQwWyNvvikxPBKyLZlok63HKzDte6DE39Btt",
+      "inviteStatus": "revoked",
+      "teamMemberId": "60049",
+      "expiresAt": "2026-04-25 00:47:52"
+    },
+    {
+      "id": "30017",
+      "email": "ccphelps15@gmail.com",
+      "inviteRole": "partner",
+      "token": "aSQAUIU2H7jjd4G-vSVXfNS9n8CkgV0xKWdLVsU-rxez7zvUz1bo0fpFM84g2JW5",
+      "inviteStatus": "pending",
+      "teamMemberId": "60049",
+      "expiresAt": "2026-04-25 00:48:49"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tinviteRole\ttoken\tinviteStatus\tteamMemberId\texpiresAt\n2\tccphelps15@gmail.com\tadmin\tnFmpgEylR2-K-HHpnUH-GA5M1hyojbo69-7TNg5d1jZRYdbn_lKdM9HcdjNOVrMD\trevoked\tNULL\t2026-04-23 20:49:07\n30003\tccphelps15@gmail.com\tuser\tleiV6-i-hG2ObRJhWw5EDWpqoDjUk6EbLJL6vN0tC4z0MzDl-8NW7XdBNLwMVGLo\trevoked\t60011\t2026-04-25 00:22:30\n30009\tccphelps15@gmail.com\tpartner\tAVDgItWT9YufgLz8VtEhojCHMlx-KX5z_4rQnoYU1RrrDHKpcb5jenvhcZGyW-dO\trevoked\t60049\t2026-04-25 00:37:26\n30015\tccphelps15@gmail.com\tpartner\tcsBq2VFvEpfmozzPa6YppCt4C8fI33yPdkWNXxtuCGmOMDZ7g8eR3piNyRfXHAzx\trevoked\t60049\t2026-04-25 00:47:41\n30016\tccphelps15@gmail.com\tpartner\tYMV4eehRsGq6PYhIyMMZUKLiAfM4AQwWyNvvikxPBKyLZlok63HKzDte6DE39Btt\trevoked\t60049\t2026-04-25 00:47:52\n30017\tccphelps15@gmail.com\tpartner\taSQAUIU2H7jjd4G-vSVXfNS9n8CkgV0xKWdLVsU-rxez7zvUz1bo0fpFM84g2JW5\tpending\t60049\t2026-04-25 00:48:49\n",
+  "stderr": "",
+  "execution_time_ms": 375
+}
