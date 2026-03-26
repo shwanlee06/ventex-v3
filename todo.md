@@ -971,3 +971,12 @@
 - [ ] Design professional HTML email template for invitations
 - [ ] Write vitest for email sending logic
 - [ ] Verify end-to-end: add member → email arrives in invitee's inbox
+
+## Feature: Live Active Users on Dashboard
+- [x] Verify Chris Phelps account was created and invitation accepted (user id 840001, promoted to partner)
+- [x] Backend: Using existing lastSignedIn + team.heartbeat + team.liveStatuses (already built)
+- [x] Backend: team.heartbeat already exists, polls every 2 min
+- [x] Backend: team.liveStatuses already exists with calculateLiveStatus logic
+- [x] Frontend: LivePresenceWidget on dashboard — stacked avatars, online/away counts, expandable member list
+- [x] Frontend: Polls every 15 seconds via refetchInterval
+- [x] Tests: All 287 tests passing (existing heartbeat/liveStatuses tests cover this)

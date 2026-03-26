@@ -57,6 +57,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import AITaskGenerator from "@/components/AITaskGenerator";
 import OverdueAlertBanner from "@/components/OverdueAlertBanner";
+import LivePresenceWidget from "@/components/LivePresenceWidget";
 
 // ── Types ───────────────────────────────────────────────────────────────
 type SortField = "name" | "ventures" | "velocity" | "overdue" | "health" | "completion";
@@ -400,6 +401,9 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
           </motion.div>
         ))}
       </div>
+
+      {/* ── Live Presence ────────────────────────────────────── */}
+      <LivePresenceWidget />
 
       {/* ── Overdue Alert Banner ────────────────────────────────── */}
       <OverdueAlertBanner onNavigate={onNavigate} />

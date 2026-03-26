@@ -1,0 +1,17 @@
+{
+  "query": "SELECT id, name, email, role, lastSignedIn FROM users WHERE email = 'ccphelps15@gmail.com' OR name LIKE '%Chris%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, email, role, lastSignedIn FROM users WHERE email = 'ccphelps15@gmail.com' OR name LIKE '%Chris%';",
+  "rows": [
+    {
+      "id": "840001",
+      "name": "Christopher Phelps",
+      "email": "ccphelps15@gmail.com",
+      "role": "user",
+      "lastSignedIn": "2026-03-26 01:01:11"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\trole\tlastSignedIn\n840001\tChristopher Phelps\tccphelps15@gmail.com\tuser\t2026-03-26 01:01:11\n",
+  "stderr": "",
+  "execution_time_ms": 365
+}
