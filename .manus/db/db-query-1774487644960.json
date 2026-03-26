@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, openId, name, email, role, userStatus, organizationId, invitationId FROM users WHERE email LIKE '%cphelps%' OR id = 840001; SELECT id, name, email, role, systemRole, invitationStatus, userId, type FROM team_members WHERE email LIKE '%cphelps%' OR name LIKE '%Chris%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, openId, name, email, role, userStatus, organizationId, invitationId FROM users WHERE email LIKE '%cphelps%' OR id = 840001; SELECT id, name, email, role, systemRole, invitationStatus, userId, type FROM team_members WHERE email LIKE '%cphelps%' OR name LIKE '%Chris%';",
+  "rows": [
+    {
+      "id": "840001",
+      "openId": "Ezaw345gbzoFbVRANXWM2j",
+      "name": "Christopher Phelps",
+      "email": "ccphelps15@gmail.com",
+      "role": "partner",
+      "userStatus": "active",
+      "organizationId": "NULL",
+      "invitationId": "NULL"
+    },
+    {
+      "id": "id",
+      "openId": "name",
+      "name": "email",
+      "email": "role",
+      "role": "systemRole",
+      "userStatus": "invitationStatus",
+      "organizationId": "userId",
+      "invitationId": "type"
+    },
+    {
+      "id": "60049",
+      "openId": "Chris Phelps",
+      "name": "ccphelps15@gmail.com",
+      "email": "CRO",
+      "role": "partner",
+      "userStatus": "accepted",
+      "organizationId": "840001",
+      "invitationId": "Internal"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\topenId\tname\temail\trole\tuserStatus\torganizationId\tinvitationId\n840001\tEzaw345gbzoFbVRANXWM2j\tChristopher Phelps\tccphelps15@gmail.com\tpartner\tactive\tNULL\tNULL\nid\tname\temail\trole\tsystemRole\tinvitationStatus\tuserId\ttype\n60049\tChris Phelps\tccphelps15@gmail.com\tCRO\tpartner\taccepted\t840001\tInternal\n",
+  "stderr": "",
+  "execution_time_ms": 412
+}

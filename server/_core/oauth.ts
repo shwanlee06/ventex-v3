@@ -134,11 +134,11 @@ export function registerOAuthRoutes(app: Express) {
             .set({ status: "accepted", acceptedAt: new Date() })
             .where(eq(invitations.id, pendingInvite.id));
 
-          // If this invitation is linked to a team member, update their status too
+          // If this invitation is linked to a team member, update their status and link user
           if (pendingInvite.teamMemberId) {
             await database
               .update(teamMembers)
-              .set({ invitationStatus: "accepted" })
+              .set({ invitationStatus: "accepted", userId: newUser.id })
               .where(eq(teamMembers.id, pendingInvite.teamMemberId));
           }
         }

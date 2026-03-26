@@ -65,7 +65,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
 
 /** Check if user is ATLAS internal team */
 function isAtlasRole(role?: string): boolean {
-  return role === "owner" || role === "admin";
+  return role === "owner" || role === "admin" || role === "partner";
 }
 
 export default function AppSidebar() {

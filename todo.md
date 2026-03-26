@@ -980,3 +980,15 @@
 - [x] Frontend: LivePresenceWidget on dashboard — stacked avatars, online/away counts, expandable member list
 - [x] Frontend: Polls every 15 seconds via refetchInterval
 - [x] Tests: All 287 tests passing (existing heartbeat/liveStatuses tests cover this)
+
+## Bug Fix: Invitation Link Not Working When Adding New ATLAS Team Members
+- [x] Investigate full invitation flow: token creation, link generation, validation endpoint, accept-invite page
+- [x] Fix resendInvitation return field mismatch: backend returned `token` but frontend expected `inviteToken`
+- [x] Fix drawer Copy Link button: replaced broken placeholder input with proper Generate & Copy button
+- [x] Fix resend mutation default handler to auto-copy link to clipboard on success
+- [x] Fix OAuth callback to link userId to team member record on invitation acceptance
+- [x] Fix acceptInvitation in access.ts to also link userId to team member
+- [x] Fix RequireAtlas guard to include partner role (partners can access ATLAS-only pages)
+- [x] Fix AppSidebar isAtlasRole to include partner role (partners see ATLAS nav items)
+- [x] Write vitest tests for the fixes (6 new tests, all 293 tests passing)
+- [x] Test end-to-end: add member → copy link → open link → validate → accept

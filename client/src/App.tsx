@@ -58,7 +58,7 @@ function RequireAtlas({ children }: { children: React.ReactNode }) {
   const { isPreviewMode } = usePreviewMode();
   const [, navigate] = useLocation();
 
-  const isAtlas = user && (user.role === "owner" || user.role === "admin");
+  const isAtlas = user && (user.role === "owner" || user.role === "admin" || user.role === "partner");
   const shouldBlock = !isAtlas || isPreviewMode;
 
   useEffect(() => {

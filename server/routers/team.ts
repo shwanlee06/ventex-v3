@@ -609,7 +609,7 @@ export const teamRouter = router({
       activitySource: "atlas_ops",
     });
 
-    return { success: true, token };
+    return { success: true, token, inviteToken: token };
   }),
 
   /**

@@ -111,8 +111,15 @@ export default function AtlasTeam() {
   });
 
   const resendInvitation = trpc.team.resendInvitation.useMutation({
-    onSuccess: () => {
-      toast.success("Invitation resent");
+    onSuccess: (data) => {
+      const tk = (data as any).inviteToken || (data as any).token;
+      if (tk) {
+        const link = `${window.location.origin}/accept-invite?token=${encodeURIComponent(tk)}`;
+        navigator.clipboard.writeText(link);
+        toast.success("Invitation resent — link copied to clipboard");
+      } else {
+        toast.success("Invitation resent");
+      }
       utils.team.listInternal.invalidate();
     },
     onError: (err) => toast.error(err.message),
@@ -675,37 +682,35 @@ export default function AtlasTeam() {
                     <div className="mt-2 pt-2 border-t border-amber-500/10">
                       <p className="text-[10px] text-muted-foreground mb-1.5">Share this link with {drawerMember.name}:</p>
                       <div className="flex items-center gap-1.5">
-                        <Input
-                          readOnly
-                          value={`${window.location.origin}/accept-invite?token=pending`}
-                          className="h-6 text-[9px] font-mono bg-background/50 flex-1"
-                          onClick={(e) => {
-                            // Fetch the actual token when clicked
-                            (e.target as HTMLInputElement).select();
-                          }}
-                        />
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-6 px-1.5 text-[9px] gap-1 shrink-0"
+                          className="h-7 px-2 text-[10px] gap-1.5 w-full"
+                          disabled={resendInvitation.isPending}
                           onClick={() => {
-                            // Use the resend mutation which returns a new token
                             resendInvitation.mutate(
                               { memberId: drawerMember.id, origin: window.location.origin },
                               {
                                 onSuccess: (data: any) => {
-                                  if (data.inviteToken) {
-                                    const link = `${window.location.origin}/accept-invite?token=${encodeURIComponent(data.inviteToken)}`;
+                                  const tk = data.inviteToken || data.token;
+                                  if (tk) {
+                                    const link = `${window.location.origin}/accept-invite?token=${encodeURIComponent(tk)}`;
                                     navigator.clipboard.writeText(link);
-                                    toast.success("Fresh invite link copied to clipboard");
+                                    toast.success("Invite link copied to clipboard");
+                                  } else {
+                                    toast.error("Failed to generate invite link");
                                   }
                                 },
                               }
                             );
                           }}
                         >
-                          <Copy className="size-2.5" />
-                          Copy Link
+                          {resendInvitation.isPending ? (
+                            <Loader2 className="size-3 animate-spin" />
+                          ) : (
+                            <Copy className="size-3" />
+                          )}
+                          {resendInvitation.isPending ? "Generating..." : "Generate & Copy Invite Link"}
                         </Button>
                       </div>
                     </div>

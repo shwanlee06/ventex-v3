@@ -1,0 +1,106 @@
+{
+  "query": "SELECT id, email, inviteRole, inviteStatus, token, teamMemberId, invitedByName, expiresAt, acceptedAt, organizationId FROM invitations ORDER BY id DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, email, inviteRole, inviteStatus, token, teamMemberId, invitedByName, expiresAt, acceptedAt, organizationId FROM invitations ORDER BY id DESC LIMIT 20;",
+  "rows": [
+    {
+      "id": "30028",
+      "email": "bchen2561@gmail.com",
+      "inviteRole": "partner",
+      "inviteStatus": "pending",
+      "token": "OiO-sZS1lFA3Kgw9xOKJ-QkW6S7n6arHLRI2t9ffx2k6PMe7arQ2Ct4ydT__TmVG",
+      "teamMemberId": "60068",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-25 01:10:38",
+      "acceptedAt": "NULL",
+      "organizationId": "1"
+    },
+    {
+      "id": "30017",
+      "email": "ccphelps15@gmail.com",
+      "inviteRole": "partner",
+      "inviteStatus": "accepted",
+      "token": "aSQAUIU2H7jjd4G-vSVXfNS9n8CkgV0xKWdLVsU-rxez7zvUz1bo0fpFM84g2JW5",
+      "teamMemberId": "60049",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-25 00:48:49",
+      "acceptedAt": "2026-03-26 01:02:23",
+      "organizationId": "1"
+    },
+    {
+      "id": "30016",
+      "email": "ccphelps15@gmail.com",
+      "inviteRole": "partner",
+      "inviteStatus": "revoked",
+      "token": "YMV4eehRsGq6PYhIyMMZUKLiAfM4AQwWyNvvikxPBKyLZlok63HKzDte6DE39Btt",
+      "teamMemberId": "60049",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-25 00:47:52",
+      "acceptedAt": "NULL",
+      "organizationId": "1"
+    },
+    {
+      "id": "30015",
+      "email": "ccphelps15@gmail.com",
+      "inviteRole": "partner",
+      "inviteStatus": "revoked",
+      "token": "csBq2VFvEpfmozzPa6YppCt4C8fI33yPdkWNXxtuCGmOMDZ7g8eR3piNyRfXHAzx",
+      "teamMemberId": "60049",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-25 00:47:41",
+      "acceptedAt": "NULL",
+      "organizationId": "1"
+    },
+    {
+      "id": "30009",
+      "email": "ccphelps15@gmail.com",
+      "inviteRole": "partner",
+      "inviteStatus": "revoked",
+      "token": "AVDgItWT9YufgLz8VtEhojCHMlx-KX5z_4rQnoYU1RrrDHKpcb5jenvhcZGyW-dO",
+      "teamMemberId": "60049",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-25 00:37:26",
+      "acceptedAt": "NULL",
+      "organizationId": "1"
+    },
+    {
+      "id": "30003",
+      "email": "ccphelps15@gmail.com",
+      "inviteRole": "user",
+      "inviteStatus": "revoked",
+      "token": "leiV6-i-hG2ObRJhWw5EDWpqoDjUk6EbLJL6vN0tC4z0MzDl-8NW7XdBNLwMVGLo",
+      "teamMemberId": "60011",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-25 00:22:30",
+      "acceptedAt": "NULL",
+      "organizationId": "1"
+    },
+    {
+      "id": "2",
+      "email": "ccphelps15@gmail.com",
+      "inviteRole": "admin",
+      "inviteStatus": "revoked",
+      "token": "nFmpgEylR2-K-HHpnUH-GA5M1hyojbo69-7TNg5d1jZRYdbn_lKdM9HcdjNOVrMD",
+      "teamMemberId": "NULL",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-23 20:49:07",
+      "acceptedAt": "NULL",
+      "organizationId": "1"
+    },
+    {
+      "id": "1",
+      "email": "bchen2561@gmail.com",
+      "inviteRole": "admin",
+      "inviteStatus": "accepted",
+      "token": "iCwo7shhYvR7fD7_Kw-fXRq9lt-oQjFaMObP7SgqVCDLzwCYy3lb9tJi1P7QGaSj",
+      "teamMemberId": "NULL",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-23 20:45:12",
+      "acceptedAt": "2026-03-24 20:46:02",
+      "organizationId": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tinviteRole\tinviteStatus\ttoken\tteamMemberId\tinvitedByName\texpiresAt\tacceptedAt\torganizationId\n30028\tbchen2561@gmail.com\tpartner\tpending\tOiO-sZS1lFA3Kgw9xOKJ-QkW6S7n6arHLRI2t9ffx2k6PMe7arQ2Ct4ydT__TmVG\t60068\tShwan lee\t2026-04-25 01:10:38\tNULL\t1\n30017\tccphelps15@gmail.com\tpartner\taccepted\taSQAUIU2H7jjd4G-vSVXfNS9n8CkgV0xKWdLVsU-rxez7zvUz1bo0fpFM84g2JW5\t60049\tShwan lee\t2026-04-25 00:48:49\t2026-03-26 01:02:23\t1\n30016\tccphelps15@gmail.com\tpartner\trevoked\tYMV4eehRsGq6PYhIyMMZUKLiAfM4AQwWyNvvikxPBKyLZlok63HKzDte6DE39Btt\t60049\tShwan lee\t2026-04-25 00:47:52\tNULL\t1\n30015\tccphelps15@gmail.com\tpartner\trevoked\tcsBq2VFvEpfmozzPa6YppCt4C8fI33yPdkWNXxtuCGmOMDZ7g8eR3piNyRfXHAzx\t60049\tShwan lee\t2026-04-25 00:47:41\tNULL\t1\n30009\tccphelps15@gmail.com\tpartner\trevoked\tAVDgItWT9YufgLz8VtEhojCHMlx-KX5z_4rQnoYU1RrrDHKpcb5jenvhcZGyW-dO\t60049\tShwan lee\t2026-04-25 00:37:26\tNULL\t1\n30003\tccphelps15@gmail.com\tuser\trevoked\tleiV6-i-hG2ObRJhWw5EDWpqoDjUk6EbLJL6vN0tC4z0MzDl-8NW7XdBNLwMVGLo\t60011\tShwan lee\t2026-04-25 00:22:30\tNULL\t1\n2\tccphelps15@gmail.com\tadmin\trevoked\tnFmpgEylR2-K-HHpnUH-GA5M1hyojbo69-7TNg5d1jZRYdbn_lKdM9HcdjNOVrMD\tNULL\tShwan lee\t2026-04-23 20:49:07\tNULL\t1\n1\tbchen2561@gmail.com\tadmin\taccepted\tiCwo7shhYvR7fD7_Kw-fXRq9lt-oQjFaMObP7SgqVCDLzwCYy3lb9tJi1P7QGaSj\tNULL\tShwan lee\t2026-04-23 20:45:12\t2026-03-24 20:46:02\t1\n",
+  "stderr": "",
+  "execution_time_ms": 348
+}
