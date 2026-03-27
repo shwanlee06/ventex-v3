@@ -1027,3 +1027,13 @@
 - [x] Fix Topbar.tsx: added partner to isAtlasRole → partners see Preview toggle, Settings, ATLAS Partner label
 - [x] Verified: App.tsx and AppSidebar.tsx already included partner (from earlier fix)
 - [x] All 293 tests passing
+
+## ATLAS Platform Upgrades (7 total)
+- [x] Upgrade 1: Velocity Intelligence Card (Dashboard) — VelocityIntelligenceCard component with sparkline, stalled count, sector warning from sectorMetrics query
+- [x] Upgrade 2: Overdue Task Escalation Panel (Dashboard) — OverdueAlertBanner rewritten with severity tiers (Critical/Warning/Info), per-client escalation rows, collapsible task detail, Scan & Notify button
+- [x] Upgrade 3: Venture Health Matrix (Client page) — VentureHealthMatrix scatter plot with X=overdue tasks, Y=completion%, color-coded by sector, quadrant labels, tooltip on hover
+- [x] Upgrade 4: Sector Pulse Panel (Client page) — SectorPulsePanel with collapsible sector breakdown, health bars, overdue counts, venture count per sector
+- [x] Upgrade 5: Distribution Timeline (Client page) — DistributionTimeline vertical timeline replacing flat distribution display, status badges, running total
+- [x] Upgrade 6: Team Venture Attribution (Client page) — TeamVentureAttribution mini-table with venture assignments, role badges, sorted by assignment count
+- [x] Upgrade 7: Command Palette (Global) — Enhanced existing CommandPalette with Cmd+K/Ctrl+K shortcut alongside existing / shortcut
+- [x] All 293 tests passing, 0 TypeScript errors

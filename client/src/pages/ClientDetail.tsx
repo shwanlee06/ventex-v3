@@ -32,6 +32,7 @@ import {
   List,
   ChevronDown,
   Network,
+  ScatterChart,
   Plus,
   CheckCircle2,
   Trash2,
@@ -47,6 +48,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
+import VentureHealthMatrix from "@/components/VentureHealthMatrix";
+import SectorPulsePanel from "@/components/SectorPulsePanel";
+import DistributionTimeline from "@/components/DistributionTimeline";
+import TeamVentureAttribution from "@/components/TeamVentureAttribution";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -85,7 +90,7 @@ function HealthIndicator({ score }: { score: number }) {
 }
 
 type SortField = "name" | "tasks" | "completion" | "overdue";
-type ViewMode = "grid" | "table";
+type ViewMode = "grid" | "table" | "matrix";
 
 export default function ClientDetail() {
   const params = useParams<{ slug: string }>();
@@ -384,6 +389,9 @@ export default function ClientDetail() {
           ))}
         </div>
 
+        {/* ── Sector Pulse Panel (Upgrade 4) ──────────────────────── */}
+        <SectorPulsePanel ventures={ventureAnalytics} />
+
         {/* ── Ventures Toolbar ────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="flex items-center gap-2">
@@ -430,6 +438,13 @@ export default function ClientDetail() {
                 className={cn("p-1.5 transition-colors", viewMode === "table" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground")}
               >
                 <List className="size-3.5" />
+              </button>
+              <button
+                onClick={() => setViewMode("matrix")}
+                className={cn("p-1.5 transition-colors", viewMode === "matrix" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground")}
+                title="Health Matrix"
+              >
+                <ScatterChart className="size-3.5" />
               </button>
             </div>
           </div>
@@ -571,7 +586,7 @@ export default function ClientDetail() {
               );
             })}
           </div>
-        ) : (
+        ) : viewMode === "table" ? (
           /* ── Table View ──────────────────────────────────────────── */
           <div className="bg-card border border-border rounded-xl overflow-x-auto">
             <table className="w-full text-sm">
@@ -659,6 +674,15 @@ export default function ClientDetail() {
               </tbody>
             </table>
           </div>
+        ) : (
+          /* ── Matrix View ─────────────────────────────────────────── */
+          <VentureHealthMatrix
+            ventures={filteredVentures.map(v => ({
+              ...v,
+              slug: v.slug,
+            }))}
+            onVentureClick={(path) => navigate(path)}
+          />
         )}
 
         {/* ── Bottom Section: Activity + SPVs + Team ─────────────── */}
@@ -734,112 +758,23 @@ export default function ClientDetail() {
               </div>
             </div>
 
-            <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <DollarSign className="size-4 text-primary" />
-                  <span className="text-sm font-semibold text-foreground">Distributions</span>
-                </div>
-                <span className="text-[11px] font-mono text-emerald-400">{formatCurrency(paidDistAmount)}</span>
-              </div>
-              <div className="space-y-0 divide-y divide-border/50">
-                {allDists.slice(0, 3).map((dist) => (
-                  <div
-                    key={dist.id}
-                    onClick={() => navigate("/distributions")}
-                    className="py-2.5 flex items-center justify-between cursor-pointer hover:bg-accent/30 -mx-4 px-4 sm:-mx-5 sm:px-5 transition-colors"
-                  >
-                    <div className="min-w-0">
-                      <span className="text-[12px] font-medium text-foreground block truncate">{dist.name}</span>
-                      <span className="text-[11px] text-muted-foreground">{dist.fund}</span>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <span className="text-[12px] font-mono font-medium text-foreground">{formatCurrency(dist.amount || 0)}</span>
-                      <span className={cn("text-[11px] font-mono block",
-                        dist.status === "Paid" ? "text-emerald-400" :
-                        dist.status === "Cancelled" ? "text-red-400" : "text-blue-400"
-                      )}>{dist.status}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <DistributionTimeline
+              distributions={allDists.map(d => ({
+                id: d.id,
+                spvName: d.fund || d.name,
+                amount: d.amount,
+                status: d.status || "Pending",
+                date: d.distributionDate || null,
+              }))}
+            />
           </div>
 
-          {/* Client Team */}
-          <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Network className="size-4 text-primary" />
-                <span className="text-sm font-semibold text-foreground">{clientName} Team</span>
-              </div>
-              <Button variant="ghost" size="sm" className="text-xs h-8 px-2 text-muted-foreground" onClick={() => navigate("/team")}>
-                All <ChevronRight className="size-3 ml-0.5" />
-              </Button>
-            </div>
-            {/* Summary */}
-            {(() => {
-              const clientTeam = allTeam.filter(t => t.name !== "Shwan Lee");
-              const internalCount = clientTeam.filter(t => t.type === "Internal").length;
-              const externalCount = clientTeam.filter(t => t.type === "External Partner").length;
-              const advisorCount = clientTeam.filter(t => t.type === "Advisor").length;
-              return (
-                <div className="flex items-center gap-4 mb-4 pb-4 border-b border-border/50">
-                  <div>
-                    <span className="text-lg font-mono font-semibold text-foreground">{internalCount}</span>
-                    <p className="text-[10px] text-muted-foreground">Internal</p>
-                  </div>
-                  <div>
-                    <span className="text-lg font-mono font-semibold text-foreground">{externalCount}</span>
-                    <p className="text-[10px] text-muted-foreground">External</p>
-                  </div>
-                  <div>
-                    <span className="text-lg font-mono font-semibold text-foreground">{advisorCount}</span>
-                    <p className="text-[10px] text-muted-foreground">Advisors</p>
-                  </div>
-                </div>
-              );
-            })()}
-            {/* Member list */}
-            <div className="space-y-0 divide-y divide-border/30">
-              {allTeam.filter(t => t.name !== "Shwan Lee").slice(0, 6).map((member) => {
-                const memberVentures = venturesByMember[member.id] || [];
-                const typeColor = member.type === "Internal" ? "text-blue-400" : member.type === "Advisor" ? "text-amber-400" : "text-emerald-400";
-                const initials = member.name.split(" ").map(w => w[0]).join("").slice(0, 2);
-                return (
-                  <div
-                    key={member.id}
-                    onClick={() => navigate(`/team/${member.slug}`)}
-                    className="py-2.5 flex items-center gap-3 cursor-pointer hover:bg-accent/30 -mx-4 px-4 sm:-mx-5 sm:px-5 transition-colors"
-                  >
-                    <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-[9px] font-semibold text-primary">{initials}</span>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[12px] font-medium text-foreground truncate">{member.name}</span>
-                        <span className={cn("text-[9px] font-medium", typeColor)}>
-                          {member.type === "External Partner" ? "EXT" : member.type === "Advisor" ? "ADV" : "INT"}
-                        </span>
-                      </div>
-                      <span className="text-[11px] text-muted-foreground truncate block">{member.role || member.memberFunction}</span>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <span className="text-[12px] font-mono font-medium text-foreground">{memberVentures.length}</span>
-                      <p className="text-[9px] text-muted-foreground">ventures</p>
-                    </div>
-                  </div>
-                );
-              })}
-              {allTeam.filter(t => t.name !== "Shwan Lee").length > 6 && (
-                <div className="pt-3 text-center">
-                  <button onClick={() => navigate("/team")} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
-                    View all {allTeam.filter(t => t.name !== "Shwan Lee").length} members →
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+          {/* Client Team — Upgrade 6: Team Venture Attribution */}
+          <TeamVentureAttribution
+            members={allTeam.filter(t => t.name !== "Shwan Lee")}
+            venturesByMember={venturesByMember}
+            onNavigateToTeam={() => navigate("/team")}
+          />
         </div>
 
         {/* ── Archived Banner ──────────────────────────────────── */}

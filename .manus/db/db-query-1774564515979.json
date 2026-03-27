@@ -1,0 +1,70 @@
+{
+  "query": "\nSELECT id, email, organizationId, inviteRole, inviteStatus, teamMemberId, invitedByName, expiresAt FROM invitations WHERE email LIKE '%bchen%' OR teamMemberId = 60068;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \nSELECT id, email, organizationId, inviteRole, inviteStatus, teamMemberId, invitedByName, expiresAt FROM invitations WHERE email LIKE '%bchen%' OR teamMemberId = 60068;\n",
+  "rows": [
+    {
+      "id": "1",
+      "email": "bchen2561@gmail.com",
+      "organizationId": "1",
+      "inviteRole": "admin",
+      "inviteStatus": "accepted",
+      "teamMemberId": "NULL",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-23 20:45:12"
+    },
+    {
+      "id": "30028",
+      "email": "bchen2561@gmail.com",
+      "organizationId": "1",
+      "inviteRole": "partner",
+      "inviteStatus": "revoked",
+      "teamMemberId": "60068",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-25 01:10:38"
+    },
+    {
+      "id": "60001",
+      "email": "bchen2561@gmail.com",
+      "organizationId": "1",
+      "inviteRole": "partner",
+      "inviteStatus": "revoked",
+      "teamMemberId": "60068",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-25 14:28:37"
+    },
+    {
+      "id": "60025",
+      "email": "bchen2561@gmail.com",
+      "organizationId": "1",
+      "inviteRole": "partner",
+      "inviteStatus": "revoked",
+      "teamMemberId": "60068",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-25 20:47:58"
+    },
+    {
+      "id": "60026",
+      "email": "bchen2561@gmail.com",
+      "organizationId": "1",
+      "inviteRole": "partner",
+      "inviteStatus": "revoked",
+      "teamMemberId": "60068",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-25 20:48:10"
+    },
+    {
+      "id": "60027",
+      "email": "bchen2561@gmail.com",
+      "organizationId": "1",
+      "inviteRole": "partner",
+      "inviteStatus": "pending",
+      "teamMemberId": "60068",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-25 20:48:21"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\torganizationId\tinviteRole\tinviteStatus\tteamMemberId\tinvitedByName\texpiresAt\n1\tbchen2561@gmail.com\t1\tadmin\taccepted\tNULL\tShwan lee\t2026-04-23 20:45:12\n30028\tbchen2561@gmail.com\t1\tpartner\trevoked\t60068\tShwan lee\t2026-04-25 01:10:38\n60001\tbchen2561@gmail.com\t1\tpartner\trevoked\t60068\tShwan lee\t2026-04-25 14:28:37\n60025\tbchen2561@gmail.com\t1\tpartner\trevoked\t60068\tShwan lee\t2026-04-25 20:47:58\n60026\tbchen2561@gmail.com\t1\tpartner\trevoked\t60068\tShwan lee\t2026-04-25 20:48:10\n60027\tbchen2561@gmail.com\t1\tpartner\tpending\t60068\tShwan lee\t2026-04-25 20:48:21\n",
+  "stderr": "",
+  "execution_time_ms": 435
+}

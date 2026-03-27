@@ -58,6 +58,7 @@ import {
 import AITaskGenerator from "@/components/AITaskGenerator";
 import OverdueAlertBanner from "@/components/OverdueAlertBanner";
 import LivePresenceWidget from "@/components/LivePresenceWidget";
+import VelocityIntelligenceCard from "@/components/VelocityIntelligenceCard";
 
 // ── Types ───────────────────────────────────────────────────────────────
 type SortField = "name" | "ventures" | "velocity" | "overdue" | "health" | "completion";
@@ -337,14 +338,16 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
 
       {/* ── Velocity System KPIs ──────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {/* Velocity Intelligence Card — Upgrade 1 */}
+        <VelocityIntelligenceCard
+          avgVelocity={kpis.avgVelocity}
+          highVelocity={kpis.highVelocity}
+          lowVelocity={kpis.lowVelocity}
+          clients={clientsWithVelocity}
+        />
+
+        {/* Remaining 4 standard KPI cards */}
         {[
-          {
-            label: "Avg Velocity",
-            value: `${kpis.avgVelocity}%`,
-            sub: `${kpis.highVelocity} high · ${kpis.lowVelocity} low`,
-            icon: <Zap className="size-4" />,
-            color: kpis.avgVelocity >= 70 ? "#4ADE80" : kpis.avgVelocity >= 40 ? "#F59E0B" : "#EF4444",
-          },
           {
             label: "Clients",
             value: kpis.totalClients,
@@ -378,7 +381,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
             key={m.label}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05, duration: 0.3 }}
+            transition={{ delay: (i + 1) * 0.05, duration: 0.3 }}
             className="bg-card border border-border rounded-xl p-4 flex flex-col gap-2"
           >
             <div className="flex items-center justify-between">

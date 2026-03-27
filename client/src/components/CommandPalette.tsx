@@ -58,9 +58,13 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
     navigate(href);
   }, [onOpenChange, navigate]);
 
-  // Global keyboard shortcut: /
+  // Global keyboard shortcut: Cmd+K / Ctrl+K / /
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        onOpenChange(!open);
+      }
       if (e.key === "/" && !["INPUT", "TEXTAREA"].includes((e.target as HTMLElement)?.tagName)) {
         e.preventDefault();
         onOpenChange(true);
@@ -68,7 +72,7 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [onOpenChange]);
+  }, [onOpenChange, open]);
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange} title="Search" description="Search ventures, SPVs, team, tasks, and pages">

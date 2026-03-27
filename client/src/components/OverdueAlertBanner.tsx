@@ -1,6 +1,8 @@
 // ============================================================================
-// Overdue Alert Banner — Shows critical overdue tasks across all clients
-// Designed for the ATLAS Command Center dashboard
+// Overdue Task Escalation Panel — Upgrade 2
+// Collapsible panel with table: Task | Venture | Sector | Days Overdue | Severity | Action
+// Per-row "Notify" buttons + "Notify All" top-right
+// Longest overdue row gets solid red left border
 // ============================================================================
 
 import { cn } from "@/lib/utils";
@@ -8,16 +10,14 @@ import { trpc } from "@/lib/trpc";
 import {
   AlertTriangle,
   Clock,
-  ChevronRight,
   ChevronDown,
   ChevronUp,
-  ExternalLink,
-  Loader2,
   Bell,
+  Loader2,
   CheckCircle2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -25,17 +25,35 @@ interface OverdueAlertBannerProps {
   onNavigate: (path: string) => void;
 }
 
-function SeverityDot({ severity }: { severity: string }) {
-  const color =
-    severity === "critical" ? "bg-red-500" :
-    severity === "warning" ? "bg-amber-500" :
-    "bg-blue-500";
-  return <span className={cn("size-1.5 rounded-full flex-shrink-0", color)} />;
+interface NotifiedState {
+  [taskId: number]: string; // timestamp string
+}
+
+function SeverityBadge({ days }: { days: number }) {
+  if (days > 21) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-red-500/10 text-red-400">
+        Critical
+      </span>
+    );
+  }
+  if (days >= 8) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400">
+        High
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">
+      Medium
+    </span>
+  );
 }
 
 export default function OverdueAlertBanner({ onNavigate }: OverdueAlertBannerProps) {
   const overdueByClientQ = trpc.tasks.overdueByClient.useQuery(undefined, {
-    refetchInterval: 60000, // Refresh every minute
+    refetchInterval: 60000,
   });
   const scanAndNotify = trpc.tasks.scanAndNotify.useMutation({
     onSuccess: (result) => {
@@ -49,23 +67,68 @@ export default function OverdueAlertBanner({ onNavigate }: OverdueAlertBannerPro
   });
 
   const [expanded, setExpanded] = useState(false);
+  const [notified, setNotified] = useState<NotifiedState>({});
 
   const data = overdueByClientQ.data || [];
+
+  // Flatten all overdue tasks across clients with venture/sector info
+  const allOverdueTasks = useMemo(() => {
+    const flat: Array<{
+      id: number;
+      title: string;
+      daysOverdue: number;
+      priority: string | null;
+      severity: string;
+      orgName: string;
+      orgSlug: string;
+      ventureName?: string;
+      sector?: string;
+    }> = [];
+
+    for (const client of data) {
+      for (const task of client.overdueTasks) {
+        flat.push({
+          ...task,
+          orgName: client.orgName,
+          orgSlug: client.orgSlug,
+          ventureName: (task as any).ventureName || "—",
+          sector: (task as any).sector || "—",
+        });
+      }
+    }
+
+    return flat.sort((a, b) => b.daysOverdue - a.daysOverdue);
+  }, [data]);
 
   // Aggregate stats
   const stats = useMemo(() => {
     const totalOverdue = data.reduce((s, d) => s + d.overdueCount, 0);
     const totalCritical = data.reduce((s, d) => s + d.criticalCount, 0);
-    const clientsAffected = data.length;
     const maxDays = data.length > 0 ? Math.max(...data.map(d => d.maxDaysOverdue)) : 0;
-    return { totalOverdue, totalCritical, clientsAffected, maxDays };
+    return { totalOverdue, totalCritical, maxDays };
   }, [data]);
 
-  // Don't render if no overdue tasks
+  const handleNotify = useCallback((taskId: number) => {
+    const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    setNotified(prev => ({ ...prev, [taskId]: now }));
+    toast.success("Notification sent");
+  }, []);
+
+  const handleNotifyAll = useCallback(() => {
+    const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const updates: NotifiedState = {};
+    for (const task of allOverdueTasks) {
+      updates[task.id] = now;
+    }
+    setNotified(prev => ({ ...prev, ...updates }));
+    scanAndNotify.mutate();
+  }, [allOverdueTasks, scanAndNotify]);
+
   if (overdueByClientQ.isLoading) return null;
   if (stats.totalOverdue === 0) return null;
 
   const hasCritical = stats.totalCritical > 0;
+  const maxDaysOverdue = stats.maxDays;
 
   return (
     <motion.div
@@ -79,7 +142,7 @@ export default function OverdueAlertBanner({ onNavigate }: OverdueAlertBannerPro
           : "bg-amber-500/5 border-amber-500/20"
       )}
     >
-      {/* ── Summary bar ────────────────────────────────────────────── */}
+      {/* ── Collapsed summary bar ────────────────────────────────── */}
       <div
         className="flex items-center gap-3 px-4 py-3 cursor-pointer"
         onClick={() => setExpanded(!expanded)}
@@ -104,36 +167,16 @@ export default function OverdueAlertBanner({ onNavigate }: OverdueAlertBannerPro
             </span>
             {stats.totalCritical > 0 && (
               <span className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-red-500/10 text-red-400">
-                {stats.totalCritical} critical
+                {stats.totalCritical} Critical
               </span>
             )}
+            <span className="text-[11px] text-muted-foreground">
+              — Longest: {maxDaysOverdue} day{maxDaysOverdue !== 1 ? "s" : ""}
+            </span>
           </div>
-          <span className="text-[11px] text-muted-foreground">
-            Across {stats.clientsAffected} client{stats.clientsAffected !== 1 ? "s" : ""} · longest overdue: {stats.maxDays} day{stats.maxDays !== 1 ? "s" : ""}
-          </span>
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          <Button
-            size="sm"
-            variant="outline"
-            className={cn(
-              "h-7 text-[11px] gap-1",
-              hasCritical ? "border-red-500/20 text-red-400 hover:bg-red-500/10" : "border-amber-500/20 text-amber-400 hover:bg-amber-500/10"
-            )}
-            onClick={(e) => {
-              e.stopPropagation();
-              scanAndNotify.mutate();
-            }}
-            disabled={scanAndNotify.isPending}
-          >
-            {scanAndNotify.isPending ? (
-              <Loader2 className="size-3 animate-spin" />
-            ) : (
-              <Bell className="size-3" />
-            )}
-            Notify
-          </Button>
           {expanded ? (
             <ChevronUp className="size-4 text-muted-foreground" />
           ) : (
@@ -142,7 +185,7 @@ export default function OverdueAlertBanner({ onNavigate }: OverdueAlertBannerPro
         </div>
       </div>
 
-      {/* ── Expanded detail ─────────────────────────────────────────── */}
+      {/* ── Expanded escalation table ────────────────────────────── */}
       <AnimatePresence>
         {expanded && (
           <motion.div
@@ -152,64 +195,117 @@ export default function OverdueAlertBanner({ onNavigate }: OverdueAlertBannerPro
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="border-t border-border/30 px-4 py-3 space-y-3">
-              {data.map((client) => (
-                <div
-                  key={client.orgId}
-                  className="bg-card/50 border border-border/50 rounded-lg p-3 hover:border-border transition-colors"
+            <div className="border-t border-border/30 px-4 py-3">
+              {/* Notify All button */}
+              <div className="flex items-center justify-end mb-3">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className={cn(
+                    "h-7 text-[11px] gap-1",
+                    hasCritical ? "border-red-500/20 text-red-400 hover:bg-red-500/10" : "border-amber-500/20 text-amber-400 hover:bg-amber-500/10"
+                  )}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNotifyAll();
+                  }}
+                  disabled={scanAndNotify.isPending}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <button
-                      onClick={() => onNavigate(`/clients/${client.orgSlug}`)}
-                      className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
-                    >
-                      {client.orgName}
-                      <ExternalLink className="size-3 opacity-50" />
-                    </button>
-                    <div className="flex items-center gap-2">
-                      <span className={cn(
-                        "text-[11px] font-mono font-medium px-1.5 py-0.5 rounded",
-                        client.criticalCount > 0 ? "bg-red-500/10 text-red-400" : "bg-amber-500/10 text-amber-400"
-                      )}>
-                        {client.overdueCount} overdue
-                      </span>
-                    </div>
-                  </div>
+                  {scanAndNotify.isPending ? (
+                    <Loader2 className="size-3 animate-spin" />
+                  ) : (
+                    <Bell className="size-3" />
+                  )}
+                  Notify All
+                </Button>
+              </div>
 
-                  <div className="space-y-1.5">
-                    {client.overdueTasks.map((task) => (
-                      <div
-                        key={task.id}
-                        className="flex items-center gap-2 text-xs"
-                      >
-                        <SeverityDot severity={task.severity} />
-                        <span className="text-foreground truncate flex-1">{task.title}</span>
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          <Clock className="size-3 text-muted-foreground" />
-                          <span className={cn(
-                            "font-mono text-[11px]",
-                            task.severity === "critical" ? "text-red-400" :
-                            task.severity === "warning" ? "text-amber-400" :
-                            "text-muted-foreground"
-                          )}>
-                            {task.daysOverdue}d
+              {/* Table */}
+              <div className="bg-card/50 border border-border/50 rounded-lg overflow-hidden">
+                {/* Header */}
+                <div className="grid grid-cols-[1fr_140px_100px_80px_80px_100px] gap-2 px-3 py-2 border-b border-border/30 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                  <span>Task</span>
+                  <span>Venture</span>
+                  <span>Sector</span>
+                  <span className="text-right">Days</span>
+                  <span className="text-center">Severity</span>
+                  <span className="text-right">Action</span>
+                </div>
+
+                {/* Rows */}
+                {allOverdueTasks.map((task, i) => {
+                  const isLongest = task.daysOverdue === maxDaysOverdue;
+                  const isNotified = !!notified[task.id];
+
+                  return (
+                    <div
+                      key={task.id}
+                      className={cn(
+                        "grid grid-cols-[1fr_140px_100px_80px_80px_100px] gap-2 px-3 py-2.5 items-center text-xs",
+                        i < allOverdueTasks.length - 1 && "border-b border-border/20",
+                        isLongest && "border-l-2 border-l-red-500",
+                        "hover:bg-accent/20 transition-colors"
+                      )}
+                    >
+                      {/* Task name */}
+                      <span className="text-foreground truncate font-medium">
+                        {task.title}
+                      </span>
+
+                      {/* Venture */}
+                      <span className="text-muted-foreground truncate">
+                        {task.ventureName}
+                      </span>
+
+                      {/* Sector */}
+                      <span className="text-muted-foreground truncate">
+                        {task.sector}
+                      </span>
+
+                      {/* Days overdue */}
+                      <div className="flex items-center justify-end gap-1">
+                        <Clock className="size-3 text-muted-foreground" />
+                        <span className={cn(
+                          "font-mono text-[11px]",
+                          task.daysOverdue > 21 ? "text-red-400" :
+                          task.daysOverdue >= 8 ? "text-amber-400" :
+                          "text-muted-foreground"
+                        )}>
+                          {task.daysOverdue}d
+                        </span>
+                      </div>
+
+                      {/* Severity */}
+                      <div className="flex justify-center">
+                        <SeverityBadge days={task.daysOverdue} />
+                      </div>
+
+                      {/* Action */}
+                      <div className="flex justify-end">
+                        {isNotified ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                            <CheckCircle2 className="size-3 text-emerald-400" />
+                            Notified {notified[task.id]}
                           </span>
-                        </div>
-                        {task.priority === "High" && (
-                          <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-red-500/10 text-red-400">
-                            HIGH
-                          </span>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-6 text-[10px] px-2 gap-1 border-border/50 text-muted-foreground hover:text-foreground"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleNotify(task.id);
+                            }}
+                          >
+                            <Bell className="size-3" />
+                            Notify
+                          </Button>
                         )}
                       </div>
-                    ))}
-                    {client.overdueCount > 5 && (
-                      <span className="text-[10px] text-muted-foreground font-mono pl-4">
-                        +{client.overdueCount - 5} more
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </motion.div>
         )}

@@ -1,0 +1,30 @@
+{
+  "query": "\nSELECT id, email, organizationId, inviteRole, inviteStatus, teamMemberId, invitedByName, expiresAt FROM invitations WHERE email LIKE '%kudaravalli%';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \nSELECT id, email, organizationId, inviteRole, inviteStatus, teamMemberId, invitedByName, expiresAt FROM invitations WHERE email LIKE '%kudaravalli%';\n",
+  "rows": [
+    {
+      "id": "60028",
+      "email": "kudaravalli.shourya@gmail.com",
+      "organizationId": "1",
+      "inviteRole": "partner",
+      "inviteStatus": "revoked",
+      "teamMemberId": "90022",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-25 21:53:13"
+    },
+    {
+      "id": "60029",
+      "email": "kudaravalli.shourya@gmail.com",
+      "organizationId": "1",
+      "inviteRole": "partner",
+      "inviteStatus": "accepted",
+      "teamMemberId": "90022",
+      "invitedByName": "Shwan lee",
+      "expiresAt": "2026-04-25 21:53:19"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\torganizationId\tinviteRole\tinviteStatus\tteamMemberId\tinvitedByName\texpiresAt\n60028\tkudaravalli.shourya@gmail.com\t1\tpartner\trevoked\t90022\tShwan lee\t2026-04-25 21:53:13\n60029\tkudaravalli.shourya@gmail.com\t1\tpartner\taccepted\t90022\tShwan lee\t2026-04-25 21:53:19\n",
+  "stderr": "",
+  "execution_time_ms": 368
+}

@@ -1,0 +1,20 @@
+{
+  "query": "\nSELECT 'team_members' as source, id, name, email, systemRole, organizationId, invitationStatus, userId FROM team_members WHERE name LIKE '%Brian%Chen%' OR email LIKE '%bchen%';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \nSELECT 'team_members' as source, id, name, email, systemRole, organizationId, invitationStatus, userId FROM team_members WHERE name LIKE '%Brian%Chen%' OR email LIKE '%bchen%';\n",
+  "rows": [
+    {
+      "source": "team_members",
+      "id": "60068",
+      "name": "Brian Chen",
+      "email": "bchen2561@gmail.com",
+      "systemRole": "partner",
+      "organizationId": "NULL",
+      "invitationStatus": "pending",
+      "userId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "source\tid\tname\temail\tsystemRole\torganizationId\tinvitationStatus\tuserId\nteam_members\t60068\tBrian Chen\tbchen2561@gmail.com\tpartner\tNULL\tpending\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 361
+}

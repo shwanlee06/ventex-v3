@@ -244,18 +244,20 @@ export const tasksRouter = router({
 
     const now = new Date();
     const allTasks = await db.select().from(tasks);
+    const allVentures = await db.select().from(ventures);
     const allAccess = await db.select().from(orgVentureAccess);
     const allOrgs = await db.select().from(organizations)
       .where(and(eq(organizations.type, "client"), ne(organizations.status, "archived")));
 
-    // Build venture -> org mapping
+    // Build venture maps
     const ventureToOrg = new Map<number, number>();
     for (const a of allAccess) {
       ventureToOrg.set(a.ventureId, a.organizationId);
     }
+    const ventureMap = new Map(allVentures.map(v => [v.id, v]));
 
     // Group overdue tasks by org
-    const orgOverdue = new Map<number, { count: number; maxDays: number; criticalCount: number; tasks: { id: number; title: string; daysOverdue: number; priority: string | null; severity: string }[] }>();
+    const orgOverdue = new Map<number, { count: number; maxDays: number; criticalCount: number; tasks: { id: number; title: string; daysOverdue: number; priority: string | null; severity: string; ventureName: string; sector: string }[] }>();
 
     for (const t of allTasks) {
       if (t.status === "complete" || !t.dueDate) continue;
@@ -265,6 +267,7 @@ export const tasksRouter = router({
       const orgId = t.ventureId ? ventureToOrg.get(t.ventureId) : null;
       if (!orgId) continue;
 
+      const venture = t.ventureId ? ventureMap.get(t.ventureId) : null;
       const severity = getOverdueSeverity(daysOverdue);
       const existing = orgOverdue.get(orgId) || { count: 0, maxDays: 0, criticalCount: 0, tasks: [] };
       existing.count++;
@@ -276,6 +279,8 @@ export const tasksRouter = router({
         daysOverdue,
         priority: t.priority,
         severity,
+        ventureName: venture?.name || "—",
+        sector: venture?.sector || "—",
       });
       orgOverdue.set(orgId, existing);
     }
@@ -397,5 +402,48 @@ export const tasksRouter = router({
         capacityStatus,
       };
     }).filter(m => m.assigned > 0 || m.memberType === "Internal"); // Show all internal + anyone with tasks
+  }),
+
+  /**
+   * Sector-level metrics: overdue ventures per sector.
+   * Used by the Velocity Intelligence Card for the sector warning line.
+   */
+  sectorMetrics: adminProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+
+    const now = new Date();
+    const allVentures = await db.select().from(ventures);
+    const allTasks = await db.select().from(tasks);
+
+    // Build venture -> has overdue tasks map
+    const ventureOverdue = new Map<number, boolean>();
+    for (const t of allTasks) {
+      if (t.status === "complete" || !t.dueDate || !t.ventureId) continue;
+      const daysOverdue = calculateDaysOverdue(t.dueDate, now);
+      if (daysOverdue > 0) {
+        ventureOverdue.set(t.ventureId, true);
+      }
+    }
+
+    // Group ventures by sector
+    const sectorMap = new Map<string, { total: number; overdue: number; ventureNames: string[] }>();
+    for (const v of allVentures) {
+      const sector = v.sector || "Other";
+      const existing = sectorMap.get(sector) || { total: 0, overdue: 0, ventureNames: [] };
+      existing.total++;
+      if (ventureOverdue.has(v.id)) {
+        existing.overdue++;
+      }
+      existing.ventureNames.push(v.name);
+      sectorMap.set(sector, existing);
+    }
+
+    return Array.from(sectorMap).map(([sector, data]) => ({
+      sector,
+      totalVentures: data.total,
+      overdueVentures: data.overdue,
+      overdueRate: data.total > 0 ? Math.round((data.overdue / data.total) * 100) : 0,
+    })).sort((a, b) => b.overdueVentures - a.overdueVentures);
   }),
 });

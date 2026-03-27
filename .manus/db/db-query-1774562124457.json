@@ -1,0 +1,20 @@
+{
+  "query": "\nSELECT 'team_members' as source, id, name, email, systemRole, organizationId, invitationStatus, userId FROM team_members WHERE name LIKE '%Shourya%' OR name LIKE '%Kudaravalli%' OR email LIKE '%kudaravalli%';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \nSELECT 'team_members' as source, id, name, email, systemRole, organizationId, invitationStatus, userId FROM team_members WHERE name LIKE '%Shourya%' OR name LIKE '%Kudaravalli%' OR email LIKE '%kudaravalli%';\n",
+  "rows": [
+    {
+      "source": "team_members",
+      "id": "90022",
+      "name": "Shouria kudaravalli",
+      "email": "kudaravalli.shourya@gmail.com",
+      "systemRole": "partner",
+      "organizationId": "NULL",
+      "invitationStatus": "accepted",
+      "userId": "933332"
+    }
+  ],
+  "messages": [],
+  "stdout": "source\tid\tname\temail\tsystemRole\torganizationId\tinvitationStatus\tuserId\nteam_members\t90022\tShouria kudaravalli\tkudaravalli.shourya@gmail.com\tpartner\tNULL\taccepted\t933332\n",
+  "stderr": "",
+  "execution_time_ms": 415
+}

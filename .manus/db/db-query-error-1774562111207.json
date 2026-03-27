@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT 'team_members' as source, id, fullName, email, systemRole, organizationId, invitationStatus, userId FROM team_members WHERE fullName LIKE '%Shourya%' OR fullName LIKE '%Kudaravalli%' OR email LIKE '%kudaravalli%';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \nSELECT 'team_members' as source, id, fullName, email, systemRole, organizationId, invitationStatus, userId FROM team_members WHERE fullName LIKE '%Shourya%' OR fullName LIKE '%Kudaravalli%' OR email LIKE '%kudaravalli%';\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'fullname' in 'where clause'"
+  ]
+}
