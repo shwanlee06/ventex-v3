@@ -27,8 +27,10 @@ import AccessManagement from "./pages/AccessManagement";
 import InviteAccept from "./pages/InviteAccept";
 import ClientDetail from "./pages/ClientDetail";
 import AtlasTeam from "./pages/AtlasTeam";
+import AgentsPage from "./pages/Agents";
 import AcceptInvite from "./pages/AcceptInvite";
 import { useHeartbeat } from "./hooks/useHeartbeat";
+import { AgentProvider } from "./contexts/AgentContext";
 
 /* Auth guard — redirects to login if no operator in localStorage */
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -122,6 +124,9 @@ function Router() {
       <Route path="/agent">
         <RequireAuth><RequireAtlas><Agent /></RequireAtlas></RequireAuth>
       </Route>
+      <Route path="/agents">
+        <RequireAuth><RequireAtlas><AgentsPage /></RequireAtlas></RequireAuth>
+      </Route>
       <Route path="/team/:slug">
         <RequireAuth><RequireAtlas><TeamMemberDetail /></RequireAtlas></RequireAuth>
       </Route>
@@ -160,8 +165,10 @@ function App() {
           <WorkspaceProvider>
             <TooltipProvider>
               <HeartbeatProvider>
-                <Toaster />
-                <Router />
+                <AgentProvider>
+                  <Toaster />
+                  <Router />
+                </AgentProvider>
               </HeartbeatProvider>
             </TooltipProvider>
           </WorkspaceProvider>

@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { usePreviewMode } from "@/contexts/PreviewMode";
-import { Bell, Search, User, Settings, LogOut, Eye, EyeOff, X } from "lucide-react";
+import { Bell, Search, User, Settings, LogOut, Eye, EyeOff, X, AlertTriangle } from "lucide-react";
+import { useAgents } from "@/contexts/AgentContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -28,6 +29,7 @@ function isAtlasRole(role?: string): boolean {
 
 export default function Topbar({ title, subtitle }: TopbarProps) {
   const { unreadCount } = useNotifications();
+  const { unreadCounts: agentUnread, isOperator: isAgentOperator } = useAgents();
   const [notifOpen, setNotifOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [, navigate] = useLocation();
@@ -145,9 +147,18 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
             className="relative flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
           >
             <Bell className="size-4" />
-            {unreadCount > 0 && (
+            {/* Agent critical badge */}
+            {isAgentOperator && agentUnread.critical > 0 ? (
+              <span className="absolute top-1.5 right-1 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-[9px] font-bold text-white ring-2 ring-background">
+                {agentUnread.critical}
+              </span>
+            ) : isAgentOperator && agentUnread.warning > 0 ? (
+              <span className="absolute top-1.5 right-1 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-[9px] font-bold text-white ring-2 ring-background">
+                {agentUnread.warning}
+              </span>
+            ) : (unreadCount > 0 || agentUnread.total > 0) ? (
               <span className="absolute top-2 right-2 size-2.5 rounded-full bg-red-500 ring-2 ring-background" />
-            )}
+            ) : null}
           </button>
 
           {/* User Avatar Dropdown */}

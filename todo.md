@@ -1037,3 +1037,18 @@
 - [x] Upgrade 6: Team Venture Attribution (Client page) — TeamVentureAttribution mini-table with venture assignments, role badges, sorted by assignment count
 - [x] Upgrade 7: Command Palette (Global) — Enhanced existing CommandPalette with Cmd+K/Ctrl+K shortcut alongside existing / shortcut
 - [x] All 293 tests passing, 0 TypeScript errors
+
+## Bug Fix: Permission Error (10002) on Home Page for Unauthenticated Users
+- [x] Root cause: WorkspaceContext fires `organizations.list` (adminProcedure) on every page including SpyOps landing
+- [x] Fix: Added `enabled: !!isAtlasUser` to the query — only fires when user is authenticated with owner/admin/partner role
+- [x] 0 TypeScript errors after fix
+
+## ATLAS Layer 1: Simulated Agent System
+- [x] Step 1: Create agent_events table in Drizzle schema + push migration (0015_rich_the_spike.sql)
+- [x] Step 2: Build server-side agent engine (4 agents: Overdue, Venture, Distribution, Orchestrator) — agents.ts router with partnerProcedure, invokeLLM for critical signals
+- [x] Step 3: Create AgentProvider React context for operator-only agent state — polls agents on intervals, exposes useAgents() hook
+- [x] Step 4: Upgrade bell icon with agent severity badges (critical count in red, warning in amber, dot fallback)
+- [x] Step 5: Add Live Ticker strip to dashboard (operator only) — LiveTicker component with scrolling animation, severity icons, agent badges
+- [x] Step 6: Build /agents page with 2x2 agent cards + signal history
+- [x] Step 7: Fix agent name mapping — DB display names ("Overdue Agent", "Venture Agent", etc.) resolved to UI short keys in Agents.tsx and LiveTicker.tsx
+- [x] Step 8: Fix AtlasDashboard.tsx unterminated JSX error (missing closing div)

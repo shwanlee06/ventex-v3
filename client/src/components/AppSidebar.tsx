@@ -29,6 +29,7 @@ import {
   Loader2,
   Settings,
   Shield,
+  Cpu,
 } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useState, useMemo } from "react";
@@ -51,6 +52,7 @@ interface NavItem {
 const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="size-5" /> },
   { label: "AI Concierge", href: "/agent", icon: <Bot className="size-5" />, atlasOnly: true },
+  { label: "Agents", href: "/agents", icon: <Cpu className="size-5" />, atlasOnly: true },
   { label: "ATLAS Team", href: "/atlas-team", icon: <Shield className="size-5" />, atlasOnly: true },
   { label: "Client Contacts", href: "/team", icon: <Users className="size-5" />, atlasOnly: true },
   { label: "Activity", href: "/activity", icon: <Activity className="size-5" /> },
