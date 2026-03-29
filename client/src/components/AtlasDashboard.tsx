@@ -59,6 +59,7 @@ import AITaskGenerator from "@/components/AITaskGenerator";
 import OverdueAlertBanner from "@/components/OverdueAlertBanner";
 import LivePresenceWidget from "@/components/LivePresenceWidget";
 import VelocityIntelligenceCard from "@/components/VelocityIntelligenceCard";
+import VelocityKPI from "@/components/VelocityKPI";
 
 // ── Types ───────────────────────────────────────────────────────────────
 type SortField = "name" | "ventures" | "velocity" | "overdue" | "health" | "completion";
@@ -410,6 +411,9 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
 
       {/* ── Overdue Alert Banner ────────────────────────────────── */}
       <OverdueAlertBanner onNavigate={onNavigate} />
+
+      {/* ── Velocity Compression KPI ────────────────────────────── */}
+      <VelocityKPI />
 
       {/* ── Active / Archived Tabs ────────────────────────────────── */}
       <div className="flex items-center gap-1 border-b border-border">

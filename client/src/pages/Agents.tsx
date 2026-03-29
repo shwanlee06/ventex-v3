@@ -1,42 +1,59 @@
 // ============================================================================
-// Agents Page — AI Agent Monitoring Dashboard
-// 2x2 agent cards + signal history feed + run controls
+// Agents Page — AI Agent Monitoring Dashboard (Velocity Build)
+// 2x2 agent cards with pause/resume, run now, severity bars, action buttons
+// Signal history with action indicators
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
-import { useAgents, AGENT_CONFIG, resolveAgentKey, getAgentConfig, type AgentKey } from "@/contexts/AgentContext";
+import {
+  useAgents, AGENT_CONFIG, resolveAgentKey, getAgentConfig,
+  type AgentKey, type AgentEvent,
+} from "@/contexts/AgentContext";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   AlertTriangle, AlertCircle, Info, Play, Loader2,
-  CheckCircle2, Eye, Clock, Zap, Brain,
+  CheckCircle2, Eye, Clock, Zap, Brain, Pause, RotateCcw,
+  FileText, ArrowRight, Shield, Send, XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { useLocation } from "wouter";
 
 // ── Severity Helpers ────────────────────────────────────────────────────
 
-const SEVERITY_STYLES: Record<string, { icon: React.ReactNode; bg: string; text: string; border: string }> = {
+const SEVERITY_STYLES: Record<string, { icon: React.ReactNode; bg: string; text: string; border: string; color: string }> = {
   critical: {
     icon: <AlertCircle className="size-3.5" />,
     bg: "bg-red-500/10",
     text: "text-red-400",
     border: "border-red-500/20",
+    color: "#EF4444",
   },
   warning: {
     icon: <AlertTriangle className="size-3.5" />,
     bg: "bg-amber-500/10",
     text: "text-amber-400",
     border: "border-amber-500/20",
+    color: "#F59E0B",
+  },
+  success: {
+    icon: <CheckCircle2 className="size-3.5" />,
+    bg: "bg-emerald-500/10",
+    text: "text-emerald-400",
+    border: "border-emerald-500/20",
+    color: "#4ADE80",
   },
   info: {
     icon: <Info className="size-3.5" />,
     bg: "bg-blue-500/10",
     text: "text-blue-400",
     border: "border-blue-500/20",
+    color: "#3B82F6",
   },
 };
 
@@ -52,82 +69,196 @@ function formatTimeAgo(date: Date): string {
   return `${diffDays}d ago`;
 }
 
+// ── Severity Distribution Bar ──────────────────────────────────────────
+
+function SeverityBar({ events }: { events: AgentEvent[] }) {
+  const counts = useMemo(() => {
+    const c = { critical: 0, warning: 0, success: 0, info: 0 };
+    for (const e of events) {
+      if (e.severity in c) c[e.severity as keyof typeof c]++;
+    }
+    return c;
+  }, [events]);
+
+  const total = events.length || 1;
+
+  return (
+    <div className="space-y-1.5">
+      {/* Bar */}
+      <div className="h-2 rounded-full bg-secondary/50 overflow-hidden flex">
+        {counts.critical > 0 && (
+          <div
+            className="h-full bg-red-500 transition-all"
+            style={{ width: `${(counts.critical / total) * 100}%` }}
+          />
+        )}
+        {counts.warning > 0 && (
+          <div
+            className="h-full bg-amber-500 transition-all"
+            style={{ width: `${(counts.warning / total) * 100}%` }}
+          />
+        )}
+        {counts.success > 0 && (
+          <div
+            className="h-full bg-emerald-500 transition-all"
+            style={{ width: `${(counts.success / total) * 100}%` }}
+          />
+        )}
+        {counts.info > 0 && (
+          <div
+            className="h-full bg-blue-500 transition-all"
+            style={{ width: `${(counts.info / total) * 100}%` }}
+          />
+        )}
+      </div>
+      {/* Legend */}
+      <div className="flex items-center gap-3 text-[9px] font-mono text-muted-foreground">
+        {counts.critical > 0 && (
+          <span className="flex items-center gap-1"><span className="size-1.5 rounded-full bg-red-500" />{counts.critical} critical</span>
+        )}
+        {counts.warning > 0 && (
+          <span className="flex items-center gap-1"><span className="size-1.5 rounded-full bg-amber-500" />{counts.warning} warning</span>
+        )}
+        {counts.success > 0 && (
+          <span className="flex items-center gap-1"><span className="size-1.5 rounded-full bg-emerald-500" />{counts.success} success</span>
+        )}
+        {counts.info > 0 && (
+          <span className="flex items-center gap-1"><span className="size-1.5 rounded-full bg-blue-500" />{counts.info} info</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Agent Card ──────────────────────────────────────────────────────────
 
 function AgentCard({
   agentKey,
-  eventCount,
-  latestMessage,
-  latestSeverity,
+  events,
   isRunning,
+  isPaused,
   onRun,
+  onTogglePause,
 }: {
   agentKey: AgentKey;
-  eventCount: number;
-  latestMessage: string | null;
-  latestSeverity: string | null;
+  events: AgentEvent[];
   isRunning: boolean;
+  isPaused: boolean;
   onRun: () => void;
+  onTogglePause: () => void;
 }) {
   const config = AGENT_CONFIG[agentKey];
-  const severity = latestSeverity ? SEVERITY_STYLES[latestSeverity] : SEVERITY_STYLES.info;
+  const latestEvent = events[0] || null;
+  const latestSeverity = latestEvent ? SEVERITY_STYLES[latestEvent.severity] || SEVERITY_STYLES.info : SEVERITY_STYLES.info;
+  const actionableCount = events.filter(e => e.actionType && !e.actionTaken).length;
+  const draftCount = events.filter(e => e.eventType === "draft_generated" && !e.actionTaken).length;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card border border-border rounded-xl p-5 flex flex-col gap-4 group hover:border-primary/20 transition-all"
+      className={cn(
+        "bg-card border rounded-xl p-5 flex flex-col gap-4 group transition-all",
+        isPaused ? "border-amber-500/30 opacity-70" : "border-border hover:border-primary/20"
+      )}
     >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div
-            className="flex items-center justify-center size-9 rounded-lg"
+            className="flex items-center justify-center size-9 rounded-lg relative"
             style={{ backgroundColor: `${config.color}15` }}
           >
             <Brain className="size-4" style={{ color: config.color }} />
+            {isPaused && (
+              <div className="absolute -top-1 -right-1 size-4 rounded-full bg-amber-500 flex items-center justify-center">
+                <Pause className="size-2.5 text-white" />
+              </div>
+            )}
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-foreground">{config.label}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-foreground">{config.label}</h3>
+              {isPaused && (
+                <Badge variant="outline" className="text-[9px] h-4 border-amber-500/30 text-amber-400">
+                  PAUSED
+                </Badge>
+              )}
+            </div>
             <p className="text-[10px] text-muted-foreground">{config.description}</p>
           </div>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-7 text-[10px] gap-1"
-          onClick={onRun}
-          disabled={isRunning}
-        >
-          {isRunning ? (
-            <Loader2 className="size-3 animate-spin" />
-          ) : (
-            <Play className="size-3" />
-          )}
-          Run
-        </Button>
+        <div className="flex items-center gap-1.5">
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 w-7 p-0"
+            onClick={onTogglePause}
+            title={isPaused ? "Resume agent" : "Pause agent"}
+          >
+            {isPaused ? (
+              <Play className="size-3 text-emerald-400" />
+            ) : (
+              <Pause className="size-3 text-muted-foreground" />
+            )}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-[10px] gap-1"
+            onClick={onRun}
+            disabled={isRunning || isPaused}
+          >
+            {isRunning ? (
+              <Loader2 className="size-3 animate-spin" />
+            ) : (
+              <Zap className="size-3" />
+            )}
+            Run Now
+          </Button>
+        </div>
       </div>
 
-      {/* Stats */}
-      <div className="flex items-center gap-4">
+      {/* Stats row */}
+      <div className="flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-1.5">
           <Zap className="size-3 text-muted-foreground" />
-          <span className="text-xs font-mono text-foreground">{eventCount}</span>
+          <span className="text-xs font-mono text-foreground">{events.length}</span>
           <span className="text-[10px] text-muted-foreground">signals</span>
         </div>
-        {latestSeverity && (
-          <div className={cn("flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium", severity.bg, severity.text)}>
-            {severity.icon}
-            {latestSeverity}
+        {actionableCount > 0 && (
+          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 text-[10px] font-medium">
+            <ArrowRight className="size-3" />
+            {actionableCount} pending actions
           </div>
+        )}
+        {draftCount > 0 && (
+          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[10px] font-medium">
+            <FileText className="size-3" />
+            {draftCount} drafts
+          </div>
+        )}
+        {latestEvent && (
+          <span className="text-[9px] font-mono text-muted-foreground/60 ml-auto">
+            Last: {formatTimeAgo(latestEvent.createdAt)}
+          </span>
         )}
       </div>
 
+      {/* Severity distribution bar */}
+      {events.length > 0 && <SeverityBar events={events} />}
+
       {/* Latest Signal */}
-      {latestMessage && (
-        <div className="bg-secondary/30 rounded-lg p-3 border border-border/50">
-          <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
-            {latestMessage}
+      {latestEvent && (
+        <div className={cn("rounded-lg p-3 border", latestSeverity.bg, latestSeverity.border)}>
+          <div className="flex items-center gap-1.5 mb-1">
+            {latestSeverity.icon}
+            <span className={cn("text-[10px] font-medium", latestSeverity.text)}>
+              {latestEvent.severity} — {latestEvent.eventType.replace(/_/g, " ")}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+            {latestEvent.message}
           </p>
         </div>
       )}
@@ -138,47 +269,76 @@ function AgentCard({
 // ── Main Page ───────────────────────────────────────────────────────────
 
 export default function AgentsPage() {
-  const { events, metrics, isLoading, isRunning, runAllAgents, runSingleAgent, markAllRead } = useAgents();
+  const {
+    events, metrics, isLoading, isRunning,
+    runAllAgents, runSingleAgent, markAllRead,
+    executeAction,
+  } = useAgents();
+  const [, navigate] = useLocation();
   const [filterAgent, setFilterAgent] = useState<string>("all");
+  const [filterSeverity, setFilterSeverity] = useState<string>("all");
+  const [pausedAgents, setPausedAgents] = useState<Set<AgentKey>>(new Set());
 
-  // Compute per-agent data
-  const agentData = useMemo(() => {
-    const data: Record<AgentKey, { count: number; latestMessage: string | null; latestSeverity: string | null }> = {
-      overdue: { count: 0, latestMessage: null, latestSeverity: null },
-      venture: { count: 0, latestMessage: null, latestSeverity: null },
-      distribution: { count: 0, latestMessage: null, latestSeverity: null },
-      orchestrator: { count: 0, latestMessage: null, latestSeverity: null },
+  // Compute per-agent events
+  const agentEvents = useMemo(() => {
+    const data: Record<AgentKey, AgentEvent[]> = {
+      overdue: [], velocity: [], distribution: [], orchestrator: [],
     };
-
     for (const event of events) {
       const key = resolveAgentKey(event.agentName);
-      if (data[key]) {
-        data[key].count++;
-        if (!data[key].latestMessage) {
-          data[key].latestMessage = event.message;
-          data[key].latestSeverity = event.severity;
-        }
-      }
+      if (data[key]) data[key].push(event);
     }
-
     return data;
   }, [events]);
 
-  // Filtered events
+  // Filtered events for history
   const filteredEvents = useMemo(() => {
-    if (filterAgent === "all") return events;
-    return events.filter((e) => resolveAgentKey(e.agentName) === filterAgent);
-  }, [events, filterAgent]);
+    let filtered = events;
+    if (filterAgent !== "all") {
+      filtered = filtered.filter(e => resolveAgentKey(e.agentName) === filterAgent);
+    }
+    if (filterSeverity !== "all") {
+      filtered = filtered.filter(e => e.severity === filterSeverity);
+    }
+    return filtered;
+  }, [events, filterAgent, filterSeverity]);
 
-  const handleRunAll = () => {
+  const handleRunAll = useCallback(() => {
     runAllAgents();
     toast.info("Running all agents...");
-  };
+  }, [runAllAgents]);
 
-  const handleRunSingle = (key: AgentKey) => {
+  const handleRunSingle = useCallback((key: AgentKey) => {
+    if (pausedAgents.has(key)) {
+      toast.warning(`${AGENT_CONFIG[key].label} is paused — resume it first`);
+      return;
+    }
     runSingleAgent(key);
     toast.info(`Running ${AGENT_CONFIG[key].label}...`);
-  };
+  }, [runSingleAgent, pausedAgents]);
+
+  const togglePause = useCallback((key: AgentKey) => {
+    setPausedAgents(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+        toast.success(`${AGENT_CONFIG[key].label} resumed`);
+      } else {
+        next.add(key);
+        toast.info(`${AGENT_CONFIG[key].label} paused`);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleAction = useCallback((event: AgentEvent, actionType: string) => {
+    if (actionType === "review_draft") {
+      navigate("/drafts");
+    } else {
+      executeAction(event.id, actionType);
+      toast.success("Action executed");
+    }
+  }, [executeAction, navigate]);
 
   return (
     <DashboardLayout title="AI Agents" subtitle="INTELLIGENCE MONITORING">
@@ -193,11 +353,11 @@ export default function AgentsPage() {
             {metrics && (
               <div className="flex items-center gap-3 text-[10px] font-mono text-muted-foreground">
                 <span>{metrics.total} signals</span>
-                <span>•</span>
+                <span>·</span>
                 <span className="text-red-400">{metrics.critical} critical</span>
-                <span>•</span>
+                <span>·</span>
                 <span className="text-amber-400">{metrics.warning} warnings</span>
-                <span>•</span>
+                <span>·</span>
                 <span>{metrics.unread} unread</span>
               </div>
             )}
@@ -228,7 +388,7 @@ export default function AgentsPage() {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-48 rounded-xl" />
+              <Skeleton key={i} className="h-56 rounded-xl" />
             ))}
           </div>
         ) : (
@@ -237,11 +397,11 @@ export default function AgentsPage() {
               <AgentCard
                 key={key}
                 agentKey={key}
-                eventCount={agentData[key].count}
-                latestMessage={agentData[key].latestMessage}
-                latestSeverity={agentData[key].latestSeverity}
+                events={agentEvents[key]}
                 isRunning={isRunning}
+                isPaused={pausedAgents.has(key)}
                 onRun={() => handleRunSingle(key)}
+                onTogglePause={() => togglePause(key)}
               />
             ))}
           </div>
@@ -249,23 +409,44 @@ export default function AgentsPage() {
 
         {/* Signal History */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <h2 className="text-sm font-semibold text-foreground">Signal History</h2>
-            <div className="flex items-center gap-1.5">
-              {["all", ...Object.keys(AGENT_CONFIG)].map((key) => (
-                <button
-                  key={key}
-                  onClick={() => setFilterAgent(key)}
-                  className={cn(
-                    "px-2 py-0.5 rounded text-[10px] font-mono transition-colors",
-                    filterAgent === key
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                  )}
-                >
-                  {key === "all" ? "All" : AGENT_CONFIG[key as AgentKey].label.split(" ")[0]}
-                </button>
-              ))}
+            <div className="flex items-center gap-3">
+              {/* Agent filter */}
+              <div className="flex items-center gap-1">
+                {["all", ...Object.keys(AGENT_CONFIG)].map((key) => (
+                  <button
+                    key={key}
+                    onClick={() => setFilterAgent(key)}
+                    className={cn(
+                      "px-2 py-0.5 rounded text-[10px] font-mono transition-colors",
+                      filterAgent === key
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    )}
+                  >
+                    {key === "all" ? "All" : AGENT_CONFIG[key as AgentKey].label.split(" ")[0]}
+                  </button>
+                ))}
+              </div>
+              {/* Severity filter */}
+              <div className="flex items-center gap-1 border-l border-border pl-3">
+                {["all", "critical", "warning", "success", "info"].map((sev) => (
+                  <button
+                    key={sev}
+                    onClick={() => setFilterSeverity(sev)}
+                    className={cn(
+                      "px-1.5 py-0.5 rounded text-[10px] font-mono transition-colors flex items-center gap-1",
+                      filterSeverity === sev
+                        ? sev === "all" ? "bg-primary/10 text-primary" : `${SEVERITY_STYLES[sev]?.bg} ${SEVERITY_STYLES[sev]?.text}`
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    )}
+                  >
+                    {sev !== "all" && <span className="size-1.5 rounded-full" style={{ backgroundColor: SEVERITY_STYLES[sev]?.color }} />}
+                    {sev === "all" ? "All" : sev}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -283,6 +464,8 @@ export default function AgentsPage() {
                   {filteredEvents.map((event, i) => {
                     const config = getAgentConfig(event.agentName);
                     const severity = SEVERITY_STYLES[event.severity] ?? SEVERITY_STYLES.info;
+                    const hasAction = event.actionType && !event.actionTaken;
+                    const actionTaken = event.actionTaken;
 
                     return (
                       <motion.div
@@ -311,6 +494,9 @@ export default function AgentsPage() {
                               {severity.icon}
                               {event.severity}
                             </div>
+                            <span className="text-[9px] font-mono text-muted-foreground/60 bg-secondary/30 px-1 rounded">
+                              {event.eventType.replace(/_/g, " ")}
+                            </span>
                             <span className="text-[9px] font-mono text-muted-foreground/60">
                               {formatTimeAgo(event.createdAt)}
                             </span>
@@ -321,6 +507,49 @@ export default function AgentsPage() {
                           <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                             {event.message}
                           </p>
+
+                          {/* Entity info */}
+                          {event.agentEntityName && (
+                            <div className="flex items-center gap-1.5 mt-1.5">
+                              <span className="text-[9px] text-muted-foreground/60 font-mono">
+                                {event.entityType}: {event.agentEntityName}
+                              </span>
+                              {event.oldStatus && event.newStatus && (
+                                <span className="text-[9px] font-mono text-muted-foreground/60">
+                                  {event.oldStatus} → {event.newStatus}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Action buttons */}
+                          {hasAction && (
+                            <div className="flex items-center gap-1.5 mt-2">
+                              {event.actionType!.split(",").map(action => {
+                                const actionKey = action.trim();
+                                return (
+                                  <Button
+                                    key={actionKey}
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-6 text-[10px] px-2 gap-1"
+                                    onClick={() => handleAction(event, actionKey)}
+                                  >
+                                    {actionKey === "review_draft" ? <FileText className="size-3" /> : <Zap className="size-3" />}
+                                    {actionKey.replace(/_/g, " ")}
+                                  </Button>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {/* Action taken indicator */}
+                          {actionTaken && (
+                            <div className="flex items-center gap-1 mt-1.5">
+                              <CheckCircle2 className="size-3 text-emerald-400" />
+                              <span className="text-[10px] text-emerald-400 font-mono">Action completed</span>
+                            </div>
+                          )}
                         </div>
                       </motion.div>
                     );

@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { usePreviewMode } from "@/contexts/PreviewMode";
-import { Bell, Search, User, Settings, LogOut, Eye, EyeOff, X } from "lucide-react";
+import { useAgents } from "@/contexts/AgentContext";
+import { Bell, Search, User, Settings, LogOut, Eye, EyeOff, X, FileText } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -15,7 +16,7 @@ import CommandPalette from "@/components/CommandPalette";
 import { useState, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
-import { endCurrentSession, logAction } from "@/lib/operatorSession";
+import { endCurrentSession } from "@/lib/operatorSession";
 
 interface TopbarProps {
   title: string;
@@ -33,6 +34,19 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
   const [, navigate] = useLocation();
   const { user, logout } = useAuth();
   const { isPreviewMode, togglePreview, exitPreview } = usePreviewMode();
+
+  // Agent context for severity-based bell badge
+  let criticalUnread = 0;
+  let warningUnread = 0;
+  let pendingDraftCount = 0;
+  try {
+    const agents = useAgents();
+    criticalUnread = agents.criticalUnread;
+    warningUnread = agents.warningUnread;
+    pendingDraftCount = agents.pendingDraftCount;
+  } catch {
+    // AgentProvider may not be mounted yet
+  }
 
   const isReallyAtlas = isAtlasRole(user?.role);
   const isAtlas = isPreviewMode ? false : isReallyAtlas;
@@ -74,6 +88,16 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
       navigate("/dashboard");
     }
   }, [isPreviewMode, togglePreview, exitPreview, navigate]);
+
+  // Severity-based bell badge
+  const totalBadge = unreadCount + criticalUnread + pendingDraftCount;
+  const bellBadgeColor = criticalUnread > 0
+    ? "bg-red-500 animate-pulse"
+    : warningUnread > 0
+      ? "bg-amber-500"
+      : totalBadge > 0
+        ? "bg-primary"
+        : "";
 
   return (
     <>
@@ -127,6 +151,18 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
             </button>
           )}
 
+          {/* Drafts indicator — ATLAS only */}
+          {isAtlas && pendingDraftCount > 0 && (
+            <button
+              onClick={() => navigate("/drafts")}
+              className="flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] sm:h-9 sm:min-w-0 sm:px-3 rounded-lg text-xs transition-colors bg-purple-500/10 text-purple-400 hover:bg-purple-500/20"
+              title={`${pendingDraftCount} pending drafts`}
+            >
+              <FileText className="size-4" />
+              <span className="hidden sm:inline">{pendingDraftCount}</span>
+            </button>
+          )}
+
           {/* Search — icon only on mobile, expanded on desktop */}
           <button
             onClick={() => setCmdOpen(true)}
@@ -139,14 +175,17 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
             </kbd>
           </button>
 
-          {/* Notifications */}
+          {/* Notifications — severity-based badge */}
           <button
             onClick={() => setNotifOpen(true)}
             className="relative flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
           >
             <Bell className="size-4" />
-            {unreadCount > 0 && (
-              <span className="absolute top-2 right-2 size-2.5 rounded-full bg-red-500 ring-2 ring-background" />
+            {totalBadge > 0 && (
+              <span className={cn(
+                "absolute top-2 right-2 size-2.5 rounded-full ring-2 ring-background",
+                bellBadgeColor
+              )} />
             )}
           </button>
 

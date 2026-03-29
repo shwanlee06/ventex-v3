@@ -518,21 +518,66 @@ export const userPreferences = mysqlTable("user_preferences", {
 export type UserPreference = typeof userPreferences.$inferSelect;
 export type InsertUserPreference = typeof userPreferences.$inferInsert;
 
-// ── Agent Events (AI Agent System Layer 1) ──────────────────────────────
+// ── Agent Events (AI Agent System — Velocity Build) ─────────────────────
 export const agentEvents = mysqlTable("agent_events", {
   id: int("id").autoincrement().primaryKey(),
   agentName: varchar("agentName", { length: 64 }).notNull(),
   eventType: varchar("eventType", { length: 32 }).notNull(),
   message: text("message").notNull(),
   severity: varchar("severity", { length: 16 }).notNull(),
+  // Action system — every event can carry an executable action
+  actionType: varchar("actionType", { length: 32 }),       // 'notify' | 'advance' | 'draft' | 'escalate'
+  actionLabel: varchar("actionLabel", { length: 128 }),     // human-readable: "Send Reminder"
+  actionPayload: json("actionPayload").$type<Record<string, unknown>>(), // data needed to execute
+  // Entity linking
   entityType: varchar("entityType", { length: 32 }),
   agentEntityId: varchar("agentEntityId", { length: 64 }),
   agentEntityName: varchar("agentEntityName", { length: 255 }),
   oldStatus: varchar("oldStatus", { length: 64 }),
   newStatus: varchar("newStatus", { length: 64 }),
+  // Status tracking
   isRead: boolean("isRead").default(false).notNull(),
+  actionTaken: boolean("actionTaken").default(false).notNull(),
+  actionTakenAt: timestamp("actionTakenAt"),
+  actionTakenBy: varchar("actionTakenBy", { length: 255 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type AgentEvent = typeof agentEvents.$inferSelect;
 export type InsertAgentEvent = typeof agentEvents.$inferInsert;
+
+// ── Venture Velocity (stage advance tracking) ────────────────────────────
+export const ventureVelocity = mysqlTable("venture_velocity", {
+  id: int("id").autoincrement().primaryKey(),
+  ventureId: int("ventureId").notNull(),
+  ventureName: varchar("ventureName", { length: 255 }).notNull(),
+  sector: varchar("sector", { length: 64 }),
+  fromStage: varchar("fromStage", { length: 64 }).notNull(),
+  toStage: varchar("toStage", { length: 64 }).notNull(),
+  daysInStage: int("daysInStage").notNull(),
+  advancedBy: varchar("advancedBy", { length: 128 }),  // 'agent' | 'manual' | user name
+  advancedAt: timestamp("advancedAt").defaultNow().notNull(),
+});
+
+export type VentureVelocity = typeof ventureVelocity.$inferSelect;
+export type InsertVentureVelocity = typeof ventureVelocity.$inferInsert;
+
+// ── Agent Drafts (AI-generated communications) ───────────────────────────
+export const agentDrafts = mysqlTable("agent_drafts", {
+  id: int("id").autoincrement().primaryKey(),
+  ventureId: int("ventureId"),
+  ventureName: varchar("ventureName", { length: 255 }),
+  draftType: varchar("draftType", { length: 32 }).notNull(),  // 'follow_up' | 'reminder' | 'escalation' | 'update' | 'lp_notice'
+  subject: varchar("subject", { length: 500 }),
+  body: text("body").notNull(),
+  recipientName: varchar("recipientName", { length: 255 }),
+  recipientRole: varchar("recipientRole", { length: 128 }),
+  status: varchar("draftStatus", { length: 16 }).default("pending").notNull(),  // 'pending' | 'sent' | 'dismissed'
+  sentAt: timestamp("sentAt"),
+  sentBy: varchar("sentBy", { length: 255 }),
+  createdByAgent: varchar("createdByAgent", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AgentDraft = typeof agentDrafts.$inferSelect;
+export type InsertAgentDraft = typeof agentDrafts.$inferInsert;

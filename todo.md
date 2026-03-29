@@ -1052,3 +1052,28 @@
 - [x] Step 11: Wrap app with AgentProvider in App.tsx
 - [x] Step 12: Fix agent name mapping — DB display names resolved to UI short keys
 - [x] Step 13: Write vitest tests for agents router (11 tests including LLM integration)
+
+## ATLAS Velocity AI Master Build
+- [x] Section 1: Add venture_velocity table to schema
+- [x] Section 1: Add agent_drafts table to schema
+- [x] Section 1: Add missing columns to agent_events (action_type, action_label, action_payload, action_taken, action_taken_at, action_taken_by)
+- [x] Section 1: Push DB migrations
+- [x] Section 2: Upgrade Overdue Agent — update task status, draft follow-ups, save to agent_drafts
+- [x] Section 2: Upgrade Velocity Agent — auto-advance stages, velocity tracking, stall detection
+- [x] Section 2: Upgrade Distribution Sentinel — draft LP notifications, save to agent_drafts
+- [x] Section 2: Upgrade Orchestrator — entity linking, portfolio-wide insights
+- [x] Section 3: Upgrade AgentContext — drafts state, sendDraft, dismissDraft, runAgent, agent statuses
+- [x] Section 4: Refine LiveTicker — 36px height, severity dots, click-to-open notification panel
+- [x] Section 5: Upgrade bell icon — severity-based badge colors (red pulsing/amber/clear)
+- [x] Section 5: Action notification panel — action buttons per event type
+- [x] Section 5: Draft preview modal — edit + send/dismiss
+- [x] Section 6: Velocity Compression KPI card on dashboard
+- [x] Section 6: Velocity Log tab on client page (data available via velocityMetrics in AgentContext)
+- [x] Section 7: Draft Center page at /drafts with Pending/Sent/Dismissed tabs
+- [x] Section 7: Add Drafts nav item to sidebar
+- [x] Section 8: Upgrade /agents page — pause/resume, run now, severity bars, action buttons
+- [x] Section 9A: Client dashboard action cards (replace static stats)
+- [x] Section 9B: Client ventures stage bar + sector filter pills
+- [ ] Section 9C: Client tasks sort by overdue + progress bar + overdue banner
+- [ ] Section 9D: Client distributions timeline view + summary pills
+- [ ] Section 9E: Client profile page

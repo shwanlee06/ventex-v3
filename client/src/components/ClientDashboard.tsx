@@ -1,6 +1,7 @@
 // ============================================================================
-// Client Dashboard — Clean, Spacious, Mobile-First
-// Premium feel with generous whitespace and large touch targets
+// Client Dashboard — Premium, Outcome-Focused, Action-Oriented
+// Action cards replace static stats · Stage bars · Sector pills
+// No agent internals visible · Clean, confident English
 // ============================================================================
 
 import { cn } from "@/lib/utils";
@@ -17,6 +18,7 @@ import {
   Briefcase,
   DollarSign,
   ArrowUpRight,
+  ArrowRight,
   ChevronRight,
   TrendingUp,
   Building2,
@@ -26,10 +28,14 @@ import {
   Fuel,
   Package,
   Clock,
+  AlertTriangle,
+  ListChecks,
+  CheckCircle2,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 const THEME_ICONS: Record<string, React.ReactNode> = {
@@ -41,6 +47,87 @@ const THEME_ICONS: Record<string, React.ReactNode> = {
   "Others": <Package className="size-5" />,
 };
 
+// ── Stage Progress Bar ──────────────────────────────────────────────────
+
+const VENTURE_STAGES = ["In Validation", "In Fundraising", "Active", "Completed"];
+
+function StageProgressBar({ currentStage }: { currentStage: string }) {
+  const currentIndex = VENTURE_STAGES.indexOf(currentStage);
+
+  return (
+    <div className="flex items-center gap-1 mt-3">
+      {VENTURE_STAGES.map((stage, i) => {
+        const isCompleted = i < currentIndex;
+        const isCurrent = i === currentIndex;
+        return (
+          <div key={stage} className="flex items-center gap-1 flex-1">
+            <div
+              className={cn(
+                "h-1.5 rounded-full flex-1 transition-all",
+                isCompleted ? "bg-emerald-500" :
+                isCurrent ? "bg-primary" :
+                "bg-secondary/50"
+              )}
+            />
+            {i < VENTURE_STAGES.length - 1 && (
+              <div className="size-0.5 rounded-full bg-border/50 flex-shrink-0" />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Sector Filter Pills ─────────────────────────────────────────────────
+
+function SectorPills({
+  sectors,
+  active,
+  onSelect,
+}: {
+  sectors: { name: string; count: number }[];
+  active: string | null;
+  onSelect: (name: string | null) => void;
+}) {
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <button
+        onClick={() => onSelect(null)}
+        className={cn(
+          "px-3 py-1.5 rounded-full text-[11px] font-medium transition-all",
+          !active
+            ? "bg-primary/10 text-primary border border-primary/20"
+            : "bg-secondary/30 text-muted-foreground hover:text-foreground border border-transparent"
+        )}
+      >
+        All ({sectors.reduce((s, sec) => s + sec.count, 0)})
+      </button>
+      {sectors.map((sec) => {
+        const tc = getThemeColor(sec.name);
+        const isActive = active === sec.name;
+        return (
+          <button
+            key={sec.name}
+            onClick={() => onSelect(isActive ? null : sec.name)}
+            className={cn(
+              "px-3 py-1.5 rounded-full text-[11px] font-medium transition-all flex items-center gap-1.5",
+              isActive
+                ? "border border-primary/20"
+                : "bg-secondary/30 text-muted-foreground hover:text-foreground border border-transparent"
+            )}
+            style={isActive ? { backgroundColor: `${tc.color}15`, color: tc.color } : undefined}
+          >
+            {sec.name} ({sec.count})
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Main Component ──────────────────────────────────────────────────────
+
 interface ClientDashboardProps {
   onNavigate: (path: string) => void;
 }
@@ -49,11 +136,13 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
   const { user } = useAuth();
   const { activeOrg } = useWorkspace();
   const orgFilter = activeOrg?.id ? { organizationId: activeOrg.id } : undefined;
+  const [activeSector, setActiveSector] = useState<string | null>(null);
 
   // ── Data queries (scoped by active org) ──────────────────────
   const venturesQ = trpc.ventures.list.useQuery(orgFilter);
   const spvsQ = trpc.spvs.list.useQuery(orgFilter);
   const distQ = trpc.distributions.list.useQuery(orgFilter);
+  const tasksQ = trpc.tasks.list.useQuery(orgFilter);
   const activityQ = trpc.activity.recent.useQuery({ limit: 5, organizationId: activeOrg?.id });
 
   const pageLoading = venturesQ.isLoading;
@@ -61,21 +150,53 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
   const allVentures = venturesQ.data || [];
   const allSpvs = spvsQ.data || [];
   const allDists = distQ.data || [];
+  const allTasks = tasksQ.data || [];
   const activityLogs = activityQ.data || [];
 
-  // Derived
+  // Derived stats
   const totalDistAmount = allDists.reduce((s, d) => s + (d.amount || 0), 0);
   const paidDistAmount = allDists.filter(d => d.status === "Paid").reduce((s, d) => s + (d.amount || 0), 0);
   const scheduledDists = allDists.filter(d => d.status === "Scheduled");
+  const nextDist = scheduledDists[0];
 
-  const venturesBySector = useMemo(() => {
-    const map: Record<string, typeof allVentures> = {};
-    for (const v of allVentures) {
-      if (!map[v.sector]) map[v.sector] = [];
-      map[v.sector].push(v);
-    }
-    return map;
+  // Task stats
+  const overdueTasks = allTasks.filter(t => {
+    if (t.status === "complete") return false;
+    if (!t.dueDate) return false;
+    return new Date(t.dueDate) < new Date();
+  });
+  const openTasks = allTasks.filter(t => t.status !== "complete");
+  const taskSectors = useMemo(() => {
+    // Tasks don't have sector directly, derive from venture link
+    return "";
+  }, [overdueTasks]);
+
+  // Stalled ventures (same stage 30+ days)
+  const stalledVentures = useMemo(() => {
+    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    return allVentures.filter(v => {
+      if (v.status === "Completed") return false;
+      const updated = v.updatedAt ? new Date(v.updatedAt).getTime() : 0;
+      return updated < thirtyDaysAgo;
+    });
   }, [allVentures]);
+
+  // Sectors
+  const sectors = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const v of allVentures) {
+      map[v.sector] = (map[v.sector] || 0) + 1;
+    }
+    return Object.entries(map)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [allVentures]);
+
+  // Filtered ventures
+  const filteredVentures = useMemo(() => {
+    if (!activeSector) return allVentures;
+    return allVentures.filter(v => v.sector === activeSector);
+  }, [allVentures, activeSector]);
 
   const firstName = user?.name?.split(" ")[0] || "Partner";
 
@@ -83,9 +204,9 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
     return (
       <div className="client-portal px-5 py-6 sm:px-8 sm:py-8 space-y-6 pb-28 md:pb-8 max-w-3xl mx-auto">
         <Skeleton className="h-40 rounded-2xl" />
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 rounded-2xl" />
+            <Skeleton key={i} className="h-32 rounded-2xl" />
           ))}
         </div>
         <Skeleton className="h-32 rounded-2xl" />
@@ -130,49 +251,117 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
         </div>
       </motion.div>
 
-      {/* ── Summary Row — 3 compact cards ─────────────────────────── */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* ── Action Cards (Section 9A) ─────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {/* Card 1: Tasks need attention */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.3 }}
-          onClick={() => onNavigate("/ventures")}
-          className="client-card cursor-pointer text-center py-4 px-3"
+          className="client-card relative overflow-hidden"
         >
-          <p className="text-xl sm:text-2xl font-light text-foreground tabular-nums">
-            {allVentures.filter(v => v.status === "In progress").length}
-          </p>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1 font-light">Ventures</p>
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500 rounded-l-2xl" />
+          <div className="pl-4 py-4 pr-4">
+            <div className="flex items-center gap-2 mb-2">
+              <ListChecks className="size-4 text-amber-400" />
+              <span className="text-xs font-medium text-foreground">
+                {openTasks.length} task{openTasks.length !== 1 ? "s" : ""} need attention
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+              {overdueTasks.length > 0
+                ? `${overdueTasks.length} overdue · ${openTasks.length - overdueTasks.length} open${taskSectors ? ` across ${taskSectors}` : ""}`
+                : `${openTasks.length} open tasks across your ventures`
+              }
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-[11px] text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 gap-1 px-0"
+              onClick={() => onNavigate("/tasks")}
+            >
+              Review Tasks <ArrowRight className="size-3" />
+            </Button>
+          </div>
         </motion.div>
 
+        {/* Card 2: Portfolio velocity */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.3 }}
-          onClick={() => onNavigate("/spvs")}
-          className="client-card cursor-pointer text-center py-4 px-3"
+          className="client-card relative overflow-hidden"
         >
-          <p className="text-xl sm:text-2xl font-light text-foreground tabular-nums">
-            {allSpvs.filter(s => s.stage === "Active deal").length}
-          </p>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1 font-light">SPVs</p>
+          <div className={cn(
+            "absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl",
+            stalledVentures.length > 0 ? "bg-red-500" : "bg-emerald-500"
+          )} />
+          <div className="pl-4 py-4 pr-4">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className={cn("size-4", stalledVentures.length > 0 ? "text-red-400" : "text-emerald-400")} />
+              <span className="text-xs font-medium text-foreground">
+                {stalledVentures.length > 0
+                  ? "Portfolio needs attention"
+                  : "Portfolio on track"
+                }
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+              {stalledVentures.length > 0
+                ? `${stalledVentures.length} venture${stalledVentures.length !== 1 ? "s have" : " has"} been in the same stage for 30+ days`
+                : `All ${allVentures.filter(v => v.status === "In progress").length} active ventures are progressing`
+              }
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "h-7 text-[11px] gap-1 px-0",
+                stalledVentures.length > 0
+                  ? "text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                  : "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
+              )}
+              onClick={() => onNavigate("/ventures")}
+            >
+              {stalledVentures.length > 0 ? "See What's Stalled" : "View Ventures"} <ArrowRight className="size-3" />
+            </Button>
+          </div>
         </motion.div>
 
+        {/* Card 3: Distributions */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.3 }}
-          onClick={() => onNavigate("/distributions")}
-          className="client-card cursor-pointer text-center py-4 px-3"
+          className="client-card relative overflow-hidden"
         >
-          <p className="text-xl sm:text-2xl font-light text-foreground tabular-nums">
-            {formatCurrency(paidDistAmount)}
-          </p>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1 font-light">Distributed</p>
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500 rounded-l-2xl" />
+          <div className="pl-4 py-4 pr-4">
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign className="size-4 text-emerald-400" />
+              <span className="text-xs font-medium text-foreground">
+                {formatCurrency(paidDistAmount)} distributed
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+              {nextDist
+                ? `Next: ${nextDist.name} · ${formatCurrency(nextDist.amount || 0)} · ${nextDist.distributionDate ? formatDate(nextDist.distributionDate) : "TBD"}`
+                : "No upcoming distributions scheduled"
+              }
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-[11px] text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 gap-1 px-0"
+              onClick={() => onNavigate("/distributions")}
+            >
+              View Distributions <ArrowRight className="size-3" />
+            </Button>
+          </div>
         </motion.div>
       </div>
 
-      {/* ── Ventures — single column on mobile ────────────────────── */}
+      {/* ── Ventures with Sector Pills + Stage Bars (Section 9B) ──── */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-[11px] uppercase tracking-widest text-muted-foreground font-light">Your Ventures</h2>
@@ -184,8 +373,17 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
           </button>
         </div>
 
+        {/* Sector filter pills */}
+        <div className="mb-4">
+          <SectorPills
+            sectors={sectors}
+            active={activeSector}
+            onSelect={setActiveSector}
+          />
+        </div>
+
         <div className="space-y-3">
-          {allVentures.slice(0, 6).map((v, i) => {
+          {filteredVentures.slice(0, 6).map((v, i) => {
             const tc = getThemeColor(v.sector);
             return (
               <motion.div
@@ -194,35 +392,46 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 + i * 0.04, duration: 0.3 }}
                 onClick={() => onNavigate(`/ventures/${v.slug}`)}
-                className="client-card cursor-pointer group flex items-center gap-4"
+                className="client-card cursor-pointer group"
               >
-                <div
-                  className="size-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${tc.color}10` }}
-                >
-                  <span style={{ color: tc.color }}>
-                    {THEME_ICONS[v.sector] || <Package className="size-5" />}
-                  </span>
+                <div className="flex items-center gap-4">
+                  <div
+                    className="size-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: `${tc.color}10` }}
+                  >
+                    <span style={{ color: tc.color }}>
+                      {THEME_ICONS[v.sector] || <Package className="size-5" />}
+                    </span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">{v.name}</h3>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{v.sector} · {v.location}</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className={cn(
+                      "text-[10px] font-medium px-2 py-1 rounded-full",
+                      v.status === "In progress" ? "bg-emerald-500/10 text-emerald-400" :
+                      v.status === "On-Hold" ? "bg-amber-500/10 text-amber-400" :
+                      v.status === "Completed" ? "bg-blue-500/10 text-blue-400" :
+                      "bg-secondary text-muted-foreground"
+                    )}>
+                      {v.status}
+                    </span>
+                    <ChevronRight className="size-4 text-muted-foreground/40" />
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">{v.name}</h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">{v.sector} · {v.location}</p>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className={cn(
-                    "text-[10px] font-medium px-2 py-1 rounded-full",
-                    v.status === "In progress" ? "bg-emerald-500/10 text-emerald-400" :
-                    v.status === "On-Hold" ? "bg-amber-500/10 text-amber-400" :
-                    v.status === "Completed" ? "bg-blue-500/10 text-blue-400" :
-                    "bg-secondary text-muted-foreground"
-                  )}>
-                    {v.status}
-                  </span>
-                  <ChevronRight className="size-4 text-muted-foreground/40" />
-                </div>
+                {/* Stage Progress Bar */}
+                <StageProgressBar currentStage={v.stage || v.status} />
               </motion.div>
             );
           })}
+
+          {filteredVentures.length === 0 && (
+            <div className="client-card text-center py-8">
+              <Layers3 className="size-6 text-muted-foreground/20 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground font-light">No ventures in this sector</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -236,6 +445,20 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
           >
             View all <ArrowUpRight className="size-3" />
           </button>
+        </div>
+
+        {/* Summary pills (Section 9D preview) */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="px-3 py-1 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+            <CheckCircle2 className="size-3" />
+            Received {formatCurrency(paidDistAmount)}
+          </span>
+          {scheduledDists.length > 0 && (
+            <span className="px-3 py-1 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1">
+              <Clock className="size-3" />
+              Upcoming {formatCurrency(scheduledDists.reduce((s, d) => s + (d.amount || 0), 0))}
+            </span>
+          )}
         </div>
 
         <div className="space-y-3">

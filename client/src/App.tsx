@@ -29,6 +29,7 @@ import ClientDetail from "./pages/ClientDetail";
 import AtlasTeam from "./pages/AtlasTeam";
 import AcceptInvite from "./pages/AcceptInvite";
 import AgentsPage from "./pages/Agents";
+import DraftsPage from "./pages/Drafts";
 import { AgentProvider } from "./contexts/AgentContext";
 import { useHeartbeat } from "./hooks/useHeartbeat";
 
@@ -144,6 +145,9 @@ function Router() {
       </Route>
       <Route path="/agents">
         <RequireAuth><RequireAtlas><AgentsPage /></RequireAtlas></RequireAuth>
+      </Route>
+      <Route path="/drafts">
+        <RequireAuth><RequireAtlas><DraftsPage /></RequireAtlas></RequireAuth>
       </Route>
 
       <Route path="/404" component={NotFound} />
