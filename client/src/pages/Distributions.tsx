@@ -15,7 +15,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { motion, AnimatePresence } from "framer-motion";
-import { DollarSign, Clock, XCircle, CheckCircle2, Plus, FileDown, LayoutGrid, List, Loader2 } from "lucide-react";
+import { DollarSign, Clock, XCircle, CheckCircle2, Plus, FileDown, LayoutGrid, List, Loader2, GitCommitVertical } from "lucide-react";
 import { useState, useCallback, useMemo } from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -58,7 +58,7 @@ export default function DistributionsPage() {
   // ── Detail modal state ──────────────────────────────────────────────
   const [distModal, setDistModal] = useState<typeof distributions[number] | null>(null);
   const [addOpen, setAddOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [viewMode, setViewMode] = useState<"card" | "table" | "timeline">("card");
 
   // ── New distribution form state ─────────────────────────────────────
   const [newName, setNewName] = useState("");
@@ -175,6 +175,9 @@ export default function DistributionsPage() {
             <button onClick={() => setViewMode("table")} className={cn("p-1.5 sm:p-2 rounded-md transition-colors touch-manipulation hidden sm:block", viewMode === "table" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}>
               <List className="size-4" />
             </button>
+            <button onClick={() => setViewMode("timeline")} className={cn("p-1.5 sm:p-2 rounded-md transition-colors touch-manipulation", viewMode === "timeline" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}>
+              <GitCommitVertical className="size-4" />
+            </button>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation hidden sm:flex" onClick={() => {
@@ -287,6 +290,75 @@ export default function DistributionsPage() {
               </div>
             )}
           </motion.div>
+        )}
+
+        {/* Timeline View */}
+        {viewMode === "timeline" && !loading && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-sm font-semibold text-foreground">Distribution Timeline</h2>
+              <span className="text-[10px] font-mono text-muted-foreground">{distributions.length} events</span>
+            </div>
+            {distributions.length === 0 ? (
+              <div className="p-12 text-center bg-card border border-border rounded-lg">
+                <DollarSign className="size-8 text-muted-foreground mx-auto mb-3 opacity-40" />
+                <p className="text-sm text-muted-foreground">No distributions recorded.</p>
+              </div>
+            ) : (
+              <div className="relative">
+                {/* Vertical timeline line */}
+                <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
+                <div className="space-y-0">
+                  {[...distributions]
+                    .sort((a, b) => {
+                      const dateA = a.distributionDate ? new Date(a.distributionDate).getTime() : 0;
+                      const dateB = b.distributionDate ? new Date(b.distributionDate).getTime() : 0;
+                      return dateB - dateA;
+                    })
+                    .map((dist, i) => {
+                      const dc = DIST_STATUS_CONFIG[dist.status || "Scheduled"];
+                      const dotColor = dist.status === "Paid" ? "bg-emerald-400" : dist.status === "Cancelled" ? "bg-red-400" : "bg-blue-400";
+                      const isPast = dist.distributionDate && new Date(dist.distributionDate) <= new Date();
+                      return (
+                        <motion.div
+                          key={dist.id}
+                          initial={{ opacity: 0, x: -12 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.03 }}
+                          className="relative pl-10 py-3 cursor-pointer hover:bg-accent/10 rounded-lg transition-colors"
+                          onClick={() => setDistModal(dist)}
+                        >
+                          {/* Timeline dot */}
+                          <div className={cn(
+                            "absolute left-2.5 top-4 size-3 rounded-full border-2 border-background z-10",
+                            dotColor,
+                            !isPast && "ring-2 ring-blue-400/30"
+                          )} />
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-foreground">{dist.name}</span>
+                                {dc && <StatusBadge label={dc.label} bg={dc.bg} dot={dc.dot} />}
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[10px] font-mono text-muted-foreground">
+                                  {dist.distributionDate ? formatDate(dist.distributionDate) : "No date"}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground">{dist.fund}</span>
+                                <span className="text-[10px] text-muted-foreground">{dist.type}</span>
+                              </div>
+                            </div>
+                            <span className="text-sm font-mono font-semibold text-foreground flex-shrink-0">
+                              {formatCurrency(dist.amount || 0)}
+                            </span>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Fund breakdown */}

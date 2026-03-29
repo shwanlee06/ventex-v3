@@ -97,7 +97,7 @@ export default function TasksPage() {
   }, [tasks]);
 
   const filtered = useMemo(() => {
-    return tasks.filter(t => {
+    const result = tasks.filter(t => {
       const resolved = getTaskStatus(t);
       if (search && !t.title.toLowerCase().includes(search.toLowerCase())) return false;
       if (statusFilter === "open" && resolved !== "open") return false;
@@ -107,7 +107,37 @@ export default function TasksPage() {
       if (assigneeFilter !== "All" && !(t.assigneeNames as string[] || []).includes(assigneeFilter)) return false;
       return true;
     });
+    // Default sort: most overdue first, then by due date
+    return result.sort((a, b) => {
+      const statusA = getTaskStatus(a);
+      const statusB = getTaskStatus(b);
+      // Overdue first, then open, then complete
+      const order: Record<TaskStatus, number> = { overdue: 0, open: 1, complete: 2 };
+      if (order[statusA] !== order[statusB]) return order[statusA] - order[statusB];
+      // Within same status, sort by due date (earliest first)
+      const dateA = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+      const dateB = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+      return dateA - dateB;
+    });
   }, [tasks, search, statusFilter, priorityFilter, assigneeFilter]);
+
+  // Progress stats
+  const completedCount = tasks.filter(t => t.status === "complete").length;
+  const overdueCount = tasks.filter(t => getTaskStatus(t) === "overdue").length;
+  const openCount = tasks.filter(t => getTaskStatus(t) === "open").length;
+  const totalCount = tasks.length;
+  const completionPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const overduePct = totalCount > 0 ? Math.round((overdueCount / totalCount) * 100) : 0;
+
+  // Severely overdue tasks (>21 days)
+  const severelyOverdue = useMemo(() => {
+    const now = Date.now();
+    return tasks.filter(t => {
+      if (t.status === "complete" || !t.dueDate) return false;
+      const days = Math.floor((now - new Date(t.dueDate).getTime()) / (1000 * 60 * 60 * 24));
+      return days > 21;
+    });
+  }, [tasks]);
 
   const boardColumns = useMemo(() => ({
     open: filtered.filter(t => getTaskStatus(t) === "open"),
@@ -234,6 +264,48 @@ export default function TasksPage() {
             </motion.div>
           ))}
         </div>
+
+        {/* Overdue Warning Banner */}
+        {severelyOverdue.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 flex items-center gap-3"
+          >
+            <AlertTriangle className="size-4 text-amber-400 flex-shrink-0" />
+            <p className="text-xs text-amber-200">
+              <span className="font-medium">{severelyOverdue.length} task{severelyOverdue.length !== 1 ? "s are" : " is"} overdue by 21+ days</span>
+              <span className="text-amber-400/70"> — please review and action</span>
+            </p>
+          </motion.div>
+        )}
+
+        {/* Progress Bar */}
+        {totalCount > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Progress</span>
+              <span className="text-[10px] font-mono text-muted-foreground">
+                {completedCount} of {totalCount} complete · {completionPct}%
+              </span>
+            </div>
+            <div className="h-2 bg-secondary/50 rounded-full overflow-hidden flex">
+              <div
+                className="h-full bg-emerald-500 transition-all duration-500"
+                style={{ width: `${completionPct}%` }}
+              />
+              <div
+                className="h-full bg-red-500 transition-all duration-500"
+                style={{ width: `${overduePct}%` }}
+              />
+            </div>
+            <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-1"><span className="size-1.5 rounded-full bg-emerald-500" /> Complete ({completedCount})</span>
+              <span className="flex items-center gap-1"><span className="size-1.5 rounded-full bg-red-500" /> Overdue ({overdueCount})</span>
+              <span className="flex items-center gap-1"><span className="size-1.5 rounded-full bg-secondary" /> Open ({openCount})</span>
+            </div>
+          </div>
+        )}
 
         {/* Search bar */}
         <div className="relative">

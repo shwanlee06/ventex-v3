@@ -21,11 +21,12 @@ import {
 import { motion } from "framer-motion";
 import {
   User, Mail, Shield, Bell, Globe, Key, Camera, Save, LogOut,
-  CheckCircle2, Clock, Loader2, AlertTriangle,
+  CheckCircle2, Clock, Loader2, AlertTriangle, Briefcase, ListChecks, DollarSign, Activity,
 } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
+import { trpc as trpcClient } from "@/lib/trpc";
 
 const ATLAS_LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/atlas-logo-G2SBqxAK64sZYAYmAZY9js.webp";
 
@@ -188,6 +189,33 @@ export default function ProfilePage() {
                 )}
               </div>
               <img src={ATLAS_LOGO_URL} alt="ATLAS" className="size-8 sm:size-10 rounded-md opacity-50 hidden sm:block" />
+            </div>
+          </Card>
+        </motion.div>
+
+        {/* Portfolio Summary */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.05 }}>
+          <Card className="p-4 sm:p-6 bg-card border-border">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-4">
+              <Activity className="size-4 text-primary" />
+              Portfolio Summary
+            </h3>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-3 rounded-lg bg-secondary/20 text-center">
+                <Briefcase className="size-4 text-blue-400 mx-auto mb-1" />
+                <p className="text-lg font-mono font-semibold text-foreground">{(profile as any)?.stats?.ventures ?? "—"}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Ventures</p>
+              </div>
+              <div className="p-3 rounded-lg bg-secondary/20 text-center">
+                <ListChecks className="size-4 text-amber-400 mx-auto mb-1" />
+                <p className="text-lg font-mono font-semibold text-foreground">{(profile as any)?.stats?.tasks ?? "—"}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Tasks</p>
+              </div>
+              <div className="p-3 rounded-lg bg-secondary/20 text-center">
+                <DollarSign className="size-4 text-emerald-400 mx-auto mb-1" />
+                <p className="text-lg font-mono font-semibold text-foreground">{(profile as any)?.stats?.distributions ?? "—"}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Distributions</p>
+              </div>
             </div>
           </Card>
         </motion.div>

@@ -1074,6 +1074,6 @@
 - [x] Section 8: Upgrade /agents page — pause/resume, run now, severity bars, action buttons
 - [x] Section 9A: Client dashboard action cards (replace static stats)
 - [x] Section 9B: Client ventures stage bar + sector filter pills
-- [ ] Section 9C: Client tasks sort by overdue + progress bar + overdue banner
-- [ ] Section 9D: Client distributions timeline view + summary pills
-- [ ] Section 9E: Client profile page
+- [x] Section 9C: Client tasks sort by overdue + progress bar + overdue banner
+- [x] Section 9D: Client distributions timeline view + summary pills
+- [x] Section 9E: Client profile page — portfolio summary card with venture/task/distribution counts
