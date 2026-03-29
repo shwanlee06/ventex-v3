@@ -410,14 +410,16 @@
   scrollbar-width: none;
 }
 
-/* Live Agent Ticker animation */
+/* ── Agent LiveTicker Animation ──────────────────────────────────────── */
 @keyframes ticker-scroll {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+
 .animate-ticker {
-  animation: ticker-scroll 30s linear infinite;
+  animation: ticker-scroll 60s linear infinite;
 }
+
 .animate-ticker:hover {
   animation-play-state: paused;
 }

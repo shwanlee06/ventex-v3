@@ -102,5 +102,5 @@
   "messages": [],
   "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint\tNO\tPRI\tNULL\tauto_increment\nagentName\tvarchar(64)\tNO\t\tNULL\t\neventType\tvarchar(32)\tNO\t\tNULL\t\nmessage\ttext\tNO\t\tNULL\t\nseverity\tvarchar(16)\tNO\t\tNULL\t\nentityType\tvarchar(32)\tYES\t\tNULL\t\nagentEntityId\tvarchar(64)\tYES\t\tNULL\t\nagentEntityName\tvarchar(255)\tYES\t\tNULL\t\noldStatus\tvarchar(64)\tYES\t\tNULL\t\nnewStatus\tvarchar(64)\tYES\t\tNULL\t\nisRead\ttinyint(1)\tNO\t\t0\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\n",
   "stderr": "",
-  "execution_time_ms": 467
+  "execution_time_ms": 64
 }

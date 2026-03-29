@@ -1,417 +1,331 @@
 // ============================================================================
-// ATLAS Agents Page — 2x2 Agent Cards + Signal History
+// Agents Page — AI Agent Monitoring Dashboard
+// 2x2 agent cards + signal history feed + run controls
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
-import { useAgents } from "@/contexts/AgentContext";
+import { useAgents, AGENT_CONFIG, resolveAgentKey, getAgentConfig, type AgentKey } from "@/contexts/AgentContext";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  AlertCircle,
-  AlertTriangle,
-  Info,
-  CheckCircle2,
-  Bot,
-  Activity,
-  Zap,
-  Clock,
-  RefreshCw,
-  Shield,
-  Eye,
-  Loader2,
+  AlertTriangle, AlertCircle, Info, Play, Loader2,
+  CheckCircle2, Eye, Clock, Zap, Brain,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
+import { toast } from "sonner";
+import { useState, useMemo } from "react";
 
-// ── Agent config ───────────────────────────────────────
-// Map DB display names → short keys used in AGENT_CONFIG
-const DB_NAME_TO_KEY: Record<string, string> = {
-  "Overdue Agent": "overdue",
-  "Venture Agent": "venture",
-  "Distribution Sentinel": "distribution",
-  "Orchestrator": "orchestrator",
-};
+// ── Severity Helpers ────────────────────────────────────────────────────
 
-function resolveAgentKey(agentName: string): string {
-  return DB_NAME_TO_KEY[agentName] ?? agentName;
-}
-
-const AGENT_CONFIG: Record<string, {
-  icon: React.ReactNode;
-  label: string;
-  description: string;
-  interval: string;
-  color: string;
-  bgColor: string;
-}> = {
-  overdue: {
-    icon: <AlertTriangle className="size-5" />,
-    label: "Overdue Scanner",
-    description: "Monitors task deadlines and escalates overdue items by severity tier",
-    interval: "60s",
-    color: "text-red-400",
-    bgColor: "bg-red-500/10",
-  },
-  venture: {
-    icon: <Activity className="size-5" />,
-    label: "Venture Monitor",
-    description: "Tracks venture health metrics, completion rates, and stalled progress",
-    interval: "120s",
-    color: "text-blue-400",
-    bgColor: "bg-blue-500/10",
-  },
-  distribution: {
-    icon: <Zap className="size-5" />,
-    label: "Distribution Tracker",
-    description: "Monitors payment schedules, upcoming distributions, and anomalies",
-    interval: "300s",
-    color: "text-emerald-400",
-    bgColor: "bg-emerald-500/10",
-  },
-  orchestrator: {
-    icon: <Bot className="size-5" />,
-    label: "Orchestrator",
-    description: "Synthesizes signals from all agents and generates strategic recommendations",
-    interval: "180s",
-    color: "text-purple-400",
-    bgColor: "bg-purple-500/10",
-  },
-};
-
-const SEVERITY_CONFIG: Record<string, { icon: React.ReactNode; color: string; bg: string; label: string }> = {
+const SEVERITY_STYLES: Record<string, { icon: React.ReactNode; bg: string; text: string; border: string }> = {
   critical: {
     icon: <AlertCircle className="size-3.5" />,
-    color: "text-red-400",
-    bg: "bg-red-500/10 border-red-500/20",
-    label: "Critical",
+    bg: "bg-red-500/10",
+    text: "text-red-400",
+    border: "border-red-500/20",
   },
   warning: {
     icon: <AlertTriangle className="size-3.5" />,
-    color: "text-amber-400",
-    bg: "bg-amber-500/10 border-amber-500/20",
-    label: "Warning",
+    bg: "bg-amber-500/10",
+    text: "text-amber-400",
+    border: "border-amber-500/20",
   },
   info: {
     icon: <Info className="size-3.5" />,
-    color: "text-blue-400",
-    bg: "bg-blue-500/10 border-blue-500/20",
-    label: "Info",
-  },
-  success: {
-    icon: <CheckCircle2 className="size-3.5" />,
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10 border-emerald-500/20",
-    label: "Success",
+    bg: "bg-blue-500/10",
+    text: "text-blue-400",
+    border: "border-blue-500/20",
   },
 };
 
-function formatTime(d: Date | string): string {
-  const date = new Date(d);
+function formatTimeAgo(date: Date): string {
   const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  if (diff < 60_000) return "just now";
-  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
-  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
-  return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+  const diffMs = now.getTime() - new Date(date).getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return "just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const diffHrs = Math.floor(diffMins / 60);
+  if (diffHrs < 24) return `${diffHrs}h ago`;
+  const diffDays = Math.floor(diffHrs / 24);
+  return `${diffDays}d ago`;
 }
 
-function formatFullTime(d: Date | string): string {
-  const date = new Date(d);
-  return date.toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-}
+// ── Agent Card ──────────────────────────────────────────────────────────
 
-export default function Agents() {
-  const { agentStatuses, events, isOperator, markRead, markAllRead } = useAgents();
-  const [filterAgent, setFilterAgent] = useState<string | null>(null);
-  const [filterSeverity, setFilterSeverity] = useState<string | null>(null);
-
-  const agentNames = ["overdue", "venture", "distribution", "orchestrator"];
-
-  // Filter events
-  const filteredEvents = events.filter((e) => {
-    if (filterAgent && resolveAgentKey(e.agentName) !== filterAgent) return false;
-    if (filterSeverity && e.severity !== filterSeverity) return false;
-    return true;
-  });
-
-  // Count events per agent today
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const eventsToday = (agentName: string) =>
-    events.filter(
-      (e) => resolveAgentKey(e.agentName) === agentName && new Date(e.createdAt).getTime() >= todayStart.getTime()
-    ).length;
-
-  // Unread count
-  const unreadCount = events.filter((e) => !e.isRead).length;
+function AgentCard({
+  agentKey,
+  eventCount,
+  latestMessage,
+  latestSeverity,
+  isRunning,
+  onRun,
+}: {
+  agentKey: AgentKey;
+  eventCount: number;
+  latestMessage: string | null;
+  latestSeverity: string | null;
+  isRunning: boolean;
+  onRun: () => void;
+}) {
+  const config = AGENT_CONFIG[agentKey];
+  const severity = latestSeverity ? SEVERITY_STYLES[latestSeverity] : SEVERITY_STYLES.info;
 
   return (
-    <DashboardLayout title="Agents" subtitle="ATLAS INTELLIGENCE LAYER">
-      <div className="p-4 sm:p-5 md:p-6 space-y-6 pb-24 md:pb-6">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-card border border-border rounded-xl p-5 flex flex-col gap-4 group hover:border-primary/20 transition-all"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex items-center justify-center size-9 rounded-lg"
+            style={{ backgroundColor: `${config.color}15` }}
+          >
+            <Brain className="size-4" style={{ color: config.color }} />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">{config.label}</h3>
+            <p className="text-[10px] text-muted-foreground">{config.description}</p>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 text-[10px] gap-1"
+          onClick={onRun}
+          disabled={isRunning}
+        >
+          {isRunning ? (
+            <Loader2 className="size-3 animate-spin" />
+          ) : (
+            <Play className="size-3" />
+          )}
+          Run
+        </Button>
+      </div>
 
-        {/* ── Header ────────────────────────────────────────── */}
-        <div className="flex items-center justify-between">
+      {/* Stats */}
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1.5">
+          <Zap className="size-3 text-muted-foreground" />
+          <span className="text-xs font-mono text-foreground">{eventCount}</span>
+          <span className="text-[10px] text-muted-foreground">signals</span>
+        </div>
+        {latestSeverity && (
+          <div className={cn("flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium", severity.bg, severity.text)}>
+            {severity.icon}
+            {latestSeverity}
+          </div>
+        )}
+      </div>
+
+      {/* Latest Signal */}
+      {latestMessage && (
+        <div className="bg-secondary/30 rounded-lg p-3 border border-border/50">
+          <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+            {latestMessage}
+          </p>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// ── Main Page ───────────────────────────────────────────────────────────
+
+export default function AgentsPage() {
+  const { events, metrics, isLoading, isRunning, runAllAgents, runSingleAgent, markAllRead } = useAgents();
+  const [filterAgent, setFilterAgent] = useState<string>("all");
+
+  // Compute per-agent data
+  const agentData = useMemo(() => {
+    const data: Record<AgentKey, { count: number; latestMessage: string | null; latestSeverity: string | null }> = {
+      overdue: { count: 0, latestMessage: null, latestSeverity: null },
+      venture: { count: 0, latestMessage: null, latestSeverity: null },
+      distribution: { count: 0, latestMessage: null, latestSeverity: null },
+      orchestrator: { count: 0, latestMessage: null, latestSeverity: null },
+    };
+
+    for (const event of events) {
+      const key = resolveAgentKey(event.agentName);
+      if (data[key]) {
+        data[key].count++;
+        if (!data[key].latestMessage) {
+          data[key].latestMessage = event.message;
+          data[key].latestSeverity = event.severity;
+        }
+      }
+    }
+
+    return data;
+  }, [events]);
+
+  // Filtered events
+  const filteredEvents = useMemo(() => {
+    if (filterAgent === "all") return events;
+    return events.filter((e) => resolveAgentKey(e.agentName) === filterAgent);
+  }, [events, filterAgent]);
+
+  const handleRunAll = () => {
+    runAllAgents();
+    toast.info("Running all agents...");
+  };
+
+  const handleRunSingle = (key: AgentKey) => {
+    runSingleAgent(key);
+    toast.info(`Running ${AGENT_CONFIG[key].label}...`);
+  };
+
+  return (
+    <DashboardLayout title="AI Agents" subtitle="INTELLIGENCE MONITORING">
+      <div className="p-4 sm:p-5 md:p-6 space-y-6 pb-24 md:pb-6">
+        {/* Header Bar */}
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center size-10 rounded-xl bg-primary/10">
-              <Shield className="size-5 text-primary" />
+            <div className="flex items-center gap-1.5">
+              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] font-mono text-emerald-400">LIVE</span>
             </div>
-            <div>
-              <h1 className="text-lg font-semibold text-foreground">Agent Command</h1>
-              <p className="text-xs text-muted-foreground">
-                4 autonomous agents monitoring your portfolio
-              </p>
-            </div>
+            {metrics && (
+              <div className="flex items-center gap-3 text-[10px] font-mono text-muted-foreground">
+                <span>{metrics.total} signals</span>
+                <span>•</span>
+                <span className="text-red-400">{metrics.critical} critical</span>
+                <span>•</span>
+                <span className="text-amber-400">{metrics.warning} warnings</span>
+                <span>•</span>
+                <span>{metrics.unread} unread</span>
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
-            {unreadCount > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => markAllRead()}
-                className="text-xs gap-1.5"
-              >
-                <Eye className="size-3.5" />
-                Mark all read ({unreadCount})
-              </Button>
-            )}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-              <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[11px] font-mono text-emerald-400 font-medium">
-                All agents active
-              </span>
-            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-[10px]"
+              onClick={() => { markAllRead(); toast.success("All signals marked as read"); }}
+            >
+              <Eye className="size-3 mr-1" />
+              Mark All Read
+            </Button>
+            <Button
+              size="sm"
+              className="h-7 text-[10px] gap-1"
+              onClick={handleRunAll}
+              disabled={isRunning}
+            >
+              {isRunning ? <Loader2 className="size-3 animate-spin" /> : <Play className="size-3" />}
+              Run All Agents
+            </Button>
           </div>
         </div>
 
-        {/* ── 2x2 Agent Cards ───────────────────────────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {agentNames.map((name) => {
-            const config = AGENT_CONFIG[name];
-            const status = agentStatuses.find(s => s.name === name);
-            const todayCount = eventsToday(name);
-            const lastEvent = events.find((e) => resolveAgentKey(e.agentName) === name);
+        {/* Agent Cards Grid */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-48 rounded-xl" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {(Object.keys(AGENT_CONFIG) as AgentKey[]).map((key) => (
+              <AgentCard
+                key={key}
+                agentKey={key}
+                eventCount={agentData[key].count}
+                latestMessage={agentData[key].latestMessage}
+                latestSeverity={agentData[key].latestSeverity}
+                isRunning={isRunning}
+                onRun={() => handleRunSingle(key)}
+              />
+            ))}
+          </div>
+        )}
 
-            return (
-              <div
-                key={name}
-                className={cn(
-                  "bg-card border border-border rounded-xl p-4 space-y-3",
-                  "hover:border-primary/20 transition-all cursor-default"
-                )}
-              >
-                {/* Card header */}
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={cn("flex items-center justify-center size-9 rounded-lg", config.bgColor)}>
-                      <span className={config.color}>{config.icon}</span>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-foreground">{config.label}</h3>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{config.description}</p>
-                    </div>
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "text-[10px] font-mono",
-                      status?.status === "running" || status?.status === "active"
-                        ? "border-emerald-500/30 text-emerald-400"
-                        : "border-border text-muted-foreground"
-                    )}
-                  >
-                    {status?.status === "running" ? (
-                      <span className="flex items-center gap-1">
-                        <Loader2 className="size-3 animate-spin" />
-                        Running
-                      </span>
-                    ) : status?.status === "active" ? (
-                      "Active"
-                    ) : (
-                      "Idle"
-                    )}
-                  </Badge>
-                </div>
-
-                {/* Stats row */}
-                <div className="flex items-center gap-4 pt-2 border-t border-border">
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="size-3 text-muted-foreground" />
-                    <span className="text-[11px] font-mono text-muted-foreground">
-                      {status?.lastRun ? formatTime(new Date(status.lastRun)) : "Never"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <RefreshCw className="size-3 text-muted-foreground" />
-                    <span className="text-[11px] font-mono text-muted-foreground">
-                      Every {config.interval}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 ml-auto">
-                    <Activity className="size-3 text-muted-foreground" />
-                    <span className="text-[11px] font-mono text-foreground font-medium">
-                      {todayCount} today
-                    </span>
-                  </div>
-                </div>
-
-                {/* Last signal preview */}
-                {lastEvent && (
-                  <div className={cn(
-                    "rounded-lg border px-3 py-2",
-                    SEVERITY_CONFIG[lastEvent.severity]?.bg || "bg-secondary border-border"
-                  )}>
-                    <div className="flex items-start gap-2">
-                      <span className={cn("mt-0.5", SEVERITY_CONFIG[lastEvent.severity]?.color)}>
-                        {SEVERITY_CONFIG[lastEvent.severity]?.icon}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[11px] text-foreground line-clamp-2">{lastEvent.message}</p>
-                        <span className="text-[10px] font-mono text-muted-foreground mt-1 block">
-                          {formatTime(lastEvent.createdAt)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* ── Signal History ─────────────────────────────────── */}
+        {/* Signal History */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-foreground">Signal History</h2>
-            <span className="text-[10px] font-mono text-muted-foreground">
-              {filteredEvents.length} signals
-            </span>
+            <div className="flex items-center gap-1.5">
+              {["all", ...Object.keys(AGENT_CONFIG)].map((key) => (
+                <button
+                  key={key}
+                  onClick={() => setFilterAgent(key)}
+                  className={cn(
+                    "px-2 py-0.5 rounded text-[10px] font-mono transition-colors",
+                    filterAgent === key
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                  )}
+                >
+                  {key === "all" ? "All" : AGENT_CONFIG[key as AgentKey].label.split(" ")[0]}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Filters */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <Button
-              variant={filterAgent === null ? "default" : "outline"}
-              size="sm"
-              className="text-[11px] h-7"
-              onClick={() => setFilterAgent(null)}
-            >
-              All agents
-            </Button>
-            {agentNames.map((name) => {
-              const config = AGENT_CONFIG[name];
-              return (
-                <Button
-                  key={name}
-                  variant={filterAgent === name ? "default" : "outline"}
-                  size="sm"
-                  className="text-[11px] h-7 gap-1"
-                  onClick={() => setFilterAgent(filterAgent === name ? null : name)}
-                >
-                  <span className={filterAgent === name ? "" : config.color}>
-                    {config.icon}
-                  </span>
-                  {config.label.split(" ")[0]}
-                </Button>
-              );
-            })}
-
-            <div className="w-px h-5 bg-border mx-1" />
-
-            {["critical", "warning", "info", "success"].map((sev) => {
-              const config = SEVERITY_CONFIG[sev];
-              return (
-                <Button
-                  key={sev}
-                  variant={filterSeverity === sev ? "default" : "outline"}
-                  size="sm"
-                  className="text-[11px] h-7 gap-1"
-                  onClick={() => setFilterSeverity(filterSeverity === sev ? null : sev)}
-                >
-                  <span className={filterSeverity === sev ? "" : config.color}>
-                    {config.icon}
-                  </span>
-                  {config.label}
-                </Button>
-              );
-            })}
-          </div>
-
-          {/* Event list */}
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="bg-card border border-border rounded-xl divide-y divide-border overflow-hidden">
             {filteredEvents.length === 0 ? (
               <div className="p-8 text-center">
-                <Bot className="size-8 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">No signals yet</p>
-                <p className="text-xs text-muted-foreground/70 mt-1">
-                  Agents are scanning — signals will appear here as they detect events
+                <Brain className="size-8 text-muted-foreground mx-auto mb-3 opacity-40" />
+                <p className="text-sm text-muted-foreground">
+                  No agent signals yet. Click "Run All Agents" to generate intelligence.
                 </p>
               </div>
             ) : (
-              <ScrollArea className="max-h-[600px]">
-                <div className="divide-y divide-border">
-                  {filteredEvents.map((event) => {
-                    const sev = SEVERITY_CONFIG[event.severity] || SEVERITY_CONFIG.info;
-                    const agent = AGENT_CONFIG[resolveAgentKey(event.agentName)] || AGENT_CONFIG.orchestrator;
+              <ScrollArea className="max-h-[500px]">
+                <AnimatePresence>
+                  {filteredEvents.map((event, i) => {
+                    const config = getAgentConfig(event.agentName);
+                    const severity = SEVERITY_STYLES[event.severity] ?? SEVERITY_STYLES.info;
 
                     return (
-                      <div
+                      <motion.div
                         key={event.id}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.02, duration: 0.2 }}
                         className={cn(
-                          "px-4 py-3 flex items-start gap-3 transition-colors",
-                          !event.isRead && "bg-primary/[0.02]",
-                          "hover:bg-accent/30"
+                          "p-3 sm:p-4 flex gap-3 hover:bg-accent/30 transition-colors",
+                          !event.isRead && "bg-primary/[0.02]"
                         )}
-                        onClick={() => {
-                          if (!event.isRead) markRead(event.id);
-                        }}
                       >
-                        {/* Severity icon */}
-                        <span className={cn("mt-0.5 flex-shrink-0", sev.color)}>
-                          {sev.icon}
-                        </span>
-
-                        {/* Content */}
+                        <div
+                          className="size-2 rounded-full mt-1.5 flex-shrink-0"
+                          style={{ backgroundColor: config.color }}
+                        />
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-0.5">
-                            <span className={cn("text-[10px] font-mono font-medium px-1.5 py-0.5 rounded", agent.bgColor, agent.color)}>
-                              {agent.label.split(" ")[0]}
-                            </span>
-                            <Badge
-                              variant="outline"
-                              className={cn("text-[9px] font-mono h-4", sev.bg)}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span
+                              className="text-[10px] font-mono font-medium"
+                              style={{ color: config.color }}
                             >
-                              <span className={sev.color}>{sev.label}</span>
-                            </Badge>
+                              {config.label}
+                            </span>
+                            <div className={cn("flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px]", severity.bg, severity.text)}>
+                              {severity.icon}
+                              {event.severity}
+                            </div>
+                            <span className="text-[9px] font-mono text-muted-foreground/60">
+                              {formatTimeAgo(event.createdAt)}
+                            </span>
                             {!event.isRead && (
                               <span className="size-1.5 rounded-full bg-primary flex-shrink-0" />
                             )}
                           </div>
-                          <p className="text-xs text-foreground leading-relaxed">
+                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                             {event.message}
                           </p>
-                          {event.entityName && (
-                            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">
-                              {event.entityName}
-                            </p>
-                          )}
                         </div>
-
-                        {/* Timestamp */}
-                        <span className="text-[10px] font-mono text-muted-foreground flex-shrink-0 mt-0.5">
-                          {formatFullTime(event.createdAt)}
-                        </span>
-                      </div>
+                      </motion.div>
                     );
                   })}
-                </div>
+                </AnimatePresence>
               </ScrollArea>
             )}
           </div>

@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/_core/hooks/useAuth";
 
 interface Organization {
   id: number;
@@ -31,17 +30,11 @@ const WorkspaceContext = createContext<WorkspaceContextValue>({
 });
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
-  const { user, isAuthenticated } = useAuth();
-
-  // Only fire the admin-only organizations.list query when user is authenticated
-  // and has an ATLAS role (owner/admin/partner). This prevents 10002 permission
-  // errors on public pages like the SpyOps landing page.
-  const isAtlasUser = isAuthenticated && user &&
-    (user.role === "owner" || user.role === "admin" || user.role === "partner");
-
+  // NOTE: Do NOT set refetchOnWindowFocus: false — we need invalidation from
+  // the dashboard (utils.organizations.list.invalidate()) to trigger a refetch
+  // so the sidebar client list updates after archive/delete.
   const { data: orgs, isLoading, refetch } = trpc.organizations.list.useQuery(undefined, {
     retry: false,
-    enabled: !!isAtlasUser,
   });
 
   const [activeOrg, setActiveOrgState] = useState<Organization | null>(null);
@@ -87,7 +80,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         activeOrgId: activeOrg?.id,
         setActiveOrg,
         refetchOrgs,
-        isLoading: isAtlasUser ? isLoading : false,
+        isLoading,
       }}
     >
       {children}

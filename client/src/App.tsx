@@ -27,10 +27,10 @@ import AccessManagement from "./pages/AccessManagement";
 import InviteAccept from "./pages/InviteAccept";
 import ClientDetail from "./pages/ClientDetail";
 import AtlasTeam from "./pages/AtlasTeam";
-import AgentsPage from "./pages/Agents";
 import AcceptInvite from "./pages/AcceptInvite";
-import { useHeartbeat } from "./hooks/useHeartbeat";
+import AgentsPage from "./pages/Agents";
 import { AgentProvider } from "./contexts/AgentContext";
+import { useHeartbeat } from "./hooks/useHeartbeat";
 
 /* Auth guard — redirects to login if no operator in localStorage */
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -124,9 +124,6 @@ function Router() {
       <Route path="/agent">
         <RequireAuth><RequireAtlas><Agent /></RequireAtlas></RequireAuth>
       </Route>
-      <Route path="/agents">
-        <RequireAuth><RequireAtlas><AgentsPage /></RequireAtlas></RequireAuth>
-      </Route>
       <Route path="/team/:slug">
         <RequireAuth><RequireAtlas><TeamMemberDetail /></RequireAtlas></RequireAuth>
       </Route>
@@ -144,6 +141,9 @@ function Router() {
       </Route>
       <Route path="/settings">
         <RequireAuth><RequireAtlas><SettingsPage /></RequireAtlas></RequireAuth>
+      </Route>
+      <Route path="/agents">
+        <RequireAuth><RequireAtlas><AgentsPage /></RequireAtlas></RequireAuth>
       </Route>
 
       <Route path="/404" component={NotFound} />
@@ -163,14 +163,14 @@ function App() {
       <ThemeProvider defaultTheme="dark" switchable>
         <PreviewModeProvider>
           <WorkspaceProvider>
+            <AgentProvider>
             <TooltipProvider>
               <HeartbeatProvider>
-                <AgentProvider>
-                  <Toaster />
-                  <Router />
-                </AgentProvider>
+                <Toaster />
+                <Router />
               </HeartbeatProvider>
             </TooltipProvider>
+            </AgentProvider>
           </WorkspaceProvider>
         </PreviewModeProvider>
       </ThemeProvider>

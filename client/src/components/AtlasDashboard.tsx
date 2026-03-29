@@ -59,7 +59,6 @@ import AITaskGenerator from "@/components/AITaskGenerator";
 import OverdueAlertBanner from "@/components/OverdueAlertBanner";
 import LivePresenceWidget from "@/components/LivePresenceWidget";
 import VelocityIntelligenceCard from "@/components/VelocityIntelligenceCard";
-import LiveTicker from "@/components/LiveTicker";
 
 // ── Types ───────────────────────────────────────────────────────────────
 type SortField = "name" | "ventures" | "velocity" | "overdue" | "health" | "completion";
@@ -335,11 +334,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
   }
 
   return (
-    <div className="space-y-0">
-      {/* ── Live Agent Ticker (Upgrade Step 5) ──────────────────── */}
-      <LiveTicker />
-
-      <div className="p-4 sm:p-5 md:p-6 space-y-5 pb-24 md:pb-6">
+    <div className="p-4 sm:p-5 md:p-6 space-y-5 pb-24 md:pb-6">
 
       {/* ── Velocity System KPIs ──────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -974,7 +969,6 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
           }}
         />
       )}
-    </div>
     </div>
   );
 }

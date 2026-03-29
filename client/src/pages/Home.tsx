@@ -5,6 +5,7 @@
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
+import LiveTicker from "@/components/LiveTicker";
 import AtlasDashboard from "@/components/AtlasDashboard";
 import ClientDashboard from "@/components/ClientDashboard";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -22,6 +23,7 @@ export default function Home() {
       title="Dashboard"
       subtitle={isAtlas ? "ATLAS COMMAND CENTER" : "Client Portal"}
     >
+      {isAtlas && <LiveTicker />}
       {isAtlas ? (
         <AtlasDashboard onNavigate={navigate} />
       ) : (

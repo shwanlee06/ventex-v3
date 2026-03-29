@@ -518,17 +518,16 @@ export const userPreferences = mysqlTable("user_preferences", {
 export type UserPreference = typeof userPreferences.$inferSelect;
 export type InsertUserPreference = typeof userPreferences.$inferInsert;
 
-// ── Agent Events (Layer 1 Agent System) ───────────────────────────────
-// Stores signals from the 4 autonomous agents: Overdue, Venture, Distribution, Orchestrator
+// ── Agent Events (AI Agent System Layer 1) ──────────────────────────────
 export const agentEvents = mysqlTable("agent_events", {
   id: int("id").autoincrement().primaryKey(),
   agentName: varchar("agentName", { length: 64 }).notNull(),
-  eventType: varchar("eventType", { length: 32 }).notNull(), // status_change, notification, escalation
+  eventType: varchar("eventType", { length: 32 }).notNull(),
   message: text("message").notNull(),
-  severity: varchar("severity", { length: 16 }).notNull(), // info, warning, critical
-  entityType: varchar("entityType", { length: 32 }), // task, venture, distribution
-  entityId: varchar("agentEntityId", { length: 64 }),
-  entityName: varchar("agentEntityName", { length: 255 }),
+  severity: varchar("severity", { length: 16 }).notNull(),
+  entityType: varchar("entityType", { length: 32 }),
+  agentEntityId: varchar("agentEntityId", { length: 64 }),
+  agentEntityName: varchar("agentEntityName", { length: 255 }),
   oldStatus: varchar("oldStatus", { length: 64 }),
   newStatus: varchar("newStatus", { length: 64 }),
   isRead: boolean("isRead").default(false).notNull(),

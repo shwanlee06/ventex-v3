@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "87be41e3-9e3a-4875-9394-63864dc84916",
+  "id": "dbeeb2c4-3ace-4f48-bf69-278bc11666c2",
   "prevId": "a285e833-55de-4c67-8045-b1ec3e49c22f",
   "tables": {
     "activity_log": {

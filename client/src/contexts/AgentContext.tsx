@@ -1,19 +1,71 @@
-import React, { createContext, useContext, useEffect, useRef, useCallback, useMemo, useState } from "react";
-import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/_core/hooks/useAuth";
+// ============================================================================
+// Agent Context — Provides agent events and metrics to the entire app
+// ============================================================================
 
-// ── Types ──────────────────────────────────────────────
-interface AgentStatus {
-  name: string;
-  displayName: string;
-  icon: string;
-  status: "active" | "running" | "idle" | "error";
-  lastRun: number | null;
-  lastSignal: string | null;
-  intervalMs: number;
-  eventsToday: number;
-  isPaused: boolean;
+import { createContext, useContext, useMemo, type ReactNode } from "react";
+import { trpc } from "@/lib/trpc";
+
+// ── Agent Config ────────────────────────────────────────────────────────
+
+export const AGENT_CONFIG = {
+  overdue: {
+    key: "overdue",
+    label: "Overdue Agent",
+    dbName: "Overdue Agent",
+    color: "#EF4444",
+    bgColor: "bg-red-500/10",
+    textColor: "text-red-400",
+    description: "Monitors task deadlines and escalates overdue items",
+  },
+  venture: {
+    key: "venture",
+    label: "Venture Agent",
+    dbName: "Venture Agent",
+    color: "#3B82F6",
+    bgColor: "bg-blue-500/10",
+    textColor: "text-blue-400",
+    description: "Tracks venture portfolio health and risk signals",
+  },
+  distribution: {
+    key: "distribution",
+    label: "Distribution Sentinel",
+    dbName: "Distribution Sentinel",
+    color: "#10B981",
+    bgColor: "bg-emerald-500/10",
+    textColor: "text-emerald-400",
+    description: "Monitors distribution flows and payment anomalies",
+  },
+  orchestrator: {
+    key: "orchestrator",
+    label: "Orchestrator",
+    dbName: "Orchestrator",
+    color: "#A855F7",
+    bgColor: "bg-purple-500/10",
+    textColor: "text-purple-400",
+    description: "Synthesizes sub-agent signals into executive briefings",
+  },
+} as const;
+
+export type AgentKey = keyof typeof AGENT_CONFIG;
+
+// Map DB display names to short keys
+const DB_NAME_TO_KEY: Record<string, AgentKey> = {
+  "Overdue Agent": "overdue",
+  "Venture Agent": "venture",
+  "Distribution Sentinel": "distribution",
+  "Orchestrator": "orchestrator",
+};
+
+export function resolveAgentKey(agentName: string): AgentKey {
+  return DB_NAME_TO_KEY[agentName] ?? (agentName.toLowerCase() as AgentKey);
 }
+
+export function getAgentConfig(agentName: string) {
+  const key = resolveAgentKey(agentName);
+  return AGENT_CONFIG[key] ?? AGENT_CONFIG.orchestrator;
+}
+
+// ── Context ─────────────────────────────────────────────────────────────
 
 interface AgentEvent {
   id: number;
@@ -22,187 +74,104 @@ interface AgentEvent {
   message: string;
   severity: string;
   entityType: string | null;
-  entityId: string | null;
-  entityName: string | null;
+  agentEntityId: string | null;
+  agentEntityName: string | null;
   oldStatus: string | null;
   newStatus: string | null;
   isRead: boolean;
   createdAt: Date;
 }
 
-interface UnreadCounts {
+interface AgentMetrics {
   total: number;
+  unread: number;
   critical: number;
   warning: number;
-  info: number;
+  byAgent: Record<string, number>;
 }
 
 interface AgentContextValue {
-  isOperator: boolean;
-  agentStatuses: AgentStatus[];
   events: AgentEvent[];
-  unreadCounts: UnreadCounts;
+  metrics: AgentMetrics | undefined;
   isLoading: boolean;
-  markRead: (eventId: number) => void;
+  isRunning: boolean;
+  runAllAgents: () => void;
+  runSingleAgent: (agentName: AgentKey) => void;
+  markRead: (ids: number[]) => void;
   markAllRead: () => void;
-  togglePause: (agentName: string) => void;
-  runAgent: (agentName: string) => void;
-  refetchEvents: () => void;
+  refetch: () => void;
 }
 
-const defaultUnread: UnreadCounts = { total: 0, critical: 0, warning: 0, info: 0 };
+const AgentContext = createContext<AgentContextValue | null>(null);
 
-const AgentContext = createContext<AgentContextValue>({
-  isOperator: false,
-  agentStatuses: [],
-  events: [],
-  unreadCounts: defaultUnread,
-  isLoading: true,
-  markRead: () => {},
-  markAllRead: () => {},
-  togglePause: () => {},
-  runAgent: () => {},
-  refetchEvents: () => {},
-});
+// ── Provider ────────────────────────────────────────────────────────────
 
-export function useAgents() {
-  return useContext(AgentContext);
-}
-
-// ── Agent intervals (ms) ───────────────────────────────
-const AGENT_INTERVALS: Record<string, number> = {
-  overdue: 60_000,
-  venture: 120_000,
-  distribution: 300_000,
-  orchestrator: 180_000,
-};
-
-// ── Provider ───────────────────────────────────────────
-export function AgentProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
-  const isOperator = useMemo(() => {
-    if (!user) return false;
-    return ["owner", "admin", "partner"].includes(user.role);
-  }, [user]);
-
-  // Only fetch data if operator
-  const statusesQuery = trpc.agents.statuses.useQuery(undefined, {
-    enabled: isOperator,
-    refetchInterval: 30_000,
-    refetchOnWindowFocus: false,
-  });
-
-  const eventsQuery = trpc.agents.events.useQuery(
-    { limit: 50, offset: 0 },
-    {
-      enabled: isOperator,
-      refetchInterval: 15_000,
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  const unreadQuery = trpc.agents.unreadCounts.useQuery(undefined, {
-    enabled: isOperator,
-    refetchInterval: 15_000,
-    refetchOnWindowFocus: false,
-  });
-
+export function AgentProvider({ children }: { children: ReactNode }) {
   const utils = trpc.useUtils();
 
-  // Mutations
-  const runMutation = trpc.agents.run.useMutation({
-    onSuccess: () => {
-      utils.agents.statuses.invalidate();
-      utils.agents.events.invalidate();
-      utils.agents.unreadCounts.invalidate();
-    },
-  });
-
-  const togglePauseMutation = trpc.agents.togglePause.useMutation({
-    onSuccess: () => {
-      utils.agents.statuses.invalidate();
-    },
-  });
-
-  const markReadMutation = trpc.agents.markRead.useMutation({
-    onSuccess: () => {
-      utils.agents.events.invalidate();
-      utils.agents.unreadCounts.invalidate();
-    },
-  });
-
-  const markAllReadMutation = trpc.agents.markAllRead.useMutation({
-    onSuccess: () => {
-      utils.agents.events.invalidate();
-      utils.agents.unreadCounts.invalidate();
-    },
-  });
-
-  // ── Polling: run agents on their intervals ───────────
-  const intervalsRef = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map());
-
-  useEffect(() => {
-    if (!isOperator) return;
-
-    // Set up intervals for each agent
-    for (const [agentName, intervalMs] of Object.entries(AGENT_INTERVALS)) {
-      if (intervalsRef.current.has(agentName)) continue;
-
-      const id = setInterval(() => {
-        runMutation.mutate({ agentName });
-      }, intervalMs);
-
-      intervalsRef.current.set(agentName, id);
-    }
-
-    // Run all agents once on mount (staggered)
-    const agents = Object.keys(AGENT_INTERVALS);
-    agents.forEach((agentName, i) => {
-      setTimeout(() => {
-        runMutation.mutate({ agentName });
-      }, i * 2000); // stagger by 2s each
-    });
-
-    return () => {
-      for (const id of Array.from(intervalsRef.current.values())) {
-        clearInterval(id);
-      }
-      intervalsRef.current.clear();
-    };
-  }, [isOperator]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Context value ────────────────────────────────────
-  const value = useMemo<AgentContextValue>(() => ({
-    isOperator,
-    agentStatuses: statusesQuery.data ?? [],
-    events: eventsQuery.data?.events ?? [],
-    unreadCounts: unreadQuery.data ?? defaultUnread,
-    isLoading: statusesQuery.isLoading || eventsQuery.isLoading,
-    markRead: (eventId: number) => markReadMutation.mutate({ eventId }),
-    markAllRead: () => markAllReadMutation.mutate(),
-    togglePause: (agentName: string) => togglePauseMutation.mutate({ agentName }),
-    runAgent: (agentName: string) => runMutation.mutate({ agentName }),
-    refetchEvents: () => {
-      utils.agents.events.invalidate();
-      utils.agents.unreadCounts.invalidate();
-    },
-  }), [
-    isOperator,
-    statusesQuery.data,
-    statusesQuery.isLoading,
-    eventsQuery.data,
-    eventsQuery.isLoading,
-    unreadQuery.data,
-    markReadMutation,
-    markAllReadMutation,
-    togglePauseMutation,
-    runMutation,
-    utils,
-  ]);
-
-  return (
-    <AgentContext.Provider value={value}>
-      {children}
-    </AgentContext.Provider>
+  const { data: events = [], isLoading: eventsLoading } = trpc.agents.list.useQuery(
+    { limit: 50 },
+    { refetchInterval: 60000 }
   );
+
+  const { data: metrics, isLoading: metricsLoading } = trpc.agents.metrics.useQuery(
+    undefined,
+    { refetchInterval: 60000 }
+  );
+
+  const runAll = trpc.agents.runAll.useMutation({
+    onSuccess: () => {
+      utils.agents.list.invalidate();
+      utils.agents.metrics.invalidate();
+    },
+  });
+
+  const runSingle = trpc.agents.runSingle.useMutation({
+    onSuccess: () => {
+      utils.agents.list.invalidate();
+      utils.agents.metrics.invalidate();
+    },
+  });
+
+  const markReadMut = trpc.agents.markRead.useMutation({
+    onSuccess: () => {
+      utils.agents.list.invalidate();
+      utils.agents.metrics.invalidate();
+    },
+  });
+
+  const markAllReadMut = trpc.agents.markAllRead.useMutation({
+    onSuccess: () => {
+      utils.agents.list.invalidate();
+      utils.agents.metrics.invalidate();
+    },
+  });
+
+  const value = useMemo<AgentContextValue>(
+    () => ({
+      events: events as AgentEvent[],
+      metrics: metrics as AgentMetrics | undefined,
+      isLoading: eventsLoading || metricsLoading,
+      isRunning: runAll.isPending || runSingle.isPending,
+      runAllAgents: () => runAll.mutate(),
+      runSingleAgent: (agentName: AgentKey) => runSingle.mutate({ agentName }),
+      markRead: (ids: number[]) => markReadMut.mutate({ ids }),
+      markAllRead: () => markAllReadMut.mutate(),
+      refetch: () => {
+        utils.agents.list.invalidate();
+        utils.agents.metrics.invalidate();
+      },
+    }),
+    [events, metrics, eventsLoading, metricsLoading, runAll, runSingle, markReadMut, markAllReadMut, utils]
+  );
+
+  return <AgentContext.Provider value={value}>{children}</AgentContext.Provider>;
+}
+
+// ── Hook ────────────────────────────────────────────────────────────────
+
+export function useAgents() {
+  const ctx = useContext(AgentContext);
+  if (!ctx) throw new Error("useAgents must be used within AgentProvider");
+  return ctx;
 }
