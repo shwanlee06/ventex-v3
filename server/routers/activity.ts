@@ -156,7 +156,7 @@ export const activityRouter = router({
     return filtered.slice(0, input.limit);
   }),
 
-  metrics: publicProcedure
+  metrics: protectedProcedure
     .input(z.object({ organizationId: z.number().optional() }).optional())
     .query(async ({ ctx, input }) => {
       const db = await getDb();

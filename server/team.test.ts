@@ -80,7 +80,7 @@ describe("Team Router — Org-scoped queries", () => {
   });
 
   it("list without organizationId returns all members", async () => {
-    const all = await publicCaller.team.list();
+    const all = await caller.team.list();
     const internal = await caller.team.listInternal();
     const clientContacts = await caller.team.listByOrganization();
     expect(Array.isArray(all)).toBe(true);
@@ -92,7 +92,7 @@ describe("Team Router — Org-scoped queries", () => {
     const orgs = await caller.organizations.list();
     if (orgs.length > 0) {
       const orgId = orgs[0].id;
-      const members = await publicCaller.team.list({ organizationId: orgId });
+      const members = await caller.team.list({ organizationId: orgId });
       expect(Array.isArray(members)).toBe(true);
     }
   });

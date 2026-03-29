@@ -5,7 +5,7 @@ import { ventures, ventureTeam, teamMembers, tasks, ventureFiles, ventureFolders
 import { eq, and, sql, desc, like, inArray } from "drizzle-orm";
 import { storagePut } from "../storage";
 import { nanoid } from "nanoid";
-import { isAtlasTeam, getOrgVentureIds, resolveVentureScope } from "../security/rbac";
+import { isAtlasTeam, getOrgVentureIds, resolveVentureScope, logAudit } from "../security/rbac";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
 function slugify(name: string) {
@@ -156,6 +156,17 @@ export const venturesRouter = router({
       organizationId: organizationId || undefined,
     });
 
+    await logAudit({
+      organizationId: organizationId || null,
+      userId: ctx.user.id,
+      userName: ctx.user.name,
+      action: "create",
+      entityType: "venture",
+      entityId: String(newVenture?.id),
+      entityName: ventureData.name,
+      details: JSON.stringify({ sector: ventureData.sector, organizationId }),
+    });
+
     return newVenture;
   }),
 
@@ -203,6 +214,16 @@ export const venturesRouter = router({
         });
       }
     }
+    await logAudit({
+      userId: ctx.user.id,
+      userName: ctx.user.name,
+      action: "update",
+      entityType: "venture",
+      entityId: String(id),
+      entityName: rows[0]?.name,
+      details: JSON.stringify(data),
+    });
+
     return rows[0] || null;
   }),
 

@@ -1,0 +1,30 @@
+{
+  "query": "SELECT * FROM organizations;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT * FROM organizations;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "ATLAS",
+      "slug": "atlas",
+      "type": "core",
+      "orgStatus": "active",
+      "description": "AI Venture Velocity Platform — the SaaS tool managing client portfolios",
+      "createdAt": "2026-03-23 22:13:23",
+      "updatedAt": "2026-03-23 22:13:23"
+    },
+    {
+      "id": "2",
+      "name": "Royalton Venture Holding",
+      "slug": "royalton",
+      "type": "client",
+      "orgStatus": "active",
+      "description": "UHNWI venture holding managing 20+ partnerships across Real Estate, Yacht, F&B, Entertainment, Oil & Gas",
+      "createdAt": "2026-03-23 22:13:24",
+      "updatedAt": "2026-03-23 22:13:24"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\ttype\torgStatus\tdescription\tcreatedAt\tupdatedAt\n1\tATLAS\tatlas\tcore\tactive\tAI Venture Velocity Platform — the SaaS tool managing client portfolios\t2026-03-23 22:13:23\t2026-03-23 22:13:23\n2\tRoyalton Venture Holding\troyalton\tclient\tactive\tUHNWI venture holding managing 20+ partnerships across Real Estate, Yacht, F&B, Entertainment, Oil & Gas\t2026-03-23 22:13:24\t2026-03-23 22:13:24\n",
+  "stderr": "",
+  "execution_time_ms": 80
+}

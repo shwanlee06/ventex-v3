@@ -2,6 +2,7 @@ import { z } from "zod";
 import { eq, inArray, desc, and, ne } from "drizzle-orm";
 import { protectedProcedure, adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
+import { logAudit } from "../security/rbac";
 import {
   organizations,
   orgVentureAccess,
@@ -13,6 +14,7 @@ import {
   activityLog,
   invitations,
   apiKeys,
+  clientAgentConfig,
 } from "../../drizzle/schema";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
@@ -227,13 +229,19 @@ export const organizationsRouter = router({
       return orgVentures;
     }),
 
-  // Create a new client organization (admin only)
+  // Create a new client organization (admin only) — full onboarding
   create: adminProcedure
     .input(
       z.object({
         name: z.string().min(1).max(255),
         slug: z.string().min(1).max(128),
         description: z.string().optional(),
+        primaryContactName: z.string().optional(),
+        primaryContactEmail: z.string().email().optional(),
+        aumRange: z.string().optional(),
+        sectors: z.array(z.string()).optional(),
+        subscriptionTier: z.enum(["poc", "growth", "enterprise"]).optional(),
+        renewalDate: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -245,6 +253,12 @@ export const organizationsRouter = router({
         slug: input.slug,
         type: "client",
         description: input.description || null,
+        primaryContactName: input.primaryContactName || null,
+        primaryContactEmail: input.primaryContactEmail || null,
+        aumRange: input.aumRange || null,
+        sectors: input.sectors || null,
+        subscriptionTier: input.subscriptionTier || "poc",
+        renewalDate: input.renewalDate || null,
       });
 
       const [created] = await db
@@ -252,6 +266,25 @@ export const organizationsRouter = router({
         .from(organizations)
         .where(eq(organizations.slug, input.slug))
         .limit(1);
+
+      // Log activity
+      await db.insert(activityLog).values({
+        entityType: "organization",
+        entityName: created.name,
+        action: "Client Onboarded",
+        detail: `New client "${created.name}" onboarded (${input.subscriptionTier || "poc"} tier)`,
+        userName: "ATLAS Admin",
+        activitySource: "atlas_ops",
+      });
+
+      await logAudit({
+        organizationId: created.id,
+        action: "create",
+        entityType: "organization",
+        entityId: String(created.id),
+        entityName: created.name,
+        details: JSON.stringify({ tier: input.subscriptionTier, sectors: input.sectors }),
+      });
 
       return created;
     }),
@@ -264,6 +297,12 @@ export const organizationsRouter = router({
         name: z.string().min(1).max(255).optional(),
         description: z.string().optional(),
         status: z.enum(["active", "suspended", "archived"]).optional(),
+        primaryContactName: z.string().max(255).optional(),
+        primaryContactEmail: z.string().email().optional(),
+        aumRange: z.string().max(32).optional(),
+        sectors: z.array(z.string()).optional(),
+        subscriptionTier: z.enum(["poc", "growth", "enterprise"]).optional(),
+        renewalDate: z.string().max(32).optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -275,6 +314,12 @@ export const organizationsRouter = router({
       if (updates.name !== undefined) updateObj.name = updates.name;
       if (updates.description !== undefined) updateObj.description = updates.description;
       if (updates.status !== undefined) updateObj.status = updates.status;
+      if (updates.primaryContactName !== undefined) updateObj.primaryContactName = updates.primaryContactName;
+      if (updates.primaryContactEmail !== undefined) updateObj.primaryContactEmail = updates.primaryContactEmail;
+      if (updates.aumRange !== undefined) updateObj.aumRange = updates.aumRange;
+      if (updates.sectors !== undefined) updateObj.sectors = updates.sectors;
+      if (updates.subscriptionTier !== undefined) updateObj.subscriptionTier = updates.subscriptionTier;
+      if (updates.renewalDate !== undefined) updateObj.renewalDate = updates.renewalDate;
 
       if (Object.keys(updateObj).length > 0) {
         await db.update(organizations).set(updateObj).where(eq(organizations.id, id));
@@ -285,6 +330,15 @@ export const organizationsRouter = router({
         .from(organizations)
         .where(eq(organizations.id, id))
         .limit(1);
+
+      await logAudit({
+        organizationId: id,
+        action: "update",
+        entityType: "organization",
+        entityId: String(id),
+        entityName: updated?.name,
+        details: JSON.stringify(updates),
+      });
 
       return updated;
     }),
@@ -330,6 +384,14 @@ export const organizationsRouter = router({
         entityName: org.name,
         link: "/dashboard",
         actorName: "ATLAS Admin",
+      });
+
+      await logAudit({
+        organizationId: input.id,
+        action: "archive",
+        entityType: "organization",
+        entityId: String(input.id),
+        entityName: org.name,
       });
 
       return { success: true, name: org.name };
@@ -424,5 +486,128 @@ export const organizationsRouter = router({
       await db.delete(organizations).where(eq(organizations.id, input.id));
 
       return { success: true, name: org.name };
+    }),
+
+  // ── Onboarding Step 2: Add ventures to an organization ──────────────
+  addVentures: adminProcedure
+    .input(z.object({
+      organizationId: z.number(),
+      ventures: z.array(z.object({
+        name: z.string().min(1),
+        sector: z.string().optional(),
+        location: z.string().optional(),
+        status: z.string().optional(),
+      })),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const created: number[] = [];
+      for (const v of input.ventures) {
+        const slug = v.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+        await db.insert(ventures).values({
+          name: v.name,
+          slug,
+          sector: v.sector || "Others",
+          location: v.location || "",
+          status: (v.status as any) || "In progress",
+        });
+        const [row] = await db.select({ id: ventures.id }).from(ventures).where(eq(ventures.slug, slug)).limit(1);
+        if (row) {
+          created.push(row.id);
+          // Link to org
+          await db.insert(orgVentureAccess).values({
+            organizationId: input.organizationId,
+            ventureId: row.id,
+          });
+        }
+      }
+      return { created: created.length };
+    }),
+
+  // ── Onboarding Step 3: Send team invitations ──────────────────────
+  sendInvitations: adminProcedure
+    .input(z.object({
+      organizationId: z.number(),
+      invites: z.array(z.object({
+        name: z.string().min(1),
+        email: z.string().email(),
+        role: z.enum(["viewer", "client", "user", "partner", "manager", "admin"]).default("client"),
+      })),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const crypto = await import("crypto");
+      const sent: string[] = [];
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+      for (const inv of input.invites) {
+        const token = crypto.randomBytes(32).toString("hex");
+        await db.insert(invitations).values({
+          email: inv.email,
+          organizationId: input.organizationId,
+          role: inv.role,
+          token,
+          invitedBy: ctx.user.id,
+          invitedByName: ctx.user.name || "ATLAS Admin",
+          expiresAt,
+        });
+        sent.push(inv.email);
+      }
+
+      return { sent: sent.length, emails: sent };
+    }),
+
+  // ── Onboarding Step 4: Configure agent settings ──────────────────
+  configureAgents: adminProcedure
+    .input(z.object({
+      organizationId: z.number(),
+      velocityAgentEnabled: z.boolean().default(true),
+      complianceAgentEnabled: z.boolean().default(true),
+      dealFlowAgentEnabled: z.boolean().default(true),
+      orchestratorEnabled: z.boolean().default(true),
+      overdueDaysThreshold: z.number().min(1).max(90).default(7),
+      distributionWarningDays: z.number().min(1).max(90).default(14),
+      healthScoreAlertThreshold: z.number().min(0).max(100).default(30),
+      pollingIntervalMinutes: z.number().min(5).max(1440).default(30),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Upsert: check if config exists
+      const [existing] = await db.select().from(clientAgentConfig)
+        .where(eq(clientAgentConfig.organizationId, input.organizationId)).limit(1);
+
+      if (existing) {
+        await db.update(clientAgentConfig).set({
+          velocityAgentEnabled: input.velocityAgentEnabled,
+          complianceAgentEnabled: input.complianceAgentEnabled,
+          dealFlowAgentEnabled: input.dealFlowAgentEnabled,
+          orchestratorEnabled: input.orchestratorEnabled,
+          overdueDaysThreshold: input.overdueDaysThreshold,
+          distributionWarningDays: input.distributionWarningDays,
+          healthScoreAlertThreshold: input.healthScoreAlertThreshold,
+          pollingIntervalMinutes: input.pollingIntervalMinutes,
+        }).where(eq(clientAgentConfig.id, existing.id));
+      } else {
+        await db.insert(clientAgentConfig).values(input);
+      }
+
+      return { success: true };
+    }),
+
+  // ── Get agent config for an organization ──────────────────────────
+  getAgentConfig: adminProcedure
+    .input(z.object({ organizationId: z.number() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return null;
+      const [config] = await db.select().from(clientAgentConfig)
+        .where(eq(clientAgentConfig.organizationId, input.organizationId)).limit(1);
+      return config || null;
     }),
 });

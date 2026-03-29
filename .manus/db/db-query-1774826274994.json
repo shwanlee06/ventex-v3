@@ -1,0 +1,9 @@
+{
+  "query": "\nCREATE INDEX idx_activity_org ON activity_log (activityOrgId, createdAt);\nCREATE INDEX idx_activity_entity ON activity_log (entityType, createdAt);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \nCREATE INDEX idx_activity_org ON activity_log (activityOrgId, createdAt);\nCREATE INDEX idx_activity_entity ON activity_log (entityType, createdAt);\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2606
+}

@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { usePreviewMode } from "@/contexts/PreviewMode";
 import { useAgents } from "@/contexts/AgentContext";
-import { Bell, Search, User, Settings, LogOut, Eye, EyeOff, X, FileText } from "lucide-react";
+import { Bell, Search, User, Settings, LogOut, Eye, EyeOff, X, FileText, Building2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { NotificationPanel, useNotifications } from "@/components/NotificationPanel";
 import CommandPalette from "@/components/CommandPalette";
+import ClientSwitcher from "@/components/ClientSwitcher";
 import { useState, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -31,6 +32,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
   const { unreadCount } = useNotifications();
   const [notifOpen, setNotifOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [clientSwitcherOpen, setClientSwitcherOpen] = useState(false);
   const [, navigate] = useLocation();
   const { user, logout } = useAuth();
   const { isPreviewMode, togglePreview, exitPreview } = usePreviewMode();
@@ -134,6 +136,18 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+          {/* Client Switcher — only visible to real ATLAS team */}
+          {isReallyAtlas && !isPreviewMode && (
+            <button
+              onClick={() => setClientSwitcherOpen(true)}
+              className="flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] sm:h-9 sm:min-w-0 sm:px-3 rounded-lg sm:bg-secondary/50 text-muted-foreground text-xs hover:bg-secondary hover:text-foreground transition-colors"
+              title="Switch client context"
+            >
+              <Building2 className="size-4" />
+              <span className="hidden sm:inline">Clients</span>
+            </button>
+          )}
+
           {/* Preview toggle — only visible to real ATLAS team */}
           {isReallyAtlas && (
             <button
@@ -265,6 +279,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
       {/* Panels */}
       <NotificationPanel open={notifOpen} onOpenChange={setNotifOpen} />
       <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
+      <ClientSwitcher open={clientSwitcherOpen} onOpenChange={setClientSwitcherOpen} />
     </>
   );
 }

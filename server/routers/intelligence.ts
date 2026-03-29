@@ -1,29 +1,51 @@
 import { z } from "zod";
-import { publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import {
   dailyBriefs, smartAlerts, aiObservations, ventures, tasks,
   distributions, spvs, activityLog, documentIntelligence,
-  ventureRisks, teamMembers, notifications,
+  ventureRisks, teamMembers, notifications, orgVentureAccess,
 } from "../../drizzle/schema";
-import { eq, desc, and, sql, gte, lte, ne } from "drizzle-orm";
+import { eq, desc, and, sql, gte, lte, ne, inArray } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
+import { isAtlasTeam, resolveVentureScope } from "../security/rbac";
+
+// ── Org-scoped venture IDs helper ─────────────────────────────────────
+
+async function getVentureIdsForOrg(db: any, organizationId: number): Promise<number[]> {
+  const rows = await db
+    .select({ ventureId: orgVentureAccess.ventureId })
+    .from(orgVentureAccess)
+    .where(eq(orgVentureAccess.organizationId, organizationId));
+  return rows.map((r: any) => r.ventureId);
+}
 
 // ── Daily Brief Generator ──────────────────────────────────────────────
 
-async function generateDailyBriefContent(db: any): Promise<{
+async function generateDailyBriefContent(db: any, orgId?: number | null): Promise<{
   headline: string;
   priorityItems: { type: string; description: string; venture?: string; action?: string; daysRemaining?: number }[];
   portfolioHealth: string;
   recommendedActions: string[];
   winsThisWeek: string[];
 }> {
-  // Gather context
-  const allVentures = await db.select().from(ventures);
-  const allTasks = await db.select().from(tasks);
+  // Scope by org
+  let ventureIds: number[] | null = null;
+  if (orgId) {
+    ventureIds = await getVentureIdsForOrg(db, orgId);
+  }
+
+  const ventureWhere = ventureIds && ventureIds.length > 0
+    ? inArray(ventures.id, ventureIds)
+    : undefined;
+
+  const allVentures = await db.select().from(ventures).where(ventureWhere);
+  const taskWhere = orgId ? eq(tasks.organizationId, orgId) : undefined;
+  const allTasks = await db.select().from(tasks).where(taskWhere);
   const recentActivity = await db.select().from(activityLog).orderBy(desc(activityLog.createdAt)).limit(20);
   const allSpvs = await db.select().from(spvs);
-  const allDistributions = await db.select().from(distributions);
+  const distWhere = orgId ? eq(distributions.organizationId, orgId) : undefined;
+  const allDistributions = await db.select().from(distributions).where(distWhere);
   const recentDocs = await db.select().from(documentIntelligence)
     .where(eq(documentIntelligence.processingStatus, "completed"))
     .orderBy(desc(documentIntelligence.processedAt)).limit(10);
@@ -129,45 +151,48 @@ async function calculateVentureHealthScore(db: any, ventureId: number): Promise<
   const ventureTasks = await db.select().from(tasks).where(eq(tasks.ventureId, ventureId));
   const ventureRiskRows = await db.select().from(ventureRisks).where(eq(ventureRisks.ventureId, ventureId));
 
-  let score = 70; // Base score
+  let score = 70;
 
-  // Task completion rate
   const completedTasks = ventureTasks.filter((t: any) => t.status === "complete").length;
   const totalTasks = ventureTasks.length;
   if (totalTasks > 0) {
     const completionRate = completedTasks / totalTasks;
-    score += Math.round(completionRate * 15); // Up to +15
+    score += Math.round(completionRate * 15);
   }
 
-  // Overdue tasks penalty
   const overdueTasks = ventureTasks.filter((t: any) => {
     if (!t.dueDate || t.status === "complete") return false;
     return new Date(t.dueDate) < new Date();
   });
-  score -= overdueTasks.length * 5; // -5 per overdue task
+  score -= overdueTasks.length * 5;
 
-  // Active risks penalty
   const activeRisks = ventureRiskRows.filter((r: any) => r.status === "Monitoring");
-  score -= activeRisks.length * 3; // -3 per active risk
+  score -= activeRisks.length * 3;
 
-  // Clamp between 0-100
   return Math.max(0, Math.min(100, score));
 }
 
 // ── Smart Alerts Generator ─────────────────────────────────────────────
 
-async function generateSmartAlerts(db: any): Promise<void> {
-  const allTasks = await db.select().from(tasks);
-  const allVentures = await db.select().from(ventures);
+async function generateSmartAlerts(db: any, orgId?: number | null): Promise<void> {
+  const taskWhere = orgId ? eq(tasks.organizationId, orgId) : undefined;
+  const allTasks = await db.select().from(tasks).where(taskWhere);
+
+  let ventureIds: number[] | null = null;
+  if (orgId) {
+    ventureIds = await getVentureIdsForOrg(db, orgId);
+  }
+  const ventureWhere = ventureIds && ventureIds.length > 0
+    ? inArray(ventures.id, ventureIds)
+    : undefined;
+  const allVentures = await db.select().from(ventures).where(ventureWhere);
   const allRisks = await db.select().from(ventureRisks);
 
-  // Check for overdue tasks
   for (const task of allTasks) {
     if (!task.dueDate || task.status === "complete") continue;
     const daysOverdue = Math.ceil((Date.now() - new Date(task.dueDate).getTime()) / (1000 * 60 * 60 * 24));
     if (daysOverdue > 0) {
       const venture = allVentures.find((v: any) => v.id === task.ventureId);
-      // Check if alert already exists
       const existing = await db.select().from(smartAlerts)
         .where(and(
           eq(smartAlerts.entityType, "task"),
@@ -177,6 +202,7 @@ async function generateSmartAlerts(db: any): Promise<void> {
 
       if (existing.length === 0) {
         await db.insert(smartAlerts).values({
+          organizationId: orgId,
           severity: daysOverdue > 7 ? "critical" : "warning",
           alertType: "overdue_task",
           message: `Task "${task.title}" is ${daysOverdue} days overdue${venture ? ` (${venture.name})` : ""}`,
@@ -189,7 +215,6 @@ async function generateSmartAlerts(db: any): Promise<void> {
     }
   }
 
-  // Check for ventures with many active risks
   for (const venture of allVentures) {
     const risksForVenture = allRisks.filter((r: any) => r.ventureId === venture.id && r.status === "Monitoring");
     if (risksForVenture.length >= 3) {
@@ -202,6 +227,7 @@ async function generateSmartAlerts(db: any): Promise<void> {
 
       if (existing.length === 0) {
         await db.insert(smartAlerts).values({
+          organizationId: orgId,
           severity: "warning",
           alertType: "high_risk_venture",
           message: `${venture.name} has ${risksForVenture.length} active risks that need attention`,
@@ -218,66 +244,102 @@ async function generateSmartAlerts(db: any): Promise<void> {
 // ── Router ─────────────────────────────────────────────────────────────
 
 export const intelligenceRouter = router({
-  // Generate or get today's daily brief
-  getDailyBrief: publicProcedure.query(async () => {
-    const db = await getDb();
-    if (!db) return null;
+  // Get today's daily brief — org-scoped
+  getDailyBrief: protectedProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .query(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) return null;
 
-    const today = new Date().toISOString().split("T")[0];
-    const existing = await db.select().from(dailyBriefs)
-      .where(eq(dailyBriefs.briefDate, today)).limit(1);
+      const isAdmin = isAtlasTeam(ctx.user);
+      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
 
-    if (existing.length > 0) return existing[0];
-    return null;
-  }),
+      const today = new Date().toISOString().split("T")[0];
+      const conditions: any[] = [eq(dailyBriefs.briefDate, today)];
+      if (effectiveOrgId) {
+        conditions.push(eq(dailyBriefs.organizationId, effectiveOrgId));
+      }
 
-  // Generate a new daily brief
-  generateDailyBrief: publicProcedure.mutation(async () => {
-    const db = await getDb();
-    if (!db) throw new Error("Database not available");
+      const existing = await db.select().from(dailyBriefs)
+        .where(and(...conditions)).limit(1);
 
-    const today = new Date().toISOString().split("T")[0];
+      if (existing.length > 0) return existing[0];
+      return null;
+    }),
 
-    // Delete existing brief for today
-    await db.delete(dailyBriefs).where(eq(dailyBriefs.briefDate, today));
+  // Generate a new daily brief — org-scoped
+  generateDailyBrief: protectedProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
 
-    const content = await generateDailyBriefContent(db);
+      const isAdmin = isAtlasTeam(ctx.user);
+      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
 
-    const [inserted] = await db.insert(dailyBriefs).values({
-      briefDate: today,
-      headline: content.headline,
-      priorityItems: content.priorityItems,
-      portfolioHealth: content.portfolioHealth,
-      recommendedActions: content.recommendedActions,
-      winsThisWeek: content.winsThisWeek,
-    });
+      const today = new Date().toISOString().split("T")[0];
 
-    const [brief] = await db.select().from(dailyBriefs)
-      .where(eq(dailyBriefs.briefDate, today)).limit(1);
+      // Delete existing brief for today for this org
+      const delConditions: any[] = [eq(dailyBriefs.briefDate, today)];
+      if (effectiveOrgId) {
+        delConditions.push(eq(dailyBriefs.organizationId, effectiveOrgId));
+      }
+      await db.delete(dailyBriefs).where(and(...delConditions));
 
-    return brief;
-  }),
+      const content = await generateDailyBriefContent(db, effectiveOrgId);
 
-  // Get past briefs
-  getBriefHistory: publicProcedure
-    .input(z.object({ limit: z.number().default(7) }))
-    .query(async ({ input }) => {
+      await db.insert(dailyBriefs).values({
+        organizationId: effectiveOrgId,
+        briefDate: today,
+        headline: content.headline,
+        priorityItems: content.priorityItems,
+        portfolioHealth: content.portfolioHealth,
+        recommendedActions: content.recommendedActions,
+        winsThisWeek: content.winsThisWeek,
+      });
+
+      const fetchConditions: any[] = [eq(dailyBriefs.briefDate, today)];
+      if (effectiveOrgId) {
+        fetchConditions.push(eq(dailyBriefs.organizationId, effectiveOrgId));
+      }
+      const [brief] = await db.select().from(dailyBriefs)
+        .where(and(...fetchConditions)).limit(1);
+
+      return brief;
+    }),
+
+  // Get past briefs — org-scoped
+  getBriefHistory: protectedProcedure
+    .input(z.object({
+      limit: z.number().default(7),
+      organizationId: z.number().optional(),
+    }))
+    .query(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) return [];
+
+      const isAdmin = isAtlasTeam(ctx.user);
+      const effectiveOrgId = isAdmin ? input.organizationId : ctx.user.organizationId;
+
+      const conditions: any[] = [];
+      if (effectiveOrgId) {
+        conditions.push(eq(dailyBriefs.organizationId, effectiveOrgId));
+      }
+
       return db.select().from(dailyBriefs)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
         .orderBy(desc(dailyBriefs.generatedAt))
         .limit(input.limit);
     }),
 
   // Get venture health score
-  getVentureHealth: publicProcedure
+  getVentureHealth: protectedProcedure
     .input(z.object({ ventureId: z.number() }))
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) return { score: 50 };
       const score = await calculateVentureHealthScore(db, input.ventureId);
 
-      // Update the venture's health score in DB
       await db.update(ventures)
         .set({ healthScore: score })
         .where(eq(ventures.id, input.ventureId));
@@ -285,60 +347,106 @@ export const intelligenceRouter = router({
       return { score };
     }),
 
-  // Get all venture health scores
-  getAllVentureHealth: publicProcedure.query(async () => {
-    const db = await getDb();
-    if (!db) return [];
-    const allVentures = await db.select({
-      id: ventures.id,
-      name: ventures.name,
-      healthScore: ventures.healthScore,
-      sector: ventures.sector,
-      slug: ventures.slug,
-    }).from(ventures);
-    return allVentures;
-  }),
-
-  // Refresh all health scores
-  refreshAllHealthScores: publicProcedure.mutation(async () => {
-    const db = await getDb();
-    if (!db) throw new Error("Database not available");
-
-    const allVentures = await db.select().from(ventures);
-    for (const venture of allVentures) {
-      const score = await calculateVentureHealthScore(db, venture.id);
-      await db.update(ventures)
-        .set({ healthScore: score })
-        .where(eq(ventures.id, venture.id));
-    }
-    return { success: true, count: allVentures.length };
-  }),
-
-  // Get smart alerts
-  getSmartAlerts: publicProcedure
-    .input(z.object({ includeDissmissed: z.boolean().default(false) }))
-    .query(async ({ input }) => {
+  // Get all venture health scores — org-scoped
+  getAllVentureHealth: protectedProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .query(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) return [];
-      const conditions = input.includeDissmissed
-        ? []
-        : [eq(smartAlerts.dismissed, 0)];
+
+      const isAdmin = isAtlasTeam(ctx.user);
+      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+
+      let ventureIds: number[] | null = null;
+      if (effectiveOrgId) {
+        ventureIds = await getVentureIdsForOrg(db, effectiveOrgId);
+      }
+
+      const ventureWhere = ventureIds && ventureIds.length > 0
+        ? inArray(ventures.id, ventureIds)
+        : undefined;
+
+      return db.select({
+        id: ventures.id,
+        name: ventures.name,
+        healthScore: ventures.healthScore,
+        sector: ventures.sector,
+        slug: ventures.slug,
+      }).from(ventures).where(ventureWhere);
+    }),
+
+  // Refresh all health scores — org-scoped
+  refreshAllHealthScores: protectedProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const isAdmin = isAtlasTeam(ctx.user);
+      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+
+      let ventureIds: number[] | null = null;
+      if (effectiveOrgId) {
+        ventureIds = await getVentureIdsForOrg(db, effectiveOrgId);
+      }
+
+      const ventureWhere = ventureIds && ventureIds.length > 0
+        ? inArray(ventures.id, ventureIds)
+        : undefined;
+
+      const allVentures = await db.select().from(ventures).where(ventureWhere);
+      for (const venture of allVentures) {
+        const score = await calculateVentureHealthScore(db, venture.id);
+        await db.update(ventures)
+          .set({ healthScore: score })
+          .where(eq(ventures.id, venture.id));
+      }
+      return { success: true, count: allVentures.length };
+    }),
+
+  // Get smart alerts — org-scoped
+  getSmartAlerts: protectedProcedure
+    .input(z.object({
+      includeDissmissed: z.boolean().default(false),
+      organizationId: z.number().optional(),
+    }))
+    .query(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) return [];
+
+      const isAdmin = isAtlasTeam(ctx.user);
+      const effectiveOrgId = isAdmin ? input.organizationId : ctx.user.organizationId;
+
+      const conditions: any[] = [];
+      if (!input.includeDissmissed) {
+        conditions.push(eq(smartAlerts.dismissed, 0));
+      }
+      if (effectiveOrgId) {
+        conditions.push(eq(smartAlerts.organizationId, effectiveOrgId));
+      }
+
       return db.select().from(smartAlerts)
         .where(conditions.length > 0 ? and(...conditions) : undefined)
         .orderBy(desc(smartAlerts.createdAt))
         .limit(20);
     }),
 
-  // Refresh smart alerts (regenerate)
-  refreshSmartAlerts: publicProcedure.mutation(async () => {
-    const db = await getDb();
-    if (!db) throw new Error("Database not available");
-    await generateSmartAlerts(db);
-    return { success: true };
-  }),
+  // Refresh smart alerts — org-scoped
+  refreshSmartAlerts: protectedProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const isAdmin = isAtlasTeam(ctx.user);
+      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+
+      await generateSmartAlerts(db, effectiveOrgId);
+      return { success: true };
+    }),
 
   // Dismiss a smart alert
-  dismissAlert: publicProcedure
+  dismissAlert: protectedProcedure
     .input(z.object({ alertId: z.number() }))
     .mutation(async ({ input }) => {
       const db = await getDb();
@@ -349,18 +457,24 @@ export const intelligenceRouter = router({
       return { success: true };
     }),
 
-  // Get AI observations
-  getObservations: publicProcedure
+  // Get AI observations — org-scoped
+  getObservations: protectedProcedure
     .input(z.object({
       ventureId: z.number().optional(),
+      organizationId: z.number().optional(),
       limit: z.number().default(10),
     }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) return [];
-      const conditions = [];
+
+      const isAdmin = isAtlasTeam(ctx.user);
+      const effectiveOrgId = isAdmin ? input.organizationId : ctx.user.organizationId;
+
+      const conditions: any[] = [eq(aiObservations.dismissed, 0)];
       if (input.ventureId) conditions.push(eq(aiObservations.ventureId, input.ventureId));
-      conditions.push(eq(aiObservations.dismissed, 0));
+      if (effectiveOrgId) conditions.push(eq(aiObservations.organizationId, effectiveOrgId));
+
       return db.select().from(aiObservations)
         .where(and(...conditions))
         .orderBy(desc(aiObservations.createdAt))
@@ -368,7 +482,7 @@ export const intelligenceRouter = router({
     }),
 
   // Dismiss an observation
-  dismissObservation: publicProcedure
+  dismissObservation: protectedProcedure
     .input(z.object({ observationId: z.number() }))
     .mutation(async ({ input }) => {
       const db = await getDb();
@@ -379,10 +493,10 @@ export const intelligenceRouter = router({
       return { success: true };
     }),
 
-  // Accept observation and create task
-  acceptObservation: publicProcedure
+  // Accept observation and create task — org-scoped
+  acceptObservation: protectedProcedure
     .input(z.object({ observationId: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
@@ -397,6 +511,7 @@ export const intelligenceRouter = router({
           : null;
 
         await db.insert(tasks).values({
+          organizationId: obs.organizationId,
           title: obs.suggestedTaskTitle,
           ventureId: obs.ventureId,
           dueDate,
@@ -414,18 +529,33 @@ export const intelligenceRouter = router({
       return { success: true };
     }),
 
-  // Generate AI observations for a venture
-  generateObservations: publicProcedure
-    .input(z.object({ ventureId: z.number().optional() }))
-    .mutation(async ({ input }) => {
+  // Generate AI observations — org-scoped
+  generateObservations: protectedProcedure
+    .input(z.object({
+      ventureId: z.number().optional(),
+      organizationId: z.number().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
-      const allVentures = input.ventureId
-        ? await db.select().from(ventures).where(eq(ventures.id, input.ventureId))
-        : await db.select().from(ventures);
+      const isAdmin = isAtlasTeam(ctx.user);
+      const effectiveOrgId = isAdmin ? input.organizationId : ctx.user.organizationId;
 
-      const allTasks = await db.select().from(tasks);
+      let allVentures;
+      if (input.ventureId) {
+        allVentures = await db.select().from(ventures).where(eq(ventures.id, input.ventureId));
+      } else if (effectiveOrgId) {
+        const vIds = await getVentureIdsForOrg(db, effectiveOrgId);
+        allVentures = vIds.length > 0
+          ? await db.select().from(ventures).where(inArray(ventures.id, vIds))
+          : [];
+      } else {
+        allVentures = await db.select().from(ventures);
+      }
+
+      const taskWhere = effectiveOrgId ? eq(tasks.organizationId, effectiveOrgId) : undefined;
+      const allTasks = await db.select().from(tasks).where(taskWhere);
       const allRisks = await db.select().from(ventureRisks);
       const allTeam = await db.select().from(teamMembers);
       const recentDocs = await db.select().from(documentIntelligence)
@@ -512,6 +642,7 @@ Return ONLY valid JSON array.`,
       let count = 0;
       for (const obs of observations) {
         await db.insert(aiObservations).values({
+          organizationId: effectiveOrgId,
           observationType: obs.observationType || "recommendation",
           ventureId: obs.ventureId || null,
           ventureName: obs.ventureName || null,

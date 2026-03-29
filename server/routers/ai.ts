@@ -3,8 +3,9 @@
 // ============================================================================
 
 import { z } from "zod";
-import { publicProcedure, router } from "../_core/trpc";
+import { protectedProcedure, router } from "../_core/trpc";
 import { invokeLLM, type Message } from "../_core/llm";
+import { checkRateLimit } from "../rateLimiter";
 import { getDb } from "../db";
 import {
   ventures, tasks, spvs, distributions, teamMembers,
@@ -122,13 +123,19 @@ const messageSchema = z.object({
 });
 
 export const aiRouter = router({
-  chat: publicProcedure
+  chat: protectedProcedure
     .input(
       z.object({
         messages: z.array(messageSchema),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // Rate limit: max 10 AI calls per minute per user
+      const rl = checkRateLimit(`ai:${ctx.user.id}`, 10, 60_000);
+      if (!rl.allowed) {
+        throw new Error(`Rate limit exceeded. Please wait ${Math.ceil(rl.retryAfterMs / 1000)}s before trying again.`);
+      }
+
       // Build live context from database
       const liveContext = await buildLiveContext();
 

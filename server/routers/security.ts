@@ -25,6 +25,7 @@ import {
   revokeAccess,
   isRoleAtLeast,
   ROLE_HIERARCHY,
+  isAtlasTeam,
 } from "../security/rbac";
 import { isEncryptionConfigured } from "../security/encryption";
 
@@ -293,6 +294,7 @@ export const securityRouter = router({
         result: z.enum(["success", "denied", "error"]).optional(),
         startDate: z.string().optional(),
         endDate: z.string().optional(),
+        organizationId: z.number().optional(),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -301,7 +303,11 @@ export const securityRouter = router({
       const db = await getDb();
       if (!db) return { entries: [], total: 0 };
 
+      const isAdmin = isAtlasTeam(ctx.user);
+      const effectiveOrgId = isAdmin ? input.organizationId : ctx.user.organizationId;
+
       const conditions = [];
+      if (effectiveOrgId) conditions.push(eq(auditLog.organizationId, effectiveOrgId));
       if (input.action) conditions.push(like(auditLog.action, `%${input.action}%`));
       if (input.entityType) conditions.push(eq(auditLog.entityType, input.entityType));
       if (input.userId) conditions.push(eq(auditLog.userId, input.userId));

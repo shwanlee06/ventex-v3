@@ -5,7 +5,7 @@ import { teamMembers, activityLog, ventureTeam, ventures, organizations, users, 
 import crypto from "crypto";
 import { eq, desc, asc, inArray, isNull, isNotNull, and, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import { resolveVentureScope, getVentureIdsForOrg } from "../security/rbac";
+import { resolveVentureScope, getVentureIdsForOrg, logAudit } from "../security/rbac";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { storagePut } from "../storage";
 import { sendInvitationEmail, buildInviteLink } from "../invitationEmail";
@@ -36,7 +36,7 @@ export const teamRouter = router({
    * If organizationId is provided, returns members belonging to that org
    * If no filter, returns all members
    */
-  list: publicProcedure
+  list: protectedProcedure
     .input(z.object({ organizationId: z.number().optional() }).optional())
     .query(async ({ ctx, input }) => {
       const db = await getDb();
@@ -87,7 +87,7 @@ export const teamRouter = router({
    * List ATLAS/Aurovia internal members (type = 'Internal')
    * Includes members with any orgId as long as they are Internal type
    */
-  listInternal: publicProcedure.query(async () => {
+  listInternal: protectedProcedure.query(async () => {
     const db = await getDb();
     if (!db) return [];
     // Sort by custom sortOrder (lower = higher in list), then by name
@@ -133,14 +133,14 @@ export const teamRouter = router({
     return members;
   }),
 
-  getBySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
+  getBySlug: protectedProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
     const db = await getDb();
     if (!db) return null;
     const rows = await db.select().from(teamMembers).where(eq(teamMembers.slug, input.slug)).limit(1);
     return rows[0] || null;
   }),
 
-  getById: publicProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
+  getById: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
     const db = await getDb();
     if (!db) return null;
     const rows = await db.select().from(teamMembers).where(eq(teamMembers.id, input.id)).limit(1);
@@ -301,7 +301,7 @@ export const teamRouter = router({
       return rows;
     }),
 
-  assignToVenture: publicProcedure.input(z.object({
+  assignToVenture: protectedProcedure.input(z.object({
     ventureId: z.number(),
     memberId: z.number(),
     responsibility: z.string().optional(),
@@ -316,7 +316,7 @@ export const teamRouter = router({
     return { success: true };
   }),
 
-  removeFromVenture: publicProcedure.input(z.object({
+  removeFromVenture: protectedProcedure.input(z.object({
     id: z.number(),
   })).mutation(async ({ input }) => {
     const db = await getDb();

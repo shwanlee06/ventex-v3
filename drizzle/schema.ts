@@ -28,6 +28,13 @@ export const organizations = mysqlTable("organizations", {
   type: mysqlEnum("type", ["core", "partner", "client"]).default("partner").notNull(),
   status: mysqlEnum("orgStatus", ["active", "suspended", "archived"]).default("active").notNull(),
   description: text("description"),
+  // Onboarding fields
+  primaryContactName: varchar("primaryContactName", { length: 255 }),
+  primaryContactEmail: varchar("primaryContactEmail", { length: 320 }),
+  aumRange: varchar("aumRange", { length: 32 }),  // '<$100M' | '$100M-$500M' | '$500M+' | '$1B+'
+  sectors: json("sectors").$type<string[]>(),
+  subscriptionTier: varchar("subscriptionTier", { length: 32 }).default("poc"),  // 'poc' | 'growth' | 'enterprise'
+  renewalDate: varchar("renewalDate", { length: 32 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -158,6 +165,7 @@ export type InsertVentureTeam = typeof ventureTeam.$inferInsert;
 export const tasks = mysqlTable("tasks", {
   id: int("id").autoincrement().primaryKey(),
   legacyId: varchar("legacyId", { length: 64 }),
+  organizationId: int("organizationId"),
   title: varchar("title", { length: 500 }).notNull(),
   ventureId: int("ventureId"),
   ventureLink: varchar("ventureLink", { length: 255 }),
@@ -178,6 +186,7 @@ export type InsertTask = typeof tasks.$inferInsert;
 export const spvs = mysqlTable("spvs", {
   id: int("id").autoincrement().primaryKey(),
   legacyId: varchar("legacyId", { length: 64 }),
+  organizationId: int("organizationId"),
   name: varchar("name", { length: 255 }).notNull(),
   sector: varchar("sector", { length: 64 }),
   priority: varchar("priority", { length: 32 }).default("Medium"),
@@ -296,6 +305,7 @@ export type InsertNotification = typeof notifications.$inferInsert;
 export const contacts = mysqlTable("contacts", {
   id: int("id").autoincrement().primaryKey(),
   legacyId: varchar("legacyId", { length: 64 }),
+  organizationId: int("organizationId"),
   name: varchar("name", { length: 255 }).notNull(),
   role: varchar("role", { length: 255 }),
   status: varchar("status", { length: 64 }).default("Active"),
@@ -391,6 +401,7 @@ export type InsertMeetingBrief = typeof meetingBriefs.$inferInsert;
 // ── AI Observations ────────────────────────────────────────────────────
 export const aiObservations = mysqlTable("ai_observations", {
   id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId"),
   observationType: varchar("observationType", { length: 64 }).notNull(),
   ventureId: int("ventureId"),
   ventureName: varchar("ventureName", { length: 255 }),
@@ -409,6 +420,7 @@ export type InsertAiObservation = typeof aiObservations.$inferInsert;
 // ── Daily Briefs ───────────────────────────────────────────────────────
 export const dailyBriefs = mysqlTable("daily_briefs", {
   id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId"),
   briefDate: varchar("briefDate", { length: 16 }).notNull(),
   headline: varchar("headline", { length: 500 }),
   priorityItems: json("priorityItems").$type<{ type: string; description: string; venture?: string; action?: string; daysRemaining?: number }[]>(),
@@ -424,6 +436,7 @@ export type InsertDailyBrief = typeof dailyBriefs.$inferInsert;
 // ── Smart Alerts ───────────────────────────────────────────────────────
 export const smartAlerts = mysqlTable("smart_alerts", {
   id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId"),
   severity: varchar("severity", { length: 16 }).notNull(), // critical, warning, info
   alertType: varchar("alertType", { length: 64 }).notNull(),
   message: text("message").notNull(),
@@ -457,6 +470,7 @@ export type UserVentureAccess = typeof userVentureAccess.$inferSelect;
 // SOC 2 compliant audit trail of all access and mutations
 export const auditLog = mysqlTable("audit_log", {
   id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId"),
   userId: int("userId"),
   userName: varchar("userName", { length: 255 }),
   action: varchar("action", { length: 64 }).notNull(), // e.g., "read", "create", "update", "delete", "login", "logout", "access_denied"
@@ -522,6 +536,7 @@ export type InsertUserPreference = typeof userPreferences.$inferInsert;
 // ── Agent Events (AI Agent System — Velocity Build) ─────────────────────
 export const agentEvents = mysqlTable("agent_events", {
   id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId"),
   agentName: varchar("agentName", { length: 64 }).notNull(),
   eventType: varchar("eventType", { length: 32 }).notNull(),
   message: text("message").notNull(),
@@ -550,6 +565,7 @@ export type InsertAgentEvent = typeof agentEvents.$inferInsert;
 // ── Venture Velocity (stage advance tracking) ────────────────────────────
 export const ventureVelocity = mysqlTable("venture_velocity", {
   id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId"),
   ventureId: int("ventureId").notNull(),
   ventureName: varchar("ventureName", { length: 255 }).notNull(),
   sector: varchar("sector", { length: 64 }),
@@ -566,6 +582,7 @@ export type InsertVentureVelocity = typeof ventureVelocity.$inferInsert;
 // ── Agent Drafts (AI-generated communications) ───────────────────────────
 export const agentDrafts = mysqlTable("agent_drafts", {
   id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId"),
   ventureId: int("ventureId"),
   ventureName: varchar("ventureName", { length: 255 }),
   draftType: varchar("draftType", { length: 32 }).notNull(),  // 'follow_up' | 'reminder' | 'escalation' | 'update' | 'lp_notice'
@@ -582,3 +599,25 @@ export const agentDrafts = mysqlTable("agent_drafts", {
 
 export type AgentDraft = typeof agentDrafts.$inferSelect;
 export type InsertAgentDraft = typeof agentDrafts.$inferInsert;
+
+// ── Client Agent Configuration (per-client agent settings) ────────────────
+export const clientAgentConfig = mysqlTable("client_agent_config", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  // Agent toggles
+  velocityAgentEnabled: boolean("velocityAgentEnabled").default(true).notNull(),
+  complianceAgentEnabled: boolean("complianceAgentEnabled").default(true).notNull(),
+  dealFlowAgentEnabled: boolean("dealFlowAgentEnabled").default(true).notNull(),
+  orchestratorEnabled: boolean("orchestratorEnabled").default(true).notNull(),
+  // Thresholds
+  overdueDaysThreshold: int("overdueDaysThreshold").default(7).notNull(),
+  distributionWarningDays: int("distributionWarningDays").default(14).notNull(),
+  healthScoreAlertThreshold: int("healthScoreAlertThreshold").default(30).notNull(),
+  // Polling
+  pollingIntervalMinutes: int("pollingIntervalMinutes").default(30).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ClientAgentConfig = typeof clientAgentConfig.$inferSelect;
+export type InsertClientAgentConfig = typeof clientAgentConfig.$inferInsert;

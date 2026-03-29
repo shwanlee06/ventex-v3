@@ -3,7 +3,7 @@ import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { distributions, activityLog } from "../../drizzle/schema";
 import { eq, desc } from "drizzle-orm";
-import { isAtlasTeam } from "../security/rbac";
+import { isAtlasTeam, logAudit } from "../security/rbac";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
 export const distributionsRouter = router({

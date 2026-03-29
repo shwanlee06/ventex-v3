@@ -31,6 +31,7 @@ import {
   Shield,
   Cpu,
   FileText,
+  UserPlus,
 } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useState, useMemo } from "react";
@@ -58,6 +59,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Activity", href: "/activity", icon: <Activity className="size-5" /> },
   { label: "AI Agents", href: "/agents", icon: <Cpu className="size-5" />, atlasOnly: true },
   { label: "Drafts", href: "/drafts", icon: <FileText className="size-5" />, atlasOnly: true },
+  { label: "Onboard Client", href: "/onboarding", icon: <UserPlus className="size-5" />, atlasOnly: true },
   { label: "Settings", href: "/settings", icon: <Settings className="size-5" />, atlasOnly: true },
   // Client-only nav items
   { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-5" />, clientOnly: true },

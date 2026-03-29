@@ -5,7 +5,7 @@ import { spvs, spvVentures, spvTeam, ventures, teamMembers, spvFiles, spvFolders
 import { eq, desc, and, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { storagePut } from "../storage";
-import { isAtlasTeam, getOrgSpvIds, resolveSpvScope } from "../security/rbac";
+import { isAtlasTeam, getOrgSpvIds, resolveSpvScope, logAudit } from "../security/rbac";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
 function slugify(name: string) {

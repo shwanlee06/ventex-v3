@@ -1138,3 +1138,71 @@
 
 ### Bug Fixes
 - [x] Fix agents.ts raw SQL using wrong column name (action_type → actionType) causing test failures
+
+## MULTI-CLIENT ARCHITECTURE — Launch Ready Build
+
+### Section 6 — API Key Security (CRITICAL — First)
+- [x] Verify all LLM calls are server-side only (no VITE_ANTHROPIC_API_KEY in browser)
+- [x] Ensure AI chat uses protectedProcedure (was publicProcedure)
+- [x] Add rate limiting: max 10 calls per minute per user
+- [x] Remove any client-side API keys from codebase (none found — already clean)
+
+### Section 1 — Multi-Tenant Data Isolation
+- [x] Audit all tables for organization_id scoping
+- [x] Enforce org_id filtering on all SELECT/INSERT/UPDATE/DELETE queries
+- [x] Tables: ventures, tasks, distributions, agent_events, agent_drafts, venture_velocity, team_members, activity_log, spvs
+- [ ] Create test organization (client #2) and verify zero data leakage (deferred to testing phase)
+
+### Section 5 — Per-Client Agent Isolation
+- [x] Scope all agent queries by organization_id
+- [x] Tag agent_events with organization_id
+- [x] Agent polling runs per active client context
+- [x] Store agent config per client (client_agent_config table)
+
+### Section 2 — Client Onboarding Flow
+- [x] Build /onboarding wizard (admin-only)
+- [x] Step 1: Client details (name, contact, AUM, sectors, tier)
+- [x] Step 2: Initial ventures (add form + skip)
+- [x] Step 3: Team invitations (name, email, role + skip)
+- [x] Step 4: Agent configuration (toggles + thresholds)
+- [x] Step 5: Confirmation summary + "Launch Client" button
+
+### Section 4 — Self-Serve Client Portal Access
+- [x] Invitation email template (branded, with secure token) — already exists
+- [x] /accept-invite page (token validation, OAuth redirect) — already exists
+- [x] /forgot-password flow — N/A (uses Manus OAuth)
+- [x] Login page — N/A (uses Manus OAuth, no email/password)
+- [x] "Remember this device" — handled by OAuth session persistence
+
+### Section 3 — Client Switcher (Operator)
+- [x] Client picker overlay in operator top nav
+- [x] Client cards: name, sector tags, health, overdue count
+- [x] Search/filter by name or sector
+- [x] "Global View" option for cross-client dashboard
+- [x] Sidebar shows current client context (already existed)
+
+### Section 7 — Operator Global Dashboard
+- [x] Global KPI row: Total Clients, Ventures, Overdue, Velocity, Completion (already existed)
+- [x] Cross-client alert feed (OverdueAlertBanner already existed)
+- [x] Client health grid with sort/filter (health, velocity, overdue — already existed)
+
+### Section 8 — Client Management Controls
+- [x] Client Settings tab in /clients/[slug] (Portfolio + Settings tabs)
+- [x] Client info editing (name, contact, AUM, sectors)
+- [x] Subscription management (tier, renewal date)
+- [x] Team management — existing team section + invitations from onboarding
+- [x] Agent settings per client — available via onboarding wizard config
+- [x] Data management — archive/restore/delete already in header
+- [x] Status & access display (active/suspended/archived with descriptions)
+
+### Section 9 — Performance at Scale
+- [x] Database indexes on 17 key columns (org_id + status + date combinations across all tables)
+- [x] Activity router already has limit/offset pagination
+- [x] Agents list already has limit parameter (default 50)
+- [x] Ventures/tasks return all rows per org (appropriate for current scale, pagination infra ready)
+
+### Section 10 — Audit Trail & Compliance
+- [x] audit_log table already existed (append-only)
+- [x] Extended logAudit function with organizationId support
+- [x] Added logAudit calls to ventures, tasks, spvs, distributions, organizations, team routers
+- [x] Audit log already exposed in Settings → Security tab

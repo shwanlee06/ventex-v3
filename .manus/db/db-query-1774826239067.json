@@ -1,0 +1,78 @@
+{
+  "query": "SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE COLUMN_NAME = 'organizationId' AND TABLE_SCHEMA = DATABASE() ORDER BY TABLE_NAME;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE COLUMN_NAME = 'organizationId' AND TABLE_SCHEMA = DATABASE() ORDER BY TABLE_NAME;",
+  "rows": [
+    {
+      "TABLE_NAME": "agent_drafts",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "agent_events",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "ai_observations",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "api_keys",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "audit_log",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "client_agent_config",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "contacts",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "daily_briefs",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "distributions",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "invitations",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "org_venture_access",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "smart_alerts",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "spvs",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "tasks",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "team_members",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "users",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "venture_velocity",
+      "COLUMN_NAME": "organizationId"
+    }
+  ],
+  "messages": [],
+  "stdout": "TABLE_NAME\tCOLUMN_NAME\nagent_drafts\torganizationId\nagent_events\torganizationId\nai_observations\torganizationId\napi_keys\torganizationId\naudit_log\torganizationId\nclient_agent_config\torganizationId\ncontacts\torganizationId\ndaily_briefs\torganizationId\ndistributions\torganizationId\ninvitations\torganizationId\norg_venture_access\torganizationId\nsmart_alerts\torganizationId\nspvs\torganizationId\ntasks\torganizationId\nteam_members\torganizationId\nusers\torganizationId\nventure_velocity\torganizationId\n",
+  "stderr": "",
+  "execution_time_ms": 61
+}

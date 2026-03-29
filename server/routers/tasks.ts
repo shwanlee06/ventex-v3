@@ -3,7 +3,7 @@ import { publicProcedure, protectedProcedure, adminProcedure, router } from "../
 import { getDb } from "../db";
 import { tasks, activityLog, ventures, orgVentureAccess, organizations, ventureTeam, teamMembers } from "../../drizzle/schema";
 import { eq, desc, and, sql, inArray, isNull, ne } from "drizzle-orm";
-import { isAtlasTeam, getOrgVentureIds, resolveVentureScope } from "../security/rbac";
+import { isAtlasTeam, getOrgVentureIds, resolveVentureScope, logAudit } from "../security/rbac";
 import { createNotification, createBulkNotifications, NOTIF_TYPES } from "../notificationHelper";
 
 /**

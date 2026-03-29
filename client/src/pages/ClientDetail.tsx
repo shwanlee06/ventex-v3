@@ -39,6 +39,7 @@ import {
   Loader2,
   Archive,
   ArchiveRestore,
+  Settings,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useCallback } from "react";
@@ -52,6 +53,7 @@ import VentureHealthMatrix from "@/components/VentureHealthMatrix";
 import SectorPulsePanel from "@/components/SectorPulsePanel";
 import DistributionTimeline from "@/components/DistributionTimeline";
 import TeamVentureAttribution from "@/components/TeamVentureAttribution";
+import ClientSettings from "@/components/ClientSettings";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -166,6 +168,7 @@ export default function ClientDetail() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [expandedVenture, setExpandedVenture] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<"portfolio" | "settings">("portfolio");
 
   const now = useMemo(() => new Date(), []);
 
@@ -389,6 +392,42 @@ export default function ClientDetail() {
           ))}
         </div>
 
+        {/* ── Tab Navigation ────────────────────────────────────── */}
+        <div className="flex items-center gap-1 border-b border-border">
+          <button
+            onClick={() => setActiveTab("portfolio")}
+            className={cn(
+              "px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px",
+              activeTab === "portfolio"
+                ? "text-foreground border-foreground"
+                : "text-muted-foreground border-transparent hover:text-foreground hover:border-border"
+            )}
+          >
+            <Layers3 className="size-3.5 inline mr-1.5" />
+            Portfolio
+          </button>
+          <button
+            onClick={() => setActiveTab("settings")}
+            className={cn(
+              "px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px",
+              activeTab === "settings"
+                ? "text-foreground border-foreground"
+                : "text-muted-foreground border-transparent hover:text-foreground hover:border-border"
+            )}
+          >
+            <Settings className="size-3.5 inline mr-1.5" />
+            Settings
+          </button>
+        </div>
+
+        {/* ── Settings Tab ────────────────────────────────────────── */}
+        {activeTab === "settings" && orgId && (
+          <ClientSettings orgId={orgId} orgSlug={slug} />
+        )}
+
+        {/* ── Portfolio Tab Content ────────────────────────────────── */}
+        {activeTab === "portfolio" && (
+        <>
         {/* ── Sector Pulse Panel (Upgrade 4) ──────────────────────── */}
         <SectorPulsePanel ventures={ventureAnalytics} />
 
@@ -776,6 +815,9 @@ export default function ClientDetail() {
             onNavigateToTeam={() => navigate("/team")}
           />
         </div>
+
+        </>
+        )}
 
         {/* ── Archived Banner ──────────────────────────────────── */}
         {isArchived && (

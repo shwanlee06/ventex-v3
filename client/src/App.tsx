@@ -30,6 +30,7 @@ import AtlasTeam from "./pages/AtlasTeam";
 import AcceptInvite from "./pages/AcceptInvite";
 import AgentsPage from "./pages/Agents";
 import DraftsPage from "./pages/Drafts";
+import OnboardingWizard from "./pages/OnboardingWizard";
 import { AgentProvider } from "./contexts/AgentContext";
 import { useHeartbeat } from "./hooks/useHeartbeat";
 
@@ -148,6 +149,9 @@ function Router() {
       </Route>
       <Route path="/drafts">
         <RequireAuth><RequireAtlas><DraftsPage /></RequireAtlas></RequireAuth>
+      </Route>
+      <Route path="/onboarding">
+        <RequireAuth><RequireAtlas><OnboardingWizard /></RequireAtlas></RequireAuth>
       </Route>
 
       <Route path="/404" component={NotFound} />

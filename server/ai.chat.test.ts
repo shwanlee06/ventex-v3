@@ -26,9 +26,17 @@ vi.mock("./_core/llm", () => ({
   }),
 }));
 
-function createPublicContext(): TrpcContext {
+function createAuthenticatedContext(): TrpcContext {
   return {
-    user: null,
+    user: {
+      id: 1,
+      openId: "test-open-id",
+      name: "Test User",
+      email: "test@example.com",
+      role: "admin",
+      organizationId: 1,
+      createdAt: new Date(),
+    } as TrpcContext["user"],
     req: {
       protocol: "https",
       headers: {},
@@ -41,7 +49,7 @@ function createPublicContext(): TrpcContext {
 
 describe("ai.chat", () => {
   it("returns a response with content and model info", async () => {
-    const ctx = createPublicContext();
+    const ctx = createAuthenticatedContext();
     const caller = appRouter.createCaller(ctx);
 
     const result = await caller.ai.chat({
@@ -75,7 +83,7 @@ describe("ai.chat", () => {
       ],
     });
 
-    const ctx = createPublicContext();
+    const ctx = createAuthenticatedContext();
     const caller = appRouter.createCaller(ctx);
 
     const result = await caller.ai.chat({
@@ -89,7 +97,7 @@ describe("ai.chat", () => {
   });
 
   it("handles multi-turn conversations", async () => {
-    const ctx = createPublicContext();
+    const ctx = createAuthenticatedContext();
     const caller = appRouter.createCaller(ctx);
 
     const result = await caller.ai.chat({
@@ -105,11 +113,24 @@ describe("ai.chat", () => {
   });
 
   it("validates input schema - rejects empty messages", async () => {
-    const ctx = createPublicContext();
+    const ctx = createAuthenticatedContext();
     const caller = appRouter.createCaller(ctx);
 
     await expect(
       caller.ai.chat({ messages: [] })
     ).resolves.toHaveProperty("content");
+  });
+
+  it("rejects unauthenticated requests", async () => {
+    const ctx: TrpcContext = {
+      user: null,
+      req: { protocol: "https", headers: {} } as TrpcContext["req"],
+      res: { clearCookie: () => {} } as TrpcContext["res"],
+    };
+    const caller = appRouter.createCaller(ctx);
+
+    await expect(
+      caller.ai.chat({ messages: [{ role: "user", content: "test" }] })
+    ).rejects.toThrow();
   });
 });

@@ -145,7 +145,7 @@ describe("spvs router", () => {
 
 describe("team router", () => {
   it("lists all team members from the database", async () => {
-    const caller = createPublicCaller();
+    const caller = createAuthCaller();
     const team = await caller.team.list();
     expect(Array.isArray(team)).toBe(true);
     expect(team.length).toBeGreaterThan(0);
@@ -188,7 +188,7 @@ describe("activity router", () => {
   });
 
   it("returns activity metrics", async () => {
-    const caller = createPublicCaller();
+    const caller = createAuthCaller();
     const metrics = await caller.activity.metrics();
     expect(metrics).toHaveProperty("total");
     expect(metrics).toHaveProperty("today");

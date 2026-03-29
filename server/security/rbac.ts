@@ -367,6 +367,7 @@ export async function getAccessibleSpvIds(
  * Log an audit event.
  */
 export async function logAudit(params: {
+  organizationId?: number | null;
   userId?: number | null;
   userName?: string | null;
   action: string;
@@ -382,6 +383,7 @@ export async function logAudit(params: {
     const db = await getDb();
     if (!db) return;
     await db.insert(auditLog).values({
+      organizationId: params.organizationId ?? null,
       userId: params.userId ?? null,
       userName: params.userName ?? null,
       action: params.action,
