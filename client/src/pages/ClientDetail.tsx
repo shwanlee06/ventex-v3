@@ -286,7 +286,7 @@ export default function ClientDetail() {
   }
 
   return (
-    <DashboardLayout title={clientName} subtitle={`${allVentures.length} ventures · ${sectors.length} sectors`}>
+    <DashboardLayout title={clientName} subtitle="VENTURE PORTFOLIO">
       <div className="p-4 sm:p-5 md:p-6 space-y-5 pb-24 md:pb-6">
 
         {/* ── Back + Client Header ────────────────────────────────── */}

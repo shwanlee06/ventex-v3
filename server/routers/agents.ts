@@ -302,7 +302,7 @@ async function runVelocityAgent(db: NonNullable<Awaited<ReturnType<typeof getDb>
           and(
             eq(agentEvents.agentName, "Velocity Agent"),
             eq(agentEvents.agentEntityId, String(venture.id)),
-            sql`${agentEvents.actionType} = 'escalate'`,
+            eq(agentEvents.actionType, 'escalate'),
             gte(agentEvents.createdAt, new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000))
           )
         )
@@ -578,7 +578,7 @@ async function persistSignals(
       newStatus: signal.newStatus ?? null,
       isRead: false,
       actionTaken: false,
-    });
+    } as any);
   }
 }
 

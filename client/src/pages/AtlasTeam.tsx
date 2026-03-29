@@ -324,7 +324,7 @@ export default function AtlasTeam() {
   const isLoading = atlasTeamQ.isLoading;
 
   return (
-    <DashboardLayout title="ATLAS Team" subtitle="INTERNAL TEAM DIRECTORY">
+    <DashboardLayout title="ATLAS Team">
       <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5 pb-24 md:pb-6">
 
         {/* ── Stats Bar ──────────────────────────────────────────── */}
@@ -460,7 +460,7 @@ export default function AtlasTeam() {
                             )}
                             <div>
                               <div className="flex items-center gap-1.5">
-                                <span className="text-xs font-medium text-foreground">{member.name}</span>
+                                <span className="text-xs font-medium text-foreground capitalize">{member.name}</span>
                                 {member.invitationStatus === "pending" && (
                                   <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-amber-500/30 text-amber-400 bg-amber-500/10">Invited</Badge>
                                 )}

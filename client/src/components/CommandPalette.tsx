@@ -76,7 +76,7 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange} title="Search" description="Search ventures, SPVs, team, tasks, and pages">
-      <CommandInput placeholder="Search ventures, SPVs, team, tasks, pages..." />
+      <CommandInput placeholder="Search clients, ventures, tasks" />
       <CommandList className="max-h-[400px]">
         <CommandEmpty>No results found.</CommandEmpty>
 

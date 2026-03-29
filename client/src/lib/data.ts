@@ -253,7 +253,7 @@ export const VENTURES: Venture[] = [
   // Yacht (3)
   { id: "recFY55UsCgpgmnng", name: "Mar-a-Lago Yacht Club", theme: "Yacht", stage: "In Fundraising", status: "In progress", location: "USA" },
   { id: "recGIlkRxb7NhUxLz", name: "Bagatelle", theme: "Yacht", stage: "In Validation", status: "In progress", location: "TBD" },
-  { id: "reckg6WcKxF2IRTF6", name: "JV Yacht - Nammos", theme: "Yacht", stage: "In Validation", status: "In progress", location: "TBD", currentStatus: "Figure out JV Yacht - Nammos" },
+  { id: "reckg6WcKxF2IRTF6", name: "JV Yacht - Nammos", theme: "Yacht", stage: "In Validation", status: "In progress", location: "TBD", currentStatus: "Evaluating JV Yacht - Nammos partnership" },
 
   // Entertainment (3)
   { id: "recC7kyF7o9QOzUW2", name: "Berlin", theme: "Entertainment", stage: "Active ventures", status: "Completed", location: "Malaysia" },
@@ -264,7 +264,7 @@ export const VENTURES: Venture[] = [
   { id: "rec8cJyOaDtDrFVYY", name: "Kazzafi Daughter", theme: "Others", stage: "Active ventures", status: "In progress", location: "Oman" },
   { id: "recBbe9nhPjXZH6BV", name: "Shady Project", theme: "Others", stage: "Active ventures", status: "In progress", location: "Oman" },
   { id: "recPJqBkpKXcBwLzS", name: "P430", theme: "Others", stage: "In Validation", status: "In progress", location: "TBD" },
-  { id: "recQmPJLlKhEJKfKq", name: "Unknown Venture", theme: "Others", stage: "Active ventures", status: "Unknown", location: "TBD" },
+  { id: "recQmPJLlKhEJKfKq", name: "Venture (Pending)", theme: "Others", stage: "Active ventures", status: "In progress", location: "TBD" },
 ];
 
 export const SPVS: SPV[] = [

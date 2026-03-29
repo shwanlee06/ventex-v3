@@ -447,7 +447,9 @@ export default function VerticalsPage() {
                                 <div className="flex items-center gap-2 mt-1">
                                   <div className="size-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: tc.color }} />
                                   <span className="text-[10px] font-medium" style={{ color: tc.color }}>{venture.sector}</span>
-                                  <span className="text-[10px] font-mono text-muted-foreground">· {venture.location}</span>
+                                  {venture.location && venture.location !== "TBD" && (
+                                                  <span className="text-[10px] font-mono text-muted-foreground">· {venture.location}</span>
+                                                )}
                                 </div>
                               </div>
                               <StatusBadge label={venture.status} bg={sc.bg} dot={sc.dot} />

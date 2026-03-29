@@ -116,7 +116,7 @@ export default function SectorPulsePanel({ ventures }: SectorPulsePanelProps) {
           >
             <div className="border-t border-border/30">
               {/* Table header */}
-              <div className="grid grid-cols-[1fr_80px_100px_80px_1fr] gap-3 px-4 py-2 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+              <div className="grid grid-cols-[1fr_80px_100px_80px_1fr] gap-3 px-4 py-2 text-[10px] uppercase tracking-[0.08em] text-foreground/40 font-medium">
                 <span>Sector</span>
                 <span className="text-center">Ventures</span>
                 <span className="text-center">Avg Completion</span>
@@ -134,7 +134,7 @@ export default function SectorPulsePanel({ ventures }: SectorPulsePanelProps) {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.04, duration: 0.2 }}
                     className={cn(
-                      "grid grid-cols-[1fr_80px_100px_80px_1fr] gap-3 px-4 py-2.5 items-center",
+                      "grid grid-cols-[1fr_80px_100px_80px_1fr] gap-3 px-4 items-center h-[44px]",
                       i < sectorData.length - 1 && "border-b border-border/20"
                     )}
                   >
@@ -160,7 +160,7 @@ export default function SectorPulsePanel({ ventures }: SectorPulsePanelProps) {
 
                     {/* Status bar */}
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 rounded-full bg-secondary/50 overflow-hidden">
+                      <div className="flex-1 h-[3px] rounded-full bg-secondary/50 overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{

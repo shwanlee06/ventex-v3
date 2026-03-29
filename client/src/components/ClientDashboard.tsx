@@ -198,7 +198,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
     return allVentures.filter(v => v.sector === activeSector);
   }, [allVentures, activeSector]);
 
-  const firstName = user?.name?.split(" ")[0] || "Partner";
+  const clientName = user?.name || "Partner";
 
   if (pageLoading) {
     return (
@@ -228,17 +228,25 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
         <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3 font-light">
           Welcome back
         </p>
-        <h1 className="text-2xl sm:text-3xl font-light text-foreground tracking-tight">
-          {firstName}
+        <h1 className="text-2xl sm:text-3xl font-light text-foreground tracking-tight capitalize">
+          {clientName}
         </h1>
         <p className="text-sm text-muted-foreground mt-1 font-light">
-          {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+          {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         </p>
 
         <div className="mt-6 flex items-end gap-8">
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-light">Portfolio Value</p>
             <p className="text-2xl sm:text-3xl font-light text-foreground tabular-nums tracking-tight">
+              {(() => {
+                const val = totalDistAmount * 8;
+                if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(2)}M`;
+                if (val >= 1_000) return `$${(val / 1_000).toFixed(0)}K`;
+                return formatCurrency(val);
+              })()}
+            </p>
+            <p className="text-[11px] text-muted-foreground/50 mt-0.5 tabular-nums">
               {formatCurrency(totalDistAmount * 8)}
             </p>
           </div>
@@ -345,7 +353,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
             </div>
             <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
               {nextDist
-                ? `Next: ${nextDist.name} · ${formatCurrency(nextDist.amount || 0)} · ${nextDist.distributionDate ? formatDate(nextDist.distributionDate) : "TBD"}`
+                ? `Next: ${nextDist.name} · ${formatCurrency(nextDist.amount || 0)}${nextDist.distributionDate ? ` · ${formatDate(nextDist.distributionDate)}` : ""}`
                 : "No upcoming distributions scheduled"
               }
             </p>
@@ -405,7 +413,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">{v.name}</h3>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{v.sector} · {v.location}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{v.sector}{v.location && v.location !== "TBD" ? ` · ${v.location}` : ""}</p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <span className={cn(

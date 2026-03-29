@@ -88,15 +88,15 @@ export default function LivePresenceWidget() {
             </span>
           </div>
           {/* Stacked avatars for online users */}
-          <div className="flex -space-x-2 ml-2">
+          <div className="flex ml-2">
             {members
               .filter((m) => m.liveStatus === "online")
               .slice(0, 5)
-              .map((m) => (
+              .map((m, i) => (
                 <Tooltip key={m.id}>
                   <TooltipTrigger asChild>
-                    <div className="relative">
-                      <div className="size-7 rounded-full bg-secondary border-2 border-card flex items-center justify-center text-[10px] font-medium text-foreground">
+                    <div className="relative" style={{ marginLeft: i === 0 ? 0 : -6, zIndex: 10 - i }}>
+                      <div className="size-6 rounded-full bg-secondary border-2 border-card flex items-center justify-center text-[9px] font-medium text-foreground">
                         {m.name
                           .split(" ")
                           .map((n) => n[0])
@@ -113,7 +113,7 @@ export default function LivePresenceWidget() {
                 </Tooltip>
               ))}
             {onlineCount > 5 && (
-              <div className="size-7 rounded-full bg-secondary border-2 border-card flex items-center justify-center text-[10px] font-mono text-muted-foreground">
+              <div className="size-6 rounded-full bg-secondary border-2 border-card flex items-center justify-center text-[9px] font-mono text-muted-foreground" style={{ marginLeft: -6, zIndex: 0 }}>
                 +{onlineCount - 5}
               </div>
             )}

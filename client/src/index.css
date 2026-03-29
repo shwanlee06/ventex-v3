@@ -4,10 +4,14 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  /* ── Border Radius (FIX 4) ──────────────────────────────── */
+  --radius: 0.5rem;                    /* 8px — cards */
+  --radius-sm: 0.25rem;                /* 4px — badges/pills */
+  --radius-md: 0.375rem;               /* 6px — buttons/inputs */
+  --radius-lg: 0.5rem;                 /* 8px — cards */
+  --radius-xl: 0.625rem;               /* 10px — modals */
+
+  /* ── Semantic Colour Tokens ─────────────────────────────── */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -40,10 +44,13 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --font-sans: "DM Sans", system-ui, sans-serif;
-  --font-mono: "DM Mono", ui-monospace, monospace;
-  --font-display: "Inter", system-ui, sans-serif;
-  /* Vertical semantic colors */
+
+  /* ── Typography (FIX 1) ─────────────────────────────────── */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* ── Vertical Semantic Colours ──────────────────────────── */
   --color-v-realestate: oklch(0.65 0.12 240);
   --color-v-yachts: oklch(0.7 0.12 180);
   --color-v-hospitality: oklch(0.7 0.14 60);
@@ -52,16 +59,17 @@
   --color-gold: oklch(0.75 0.1 75);
   --color-gold-light: oklch(0.82 0.08 75);
   --color-gold-muted: oklch(0.75 0.1 75 / 15%);
-  /* Semantic status colors */
+
+  /* ── Semantic Status Colours ────────────────────────────── */
   --color-success: oklch(0.72 0.17 155);
   --color-warning: oklch(0.75 0.15 75);
   --color-danger: oklch(0.63 0.22 25);
   --color-info: oklch(0.65 0.1 250);
 }
 
-/* Light mode (default) */
+/* ── Light Mode ───────────────────────────────────────────── */
 :root {
-  --radius: 0.625rem;
+  --radius: 0.5rem;
   --primary: oklch(0.55 0.12 75);
   --primary-foreground: oklch(0.98 0.005 75);
   --sidebar-primary: oklch(0.55 0.12 75);
@@ -96,7 +104,7 @@
   --sidebar-ring: oklch(0.55 0.12 75);
 }
 
-/* Dark mode */
+/* ── Dark Mode ────────────────────────────────────────────── */
 .dark {
   --primary: oklch(0.75 0.1 75);
   --primary-foreground: oklch(0.15 0.01 75);
@@ -132,25 +140,57 @@
   --sidebar-ring: oklch(0.75 0.1 75);
 }
 
+/* ================================================================== */
+/* BASE LAYER                                                         */
+/* ================================================================== */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
+  /* FIX 1 — Font rendering: enforce Inter globally */
   html {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
+
   @media (min-width: 640px) {
     html { font-size: 15px; }
   }
   @media (min-width: 1024px) {
     html { font-size: 16px; }
   }
+
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground antialiased;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
     overscroll-behavior: none;
   }
+
+  /* FIX 1 — Tabular nums for ALL financial figures */
+  .tabular-nums,
+  [data-financial],
+  td:has(.currency),
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  /* FIX 10 — Focus states: custom outline */
+  *:focus-visible {
+    outline: 1px solid rgba(255, 255, 255, 0.3);
+    outline-offset: 2px;
+  }
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* Cursor helpers */
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
   [type="button"]:not(:disabled),
@@ -164,7 +204,12 @@
   }
 }
 
+/* ================================================================== */
+/* COMPONENTS LAYER                                                   */
+/* ================================================================== */
 @layer components {
+
+  /* ── Layout ─────────────────────────────────────────────── */
   .container {
     width: 100%;
     margin-left: auto;
@@ -172,19 +217,16 @@
     padding-left: 1rem;
     padding-right: 1rem;
   }
-
   .flex {
     min-height: 0;
     min-width: 0;
   }
-
   @media (min-width: 640px) {
     .container {
       padding-left: 1.5rem;
       padding-right: 1.5rem;
     }
   }
-
   @media (min-width: 1024px) {
     .container {
       padding-left: 2rem;
@@ -199,51 +241,118 @@
     min-width: 44px;
   }
 
-  /* Status badge system — consistent across all pages */
-  .status-badge {
-    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap;
+  /* ── FIX 2 — Uppercase label tracking ───────────────────── */
+  .uppercase {
+    letter-spacing: 0.08em !important;
   }
-  .status-active { @apply bg-emerald-500/15 text-emerald-500; }
-  .status-progress { @apply bg-blue-500/15 text-blue-500; }
-  .status-hold { @apply bg-amber-500/15 text-amber-500; }
-  .status-complete { @apply bg-emerald-500/15 text-emerald-500; }
-  .status-negotiating { @apply bg-violet-500/15 text-violet-500; }
-  .status-cancelled { @apply bg-red-500/15 text-red-500; }
-  .status-overdue { @apply bg-red-500/15 text-red-500; }
 
-  /* Priority badge system */
-  .priority-high { @apply bg-red-500/15 text-red-400; }
-  .priority-medium { @apply bg-amber-500/15 text-amber-400; }
-  .priority-low { @apply bg-emerald-500/15 text-emerald-400; }
+  /* ── FIX 3 — Unified Status Badge System ────────────────── */
+  .status-badge {
+    @apply inline-flex items-center px-2 py-0.5 text-xs font-medium whitespace-nowrap;
+    border-radius: 4px;
+  }
+  /* In progress — always teal/green */
+  .status-active,
+  .status-progress {
+    background: rgba(74, 222, 128, 0.15);
+    color: #4ade80;
+  }
+  /* Overdue — always red */
+  .status-overdue {
+    background: rgba(248, 113, 113, 0.15);
+    color: #f87171;
+  }
+  /* Complete / Paid — always green */
+  .status-complete,
+  .status-paid {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+  }
+  /* Scheduled / Upcoming — always amber */
+  .status-scheduled,
+  .status-hold {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+  }
+  /* On Hold — gray */
+  .status-on-hold {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.5);
+  }
+  /* At Risk — amber border variant, no fill */
+  .status-at-risk {
+    background: transparent;
+    color: #f59e0b;
+    border: 1px solid #f59e0b;
+    border-radius: 4px;
+  }
+  /* Healthy — teal border variant, no fill */
+  .status-healthy {
+    background: transparent;
+    color: #4ade80;
+    border: 1px solid #4ade80;
+  }
+  /* Negotiating */
+  .status-negotiating {
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+  }
+  /* Cancelled */
+  .status-cancelled {
+    background: rgba(248, 113, 113, 0.15);
+    color: #f87171;
+  }
 
-  /* Card system — consistent 12px radius, subtle border */
+  /* Priority badges */
+  .priority-high {
+    background: rgba(248, 113, 113, 0.15);
+    color: #f87171;
+    border-radius: 4px;
+  }
+  .priority-medium {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border-radius: 4px;
+  }
+  .priority-low {
+    background: rgba(74, 222, 128, 0.15);
+    color: #4ade80;
+    border-radius: 4px;
+  }
+
+  /* ── FIX 4+5 — Card System ──────────────────────────────── */
   .app-card {
     background-color: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    padding: 1rem;
-    transition: all 0.15s ease;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 20px;
+    transition: border-color 150ms ease, background-color 150ms ease;
   }
   .app-card-hover {
     background-color: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    padding: 1rem;
-    transition: all 0.15s ease;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 20px;
+    transition: border-color 150ms ease, background-color 150ms ease;
     cursor: pointer;
   }
   .app-card-hover:hover {
-    border-color: oklch(from var(--primary) l c h / 0.2);
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.02);
   }
-  .app-card-hover:active {
-    transform: scale(0.985);
-    transition: transform 0.1s ease;
+
+  /* Colored left-border cards */
+  .card-accent-left {
+    border-left: 3px solid var(--accent-color, rgba(255,255,255,0.2));
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   /* Skeleton loader */
   .skeleton-pulse {
-    @apply bg-muted animate-pulse rounded-lg;
+    @apply bg-muted animate-pulse;
+    border-radius: 8px;
   }
 
   /* Mobile bottom nav safe area */
@@ -272,53 +381,40 @@
   /* ============================================ */
   /* CLIENT PORTAL — Luxury UHNWI Design System  */
   /* ============================================ */
-
   .client-portal {
-    font-family: "Inter", system-ui, sans-serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   }
-
   .client-portal .client-heading {
     font-weight: 300;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
-
   .client-portal .client-value {
-    font-family: "Inter", system-ui, sans-serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 300;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
   }
-
   .client-portal .client-card {
     background-color: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
     padding: 1.5rem;
-    transition: all 0.2s ease;
+    transition: border-color 150ms ease, background-color 150ms ease;
   }
-
   .client-portal .client-card:hover {
-    border-color: oklch(0.75 0.1 75 / 0.2);
+    border-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.02);
   }
-
-  .client-portal .client-card:active {
-    transform: scale(0.985);
-    transition: transform 0.1s ease;
-  }
-
   .client-portal .gold-accent {
     color: oklch(0.75 0.1 75);
   }
-
   .client-portal .gold-bg {
     background-color: oklch(0.75 0.1 75 / 0.1);
   }
-
   .client-portal .gold-border {
     border-color: oklch(0.75 0.1 75 / 0.2);
   }
-
   /* Client bottom nav — frosted glass */
   .client-bottom-nav {
     background: oklch(0.13 0.005 270 / 0.85);
@@ -330,42 +426,34 @@
   /* ============================================ */
   /* ATLAS ADMIN — Dense Analytics Design System  */
   /* ============================================ */
-
   .atlas-admin .kpi-card {
     background-color: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    padding: 0.875rem 1rem;
-    transition: all 0.15s ease;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 20px;
+    transition: border-color 150ms ease, background-color 150ms ease;
   }
-
   .atlas-admin .kpi-card:hover {
-    border-color: oklch(from var(--primary) l c h / 0.25);
-    background-color: oklch(from var(--card) l c h / 0.8);
+    border-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.02);
   }
-
   .atlas-admin .data-table-row {
-    transition: background-color 0.1s ease;
+    transition: background-color 100ms ease;
   }
-
   .atlas-admin .data-table-row:hover {
-    background-color: oklch(from var(--accent) l c h / 0.5);
+    background-color: rgba(255, 255, 255, 0.03);
   }
 
   /* Velocity indicator */
-  .velocity-up {
-    color: oklch(0.72 0.17 155);
-  }
-  .velocity-down {
-    color: oklch(0.63 0.22 25);
-  }
+  .velocity-up { color: #4ade80; }
+  .velocity-down { color: #f87171; }
 
   /* Chart container */
   .chart-container {
     background-color: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 20px;
   }
 
   /* Mini sparkline area */
@@ -376,29 +464,29 @@
   }
 }
 
-/* Custom scrollbar — adapts to theme */
+/* ================================================================== */
+/* FIX 9 — Scrollbar Styling (thin, subtle, barely visible)           */
+/* ================================================================== */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: oklch(0.35 0 0);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.45 0 0);
+  background: rgba(255, 255, 255, 0.2);
 }
-.dark ::-webkit-scrollbar-thumb {
-  background: oklch(0.35 0 0);
-}
+/* Light mode scrollbar */
 :root:not(.dark) ::-webkit-scrollbar-thumb {
-  background: oklch(0.75 0 0);
+  background: rgba(0, 0, 0, 0.12);
 }
 :root:not(.dark) ::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.65 0 0);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 /* Client portal — hide scrollbar for cleaner mobile feel */
@@ -410,16 +498,41 @@
   scrollbar-width: none;
 }
 
-/* ── Agent LiveTicker Animation ──────────────────────────────────────── */
+/* ── Agent LiveTicker Animation ──────────────────────────── */
 @keyframes ticker-scroll {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
-
 .animate-ticker {
   animation: ticker-scroll 60s linear infinite;
 }
-
 .animate-ticker:hover {
   animation-play-state: paused;
+}
+
+
+/* ── MOTION-2: Card Hover States ──────────────────────────── */
+/* Subtle border + bg brightening on interactive cards */
+.bg-card {
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+.bg-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.02);
+}
+.client-card {
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+.client-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* ── MOTION-3: Button Press States ────────────────────────── */
+button, [role="button"], a.inline-flex {
+  transition: opacity 100ms ease, transform 100ms ease;
+}
+button:active, [role="button"]:active, a.inline-flex:active {
+  opacity: 0.75;
+  transform: scale(0.98);
 }

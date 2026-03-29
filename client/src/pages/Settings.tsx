@@ -224,7 +224,7 @@ export default function SettingsPage() {
                       <h3 className="text-sm font-medium text-foreground truncate">{spv.name}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <div className="size-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
-                        <span className="text-[10px] font-medium" style={{ color }}>{spv.sector || "TBD"}</span>
+                        <span className="text-[10px] font-medium" style={{ color }}>{spv.sector && spv.sector !== "TBD" ? spv.sector : "Unclassified"}</span>
                       </div>
                     </div>
                     {sc && <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />}
@@ -286,14 +286,14 @@ export default function SettingsPage() {
                             <span className="text-xs text-foreground font-medium">{spv.name}</span>
                             <div className="flex items-center gap-1.5 mt-0.5 sm:hidden">
                               <div className="size-1.5 rounded-full" style={{ backgroundColor: color }} />
-                              <span className="text-[10px]" style={{ color }}>{spv.sector || "TBD"}</span>
+                              <span className="text-[10px]" style={{ color }}>{spv.sector && spv.sector !== "TBD" ? spv.sector : "Unclassified"}</span>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell onClick={() => setSpvModalId(spv.id)} className="hidden sm:table-cell">
                           <div className="flex items-center gap-2">
                             <div className="size-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
-                            <span className="text-xs" style={{ color }}>{spv.sector || "TBD"}</span>
+                            <span className="text-xs" style={{ color }}>{spv.sector && spv.sector !== "TBD" ? spv.sector : "Unclassified"}</span>
                           </div>
                         </TableCell>
                         <TableCell>

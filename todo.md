@@ -1077,3 +1077,64 @@
 - [x] Section 9C: Client tasks sort by overdue + progress bar + overdue banner
 - [x] Section 9D: Client distributions timeline view + summary pills
 - [x] Section 9E: Client profile page — portfolio summary card with venture/task/distribution counts
+
+## ATLAS Pixel-Perfect Refinement
+
+### Critical Fixes (Global)
+- [x] FIX 1: Font rendering — Inter + tabular-nums for all numbers
+- [x] FIX 2: Letter spacing 0.08em on ALL uppercase labels
+- [x] FIX 3: Colour consistency — unified badge/status pill system
+- [x] FIX 4: Border radius consistency (cards 8px, badges 4px, buttons 6px, inputs 6px, modals 10px)
+- [x] FIX 5: Card border opacity — 1px solid rgba(255,255,255,0.08), overdue panel subtle
+- [x] FIX 6: Spacing grid — 8px base, 32px page padding, 24px section gaps, 20px card padding
+- [x] FIX 7: Top nav alignment — title 15px/500, subtitle 11px/400/0.1em/uppercase/0.4 opacity
+- [x] FIX 8: Sidebar logo mark (already implemented)
+- [x] FIX 9: Scrollbar styling — thin 4px, subtle rgba(255,255,255,0.12)
+- [x] FIX 10: Focus states — custom outline rgba(255,255,255,0.3)
+
+### Operator Micro-Fixes
+- [ ] OP-FIX 1: Dashboard KPI cards — fill dead space with supporting detail
+- [ ] OP-FIX 2: Velocity Intelligence sparkline — full width, 32px height, 1.5px stroke
+- [ ] OP-FIX 3: Overdue panel typography — table headers 10px, row content 13px, notify button text-only
+- [ ] OP-FIX 4: Live presence bar avatar overlap — 24x24, 2px border, -6px margin
+- [x] OP-FIX 5: Client list row alignment — vertical-align middle on all cells
+- [x] OP-FIX 6: "At Risk" health badge — amber text + amber border (not red)
+- [ ] OP-FIX 7: Sector Pulse panel — equal 44px row heights, 3px status bars
+- [x] OP-FIX 8: Activity page timestamp — capitalize all person names
+- [ ] OP-FIX 9: Search bar placeholder — "Search clients, ventures, tasks"
+- [x] OP-FIX 10: Page title subtitles — remove/update redundant subtitles
+
+### Client Portal Micro-Fixes
+- [x] CL-FIX 1: Welcome card — full name, European date format
+- [x] CL-FIX 2: Portfolio value — $3.52M hero + full number below
+- [ ] CL-FIX 3: Stat row — hide 0 SPVs, show 2-card layout
+- [x] CL-FIX 4: Venture list — hide TBD locations, show sector only
+- [ ] CL-FIX 5: In progress badge consistency — all green, no orange
+- [ ] CL-FIX 6: Ventures page KPI icons — remove, labels only
+- [ ] CL-FIX 7: Ventures page card content — hide descriptions in client portal
+- [x] CL-FIX 8: Tasks page date format — full month names in client portal
+- [ ] CL-FIX 9: Tasks page priority labels — remove from client portal
+- [x] CL-FIX 10: Distributions cancelled card — neutral gray (not red)
+- [x] CL-FIX 11: Distributions amount typography — right-aligned, tabular-nums, weight 600
+- [x] CL-FIX 12: Sidebar nav active state — 2px left border, no filled background
+- [x] CL-FIX 13: Client preview banner — dark bg, amber bottom border, outlined exit button
+
+### Motion & Interaction Polish
+- [ ] MOTION-1: Page transitions — fade 150ms on mount
+- [x] MOTION-2: Card hover states — border-color + bg brightening
+- [x] MOTION-3: Button interactions — active scale(0.98) + opacity 0.75
+- [ ] MOTION-4: Badge entrance — scale animation on count increment
+
+### Empty State Polish
+- [x] Empty tasks — checkmark icon + "All clear" + subtext
+- [ ] Empty SPVs — hide in client, "Add one" link in operator
+- [x] Empty archived clients — "No archived clients" centered
+
+### Content Accuracy
+- [x] CONTENT-1: Audit and hide all "TBD" from client portal + replace with "Unclassified"
+- [ ] CONTENT-2: Audit "Shady" venture names — hide in client portal
+- [ ] CONTENT-3: Berlin/Malaysia data inconsistency — warning icon on operator side
+- [x] CONTENT-4: Clean up informal descriptions ("Figure out" → professional language)
+
+### Bug Fixes
+- [x] Fix agents.ts raw SQL using wrong column name (action_type → actionType) causing test failures

@@ -183,7 +183,7 @@ export default function ActivityLog() {
   ];
 
   return (
-    <DashboardLayout title="Activity Log" subtitle={isAdmin ? "SYSTEM AUDIT TRAIL" : "YOUR BUSINESS ACTIVITY"}>
+    <DashboardLayout title="Activity Log">
       <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5 pb-24 md:pb-6">
 
         {/* ── Source Tabs — Primary split (admin sees all 4, clients see 3) ── */}
@@ -405,7 +405,7 @@ export default function ActivityLog() {
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
                             <span className="text-[10px] font-mono text-muted-foreground">{formatTimestamp(entry.createdAt)}</span>
                             {entry.userName && (
-                              <span className="text-[10px] text-muted-foreground">by {entry.userName}</span>
+                              <span className="text-[10px] text-muted-foreground capitalize">by {entry.userName}</span>
                             )}
                             {entry.sector && (
                               <span className="text-[10px] px-1 py-0.5 rounded bg-secondary text-muted-foreground">{entry.sector}</span>

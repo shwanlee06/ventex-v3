@@ -110,7 +110,7 @@ export default function DistributionsPage() {
     { label: "Total", value: formatCurrency(totalDistributed), icon: <DollarSign className="size-4 text-primary" />, sub: `${distributions.length} dist.` },
     { label: "Paid", value: formatCurrency(paidAmount), icon: <CheckCircle2 className="size-4 text-emerald-400" />, sub: `${distributions.filter(d => d.status === "Paid").length}` },
     { label: "Scheduled", value: formatCurrency(scheduledAmount), icon: <Clock className="size-4 text-blue-400" />, sub: `${distributions.filter(d => d.status === "Scheduled").length}` },
-    { label: "Cancelled", value: formatCurrency(cancelledAmount), icon: <XCircle className="size-4 text-red-400" />, sub: `${distributions.filter(d => d.status === "Cancelled").length}` },
+    { label: "Cancelled", value: formatCurrency(cancelledAmount), icon: <XCircle className="size-4 text-muted-foreground/50" />, sub: `${distributions.filter(d => d.status === "Cancelled").length}` },
   ];
 
   // Convert DB dist to local Distribution type for PDF export
@@ -221,10 +221,10 @@ export default function DistributionsPage() {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
-                          <span className="text-xs font-medium text-foreground">{dist.name}</span>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{dist.fund}</p>
+                          <span className="text-sm font-normal text-foreground/85">{dist.name}</span>
+                          <p className="text-[12px] text-muted-foreground/45 mt-0.5">{dist.fund}</p>
                         </div>
-                        <span className="text-sm font-mono font-semibold text-foreground flex-shrink-0">{formatCurrency(dist.amount || 0)}</span>
+                        <span className="text-lg font-semibold text-foreground flex-shrink-0 tabular-nums text-right">{formatCurrency(dist.amount || 0)}</span>
                       </div>
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
                         {dc && <StatusBadge label={dc.label} bg={dc.bg} dot={dc.dot} />}

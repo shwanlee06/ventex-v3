@@ -350,7 +350,7 @@ export default function SpvDetail() {
               <div className="flex items-center gap-3 mt-1 flex-wrap">
                 <div className="flex items-center gap-1.5">
                   <div className="size-2 rounded-full" style={{ backgroundColor: color }} />
-                  <span className="text-xs" style={{ color }}>{spv.sector || "TBD"}</span>
+                  <span className="text-xs" style={{ color }}>{spv.sector && spv.sector !== "TBD" ? spv.sector : "Unclassified"}</span>
                 </div>
                 {sc && <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />}
                 <button

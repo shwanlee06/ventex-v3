@@ -51,7 +51,7 @@ const STATUS_CONFIG: Record<TaskStatus, { label: string; bg: string; dot: string
 
 function formatDate(d: string | null): string {
   if (!d) return "—";
-  return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }
 
 export default function TasksPage() {
@@ -231,7 +231,7 @@ export default function TasksPage() {
           <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />
           <span className="text-[10px] font-mono text-muted-foreground">{formatDate(task.dueDate)}</span>
           {(task.assigneeNames as string[])?.[0] && (
-            <span className="text-[10px] text-muted-foreground truncate">· {(task.assigneeNames as string[])[0]}</span>
+            <span className="text-[10px] text-muted-foreground truncate capitalize">· {(task.assigneeNames as string[])[0]}</span>
           )}
         </div>
         {task.ventureLink && (
@@ -244,7 +244,7 @@ export default function TasksPage() {
   };
 
   return (
-    <DashboardLayout title="Tasks" subtitle="TASK MANAGEMENT">
+    <DashboardLayout title="Tasks">
       <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
         {/* Metrics */}
         <div className="grid grid-cols-4 gap-2 sm:gap-3">
@@ -378,8 +378,9 @@ export default function TasksPage() {
         {/* Empty state */}
         {filtered.length === 0 && !tasksQ.isLoading && (
           <div className="p-12 text-center bg-card border border-border rounded-lg">
-            <ListChecks className="size-8 text-muted-foreground mx-auto mb-3 opacity-40" />
-            <p className="text-sm text-muted-foreground">No tasks match the current filters.</p>
+            <CheckCircle2 className="size-8 text-muted-foreground mx-auto mb-3 opacity-30" strokeWidth={1.5} />
+            <p className="text-base font-medium text-foreground/80 mb-1">All clear</p>
+            <p className="text-[13px] text-muted-foreground/40">No tasks assigned or pending</p>
           </div>
         )}
 

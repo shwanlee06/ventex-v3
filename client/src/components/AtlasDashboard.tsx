@@ -383,20 +383,20 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: (i + 1) * 0.05, duration: 0.3 }}
-            className="bg-card border border-border rounded-xl p-4 flex flex-col gap-2"
+            className="bg-card border border-border rounded-lg p-5 flex flex-col gap-2 hover:border-white/15 transition-colors"
           >
             <div className="flex items-center justify-between">
-              <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">
+              <span className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
                 {m.label}
               </span>
-              <span className="opacity-60" style={{ color: m.color }}>{m.icon}</span>
+              <span className="opacity-50" style={{ color: m.color }}>{m.icon}</span>
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-semibold tracking-tight text-foreground font-mono">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-2xl font-semibold tracking-tight text-foreground" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {m.value}
               </span>
               <span className={cn(
-                "text-[10px] font-mono",
+                "text-[11px]",
                 typeof m.value === "number" && m.value > 0 && m.label === "Overdue" ? "text-red-400" : "text-muted-foreground"
               )}>
                 {m.sub}
@@ -541,9 +541,10 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
         <div className="bg-card border border-border rounded-xl p-12 text-center">
           {tabMode === "archived" ? (
             <>
-              <Archive className="size-8 text-muted-foreground mx-auto mb-3 opacity-40" />
-              <p className="text-sm text-muted-foreground">
-                {searchTerm ? "No archived clients match your search" : "No archived clients. Clients you archive will appear here."}
+              <Archive className="size-8 text-muted-foreground mx-auto mb-3 opacity-30" strokeWidth={1.5} />
+              <p className="text-base font-medium text-foreground/80 mb-1">No archived clients</p>
+              <p className="text-[13px] text-muted-foreground/40">
+                {searchTerm ? "No archived clients match your search" : "Clients you archive will appear here"}
               </p>
             </>
           ) : (
@@ -577,7 +578,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                   <th
                     key={col.field}
                     onClick={() => toggleSort(col.field)}
-                    className="text-left text-[11px] uppercase tracking-wider text-muted-foreground font-medium p-3 sm:p-4 cursor-pointer hover:text-foreground transition-colors select-none"
+                    className="text-left text-[11px] uppercase tracking-wider text-muted-foreground font-medium p-3 sm:p-4 cursor-pointer hover:text-foreground transition-colors select-none align-middle"
                   >
                     <div className="flex items-center gap-1">
                       {col.label}
@@ -614,7 +615,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-foreground">{client.name}</span>
+                          <span className="font-medium text-foreground capitalize">{client.name}</span>
                           {client.status === "archived" && (
                             <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400">
                               Archived
@@ -793,7 +794,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-foreground">{client.name}</span>
+                    <span className="font-medium text-foreground capitalize">{client.name}</span>
                   </div>
                   <span className="text-[11px] text-muted-foreground">
                     {client.status === "archived" ? (

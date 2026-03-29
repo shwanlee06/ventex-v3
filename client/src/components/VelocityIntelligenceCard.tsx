@@ -39,8 +39,8 @@ function generateSparklinePoints(currentValue: number): number[] {
 }
 
 function SparklineSVG({ points, color }: { points: number[]; color: string }) {
-  const width = 120;
-  const height = 28;
+  const width = 200;
+  const height = 32;
   const padding = 2;
 
   const minVal = Math.min(...points) - 5;
@@ -123,11 +123,11 @@ export default function VelocityIntelligenceCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0, duration: 0.3 }}
-      className="bg-card border border-border rounded-xl p-4 flex flex-col gap-1.5"
+      className="bg-card border border-border rounded-lg p-5 flex flex-col gap-1.5 hover:border-white/15 transition-colors"
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">
+        <span className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
           Velocity Intelligence
         </span>
         <span className="opacity-60" style={{ color: velocityColor }}>

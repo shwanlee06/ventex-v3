@@ -175,8 +175,8 @@ export default function AppSidebar() {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all",
                   active
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    ? "text-foreground border-l-2 border-foreground bg-transparent"
+                    : "text-muted-foreground/50 hover:text-muted-foreground/80 hover:bg-transparent border-l-2 border-transparent"
                 )}
               >
                 <span className="flex-shrink-0">{item.icon}</span>
@@ -190,8 +190,8 @@ export default function AppSidebar() {
                     className={cn(
                       "flex items-center justify-center p-2.5 rounded-lg transition-all",
                       active
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                        ? "text-foreground border-l-2 border-foreground bg-transparent"
+                        : "text-muted-foreground/35 hover:text-muted-foreground/70 hover:bg-transparent border-l-2 border-transparent"
                     )}
                   >
                     {item.icon}
@@ -251,8 +251,8 @@ export default function AppSidebar() {
                     className={cn(
                       "flex items-center gap-2 px-2 py-1.5 rounded-md text-[12px] transition-colors",
                       active
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                        ? "text-foreground border-l-2 border-foreground bg-transparent"
+                        : "text-muted-foreground/50 hover:text-muted-foreground/80 hover:bg-transparent border-l-2 border-transparent"
                     )}
                   >
                     <Building2 className="size-3.5 flex-shrink-0" />
@@ -387,7 +387,7 @@ export default function AppSidebar() {
                       onClick={() => setMoreOpen(false)}
                       className={cn(
                         "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-                        active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                        active ? "text-foreground border-l-2 border-foreground bg-transparent" : "text-muted-foreground/50 hover:text-muted-foreground/80 hover:bg-transparent border-l-2 border-transparent"
                       )}
                     >
                       {item.icon}
