@@ -375,7 +375,9 @@ export default function VentureDetail() {
                 <span className="text-[10px] font-medium px-2 py-0.5 rounded" style={{ backgroundColor: `${tc.color}15`, color: tc.color }}>
                   {venture.sector}
                 </span>
-                <span className="text-[10px] font-mono text-muted-foreground">{venture.location}</span>
+                {venture.location && venture.location !== "TBD" && (
+                  <span className="text-[10px] font-mono text-muted-foreground">{venture.location}</span>
+                )}
                 <span className="text-[10px] text-muted-foreground">·</span>
                 <span className="text-[10px] text-muted-foreground">{venture.stage}</span>
                 <StatusBadge

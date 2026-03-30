@@ -85,7 +85,7 @@ const CARD_CONFIG: Record<CardType, {
     borderColor: "border-l-zinc-600",
     icon: <Eye className="size-4" />,
     iconColor: "text-zinc-400",
-    label: "WATCHING",
+    label: "UPDATE",
     labelColor: "text-zinc-500",
     bgAccent: "bg-zinc-500/5",
   },
@@ -168,11 +168,16 @@ function FeedCard({
                 <span className={cn("text-[10px] font-medium tracking-wider uppercase", config.labelColor)}>
                   {config.label}
                 </span>
-                <span className="text-[10px] text-muted-foreground/50">·</span>
-                <span className="text-[10px] text-muted-foreground/50 flex items-center gap-1">
-                  <Bot className="size-3" />
-                  {friendlyAgentName(event.agentName)}
-                </span>
+                {/* Only show agent name for action_needed and completed, not for watching/update cards */}
+                {cardType !== "watching" && (
+                  <>
+                    <span className="text-[10px] text-muted-foreground/50">·</span>
+                    <span className="text-[10px] text-muted-foreground/50 flex items-center gap-1">
+                      <Bot className="size-3" />
+                      {friendlyAgentName(event.agentName)}
+                    </span>
+                  </>
+                )}
               </div>
               <p className="text-sm text-foreground leading-relaxed">{event.message}</p>
               {event.agentEntityName && (

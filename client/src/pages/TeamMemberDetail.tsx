@@ -266,7 +266,7 @@ export default function TeamMemberDetail() {
                         <span className="text-xs font-medium text-foreground">{v.name}</span>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-[10px] font-mono text-muted-foreground">{v.theme}</span>
-                          <span className="text-[10px] text-muted-foreground">{v.location}</span>
+                          {v.location && v.location !== "TBD" && <span className="text-[10px] text-muted-foreground">{v.location}</span>}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">

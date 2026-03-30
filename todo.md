@@ -1386,3 +1386,31 @@
 - [x] Step 6: Resend email triggers wired (sendOverdueAutoEmail, sendReadyToAdvanceEmail, sendStageAdvancedEmail in agents.ts)
 - [x] Step 7: Agent blueprint awareness verified — velocity + overdue agents read blueprint context in LLM prompts
 - [x] 460 tests passing across 27 files (including backend-completion.test.ts)
+
+## CLOSE ALL GAPS — 10 Fixes + Removals
+
+### Priority 1 — Critical User Flows
+- [x] FIX 4: email.send tRPC mutation wrapping emailService (invitation, overdue, advance, distribution templates)
+- [x] FIX 1: auth.acceptInvite — N/A (OAuth-based auth; invite acceptance handled via OAuth callback)
+- [x] FIX 2: auth.forgotPassword — N/A (OAuth-based auth; no passwords in system)
+- [x] FIX 3: onboarding.complete — unified mutation added to organizations router
+
+### Priority 2 — Blueprint Backend
+- [x] FIX 5: Blueprint tables verified (process_templates, process_steps, venture_process_tracking, client_velocity_benchmarks)
+- [x] FIX 6: Blueprint procedures verified (list, create, generateFromSector, applyToVentures, etc.)
+
+### Priority 3 — Mutation Method Fixes
+- [x] FIX 7: Verified — populateIntelligence, recalculateHealth, organizations.create already proper mutations
+
+### Priority 4 — Agent Blueprint Awareness
+- [x] FIX 8: Velocity Agent reads blueprints and names specific blocking steps
+- [x] FIX 9: Onboarding → blueprint auto-generation connection (already wired)
+- [x] FIX 10: Auto-trigger emails from agent actions (overdue >3d, blocking complete, distribution <7d)
+
+### Removals
+- [x] Remove "Portfolio on track" false card from client dashboard
+- [x] Fix client VelocityFeed — hide agent names/WATCHING labels, show plain English (label → UPDATE)
+- [x] Fix "TBD" in venture location — hide if TBD or null (ClientDashboard, VentureDetail, TeamMemberDetail)
+- [x] Fix "Shwan lee" lowercase — already "Shwan Lee" in data.ts; DB name from OAuth
+- [x] Debounce agents.list polling — LiveTicker now uses shared AgentContext instead of duplicate query
+- [x] 474 tests passing across 30 files (including email, onboarding, removals tests)

@@ -281,16 +281,6 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
     return "";
   }, [overdueTasks]);
 
-  // Stalled ventures (same stage 30+ days)
-  const stalledVentures = useMemo(() => {
-    const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-    return allVentures.filter(v => {
-      if (v.status === "Completed") return false;
-      const updated = v.updatedAt ? new Date(v.updatedAt).getTime() : 0;
-      return updated < thirtyDaysAgo;
-    });
-  }, [allVentures]);
-
   // Sectors
   const sectors = useMemo(() => {
     const map: Record<string, number> = {};
@@ -403,48 +393,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
           </div>
         </motion.div>
 
-        {/* Card 2: Portfolio velocity */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.3 }}
-          className="client-card relative overflow-hidden"
-        >
-          <div className={cn(
-            "absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl",
-            stalledVentures.length > 0 ? "bg-red-500" : "bg-emerald-500"
-          )} />
-          <div className="pl-4 py-4 pr-4">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className={cn("size-4", stalledVentures.length > 0 ? "text-red-400" : "text-emerald-400")} />
-              <span className="text-xs font-medium text-foreground">
-                {stalledVentures.length > 0
-                  ? "Portfolio needs attention"
-                  : "Portfolio on track"
-                }
-              </span>
-            </div>
-            <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
-              {stalledVentures.length > 0
-                ? `${stalledVentures.length} venture${stalledVentures.length !== 1 ? "s have" : " has"} been in the same stage for 30+ days`
-                : `All ${allVentures.filter(v => v.status === "In progress").length} active ventures are progressing`
-              }
-            </p>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "h-7 text-[11px] gap-1 px-0",
-                stalledVentures.length > 0
-                  ? "text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                  : "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
-              )}
-              onClick={() => onNavigate("/ventures")}
-            >
-              {stalledVentures.length > 0 ? "See What's Stalled" : "View Ventures"} <ArrowRight className="size-3" />
-            </Button>
-          </div>
-        </motion.div>
+        {/* Card 2: Portfolio velocity — removed: was showing false "on track" data */}
 
         {/* Card 3: Distributions */}
         <motion.div

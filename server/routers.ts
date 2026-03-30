@@ -20,6 +20,7 @@ import { organizationsRouter } from "./routers/organizations";
 import { aiTasksRouter } from "./routers/aiTasks";
 import { agentsRouter } from "./routers/agents";
 import { blueprintsRouter } from "./routers/blueprints";
+import { emailRouter } from "./routers/email";
 
 export const appRouter = router({
   system: systemRouter,
@@ -51,6 +52,7 @@ export const appRouter = router({
   aiTasks: aiTasksRouter,
   agents: agentsRouter,
   blueprints: blueprintsRouter,
+  email: emailRouter,
 });
 
 export type AppRouter = typeof appRouter;

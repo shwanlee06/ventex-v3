@@ -2,12 +2,12 @@
 // LiveTicker — Velocity Build: 36px scrolling agent signal strip
 // Position: between KPI cards and Live presence bar on operator dashboard
 // Operator only — never visible in client portal
+// Uses AgentContext to avoid duplicate agents.list polling
 // ============================================================================
 
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { trpc } from "@/lib/trpc";
-import { getAgentConfig, resolveAgentKey } from "@/contexts/AgentContext";
+import { useAgents, getAgentConfig, resolveAgentKey } from "@/contexts/AgentContext";
 
 const SEVERITY_DOT: Record<string, string> = {
   critical: "bg-red-400",
@@ -32,10 +32,9 @@ interface LiveTickerProps {
 }
 
 export default function LiveTicker({ onEventClick }: LiveTickerProps) {
-  const { data: events = [] } = trpc.agents.list.useQuery(
-    { limit: 20 },
-    { refetchInterval: 30000 }
-  );
+  // Use shared AgentContext instead of separate trpc.agents.list.useQuery
+  const agents = useAgents();
+  const events = agents.events;
 
   const tickerItems = useMemo(() => {
     if (!events || events.length === 0) return [];
