@@ -269,25 +269,20 @@ export default function VelocityFeed({ onNavigate }: VelocityFeedProps) {
     onSuccess: () => feedQ.refetch(),
   });
 
-  const events = (feedQ.data || []) as FeedEvent[];
+  // clientFeed returns { actionNeeded, completed, watching } — flatten into a single array
+  const feedData = feedQ.data as { actionNeeded: FeedEvent[]; completed: FeedEvent[]; watching: FeedEvent[] } | undefined;
+  const grouped = useMemo(() => ({
+    actionNeeded: feedData?.actionNeeded || [],
+    completed: feedData?.completed || [],
+    watching: feedData?.watching || [],
+  }), [feedData]);
 
-  // Group events by card type
-  const grouped = useMemo(() => {
-    const actionNeeded: FeedEvent[] = [];
-    const completed: FeedEvent[] = [];
-    const watching: FeedEvent[] = [];
+  const events = useMemo(
+    () => [...grouped.actionNeeded, ...grouped.completed, ...grouped.watching],
+    [grouped]
+  );
 
-    for (const ev of events) {
-      const type = classifyEvent(ev);
-      if (type === "action_needed") actionNeeded.push(ev);
-      else if (type === "completed") completed.push(ev);
-      else watching.push(ev);
-    }
-
-    return { actionNeeded, completed, watching };
-  }, [events]);
-
-  const totalItems = grouped.actionNeeded.length + grouped.completed.length + grouped.watching.length;
+  const totalItems = events.length;
   const displayEvents = showAll ? events : events.slice(0, 6);
 
   // Handle action button click — open the appropriate modal

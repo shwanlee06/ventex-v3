@@ -1263,3 +1263,6 @@
 - [ ] Nudge button to send email to client primary contact
 - [ ] Remove Draft Center from operator view (move to client)
 - [ ] Keep: Orchestrator signals, agent health, client response rates, velocity compression
+
+## FIX — VelocityFeed "events is not iterable" error
+- [x] Fix data shape mismatch: clientFeed returns {actionNeeded, completed, watching} but VelocityFeed iterates it as flat array
