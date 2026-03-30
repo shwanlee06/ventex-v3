@@ -551,11 +551,15 @@ export const agentEvents = mysqlTable("agent_events", {
   agentEntityName: varchar("agentEntityName", { length: 255 }),
   oldStatus: varchar("oldStatus", { length: 64 }),
   newStatus: varchar("newStatus", { length: 64 }),
+  // Audience routing — who sees this event
+  audience: varchar("audience", { length: 16 }).default("operator").notNull(), // 'client' | 'operator' | 'both'
+  requiresClientAction: boolean("requiresClientAction").default(false).notNull(),
   // Status tracking
   isRead: boolean("isRead").default(false).notNull(),
   actionTaken: boolean("actionTaken").default(false).notNull(),
   actionTakenAt: timestamp("actionTakenAt"),
   actionTakenBy: varchar("actionTakenBy", { length: 255 }),
+  clientDismissed: boolean("clientDismissed").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

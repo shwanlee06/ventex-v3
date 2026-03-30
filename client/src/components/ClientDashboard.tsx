@@ -37,6 +37,7 @@ import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import VelocityFeed from "@/components/VelocityFeed";
 
 const THEME_ICONS: Record<string, React.ReactNode> = {
   "Real Estate": <Building2 className="size-5" />,
@@ -368,6 +369,9 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
           </div>
         </motion.div>
       </div>
+
+      {/* ── Velocity Feed ───────────────────────────────────────────────── */}
+      <VelocityFeed onNavigate={onNavigate} />
 
       {/* ── Ventures with Sector Pills + Stage Bars (Section 9B) ──── */}
       <div>

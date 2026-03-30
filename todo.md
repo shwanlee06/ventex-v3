@@ -1206,3 +1206,60 @@
 - [x] Extended logAudit function with organizationId support
 - [x] Added logAudit calls to ventures, tasks, spvs, distributions, organizations, team routers
 - [x] Audit log already exposed in Settings → Security tab
+
+## VELOCITY AI FOR CLIENTS — Agent Rewire
+
+### Section 1 — Rewire Agent Event Routing
+- [x] Add audience (client|operator|both) and requires_client_action columns to agent_events
+- [x] Add client_dismissed boolean column
+- [x] Reclassify Overdue Agent: audience=client, requires_client_action=true
+- [x] Reclassify Velocity Agent stage advance: audience=client, requires_client_action=false
+- [x] Reclassify Velocity Agent stall warning: audience=both, requires_client_action=true
+- [x] Reclassify Distribution Sentinel: audience=client, requires_client_action=true
+- [x] Reclassify Orchestrator: audience=operator, requires_client_action=false
+- [x] Backfill existing events with correct audience values
+- [x] Add clientFeed, clientDismiss, clientAction, operatorOversight procedures
+
+### Section 7 — Resend Email Integration
+- [x] Create server-side email send function using Resend (server/emailService.ts)
+- [x] Email type 1: Task follow-up (to assignee) — sendTaskFollowUp()
+- [x] Email type 2: LP distribution notice (to LP investors) — sendDistributionNotice()
+- [x] Email type 3: Client nudge (operator escalation) — sendClientNudge()
+
+### Section 2 — Client Velocity Feed
+- [x] Build Velocity Feed component on client portal dashboard (VelocityFeed.tsx)
+- [x] TYPE 1: ACTION NEEDED cards (amber border, action button)
+- [x] TYPE 2: COMPLETED cards (teal border, view link)
+- [x] TYPE 3: WATCHING cards (gray border, collapsed)
+- [x] Feed ordering: ACTION NEEDED → COMPLETED → WATCHING
+- [x] Empty state with pulsing teal dot
+- [x] "See all activity" link
+- [x] Auto-refresh every 30s, dismiss functionality
+
+### Section 3 — Client Action Flows
+- [x] Flow 1: Approve Follow-Up (modal with draft email, send via Resend)
+- [x] Flow 2: Reassign Task (inline panel, team dropdown, new due date)
+- [x] Flow 3: Confirm Distribution (LP notice draft, recipient list, send)
+- [x] Flow 4: Unblock Venture (3 options: assign task, schedule review, mark on hold)
+- [x] Backend: getEventDetail + getDraft helper procedures
+- [x] Frontend: ClientActionModals component with 4 flow-specific UIs
+- [x] VelocityFeed integration: action buttons open correct modal per event type
+- [x] Tests: 23 test files, 335 tests passing (including client-actions.test.ts)
+
+### Section 4 — Client Task Velocity
+- [ ] Agent context strip below overdue tasks (teal bot icon + Take Action)
+- [ ] Velocity score dots per task (green/amber/red/gray)
+- [ ] One-click task completion with animation
+- [ ] Auto-advance venture stage when all tasks complete
+
+### Section 5 — Client Venture Velocity
+- [ ] Momentum indicator per venture (Accelerating/On Track/Slowing/Stalled/On Hold)
+- [ ] Stage progress bar with days-in-stage
+- [ ] Venture quick actions menu (Add Task, Message Team, View Activity)
+
+### Section 6 — Operator Oversight View
+- [ ] Cross-client oversight feed (what agents did, what clients acted on, what's unactioned)
+- [ ] 48-hour escalation flags for unactioned items
+- [ ] Nudge button to send email to client primary contact
+- [ ] Remove Draft Center from operator view (move to client)
+- [ ] Keep: Orchestrator signals, agent health, client response rates, velocity compression

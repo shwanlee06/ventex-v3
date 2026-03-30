@@ -31,12 +31,16 @@ type EventType = "signal" | "alert" | "recommendation" | "status_change" | "summ
 type Severity = "info" | "warning" | "critical";
 type ActionType = "notify" | "advance" | "draft" | "escalate";
 
+type Audience = "client" | "operator" | "both";
+
 interface AgentSignal {
   agentName: AgentName;
   eventType: EventType;
   message: string;
   severity: Severity;
   organizationId?: number | null;
+  audience?: Audience;
+  requiresClientAction?: boolean;
   actionType?: ActionType;
   actionLabel?: string;
   actionPayload?: Record<string, unknown>;
@@ -149,6 +153,8 @@ async function runOverdueAgent(
         message: `${existingOverdue.length} tasks remain in overdue status. No new overdue tasks detected.`,
         severity: existingOverdue.length > 5 ? "warning" : "info",
         organizationId: orgId,
+        audience: "client",
+        requiresClientAction: true,
         actionType: "notify",
         actionLabel: "Review Overdue",
         entityType: "task",
@@ -160,6 +166,8 @@ async function runOverdueAgent(
         message: "All tasks are on schedule. No overdue items detected.",
         severity: "info",
         organizationId: orgId,
+        audience: "client",
+        requiresClientAction: false,
       });
     }
     return signals;
@@ -217,8 +225,10 @@ async function runOverdueAgent(
       message: `"${task.title}" moved to overdue (${daysOverdue} days). Follow-up drafted for ${assignees}.`,
       severity,
       organizationId: task.organizationId,
+      audience: "client",
+      requiresClientAction: true,
       actionType: "draft",
-      actionLabel: "Send Follow-Up",
+      actionLabel: "Approve Follow-Up",
       actionPayload: { draftId, taskId: task.id },
       entityType: "task",
       agentEntityId: String(task.id),
@@ -244,7 +254,7 @@ async function runVelocityAgent(
   if (orgId) {
     const orgVentureIds = await getVentureIdsForOrg(db, orgId);
     if (orgVentureIds.length === 0) {
-      signals.push({ agentName: "Velocity Agent", eventType: "signal", message: "No active ventures to monitor.", severity: "info", organizationId: orgId });
+      signals.push({ agentName: "Velocity Agent", eventType: "signal", message: "No active ventures to monitor.", severity: "info", organizationId: orgId, audience: "client", requiresClientAction: false });
       return signals;
     }
     ventureConditions.push(inArray(ventures.id, orgVentureIds));
@@ -264,7 +274,7 @@ async function runVelocityAgent(
     .where(and(...ventureConditions));
 
   if (ventureList.length === 0) {
-    signals.push({ agentName: "Velocity Agent", eventType: "signal", message: "No active ventures to monitor.", severity: "info", organizationId: orgId });
+    signals.push({ agentName: "Velocity Agent", eventType: "signal", message: "No active ventures to monitor.", severity: "info", organizationId: orgId, audience: "client", requiresClientAction: false });
     return signals;
   }
 
@@ -305,6 +315,8 @@ async function runVelocityAgent(
           message: `"${venture.name}" advanced from ${venture.stage} → ${nextStage} in ${daysInStage} days. ${totalTasks} tasks completed.`,
           severity: "info",
           organizationId: orgId,
+          audience: "client",
+          requiresClientAction: false,
           actionType: "advance",
           actionLabel: "View Venture",
           actionPayload: { ventureId: venture.id, ventureName: venture.name },
@@ -359,8 +371,10 @@ async function runVelocityAgent(
         message: interventionNote,
         severity: "warning",
         organizationId: orgId,
+        audience: "both",
+        requiresClientAction: true,
         actionType: "escalate",
-        actionLabel: "Assign First Task",
+        actionLabel: "Unblock Venture",
         actionPayload: { ventureId: venture.id, ventureName: venture.name },
         entityType: "venture",
         agentEntityId: String(venture.id),
@@ -377,6 +391,8 @@ async function runVelocityAgent(
       message: `${ventureList.length} ventures monitored. ${atRisk.length} at risk. No auto-advance triggers detected.`,
       severity: atRisk.length > 3 ? "warning" : "info",
       organizationId: orgId,
+      audience: "client",
+      requiresClientAction: false,
       entityType: "venture",
     });
   }
@@ -435,6 +451,8 @@ async function runDistributionSentinel(
         : "No distributions scheduled or recorded.",
       severity: "info",
       organizationId: orgId,
+      audience: "client",
+      requiresClientAction: false,
     });
     return signals;
   }
@@ -494,8 +512,10 @@ async function runDistributionSentinel(
       message: `${fundName}: $${amount.toLocaleString()} ${daysUntil !== null ? `due in ${daysUntil} days` : "date TBD"}. LP notice drafted.`,
       severity,
       organizationId: dist.organizationId,
+      audience: "client",
+      requiresClientAction: true,
       actionType: "draft",
-      actionLabel: "Send LP Notice",
+      actionLabel: "Confirm Distribution",
       actionPayload: { draftId, distributionId: dist.id },
       entityType: "distribution",
       agentEntityId: String(dist.id),
@@ -510,6 +530,8 @@ async function runDistributionSentinel(
       message: `${scheduledDists.length} scheduled distributions monitored. All recently alerted.`,
       severity: "info",
       organizationId: orgId,
+      audience: "client",
+      requiresClientAction: false,
     });
   }
 
@@ -605,6 +627,8 @@ async function runOrchestrator(
     message: analysis,
     severity: maxSeverity,
     organizationId: orgId,
+    audience: "operator",
+    requiresClientAction: false,
     actionType: "notify",
     actionLabel: "Mark Resolved",
   });
@@ -635,6 +659,8 @@ async function persistSignals(
       agentEntityName: signal.agentEntityName ?? null,
       oldStatus: signal.oldStatus ?? null,
       newStatus: signal.newStatus ?? null,
+      audience: signal.audience ?? "operator",
+      requiresClientAction: signal.requiresClientAction ?? false,
       isRead: false,
       actionTaken: false,
     } as any);
@@ -1111,5 +1137,443 @@ export const agentsRouter = router({
         .orderBy(desc(ventureVelocity.advancedAt));
 
       return results;
+    }),
+
+  /**
+   * Client Velocity Feed — returns events visible to clients, grouped by type
+   * ACTION NEEDED → COMPLETED → WATCHING
+   */
+  clientFeed: protectedProcedure
+    .input(z.object({
+      organizationId: z.number().optional(),
+      limit: z.number().min(1).max(100).default(30),
+    }).optional())
+    .query(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) return { actionNeeded: [], completed: [], watching: [] };
+
+      const isAdmin = isAtlasTeam(ctx.user);
+      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+
+      const conditions: any[] = [
+        sql`${agentEvents.audience} IN ('client', 'both')`,
+        eq(agentEvents.clientDismissed, false),
+      ];
+      if (effectiveOrgId) {
+        conditions.push(eq(agentEvents.organizationId, effectiveOrgId));
+      }
+
+      const events = await db
+        .select()
+        .from(agentEvents)
+        .where(and(...conditions))
+        .orderBy(desc(agentEvents.createdAt))
+        .limit(input?.limit ?? 30);
+
+      const actionNeeded = events.filter(e => e.requiresClientAction && !e.actionTaken);
+      const completed = events.filter(e => e.actionTaken);
+      const watching = events.filter(e => !e.requiresClientAction && !e.actionTaken);
+
+      return { actionNeeded, completed, watching };
+    }),
+
+  /**
+   * Client dismiss an event (hide from their feed)
+   */
+  clientDismiss: protectedProcedure
+    .input(z.object({ eventId: z.number() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return { success: false };
+
+      await db
+        .update(agentEvents)
+        .set({ clientDismissed: true } as any)
+        .where(eq(agentEvents.id, input.eventId));
+
+      return { success: true };
+    }),
+
+  /**
+   * Client execute action on an event (approve follow-up, confirm distribution, etc.)
+   * Supports 4 action flows:
+   *  1. approve_followup — approve agent's suggested task follow-up, optionally send email
+   *  2. reassign_task — reassign an overdue task to a different team member
+   *  3. confirm_distribution — confirm a distribution notice, optionally send LP email
+   *  4. unblock_venture — provide info to unblock a stalled venture (assign task / schedule review / hold)
+   */
+  clientAction: protectedProcedure
+    .input(z.object({
+      eventId: z.number(),
+      actionType: z.enum(["approve_followup", "reassign_task", "confirm_distribution", "unblock_venture", "generic"]),
+      payload: z.record(z.string(), z.unknown()).optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const userName = ctx.user.name || ctx.user.email || "Client";
+      const orgId = ctx.user.organizationId;
+
+      // Fetch the event
+      const [event] = await db.select().from(agentEvents).where(eq(agentEvents.id, input.eventId)).limit(1);
+      if (!event) throw new Error("Event not found");
+
+      let result: Record<string, unknown> = { success: true };
+
+      // ── Flow 1: Approve Follow-Up ──────────────────────────────────
+      if (input.actionType === "approve_followup") {
+        const payload = input.payload || {};
+        const draftId = payload.draftId as number | undefined;
+        const sendEmail = payload.sendEmail as boolean | undefined;
+        const editedBody = payload.editedBody as string | undefined;
+
+        // If there's a linked draft, mark it as sent
+        if (draftId) {
+          const updates: Record<string, unknown> = {
+            status: "sent",
+            sentAt: new Date(),
+            sentBy: userName,
+          };
+          if (editedBody) {
+            updates.body = editedBody;
+          }
+          await db.update(agentDrafts).set(updates as any).where(eq(agentDrafts.id, draftId));
+        }
+
+        // Optionally send email via Resend
+        if (sendEmail) {
+          try {
+            const { sendTaskFollowUp } = await import("../emailService");
+            const draft = draftId
+              ? (await db.select().from(agentDrafts).where(eq(agentDrafts.id, draftId)).limit(1))[0]
+              : null;
+
+            if (draft?.recipientName) {
+              // Find recipient email from team_members
+              const [member] = await db.select().from(teamMembers)
+                .where(eq(teamMembers.name, draft.recipientName)).limit(1);
+              if (member?.email) {
+                await sendTaskFollowUp({
+                  to: member.email,
+                  assigneeName: draft.recipientName,
+                  taskTitle: event.agentEntityName || "Task",
+                  ventureName: draft.ventureName || "Portfolio",
+                  agentNote: editedBody || draft.body,
+                });
+                result.emailSent = true;
+              }
+            }
+          } catch (e) {
+            result.emailError = String(e);
+          }
+        }
+
+        result.flow = "approve_followup";
+      }
+
+      // ── Flow 2: Reassign Task ──────────────────────────────────────
+      if (input.actionType === "reassign_task") {
+        const payload = input.payload || {};
+        const taskId = (payload.taskId as number) || (event.actionPayload as any)?.taskId;
+        const newAssigneeId = payload.newAssigneeId as number | undefined;
+        const newAssigneeName = payload.newAssigneeName as string | undefined;
+        const newDueDate = payload.newDueDate as string | undefined;
+        const note = payload.note as string | undefined;
+
+        if (taskId) {
+          const updates: Record<string, unknown> = {};
+          if (newAssigneeName) {
+            updates.assigneeNames = [newAssigneeName];
+          }
+          if (newAssigneeId) {
+            updates.assigneeIds = [newAssigneeId];
+          }
+          if (newDueDate) {
+            updates.dueDate = newDueDate;
+          }
+          if (Object.keys(updates).length > 0) {
+            await db.update(tasks).set(updates as any).where(eq(tasks.id, taskId));
+          }
+
+          // Log a new agent event for the reassignment
+          await db.insert(agentEvents).values({
+            organizationId: orgId,
+            agentName: "Overdue Agent",
+            eventType: "status_change",
+            message: `Task reassigned to ${newAssigneeName || "new assignee"}${newDueDate ? ` with new deadline ${newDueDate}` : ""}${note ? `. Note: ${note}` : ""}`,
+            severity: "info",
+            entityType: "Task",
+            agentEntityId: String(taskId),
+            agentEntityName: event.agentEntityName,
+            audience: "both",
+            requiresClientAction: false,
+            actionTaken: true,
+            actionTakenAt: new Date(),
+            actionTakenBy: userName,
+          });
+        }
+
+        result.flow = "reassign_task";
+        result.taskId = taskId;
+      }
+
+      // ── Flow 3: Confirm Distribution ───────────────────────────────
+      if (input.actionType === "confirm_distribution") {
+        const payload = input.payload || {};
+        const distributionId = (payload.distributionId as number) || Number(event.agentEntityId);
+        const sendEmail = payload.sendEmail as boolean | undefined;
+        const editedBody = payload.editedBody as string | undefined;
+        const draftId = payload.draftId as number | undefined;
+
+        // Update distribution status to confirmed if we have an ID
+        if (distributionId) {
+          await db.update(distributions)
+            .set({ status: "Confirmed" } as any)
+            .where(eq(distributions.id, distributionId));
+        }
+
+        // Mark draft as sent if provided
+        if (draftId) {
+          const updates: Record<string, unknown> = {
+            status: "sent",
+            sentAt: new Date(),
+            sentBy: userName,
+          };
+          if (editedBody) updates.body = editedBody;
+          await db.update(agentDrafts).set(updates as any).where(eq(agentDrafts.id, draftId));
+        }
+
+        // Optionally send distribution notice email
+        if (sendEmail) {
+          try {
+            const { sendDistributionNotice } = await import("../emailService");
+            const draft = draftId
+              ? (await db.select().from(agentDrafts).where(eq(agentDrafts.id, draftId)).limit(1))[0]
+              : null;
+
+            // Get distribution details
+            const dist = distributionId
+              ? (await db.select().from(distributions).where(eq(distributions.id, distributionId)).limit(1))[0]
+              : null;
+
+            if (dist) {
+              const recipients = payload.recipients as string[] | undefined;
+              const toAddress = recipients?.length ? recipients : "atlas@royaltonventures.com";
+              await sendDistributionNotice({
+                to: toAddress,
+                recipientName: draft?.recipientName || "Investor",
+                fundName: dist.fund || dist.name,
+                amount: dist.amount?.toLocaleString() || "0",
+                currency: dist.currency || "USD",
+                distributionDate: dist.distributionDate || undefined,
+                draftBody: editedBody || draft?.body || `Distribution of ${dist.name} has been confirmed.`,
+              });
+              result.emailSent = true;
+            }
+          } catch (e) {
+            result.emailError = String(e);
+          }
+        }
+
+        result.flow = "confirm_distribution";
+        result.distributionId = distributionId;
+      }
+
+      // ── Flow 4: Unblock Venture ────────────────────────────────────
+      if (input.actionType === "unblock_venture") {
+        const payload = input.payload || {};
+        const ventureId = (payload.ventureId as number) || Number(event.agentEntityId);
+        const unblockAction = payload.unblockAction as string; // "assign_task" | "schedule_review" | "mark_hold"
+        const taskTitle = payload.taskTitle as string | undefined;
+        const taskAssignee = payload.taskAssignee as string | undefined;
+        const taskDueDate = payload.taskDueDate as string | undefined;
+        const reviewNote = payload.reviewNote as string | undefined;
+
+        if (unblockAction === "assign_task" && ventureId) {
+          // Create a new task to unblock
+          await db.insert(tasks).values({
+            organizationId: orgId,
+            title: taskTitle || `Unblock: ${event.agentEntityName || "Venture"}`,
+            ventureId,
+            assigneeNames: taskAssignee ? [taskAssignee] : null,
+            dueDate: taskDueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+            status: "open",
+            priority: "High",
+            description: reviewNote || `Created to unblock stalled venture.`,
+          });
+          result.taskCreated = true;
+        }
+
+        if (unblockAction === "schedule_review" && ventureId) {
+          // Create a review task
+          await db.insert(tasks).values({
+            organizationId: orgId,
+            title: `Review: ${event.agentEntityName || "Venture"} — Unblock Assessment`,
+            ventureId,
+            assigneeNames: taskAssignee ? [taskAssignee] : null,
+            dueDate: taskDueDate || new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+            status: "open",
+            priority: "High",
+            description: reviewNote || "Scheduled review to assess and unblock stalled venture.",
+          });
+          result.reviewScheduled = true;
+        }
+
+        if (unblockAction === "mark_hold" && ventureId) {
+          // Mark venture as on hold
+          await db.update(ventures)
+            .set({ status: "On hold" } as any)
+            .where(eq(ventures.id, ventureId));
+          result.markedOnHold = true;
+        }
+
+        // Log the unblock action
+        if (ventureId) {
+          const actionDesc = unblockAction === "assign_task" ? "New task assigned"
+            : unblockAction === "schedule_review" ? "Review scheduled"
+            : unblockAction === "mark_hold" ? "Marked on hold"
+            : "Action taken";
+
+          await db.insert(agentEvents).values({
+            organizationId: orgId,
+            agentName: "Velocity Agent",
+            eventType: "status_change",
+            message: `Venture unblock: ${actionDesc} for ${event.agentEntityName || "venture"}${reviewNote ? `. ${reviewNote}` : ""}`,
+            severity: "info",
+            entityType: "Venture",
+            agentEntityId: String(ventureId),
+            agentEntityName: event.agentEntityName,
+            audience: "both",
+            requiresClientAction: false,
+            actionTaken: true,
+            actionTakenAt: new Date(),
+            actionTakenBy: userName,
+          });
+        }
+
+        result.flow = "unblock_venture";
+        result.ventureId = ventureId;
+      }
+
+      // ── Mark the original event as actioned ────────────────────────
+      await db
+        .update(agentEvents)
+        .set({
+          actionTaken: true,
+          actionTakenAt: new Date(),
+          actionTakenBy: userName,
+        } as any)
+        .where(eq(agentEvents.id, input.eventId));
+
+      return result;
+    }),
+
+  /**
+   * Get a draft by ID (for action flow modals)
+   */
+  getDraft: protectedProcedure
+    .input(z.object({ draftId: z.number() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return null;
+      const [draft] = await db.select().from(agentDrafts).where(eq(agentDrafts.id, input.draftId)).limit(1);
+      return draft || null;
+    }),
+
+  /**
+   * Get event details with linked entities (for action flow modals)
+   */
+  getEventDetail: protectedProcedure
+    .input(z.object({ eventId: z.number() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return null;
+
+      const [event] = await db.select().from(agentEvents).where(eq(agentEvents.id, input.eventId)).limit(1);
+      if (!event) return null;
+
+      let draft = null;
+      let task = null;
+      let distribution = null;
+      let venture = null;
+      let availableTeam: { id: number; name: string; role: string | null }[] = [];
+
+      const payload = (event.actionPayload || {}) as Record<string, unknown>;
+
+      // Load linked draft
+      if (payload.draftId) {
+        const [d] = await db.select().from(agentDrafts).where(eq(agentDrafts.id, Number(payload.draftId))).limit(1);
+        draft = d || null;
+      }
+
+      // Load linked task
+      if (payload.taskId || (event.entityType === "Task" && event.agentEntityId)) {
+        const taskId = Number(payload.taskId || event.agentEntityId);
+        const [t] = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
+        task = t || null;
+      }
+
+      // Load linked distribution
+      if (event.entityType === "Distribution" && event.agentEntityId) {
+        const [d] = await db.select().from(distributions).where(eq(distributions.id, Number(event.agentEntityId))).limit(1);
+        distribution = d || null;
+      }
+
+      // Load linked venture
+      if (payload.ventureId || (event.entityType === "Venture" && event.agentEntityId)) {
+        const ventureId = Number(payload.ventureId || event.agentEntityId);
+        const [v] = await db.select().from(ventures).where(eq(ventures.id, ventureId)).limit(1);
+        venture = v || null;
+      }
+
+      // Load available team members for reassignment (scoped to org)
+      if (event.organizationId) {
+        availableTeam = await db.select({
+          id: teamMembers.id,
+          name: teamMembers.name,
+          role: teamMembers.role,
+        }).from(teamMembers).where(
+          eq(teamMembers.organizationId, event.organizationId)
+        );
+      }
+
+      return { event, draft, task, distribution, venture, availableTeam };
+    }),
+
+  /**
+   * Operator Oversight Feed — cross-client view of what agents did, what clients acted on, what's unactioned
+   */
+  operatorOversight: adminProcedure
+    .input(z.object({
+      limit: z.number().min(1).max(200).default(50),
+      hoursBack: z.number().default(48),
+    }).optional())
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return { agentActions: [], clientActions: [], unactioned: [], escalations: [] };
+
+      const hoursBack = input?.hoursBack ?? 48;
+      const cutoff = new Date(Date.now() - hoursBack * 60 * 60 * 1000);
+
+      const recentEvents = await db
+        .select()
+        .from(agentEvents)
+        .where(gte(agentEvents.createdAt, cutoff))
+        .orderBy(desc(agentEvents.createdAt))
+        .limit(input?.limit ?? 50);
+
+      const agentActions = recentEvents.filter(e => e.audience === "operator" || e.audience === "both");
+      const clientActions = recentEvents.filter(e => e.actionTaken && (e.audience === "client" || e.audience === "both"));
+      const unactioned = recentEvents.filter(e =>
+        e.requiresClientAction && !e.actionTaken && !e.clientDismissed &&
+        (e.audience === "client" || e.audience === "both")
+      );
+
+      // Flag items unactioned for > 48 hours as escalations
+      const escalationCutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
+      const escalations = unactioned.filter(e => new Date(e.createdAt) < escalationCutoff);
+
+      return { agentActions, clientActions, unactioned, escalations };
     }),
 });
