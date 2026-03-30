@@ -1266,3 +1266,34 @@
 
 ## FIX — VelocityFeed "events is not iterable" error
 - [x] Fix data shape mismatch: clientFeed returns {actionNeeded, completed, watching} but VelocityFeed iterates it as flat array
+
+## TRUE VELOCITY — Three Missing Mechanics
+
+### Mechanic 1 — Real Communication Delivery (Resend)
+- [x] Resend email integration — server-side send function (from: atlas@aurovia.com, reply-to: operator)
+- [x] RESEND_API_KEY environment variable setup (uses existing env)
+- [x] Trigger 1: Task overdue > 3 days → email assignee directly (no-spam: 7-day cooldown)
+- [x] Trigger 2: Venture ready to advance → email client primary contact with completed steps
+- [x] Trigger 3: Stage advance confirmed → email client with time-in-stage + next steps
+- [x] All emails: plain professional tone, no marketing language, no logos, no unsubscribe
+- [x] email_sent tracking on task records (lastEmailSentAt, emailSentCount) + cooldown logic
+- [x] Vitest tests for email triggers (45 tests in velocity-mechanics.test.ts)
+
+### Mechanic 2 — Automatic Stage Advancement
+- [x] Mode A: Fully automatic — all blocking milestones complete + pre-authorized + no capital stage
+- [x] Mode B: One-click approval — capital involved or not pre-authorized
+- [x] Velocity Agent detection of blocking steps completion
+- [x] Auto-advance updates venture stage immediately (Mode A)
+- [x] Ready-to-advance email + client portal green banner (Mode B) — AdvanceBanner component
+- [x] Client one-click advance from portal — clientAdvanceStage procedure
+- [x] venture_velocity logging with advanced_by field (auto/client/operator)
+- [x] Vitest tests for stage advancement
+
+### Mechanic 3 — Velocity Compression Measurement
+- [x] venture_velocity table enhanced: hoursInStage, blockingStepsTotal, blockingStepsCompleted, tasksCompletedInStage
+- [x] Calculation on every stage advance (auto-logged by velocity agent)
+- [x] Operator dashboard: VelocityKPI card with 3-tier display (Tier 0/1/2) + sparkline
+- [x] Client portal: "Your Progress" section with per-venture progress dots + avg days
+- [x] Compression trend indicator (% faster/slower vs first half of advances)
+- [x] Sparkline for advance times trending (SVG mini chart)
+- [x] Vitest tests for velocity compression (45 tests passing)

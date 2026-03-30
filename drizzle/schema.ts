@@ -174,11 +174,13 @@ export const tasks = mysqlTable("tasks", {
   dueDate: varchar("dueDate", { length: 32 }),
   priority: varchar("priority", { length: 32 }).default("Medium"),
   status: varchar("status", { length: 32 }).default("open").notNull(),
-  description: text("description"),
+   description: text("description"),
+  // Email tracking for auto-trigger emails
+  lastEmailSentAt: timestamp("lastEmailSentAt"),
+  emailSentCount: int("emailSentCount").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
-
 export type Task = typeof tasks.$inferSelect;
 export type InsertTask = typeof tasks.$inferInsert;
 
@@ -576,7 +578,11 @@ export const ventureVelocity = mysqlTable("venture_velocity", {
   fromStage: varchar("fromStage", { length: 64 }).notNull(),
   toStage: varchar("toStage", { length: 64 }).notNull(),
   daysInStage: int("daysInStage").notNull(),
-  advancedBy: varchar("advancedBy", { length: 128 }),  // 'agent' | 'manual' | user name
+  hoursInStage: int("hoursInStage"),  // exact to the hour for precision
+  advancedBy: varchar("advancedBy", { length: 128 }),  // 'ATLAS Agent' | 'manual' | user name
+  blockingStepsTotal: int("blockingStepsTotal").default(0).notNull(),
+  blockingStepsCompleted: int("blockingStepsCompleted").default(0).notNull(),
+  tasksCompletedInStage: int("tasksCompletedInStage").default(0).notNull(),
   advancedAt: timestamp("advancedAt").defaultNow().notNull(),
 });
 
@@ -617,6 +623,9 @@ export const clientAgentConfig = mysqlTable("client_agent_config", {
   overdueDaysThreshold: int("overdueDaysThreshold").default(7).notNull(),
   distributionWarningDays: int("distributionWarningDays").default(14).notNull(),
   healthScoreAlertThreshold: int("healthScoreAlertThreshold").default(30).notNull(),
+  // Auto-advance settings
+  autoAdvanceEnabled: boolean("autoAdvanceEnabled").default(false).notNull(),
+  autoAdvanceSectors: json("autoAdvanceSectors").$type<string[]>(),  // sectors pre-authorized for auto-advance
   // Polling
   pollingIntervalMinutes: int("pollingIntervalMinutes").default(30).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

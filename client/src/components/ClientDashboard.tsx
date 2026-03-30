@@ -38,6 +38,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import VelocityFeed from "@/components/VelocityFeed";
+import AdvanceBanner from "@/components/AdvanceBanner";
 
 const THEME_ICONS: Record<string, React.ReactNode> = {
   "Real Estate": <Building2 className="size-5" />,
@@ -123,6 +124,114 @@ function SectorPills({
           </button>
         );
       })}
+    </div>
+  );
+}
+
+// ── Advance Banner Section ────────────────────────────────────────────────
+
+function AdvanceBannerSection() {
+  const { activeOrg } = useWorkspace();
+  const feedQ = trpc.agents.clientFeed.useQuery(
+    activeOrg?.id ? { organizationId: activeOrg.id } : undefined
+  );
+
+  const readyVentures = useMemo(() => {
+    if (!feedQ.data) return [];
+    const { actionNeeded } = feedQ.data;
+    return actionNeeded
+      .filter((e: any) => {
+        const payload = (e.actionPayload || {}) as Record<string, unknown>;
+        return e.actionType === "advance" && payload.nextStage;
+      })
+      .map((e: any) => {
+        const payload = (e.actionPayload || {}) as Record<string, unknown>;
+        return {
+          eventId: e.id,
+          ventureId: Number(payload.ventureId || e.agentEntityId),
+          ventureName: String(payload.ventureName || e.agentEntityName || "Venture"),
+          currentStage: String(payload.currentStage || e.oldStatus || ""),
+          nextStage: String(payload.nextStage || ""),
+          daysInStage: Number(payload.daysInStage || 0),
+          completedTasks: Number(payload.completedTasks || 0),
+          isCapitalStage: Boolean(payload.isCapitalStage),
+        };
+      });
+  }, [feedQ.data]);
+
+  if (readyVentures.length === 0) return null;
+
+  return <AdvanceBanner readyVentures={readyVentures} />;
+}
+
+// ── Your Progress Section (Mechanic 3) ───────────────────────────────────────
+
+function YourProgressSection() {
+  const { activeOrg } = useWorkspace();
+  const velocityQ = trpc.agents.velocityMetrics.useQuery(
+    activeOrg?.id ? { organizationId: activeOrg.id } : undefined
+  );
+
+  const metrics = velocityQ.data;
+  if (!metrics || metrics.totalAdvances === 0) return null;
+
+  const { avgDays, totalAdvances, recentAdvances } = metrics;
+
+  // Group advances by venture for per-venture progress
+  const ventureProgress = useMemo(() => {
+    const map: Record<string, { name: string; advances: number; lastStage: string; avgDays: number; totalDays: number }> = {};
+    for (const adv of recentAdvances) {
+      const key = String(adv.ventureId);
+      if (!map[key]) {
+        map[key] = { name: adv.ventureName, advances: 0, lastStage: adv.toStage, avgDays: 0, totalDays: 0 };
+      }
+      map[key].advances += 1;
+      map[key].totalDays += adv.daysInStage;
+      map[key].lastStage = adv.toStage;
+    }
+    return Object.values(map)
+      .map(v => ({ ...v, avgDays: Math.round(v.totalDays / v.advances) }))
+      .sort((a, b) => b.advances - a.advances);
+  }, [recentAdvances]);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-[11px] uppercase tracking-widest text-muted-foreground font-light">Your Progress</h2>
+        <span className="text-[10px] font-mono text-muted-foreground">
+          {totalAdvances} stage advance{totalAdvances !== 1 ? "s" : ""} · {avgDays !== null ? `${avgDays}d avg` : ""}
+        </span>
+      </div>
+
+      <div className="space-y-2">
+        {ventureProgress.slice(0, 5).map((vp) => (
+          <div
+            key={vp.name}
+            className="client-card flex items-center justify-between"
+          >
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-foreground truncate">{vp.name}</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Current: {vp.lastStage} · {vp.advances} advance{vp.advances !== 1 ? "s" : ""}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(vp.advances, 5) }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="size-1.5 rounded-full bg-emerald-400"
+                  />
+                ))}
+                {vp.advances > 5 && (
+                  <span className="text-[9px] text-muted-foreground ml-0.5">+{vp.advances - 5}</span>
+                )}
+              </div>
+              <span className="text-[10px] font-mono text-muted-foreground">{vp.avgDays}d avg</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -370,6 +479,9 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
         </motion.div>
       </div>
 
+      {/* ── Advance Banners (Mode B — ready to advance) ──────────────── */}
+      <AdvanceBannerSection />
+
       {/* ── Velocity Feed ───────────────────────────────────────────────── */}
       <VelocityFeed onNavigate={onNavigate} />
 
@@ -520,7 +632,8 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
           ))}
         </div>
       </div>
-
+      {/* ── Your Progress (Mechanic 3) ────────────────────────────────── */}
+      <YourProgressSection />
       {/* ── Recent Activity ───────────────────────────────────────── */}
       <div>
         <h2 className="text-[11px] uppercase tracking-widest text-muted-foreground font-light mb-4">Recent Activity</h2>

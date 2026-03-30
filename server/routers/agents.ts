@@ -18,7 +18,14 @@ import {
   ventureTeam,
   teamMembers,
   orgVentureAccess,
+  organizations,
+  clientAgentConfig,
 } from "../../drizzle/schema";
+import {
+  sendOverdueAutoEmail,
+  sendReadyToAdvanceEmail,
+  sendStageAdvancedEmail,
+} from "../emailService";
 import { eq, desc, sql, and, ne, gte, inArray } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
 import { isAtlasTeam, resolveVentureScope } from "../security/rbac";
@@ -60,10 +67,17 @@ const STAGE_PIPELINE = [
   "Completed",
 ];
 
+// Capital-intensive stages require explicit client approval (Mode B)
+const CAPITAL_STAGES = ["In Fundraising"];
+
 function getNextStage(current: string): string | null {
   const idx = STAGE_PIPELINE.indexOf(current);
   if (idx === -1 || idx >= STAGE_PIPELINE.length - 1) return null;
   return STAGE_PIPELINE[idx + 1];
+}
+
+function isCapitalStage(stage: string): boolean {
+  return CAPITAL_STAGES.includes(stage);
 }
 
 // ── LLM Helper ─────────────────────────────────────────────────────────
@@ -131,8 +145,11 @@ async function runOverdueAgent(
       ventureId: tasks.ventureId,
       ventureLink: tasks.ventureLink,
       assigneeNames: tasks.assigneeNames,
+      assigneeIds: tasks.assigneeIds,
       status: tasks.status,
       organizationId: tasks.organizationId,
+      lastEmailSentAt: tasks.lastEmailSentAt,
+      emailSentCount: tasks.emailSentCount,
     })
     .from(tasks)
     .where(and(...conditions));
@@ -236,6 +253,66 @@ async function runOverdueAgent(
       oldStatus: task.status,
       newStatus: "overdue",
     });
+
+    // ── TRIGGER 1: Auto-email when task is >3 days overdue ──────────
+    // 7-day cooldown to prevent spam
+    if (daysOverdue > 3) {
+      const lastSent = task.lastEmailSentAt ? new Date(task.lastEmailSentAt).getTime() : 0;
+      const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+      const canSend = (now.getTime() - lastSent) > sevenDaysMs;
+
+      if (canSend) {
+        // Find assignee email from team_members
+        const assigneeNames = task.assigneeNames || [];
+        let recipientEmail: string | null = null;
+        let recipientName = assigneeNames[0] || "Team Member";
+
+        if (assigneeNames.length > 0) {
+          const [member] = await db.select({ email: teamMembers.email, name: teamMembers.name })
+            .from(teamMembers)
+            .where(eq(teamMembers.name, assigneeNames[0]))
+            .limit(1);
+          if (member?.email) {
+            recipientEmail = member.email;
+            recipientName = member.name;
+          }
+        }
+
+        // Get venture stage for context
+        const ventureStage = task.ventureId
+          ? (await db.select({ stage: ventures.stage }).from(ventures).where(eq(ventures.id, task.ventureId)).limit(1))[0]?.stage || "Active"
+          : "Active";
+
+        if (recipientEmail) {
+          const deadline = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+          const deadlineStr = deadline.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+
+          try {
+            const emailResult = await sendOverdueAutoEmail({
+              to: recipientEmail,
+              assigneeName: recipientName,
+              taskTitle: task.title,
+              ventureName,
+              stage: ventureStage,
+              daysOverdue,
+              deadlineDate: deadlineStr,
+            });
+
+            if (emailResult.success) {
+              // Update task email tracking
+              await db.update(tasks).set({
+                lastEmailSentAt: new Date(),
+                emailSentCount: (task.emailSentCount || 0) + 1,
+              } as any).where(eq(tasks.id, task.id));
+
+              console.log(`[Overdue Agent] Auto-email sent to ${recipientEmail} for task "${task.title}"`);
+            }
+          } catch (emailErr) {
+            console.error(`[Overdue Agent] Auto-email failed for task ${task.id}:`, emailErr);
+          }
+        }
+      }
+    }
   }
 
   return signals;
@@ -295,37 +372,160 @@ async function runVelocityAgent(
         const daysInStage = Math.floor(
           (now.getTime() - new Date(venture.updatedAt).getTime()) / (1000 * 60 * 60 * 24)
         );
+        const hoursInStage = Math.floor(
+          (now.getTime() - new Date(venture.updatedAt).getTime()) / (1000 * 60 * 60)
+        );
 
-        await db.update(ventures).set({ stage: nextStage }).where(eq(ventures.id, venture.id));
+        // ── Check auto-advance config for this org ──────────────────
+        let autoAdvanceEnabled = false;
+        let autoAdvanceSectors: string[] = [];
+        if (orgId) {
+          const [config] = await db.select({
+            autoAdvanceEnabled: clientAgentConfig.autoAdvanceEnabled,
+            autoAdvanceSectors: clientAgentConfig.autoAdvanceSectors,
+          }).from(clientAgentConfig).where(eq(clientAgentConfig.organizationId, orgId)).limit(1);
+          if (config) {
+            autoAdvanceEnabled = config.autoAdvanceEnabled;
+            autoAdvanceSectors = config.autoAdvanceSectors || [];
+          }
+        }
 
-        await db.insert(ventureVelocity).values({
-          organizationId: orgId,
-          ventureId: venture.id,
-          ventureName: venture.name,
-          sector: venture.sector,
-          fromStage: venture.stage,
-          toStage: nextStage,
-          daysInStage,
-          advancedBy: "agent",
-        });
+        // Determine if this is a capital stage (requires Mode B)
+        const capitalStage = isCapitalStage(venture.stage);
+        const sectorAuthorized = autoAdvanceSectors.length === 0 || autoAdvanceSectors.includes(venture.sector);
+        const canAutoAdvance = autoAdvanceEnabled && sectorAuthorized && !capitalStage;
 
-        signals.push({
-          agentName: "Velocity Agent",
-          eventType: "status_change",
-          message: `"${venture.name}" advanced from ${venture.stage} → ${nextStage} in ${daysInStage} days. ${totalTasks} tasks completed.`,
-          severity: "info",
-          organizationId: orgId,
-          audience: "client",
-          requiresClientAction: false,
-          actionType: "advance",
-          actionLabel: "View Venture",
-          actionPayload: { ventureId: venture.id, ventureName: venture.name },
-          entityType: "venture",
-          agentEntityId: String(venture.id),
-          agentEntityName: venture.name,
-          oldStatus: venture.stage,
-          newStatus: nextStage,
-        });
+        // Get client primary contact for email triggers
+        let clientEmail: string | null = null;
+        let clientContactName = "Team";
+        if (orgId) {
+          const [org] = await db.select({
+            primaryContactEmail: organizations.primaryContactEmail,
+            primaryContactName: organizations.primaryContactName,
+            name: organizations.name,
+          }).from(organizations).where(eq(organizations.id, orgId)).limit(1);
+          if (org?.primaryContactEmail) {
+            clientEmail = org.primaryContactEmail;
+            clientContactName = org.primaryContactName || org.name;
+          }
+        }
+
+        // Completed task titles for email context
+        const completedTaskTitles = await db.select({ title: tasks.title })
+          .from(tasks)
+          .where(and(eq(tasks.ventureId, venture.id), eq(tasks.status, "complete")))
+          .limit(10);
+        const stepNames = completedTaskTitles.map(t => t.title);
+
+        if (canAutoAdvance) {
+          // ── MODE A: Fully automatic advance ──────────────────────
+          await db.update(ventures).set({ stage: nextStage }).where(eq(ventures.id, venture.id));
+
+          await db.insert(ventureVelocity).values({
+            organizationId: orgId,
+            ventureId: venture.id,
+            ventureName: venture.name,
+            sector: venture.sector,
+            fromStage: venture.stage,
+            toStage: nextStage,
+            daysInStage,
+            hoursInStage,
+            advancedBy: "ATLAS Agent",
+            blockingStepsTotal: totalTasks,
+            blockingStepsCompleted: completedTasks,
+            tasksCompletedInStage: completedTasks,
+          });
+
+          signals.push({
+            agentName: "Velocity Agent",
+            eventType: "status_change",
+            message: `"${venture.name}" auto-advanced from ${venture.stage} → ${nextStage} in ${daysInStage} days. ${totalTasks} tasks completed.`,
+            severity: "info",
+            organizationId: orgId,
+            audience: "client",
+            requiresClientAction: false,
+            actionType: "advance",
+            actionLabel: "View Venture",
+            actionPayload: { ventureId: venture.id, ventureName: venture.name },
+            entityType: "venture",
+            agentEntityId: String(venture.id),
+            agentEntityName: venture.name,
+            oldStatus: venture.stage,
+            newStatus: nextStage,
+          });
+
+          // ── TRIGGER 3: Stage advanced confirmation email ──────────
+          if (clientEmail) {
+            // Get avg days for benchmark
+            const [avgResult] = await db.select({
+              avg: sql<number>`AVG(${ventureVelocity.daysInStage})`,
+            }).from(ventureVelocity).where(
+              orgId ? eq(ventureVelocity.organizationId, orgId) : sql`1=1`
+            );
+            const clientAvgDays = avgResult?.avg ? Math.round(avgResult.avg) : null;
+
+            try {
+              await sendStageAdvancedEmail({
+                to: clientEmail,
+                contactName: clientContactName,
+                ventureName: venture.name,
+                previousStage: venture.stage,
+                newStage: nextStage,
+                daysInPreviousStage: daysInStage,
+                clientAvgDays,
+                nextBlockingSteps: [],  // No steps defined yet for new stage
+              });
+              console.log(`[Velocity Agent] Stage-advanced email sent to ${clientEmail} for ${venture.name}`);
+            } catch (emailErr) {
+              console.error(`[Velocity Agent] Stage-advanced email failed:`, emailErr);
+            }
+          }
+        } else {
+          // ── MODE B: Ready to advance — requires client approval ──
+          signals.push({
+            agentName: "Velocity Agent",
+            eventType: "alert",
+            message: `"${venture.name}" has completed all ${totalTasks} tasks in ${venture.stage} and is ready to advance to ${nextStage}.${capitalStage ? " Capital stage — requires explicit approval." : " One-click advance available."}`,
+            severity: "info",
+            organizationId: orgId,
+            audience: "client",
+            requiresClientAction: true,
+            actionType: "advance",
+            actionLabel: capitalStage ? "Review & Advance" : "Advance Stage",
+            actionPayload: {
+              ventureId: venture.id,
+              ventureName: venture.name,
+              currentStage: venture.stage,
+              nextStage,
+              daysInStage,
+              hoursInStage,
+              completedTasks: totalTasks,
+              isCapitalStage: capitalStage,
+            },
+            entityType: "venture",
+            agentEntityId: String(venture.id),
+            agentEntityName: venture.name,
+            oldStatus: venture.stage,
+            newStatus: `ready:${nextStage}`,
+          });
+
+          // ── TRIGGER 2: Ready-to-advance email ──────────────────────
+          if (clientEmail) {
+            try {
+              await sendReadyToAdvanceEmail({
+                to: clientEmail,
+                contactName: clientContactName,
+                ventureName: venture.name,
+                currentStage: venture.stage,
+                nextStage,
+                completedSteps: stepNames,
+              });
+              console.log(`[Velocity Agent] Ready-to-advance email sent to ${clientEmail} for ${venture.name}`);
+            } catch (emailErr) {
+              console.error(`[Velocity Agent] Ready-to-advance email failed:`, emailErr);
+            }
+          }
+        }
       }
     }
 
@@ -1575,5 +1775,138 @@ export const agentsRouter = router({
       const escalations = unactioned.filter(e => new Date(e.createdAt) < escalationCutoff);
 
       return { agentActions, clientActions, unactioned, escalations };
+    }),
+
+  /**
+   * Client one-click stage advance (Mode B)
+   * Advances a venture to the next stage when all tasks are complete.
+   * Sends Trigger 3 email (stage-advanced confirmation).
+   */
+  clientAdvanceStage: protectedProcedure
+    .input(z.object({
+      ventureId: z.number(),
+      eventId: z.number().optional(), // The "ready to advance" event to mark as actioned
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const userName = ctx.user.name || ctx.user.email || "Client";
+      const orgId = ctx.user.organizationId;
+
+      // Fetch the venture
+      const [venture] = await db.select().from(ventures).where(eq(ventures.id, input.ventureId)).limit(1);
+      if (!venture) throw new Error("Venture not found");
+
+      const nextStage = getNextStage(venture.stage);
+      if (!nextStage) throw new Error(`No next stage after ${venture.stage}`);
+
+      // Verify all tasks are complete
+      const ventureTasks = await db
+        .select({ id: tasks.id, status: tasks.status })
+        .from(tasks)
+        .where(eq(tasks.ventureId, input.ventureId));
+
+      const totalTasks = ventureTasks.length;
+      const completedTasks = ventureTasks.filter(t => t.status === "complete").length;
+
+      if (totalTasks > 0 && completedTasks < totalTasks) {
+        throw new Error(`Cannot advance: ${totalTasks - completedTasks} tasks still incomplete`);
+      }
+
+      const now = new Date();
+      const daysInStage = Math.floor(
+        (now.getTime() - new Date(venture.updatedAt).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const hoursInStage = Math.floor(
+        (now.getTime() - new Date(venture.updatedAt).getTime()) / (1000 * 60 * 60)
+      );
+
+      // Advance the venture
+      await db.update(ventures).set({ stage: nextStage }).where(eq(ventures.id, input.ventureId));
+
+      // Log velocity record
+      await db.insert(ventureVelocity).values({
+        organizationId: orgId,
+        ventureId: input.ventureId,
+        ventureName: venture.name,
+        sector: venture.sector,
+        fromStage: venture.stage,
+        toStage: nextStage,
+        daysInStage,
+        hoursInStage,
+        advancedBy: userName,
+        blockingStepsTotal: totalTasks,
+        blockingStepsCompleted: completedTasks,
+        tasksCompletedInStage: completedTasks,
+      });
+
+      // Log agent event
+      await db.insert(agentEvents).values({
+        organizationId: orgId,
+        agentName: "Velocity Agent",
+        eventType: "status_change",
+        message: `"${venture.name}" advanced from ${venture.stage} \u2192 ${nextStage} by ${userName} in ${daysInStage} days.`,
+        severity: "info",
+        entityType: "Venture",
+        agentEntityId: String(input.ventureId),
+        agentEntityName: venture.name,
+        oldStatus: venture.stage,
+        newStatus: nextStage,
+        audience: "both",
+        requiresClientAction: false,
+        actionTaken: true,
+        actionTakenAt: now,
+        actionTakenBy: userName,
+      });
+
+      // Mark the "ready to advance" event as actioned
+      if (input.eventId) {
+        await db.update(agentEvents).set({
+          actionTaken: true,
+          actionTakenAt: now,
+          actionTakenBy: userName,
+        } as any).where(eq(agentEvents.id, input.eventId));
+      }
+
+      // ── TRIGGER 3: Stage advanced confirmation email ──────────────
+      if (orgId) {
+        const [org] = await db.select({
+          primaryContactEmail: organizations.primaryContactEmail,
+          primaryContactName: organizations.primaryContactName,
+          name: organizations.name,
+        }).from(organizations).where(eq(organizations.id, orgId)).limit(1);
+
+        if (org?.primaryContactEmail) {
+          // Get avg days for benchmark
+          const [avgResult] = await db.select({
+            avg: sql<number>`AVG(${ventureVelocity.daysInStage})`,
+          }).from(ventureVelocity).where(eq(ventureVelocity.organizationId, orgId));
+          const clientAvgDays = avgResult?.avg ? Math.round(avgResult.avg) : null;
+
+          try {
+            await sendStageAdvancedEmail({
+              to: org.primaryContactEmail,
+              contactName: org.primaryContactName || org.name,
+              ventureName: venture.name,
+              previousStage: venture.stage,
+              newStage: nextStage,
+              daysInPreviousStage: daysInStage,
+              clientAvgDays,
+              nextBlockingSteps: [],
+            });
+          } catch (emailErr) {
+            console.error(`[clientAdvanceStage] Email failed:`, emailErr);
+          }
+        }
+      }
+
+      return {
+        success: true,
+        ventureName: venture.name,
+        fromStage: venture.stage,
+        toStage: nextStage,
+        daysInStage,
+      };
     }),
 });
