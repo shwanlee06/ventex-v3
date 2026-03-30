@@ -1,0 +1,1 @@
+ALTER TABLE `ventures` MODIFY COLUMN `nextMilestone` text;

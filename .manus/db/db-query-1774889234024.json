@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `client_velocity_benchmarks` (\n  `id` int NOT NULL AUTO_INCREMENT,\n  `organizationId` int NOT NULL,\n  `sector` varchar(128) NOT NULL,\n  `stage` varchar(128) NOT NULL,\n  `avgDaysToAdvance` int,\n  `fastestDays` int,\n  `slowestDays` int,\n  `sampleCount` int NOT NULL DEFAULT 0,\n  `lastCalculated` timestamp NOT NULL DEFAULT (now()),\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n  PRIMARY KEY (`id`)\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute CREATE TABLE IF NOT EXISTS `client_velocity_benchmarks` (\n  `id` int NOT NULL AUTO_INCREMENT,\n  `organizationId` int NOT NULL,\n  `sector` varchar(128) NOT NULL,\n  `stage` varchar(128) NOT NULL,\n  `avgDaysToAdvance` int,\n  `fastestDays` int,\n  `slowestDays` int,\n  `sampleCount` int NOT NULL DEFAULT 0,\n  `lastCalculated` timestamp NOT NULL DEFAULT (now()),\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  `updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n  PRIMARY KEY (`id`)\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 163
+}

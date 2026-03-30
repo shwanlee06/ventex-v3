@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, name, LEFT(description, 60) as desc_preview, LEFT(currentStatus, 60) as status_preview, healthScore FROM ventures LIMIT 5",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, LEFT(description, 60) as desc_preview, LEFT(currentStatus, 60) as status_preview, healthScore FROM ventures LIMIT 5",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Nammos - Barcelona",
+      "desc_preview": "Nammos - Barcelona is a real estate venture based in Spain t",
+      "status_preview": "The venture is likely conducting detailed market research, v",
+      "healthScore": "67"
+    },
+    {
+      "id": "2",
+      "name": "Nammos - Lagonissi",
+      "desc_preview": "Nammos - Lagonissi is a real estate venture likely focused o",
+      "status_preview": "The venture is currently in the 'In Validation' stage, which",
+      "healthScore": "57"
+    },
+    {
+      "id": "3",
+      "name": "Muscat Bay",
+      "desc_preview": "Muscat Bay is a large-scale integrated tourism and residenti",
+      "status_preview": "The venture is likely in the operational phase, focusing on ",
+      "healthScore": "67"
+    },
+    {
+      "id": "4",
+      "name": "Chekka Land - Resort",
+      "desc_preview": "Chekka Land is a resort development venture located in Leban",
+      "status_preview": "Given its 'Active ventures' stage in Real Estate, the resort",
+      "healthScore": "67"
+    },
+    {
+      "id": "5",
+      "name": "Shady Hotel",
+      "desc_preview": "This venture involves the operation of a hotel in Oman that ",
+      "status_preview": "The hotel is currently operational, likely facing challenges",
+      "healthScore": "67"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tdesc_preview\tstatus_preview\thealthScore\n1\tNammos - Barcelona\tNammos - Barcelona is a real estate venture based in Spain t\tThe venture is likely conducting detailed market research, v\t67\n2\tNammos - Lagonissi\tNammos - Lagonissi is a real estate venture likely focused o\tThe venture is currently in the 'In Validation' stage, which\t57\n3\tMuscat Bay\tMuscat Bay is a large-scale integrated tourism and residenti\tThe venture is likely in the operational phase, focusing on \t67\n4\tChekka Land - Resort\tChekka Land is a resort development venture located in Leban\tGiven its 'Active ventures' stage in Real Estate, the resort\t67\n5\tShady Hotel\tThis venture involves the operation of a hotel in Oman that \tThe hotel is currently operational, likely facing challenges\t67\n",
+  "stderr": "",
+  "execution_time_ms": 65
+}

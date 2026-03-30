@@ -1,0 +1,18 @@
+{
+  "query": "SELECT COUNT(*) as total, SUM(CASE WHEN description IS NULL THEN 1 ELSE 0 END) as null_desc, SUM(CASE WHEN currentStatus IS NULL THEN 1 ELSE 0 END) as null_status, SUM(CASE WHEN nextStep IS NULL THEN 1 ELSE 0 END) as null_nextstep, SUM(CASE WHEN nextMilestone IS NULL THEN 1 ELSE 0 END) as null_milestone, SUM(CASE WHEN healthScore = 50 THEN 1 ELSE 0 END) as default_health FROM ventures",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT COUNT(*) as total, SUM(CASE WHEN description IS NULL THEN 1 ELSE 0 END) as null_desc, SUM(CASE WHEN currentStatus IS NULL THEN 1 ELSE 0 END) as null_status, SUM(CASE WHEN nextStep IS NULL THEN 1 ELSE 0 END) as null_nextstep, SUM(CASE WHEN nextMilestone IS NULL THEN 1 ELSE 0 END) as null_milestone, SUM(CASE WHEN healthScore = 50 THEN 1 ELSE 0 END) as default_health FROM ventures",
+  "rows": [
+    {
+      "total": "20",
+      "null_desc": "20",
+      "null_status": "17",
+      "null_nextstep": "18",
+      "null_milestone": "18",
+      "default_health": "11"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\tnull_desc\tnull_status\tnull_nextstep\tnull_milestone\tdefault_health\n20\t20\t17\t18\t18\t11\n",
+  "stderr": "",
+  "execution_time_ms": 1876
+}

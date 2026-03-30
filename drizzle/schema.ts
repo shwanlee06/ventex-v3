@@ -104,7 +104,7 @@ export const ventures = mysqlTable("ventures", {
   description: text("description"),
   currentStatus: text("currentStatus"),
   nextStep: text("nextStep"),
-  nextMilestone: varchar("nextMilestone", { length: 32 }),
+  nextMilestone: text("nextMilestone"),
   priority: varchar("priority", { length: 32 }).default("Medium"),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
   healthScore: int("healthScore").default(50),
@@ -697,3 +697,20 @@ export const ventureProcessTracking = mysqlTable("venture_process_tracking", {
 });
 export type VentureProcessTracking = typeof ventureProcessTracking.$inferSelect;
 export type InsertVentureProcessTracking = typeof ventureProcessTracking.$inferInsert;
+
+// ── Client Velocity Benchmarks ──────────────────────────────────────────
+export const clientVelocityBenchmarks = mysqlTable("client_velocity_benchmarks", {
+  id: int("id").primaryKey().autoincrement(),
+  organizationId: int("organizationId").notNull(),
+  sector: varchar("sector", { length: 128 }).notNull(),
+  stage: varchar("stage", { length: 128 }).notNull(),
+  avgDaysToAdvance: int("avgDaysToAdvance"),
+  fastestDays: int("fastestDays"),
+  slowestDays: int("slowestDays"),
+  sampleCount: int("sampleCount").default(0).notNull(),
+  lastCalculated: timestamp("lastCalculated").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type ClientVelocityBenchmark = typeof clientVelocityBenchmarks.$inferSelect;
+export type InsertClientVelocityBenchmark = typeof clientVelocityBenchmarks.$inferInsert;
