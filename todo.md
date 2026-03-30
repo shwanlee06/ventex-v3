@@ -1297,3 +1297,49 @@
 - [x] Compression trend indicator (% faster/slower vs first half of advances)
 - [x] Sparkline for advance times trending (SVG mini chart)
 - [x] Vitest tests for velocity compression (45 tests passing)
+
+## BLUEPRINT EXTRACTION ENGINE
+
+### Section 1 — Document Extraction
+- [x] Schema: process_templates, process_steps, venture_process_tracking tables
+- [x] LLM-powered extraction from document text (extractFromDocument procedure)
+- [x] File upload extraction (uploadAndExtract procedure)
+- [x] Inline step editor in BlueprintExtractor component
+
+### Section 2 — Conversation Extraction
+- [x] Concierge AI chat interface with follow-up questions
+- [x] conversationExtract procedure with multi-turn conversation
+- [x] Auto-detect when enough info gathered to generate blueprint
+- [x] Chat UI in BlueprintExtractor component
+
+### Section 3 — Venture-Level Blueprint Mapping
+- [x] applyToVentures procedure with smart pre-marking (completed stages auto-marked)
+- [x] getVentureTracking procedure for per-venture step status
+- [x] updateTrackingStep procedure for manual status updates
+
+### Section 4 — Velocity Agent Blueprint Integration
+- [x] Blueprint context fetched for each venture in velocity agent loop
+- [x] Blocking incomplete steps included in stall detection LLM prompt
+- [x] Specific step names and owners referenced in agent signals
+- [x] Auto-mark blueprint steps complete when stage advances (Mode A)
+
+### Section 5 — Client Blueprint View (Journey Tracker)
+- [x] BlueprintJourneyTracker component with stage timeline
+- [x] Progress bars per stage with step completion counts
+- [x] Active stage steps expanded with blocking indicators
+- [x] Integrated into VentureDetail page between Key Details and Files
+
+### Section 6 — Blueprint Refinement Logic
+- [x] refineFromActuals procedure — learn from actual stage advance data
+- [x] Auto-mark steps complete on stage advance (velocity agent hook)
+- [x] Refinement count tracking on templates
+
+### Section 7 — Operator Blueprints Tab
+- [x] BlueprintsTab on ClientDetail page with tab navigation
+- [x] Template list with confidence badges and refinement counts
+- [x] Missing sectors alert (ventures without blueprints)
+- [x] New Blueprint button opens BlueprintExtractor inline
+- [x] getMissingSectors procedure for gap detection
+
+### Tests
+- [x] 25 test files, 420 tests passing (including blueprints.test.ts with 42 tests)

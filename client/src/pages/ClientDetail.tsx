@@ -40,6 +40,7 @@ import {
   Archive,
   ArchiveRestore,
   Settings,
+  FileText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useCallback } from "react";
@@ -54,6 +55,7 @@ import SectorPulsePanel from "@/components/SectorPulsePanel";
 import DistributionTimeline from "@/components/DistributionTimeline";
 import TeamVentureAttribution from "@/components/TeamVentureAttribution";
 import ClientSettings from "@/components/ClientSettings";
+import BlueprintExtractor from "@/components/BlueprintExtractor";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -168,7 +170,7 @@ export default function ClientDetail() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [expandedVenture, setExpandedVenture] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"portfolio" | "settings">("portfolio");
+  const [activeTab, setActiveTab] = useState<"portfolio" | "settings" | "blueprints">("portfolio");
 
   const now = useMemo(() => new Date(), []);
 
@@ -418,7 +420,24 @@ export default function ClientDetail() {
             <Settings className="size-3.5 inline mr-1.5" />
             Settings
           </button>
+          <button
+            onClick={() => setActiveTab("blueprints")}
+            className={cn(
+              "px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px",
+              activeTab === "blueprints"
+                ? "text-foreground border-foreground"
+                : "text-muted-foreground border-transparent hover:text-foreground hover:border-border"
+            )}
+          >
+            <FileText className="size-3.5 inline mr-1.5" />
+            Blueprints
+          </button>
         </div>
+
+        {/* ── Blueprints Tab ────────────────────────────────────────── */}
+        {activeTab === "blueprints" && orgId && (
+          <BlueprintsTab organizationId={orgId} />
+        )}
 
         {/* ── Settings Tab ────────────────────────────────────────── */}
         {activeTab === "settings" && orgId && (
@@ -887,5 +906,108 @@ export default function ClientDetail() {
         </AlertDialog>
       </div>
     </DashboardLayout>
+  );
+}
+
+
+// ── Blueprints Tab ──────────────────────────────────────────────────────
+function BlueprintsTab({ organizationId }: { organizationId: number }) {
+  const templatesQ = trpc.blueprints.listTemplates.useQuery({ organizationId });
+  const missingSectorsQ = trpc.blueprints.getMissingSectors.useQuery({ organizationId });
+  const [showExtractor, setShowExtractor] = useState(false);
+
+  const templates = templatesQ.data || [];
+  const missingSectors = missingSectorsQ.data || [];
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">Process Blueprints</h2>
+          <p className="text-[10px] text-muted-foreground mt-0.5">
+            Define the steps needed to move ventures through each stage
+          </p>
+        </div>
+        <Button size="sm" className="text-xs h-7" onClick={() => setShowExtractor(!showExtractor)}>
+          <Plus className="size-3 mr-1" /> New Blueprint
+        </Button>
+      </div>
+
+      {/* Missing sectors alert */}
+      {missingSectors.length > 0 && (
+        <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3">
+          <div className="flex items-center gap-2 text-xs text-amber-400">
+            <AlertTriangle className="size-3.5" />
+            <span className="font-medium">Missing blueprints for {missingSectors.length} sector{missingSectors.length > 1 ? "s" : ""}</span>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {missingSectors.map(s => (
+              <span key={s.sector} className="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded">
+                {s.sector} ({s.ventureCount} venture{s.ventureCount > 1 ? "s" : ""})
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Extractor */}
+      {showExtractor && (
+        <div className="bg-card border border-border rounded-lg p-4">
+          <BlueprintExtractor
+            organizationId={organizationId}
+            onComplete={(templateId) => {
+              setShowExtractor(false);
+              templatesQ.refetch();
+              toast.success("Blueprint created successfully");
+            }}
+          />
+        </div>
+      )}
+
+      {/* Existing templates */}
+      {templatesQ.isLoading ? (
+        <div className="space-y-2">
+          {[1, 2].map(i => <Skeleton key={i} className="h-20 rounded-lg" />)}
+        </div>
+      ) : templates.length === 0 && !showExtractor ? (
+        <div className="bg-card border border-border rounded-lg p-8 text-center">
+          <FileText className="size-8 text-muted-foreground mx-auto mb-2 opacity-40" />
+          <p className="text-xs text-muted-foreground">No blueprints yet. Create one to define the process steps for this client's ventures.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {templates.map(t => (
+            <div key={t.id} className="bg-card border border-border rounded-lg p-4 hover:border-primary/20 transition-colors">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xs font-medium text-foreground">{t.blueprintName}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[10px] font-mono text-muted-foreground">{t.sector}</span>
+                    <span className={cn(
+                      "text-[9px] px-1.5 py-0.5 rounded",
+                      t.confidence === "High" ? "bg-emerald-500/10 text-emerald-400" :
+                      t.confidence === "Medium" ? "bg-amber-500/10 text-amber-400" :
+                      "bg-red-500/10 text-red-400"
+                    )}>
+                      {t.confidence}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">via {t.source}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                  {t.refinementCount > 0 && (
+                    <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                      Refined {t.refinementCount}x
+                    </span>
+                  )}
+                  <span>{formatDate(t.createdAt instanceof Date ? t.createdAt.toISOString() : String(t.createdAt))}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

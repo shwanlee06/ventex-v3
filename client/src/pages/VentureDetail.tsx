@@ -33,6 +33,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import BlueprintJourneyTracker from "@/components/BlueprintJourneyTracker";
 
 // ── Constants ────────────────────────────────────────────────────────────
 const STAGES = ["In Validation", "Active ventures", "In Fundraising", "On Hold"];
@@ -476,6 +477,15 @@ export default function VentureDetail() {
                 </div>
               </div>
             </motion.div>
+
+            {/* Section A.5 — Blueprint Journey Tracker */}
+            {ventureId && (
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+                <div className="bg-card border border-border rounded-lg p-4">
+                  <BlueprintJourneyTracker ventureId={ventureId} />
+                </div>
+              </motion.div>
+            )}
 
             {/* Section B — Files with Folders */}
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card border border-border rounded-lg">

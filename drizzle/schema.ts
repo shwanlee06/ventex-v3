@@ -634,3 +634,66 @@ export const clientAgentConfig = mysqlTable("client_agent_config", {
 
 export type ClientAgentConfig = typeof clientAgentConfig.$inferSelect;
 export type InsertClientAgentConfig = typeof clientAgentConfig.$inferInsert;
+
+// ── Process Templates (Blueprint definitions per sector/org) ─────────────
+export const processTemplates = mysqlTable("process_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  sector: varchar("sector", { length: 128 }).notNull(),
+  blueprintName: varchar("blueprintName", { length: 255 }).notNull(),
+  source: varchar("source", { length: 64 }).default("document"), // document | conversation | manual
+  confidence: varchar("confidence", { length: 32 }).default("Medium"),
+  sourceDocumentUrl: text("sourceDocumentUrl"),
+  sourceDocumentName: varchar("sourceDocumentName", { length: 255 }),
+  refinementCount: int("refinementCount").default(0).notNull(),
+  lastRefinedAt: timestamp("lastRefinedAt"),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type ProcessTemplate = typeof processTemplates.$inferSelect;
+export type InsertProcessTemplate = typeof processTemplates.$inferInsert;
+
+// ── Process Steps (individual steps within a blueprint) ──────────────────
+export const processSteps = mysqlTable("process_steps", {
+  id: int("id").autoincrement().primaryKey(),
+  templateId: int("templateId").notNull(),
+  stageName: varchar("stageName", { length: 128 }).notNull(),
+  stepName: varchar("stepName", { length: 255 }).notNull(),
+  stepOrder: int("stepOrder").default(0).notNull(),
+  stageOrder: int("stageOrder").default(0).notNull(),
+  isBlocking: boolean("isBlocking").default(false).notNull(),
+  whoOwns: varchar("whoOwns", { length: 128 }),
+  estimatedDays: int("estimatedDays"),
+  actualAvgDays: int("actualAvgDays"),
+  sampleCount: int("sampleCount").default(0).notNull(),
+  evidence: text("evidence"),
+  confidence: varchar("confidence", { length: 32 }).default("Medium"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type ProcessStep = typeof processSteps.$inferSelect;
+export type InsertProcessStep = typeof processSteps.$inferInsert;
+
+// ── Venture Process Tracking (per-venture step completion) ───────────────
+export const ventureProcessTracking = mysqlTable("venture_process_tracking", {
+  id: int("id").autoincrement().primaryKey(),
+  ventureId: int("ventureId").notNull(),
+  templateId: int("templateId").notNull(),
+  stepId: int("stepId").notNull(),
+  stageName: varchar("stageName", { length: 128 }).notNull(),
+  stepName: varchar("stepName", { length: 255 }).notNull(),
+  stepOrder: int("stepOrder").default(0).notNull(),
+  isBlocking: boolean("isBlocking").default(false).notNull(),
+  whoOwns: varchar("whoOwns", { length: 128 }),
+  status: varchar("status", { length: 32 }).default("pending").notNull(), // pending | in_progress | complete | skipped
+  evidence: text("evidence"),
+  confidence: varchar("confidence", { length: 32 }).default("Medium"),
+  startedAt: timestamp("startedAt"),
+  completedAt: timestamp("completedAt"),
+  completedBy: varchar("completedBy", { length: 128 }),
+  actualDays: int("actualDays"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type VentureProcessTracking = typeof ventureProcessTracking.$inferSelect;
+export type InsertVentureProcessTracking = typeof ventureProcessTracking.$inferInsert;

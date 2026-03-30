@@ -20,6 +20,8 @@ import {
   orgVentureAccess,
   organizations,
   clientAgentConfig,
+  ventureProcessTracking,
+  processSteps,
 } from "../../drizzle/schema";
 import {
   sendOverdueAutoEmail,
@@ -366,6 +368,28 @@ async function runVelocityAgent(
     const totalTasks = ventureTasks.length;
     const completedTasks = ventureTasks.filter(t => t.status === "complete").length;
 
+    // ── Blueprint context: fetch process tracking for this venture ──
+    let blueprintSteps: { stepName: string; status: string; isBlocking: boolean; whoOwns: string | null; stageName: string }[] = [];
+    try {
+      const trackingRows = await db
+        .select({
+          stepName: ventureProcessTracking.stepName,
+          status: ventureProcessTracking.status,
+          isBlocking: ventureProcessTracking.isBlocking,
+          whoOwns: ventureProcessTracking.whoOwns,
+          stageName: ventureProcessTracking.stageName,
+        })
+        .from(ventureProcessTracking)
+        .where(eq(ventureProcessTracking.ventureId, venture.id));
+      blueprintSteps = trackingRows;
+    } catch { /* no blueprint applied */ }
+
+    const blockingIncomplete = blueprintSteps.filter(s => s.isBlocking && s.status !== "complete");
+    const blueprintContext = blueprintSteps.length > 0
+      ? `\nBlueprint: ${blueprintSteps.length} steps tracked, ${blockingIncomplete.length} blocking steps incomplete` +
+        (blockingIncomplete.length > 0 ? `: ${blockingIncomplete.slice(0, 3).map(s => `"${s.stepName}" (${s.whoOwns || "unassigned"})`).join(", ")}` : "")
+      : "";
+
     if (totalTasks > 0 && completedTasks === totalTasks) {
       const nextStage = getNextStage(venture.stage);
       if (nextStage) {
@@ -454,7 +478,22 @@ async function runVelocityAgent(
             newStatus: nextStage,
           });
 
-          // ── TRIGGER 3: Stage advanced confirmation email ──────────
+          // ── Blueprint refinement: auto-mark current stage steps as complete ──
+          if (blueprintSteps.length > 0) {
+            const stageSteps = blueprintSteps.filter(s => s.stageName === venture.stage && s.status !== "complete");
+            for (const step of stageSteps) {
+              await db.update(ventureProcessTracking)
+                .set({ status: "complete", completedAt: new Date() })
+                .where(
+                  and(
+                    eq(ventureProcessTracking.ventureId, venture.id),
+                    eq(ventureProcessTracking.stepName, step.stepName)
+                  )
+                );
+            }
+          }
+
+          // ── TRIGGER 3: Stage advanced confirmation email ────────────
           if (clientEmail) {
             // Get avg days for benchmark
             const [avgResult] = await db.select({
@@ -560,9 +599,18 @@ async function runVelocityAgent(
 
       const teamNames = team.map(t => t.name).join(", ") || "No team assigned";
 
+      // Blueprint context for stall detection
+      let stallBlueprintCtx = "";
+      if (blueprintSteps.length > 0) {
+        const stageSteps = blueprintSteps.filter(s => s.stageName === venture.stage);
+        const incomplete = stageSteps.filter(s => s.status !== "complete");
+        stallBlueprintCtx = `\nBlueprint steps for current stage: ${stageSteps.length} total, ${incomplete.length} incomplete` +
+          (incomplete.length > 0 ? `. Blocking: ${incomplete.filter(s => s.isBlocking).map(s => `"${s.stepName}" owned by ${s.whoOwns || "unassigned"}`).join(", ")}` : "");
+      }
+
       const interventionNote = await callAgentLLM(
-        "You are ATLAS. Draft a brief internal note (3 sentences max) recommending a specific intervention for a stalled venture. Name the venture, how long it's been stalled, and one concrete next action to unblock it.",
-        `Venture: "${venture.name}" | Sector: ${venture.sector} | Stage: In Validation | Days stalled: ${daysStalled} | Team members assigned: ${teamNames}`
+        "You are ATLAS. Draft a brief internal note (3 sentences max) recommending a specific intervention for a stalled venture. Name the venture, how long it's been stalled, and one concrete next action to unblock it. If blueprint steps are provided, reference the specific blocking step and who owns it.",
+        `Venture: "${venture.name}" | Sector: ${venture.sector} | Stage: In Validation | Days stalled: ${daysStalled} | Team members assigned: ${teamNames}${stallBlueprintCtx}`
       );
 
       signals.push({
