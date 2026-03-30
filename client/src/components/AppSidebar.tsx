@@ -59,6 +59,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Activity", href: "/activity", icon: <Activity className="size-5" /> },
   { label: "AI Agents", href: "/agents", icon: <Cpu className="size-5" />, atlasOnly: true },
   { label: "Drafts", href: "/drafts", icon: <FileText className="size-5" />, atlasOnly: true },
+  { label: "Blueprints", href: "/blueprints", icon: <Layers3 className="size-5" />, atlasOnly: true },
   { label: "Onboard Client", href: "/onboarding", icon: <UserPlus className="size-5" />, atlasOnly: true },
   { label: "Settings", href: "/settings", icon: <Settings className="size-5" />, atlasOnly: true },
   // Client-only nav items

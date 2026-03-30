@@ -31,6 +31,7 @@ import AcceptInvite from "./pages/AcceptInvite";
 import AgentsPage from "./pages/Agents";
 import DraftsPage from "./pages/Drafts";
 import OnboardingWizard from "./pages/OnboardingWizard";
+import BlueprintsPage from "./pages/Blueprints";
 import { AgentProvider } from "./contexts/AgentContext";
 import { useHeartbeat } from "./hooks/useHeartbeat";
 
@@ -152,6 +153,9 @@ function Router() {
       </Route>
       <Route path="/onboarding">
         <RequireAuth><RequireAtlas><OnboardingWizard /></RequireAtlas></RequireAuth>
+      </Route>
+      <Route path="/blueprints">
+        <RequireAuth><RequireAtlas><BlueprintsPage /></RequireAtlas></RequireAuth>
       </Route>
 
       <Route path="/404" component={NotFound} />

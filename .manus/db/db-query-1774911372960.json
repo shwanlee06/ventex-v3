@@ -1,0 +1,98 @@
+{
+  "query": "SELECT hash, created_at FROM `__drizzle_migrations` ORDER BY created_at ASC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT hash, created_at FROM `__drizzle_migrations` ORDER BY created_at ASC;",
+  "rows": [
+    {
+      "hash": "814a08e40d7fc2bcfd458759d18319198ca8ae394f2fa15617a78678e9c9c93b",
+      "created_at": "1773580309318"
+    },
+    {
+      "hash": "ee1e27f5bcff24edec1a2f8615a0b1a8585ccff35409fc9f506dd98f1e06c5fd",
+      "created_at": "1773602231418"
+    },
+    {
+      "hash": "c0e4fe135e2199ea4277ea0be5c0fc1e8a8bdbea1410ffe2bab0ef464ebba553",
+      "created_at": "1773626896842"
+    },
+    {
+      "hash": "e1ad4836c8f46d3cd198ac1eef5f46dcf4f235cb82eafae6cb82af3ecae5576d",
+      "created_at": "1774105610552"
+    },
+    {
+      "hash": "eb45f84660185e39b97dd54041db1596b7a2704c04ad3ecd198a35994ae1e1a3",
+      "created_at": "1774105648204"
+    },
+    {
+      "hash": "216531494b7a1f36e7e883efbf7de26ffd185f4eb92bd5ad562a8fb45b78e6d5",
+      "created_at": "1774154089151"
+    },
+    {
+      "hash": "a7622400361bc2555d3798e5eb1c2454320d4cd6d6037995daea30312238d304",
+      "created_at": "1774286451044"
+    },
+    {
+      "hash": "1df351601a70c25a6aade5f95a1f85d383f6df76bb6dc1ec01ce929c32cdceef",
+      "created_at": "1774293329950"
+    },
+    {
+      "hash": "7e7a53ea839d91d89508c7c4a0be38e4590510d33924921f17b4dd083bf1bf05",
+      "created_at": "1774309292304"
+    },
+    {
+      "hash": "82e1c0b3e7546ebab2bd2fc3e18ebfc6c16ff5a3a9cb9f256889860e378ce60f",
+      "created_at": "1774400630608"
+    },
+    {
+      "hash": "bf50dda75e72b5efafc041ff639185e9f22a5725be7d2b9c0176d431f5136302",
+      "created_at": "1774408277299"
+    },
+    {
+      "hash": "94ec83b129d0c7ac88feaed179e98b6f99401c1f1bd4eb14bd78f37194b3868c",
+      "created_at": "1774409320490"
+    },
+    {
+      "hash": "6a499fef79006df26922ed422ba2423ca17039a2b9b3ec9e87b27daefce13091",
+      "created_at": "1774410630315"
+    },
+    {
+      "hash": "410a4e4973b0e9db8f8c3eae8bd9dda29b08148030a3167a478027c1c4e8bbcd",
+      "created_at": "1774483162065"
+    },
+    {
+      "hash": "38a22f273517266ceae92fe19edae2977ee3b32492b2644a03aa9f88ea261ac4",
+      "created_at": "1774484003980"
+    },
+    {
+      "hash": "f0b6ae5ef33870fb87f81728960a02ce68c9b49c1b74be0d25341c8c40e34287",
+      "created_at": "1774815376858"
+    },
+    {
+      "hash": "0015_sour_demogoblin",
+      "created_at": "1774817730711"
+    },
+    {
+      "hash": "cd5f014cb0176fc7694fc00737564e7baf1b97615ff2638457f0829828115197",
+      "created_at": "1774819131190"
+    },
+    {
+      "hash": "45f90a2645a3905b30785472f5308f8cfc01be5552fdd631294948206dba7b6d",
+      "created_at": "1774824410554"
+    },
+    {
+      "hash": "60757e04d4c7d585a55fb7cf8e244a123c6ef66d5a4baad1e8436c56d11d5f96",
+      "created_at": "1774827528633"
+    },
+    {
+      "hash": "e971d9a725e89aa1854c7b4408bea857c0f8bf12a8a73e116338120bab5d8ada",
+      "created_at": "1774831417538"
+    },
+    {
+      "hash": "ac12a967eeb69a6d65fef35642faf21860906ff91d0ea56e3613bf42a0dcd05f",
+      "created_at": "1774835065644"
+    }
+  ],
+  "messages": [],
+  "stdout": "hash\tcreated_at\n814a08e40d7fc2bcfd458759d18319198ca8ae394f2fa15617a78678e9c9c93b\t1773580309318\nee1e27f5bcff24edec1a2f8615a0b1a8585ccff35409fc9f506dd98f1e06c5fd\t1773602231418\nc0e4fe135e2199ea4277ea0be5c0fc1e8a8bdbea1410ffe2bab0ef464ebba553\t1773626896842\ne1ad4836c8f46d3cd198ac1eef5f46dcf4f235cb82eafae6cb82af3ecae5576d\t1774105610552\neb45f84660185e39b97dd54041db1596b7a2704c04ad3ecd198a35994ae1e1a3\t1774105648204\n216531494b7a1f36e7e883efbf7de26ffd185f4eb92bd5ad562a8fb45b78e6d5\t1774154089151\na7622400361bc2555d3798e5eb1c2454320d4cd6d6037995daea30312238d304\t1774286451044\n1df351601a70c25a6aade5f95a1f85d383f6df76bb6dc1ec01ce929c32cdceef\t1774293329950\n7e7a53ea839d91d89508c7c4a0be38e4590510d33924921f17b4dd083bf1bf05\t1774309292304\n82e1c0b3e7546ebab2bd2fc3e18ebfc6c16ff5a3a9cb9f256889860e378ce60f\t1774400630608\nbf50dda75e72b5efafc041ff639185e9f22a5725be7d2b9c0176d431f5136302\t1774408277299\n94ec83b129d0c7ac88feaed179e98b6f99401c1f1bd4eb14bd78f37194b3868c\t1774409320490\n6a499fef79006df26922ed422ba2423ca17039a2b9b3ec9e87b27daefce13091\t1774410630315\n410a4e4973b0e9db8f8c3eae8bd9dda29b08148030a3167a478027c1c4e8bbcd\t1774483162065\n38a22f273517266ceae92fe19edae2977ee3b32492b2644a03aa9f88ea261ac4\t1774484003980\nf0b6ae5ef33870fb87f81728960a02ce68c9b49c1b74be0d25341c8c40e34287\t1774815376858\n0015_sour_demogoblin\t1774817730711\ncd5f014cb0176fc7694fc00737564e7baf1b97615ff2638457f0829828115197\t1774819131190\n45f90a2645a3905b30785472f5308f8cfc01be5552fdd631294948206dba7b6d\t1774824410554\n60757e04d4c7d585a55fb7cf8e244a123c6ef66d5a4baad1e8436c56d11d5f96\t1774827528633\ne971d9a725e89aa1854c7b4408bea857c0f8bf12a8a73e116338120bab5d8ada\t1774831417538\nac12a967eeb69a6d65fef35642faf21860906ff91d0ea56e3613bf42a0dcd05f\t1774835065644\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

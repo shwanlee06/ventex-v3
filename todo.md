@@ -1428,3 +1428,13 @@
 - [x] #5 agents.listEvents query — alias for agents.list with required organizationId
 - [x] #6 email.send — already a POST mutation, confirmed 401 (auth required, correct)
 - [x] All 484 tests passing across 31 files including final-wiring.test.ts
+
+## REMAINING BACKEND FIXES (Post-Audit)
+- [x] #1 onboarding.complete — registered as tRPC mutation (returns 403 = admin-only, correct)
+- [x] #2 Blueprint DB tables — migration records synced, all 4 tables exist, pnpm db:push clean
+- [x] #3 /blueprints frontend route — BlueprintsPage created, route registered, sidebar nav added
+- [x] Verify: onboarding.complete returns 403 (admin-only, not 404)
+- [x] Verify: blueprints.list returns 401 (auth required, not 500)
+- [x] Verify: blueprints.generateFromSector returns 401 (auth required, not 500)
+- [x] Verify: /blueprints page returns HTTP 200 (renders with empty state)
+- [x] 484 tests passing across 31 files, zero TypeScript errors
