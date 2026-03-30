@@ -1414,3 +1414,8 @@
 - [x] Fix "Shwan lee" lowercase — already "Shwan Lee" in data.ts; DB name from OAuth
 - [x] Debounce agents.list polling — LiveTicker now uses shared AgentContext instead of duplicate query
 - [x] 474 tests passing across 30 files (including email, onboarding, removals tests)
+
+## Email Flow End-to-End Test
+- [x] Verify RESEND_API_KEY is configured
+- [x] Send test email to slee72106@gmail.com from contact@aurovia.co (Message ID: 783669d7)
+- [x] Domain aurovia.co verified in Resend, FROM address updated in emailService.ts + email router

@@ -18,7 +18,7 @@ import {
 } from "../emailService";
 import { Resend } from "resend";
 
-const FROM_ADDRESS = "ATLAS <atlas@aurovia.com>";
+const FROM_ADDRESS = "ATLAS <contact@aurovia.co>";
 const REPLY_TO = "slee72106@gmail.com";
 
 // ── Shared Styles for invitation email ──────────────────────────────────

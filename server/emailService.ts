@@ -17,7 +17,7 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY || "");
 
-const FROM_ADDRESS = "ATLAS <atlas@aurovia.com>";
+const FROM_ADDRESS = "ATLAS <contact@aurovia.co>";
 const REPLY_TO = "slee72106@gmail.com"; // Operator: Shwan Lee
 
 // ── Types ────────────────────────────────────────────────────────────────
