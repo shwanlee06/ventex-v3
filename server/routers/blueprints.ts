@@ -893,4 +893,170 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
 
       return results;
     }),
+
+  // ── Aliases for spec-required procedure names ─────────────────────────
+  // blueprints.list → alias for listTemplates
+  list: protectedProcedure
+    .input(z.object({ organizationId: z.number() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return [];
+      return db.select().from(processTemplates)
+        .where(and(
+          eq(processTemplates.organizationId, input.organizationId),
+          eq(processTemplates.isActive, true),
+        ))
+        .orderBy(desc(processTemplates.createdAt));
+    }),
+
+  // blueprints.create → manual blueprint creation
+  create: protectedProcedure
+    .input(z.object({
+      name: z.string().min(1),
+      sector: z.string().min(1),
+      organizationId: z.number(),
+      steps: z.array(z.object({
+        stepName: z.string(),
+        stageName: z.string(),
+        stageOrder: z.number(),
+        stepOrder: z.number(),
+        isBlocking: z.boolean().default(false),
+        whoOwns: z.string().optional(),
+        estimatedDays: z.number().optional(),
+        evidence: z.string().optional(),
+      })).optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+      const [result] = await db.insert(processTemplates).values({
+        blueprintName: input.name,
+        sector: input.sector,
+        organizationId: input.organizationId,
+        source: "manual",
+        confidence: "High",
+        isActive: true,
+      }).$returningId();
+      const templateId = result.id;
+      if (input.steps && input.steps.length > 0) {
+        await db.insert(processSteps).values(
+          input.steps.map(s => ({
+            templateId,
+            stepName: s.stepName,
+            stageName: s.stageName,
+            stageOrder: s.stageOrder,
+            stepOrder: s.stepOrder,
+            isBlocking: s.isBlocking,
+            whoOwns: s.whoOwns ?? null,
+            estimatedDays: s.estimatedDays ?? null,
+            evidence: s.evidence ?? null,
+          }))
+        );
+      }
+      return { id: templateId, name: input.name };
+    }),
+
+  // blueprints.generateFromSector → LLM-powered blueprint generation for a sector
+  generateFromSector: protectedProcedure
+    .input(z.object({
+      sector: z.string().min(1),
+      organizationId: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+      // Check if template already exists for this sector
+      const [existing] = await db.select().from(processTemplates)
+        .where(and(
+          eq(processTemplates.organizationId, input.organizationId),
+          eq(processTemplates.sector, input.sector),
+          eq(processTemplates.isActive, true),
+        )).limit(1);
+      if (existing) {
+        return { id: existing.id, name: existing.blueprintName, alreadyExisted: true };
+      }
+      // Use LLM to generate a blueprint
+      const llmResponse = await invokeLLM({
+        messages: [
+          {
+            role: "system",
+            content: `You are a venture operations expert. Generate a detailed process blueprint for a ${input.sector} venture. Return JSON: { "name": "<sector> Standard Process", "stages": [{ "stageName": "<name>", "stageOrder": <n>, "steps": [{ "stepName": "<name>", "stepOrder": <n>, "isBlocking": <bool>, "whoOwns": "<role>", "estimatedDays": <n> }] }] }. Include 4-6 stages with 3-5 steps each.`,
+          },
+          { role: "user", content: `Generate a process blueprint for: ${input.sector}` },
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "blueprint",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                stages: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      stageName: { type: "string" },
+                      stageOrder: { type: "integer" },
+                      steps: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            stepName: { type: "string" },
+                            stepOrder: { type: "integer" },
+                            isBlocking: { type: "boolean" },
+                            whoOwns: { type: "string" },
+                            estimatedDays: { type: "integer" },
+                          },
+                          required: ["stepName", "stepOrder", "isBlocking", "whoOwns", "estimatedDays"],
+                          additionalProperties: false,
+                        },
+                      },
+                    },
+                    required: ["stageName", "stageOrder", "steps"],
+                    additionalProperties: false,
+                  },
+                },
+              },
+              required: ["name", "stages"],
+              additionalProperties: false,
+            },
+          },
+        },
+      });
+      const content = llmResponse.choices?.[0]?.message?.content;
+      if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "LLM returned empty response" });
+      const blueprint = JSON.parse(content as string);
+      const [templateResult] = await db.insert(processTemplates).values({
+        blueprintName: blueprint.name || `${input.sector} Standard Process`,
+        sector: input.sector,
+        organizationId: input.organizationId,
+        source: "ai_generated",
+        confidence: "Medium",
+        isActive: true,
+      }).$returningId();
+      const templateId = templateResult.id;
+      const allSteps: any[] = [];
+      for (const stage of blueprint.stages) {
+        for (const step of stage.steps) {
+          allSteps.push({
+            templateId,
+            stepName: step.stepName,
+            stageName: stage.stageName,
+            stageOrder: stage.stageOrder,
+            stepOrder: step.stepOrder,
+            isBlocking: step.isBlocking,
+            whoOwns: step.whoOwns,
+            estimatedDays: step.estimatedDays,
+          });
+        }
+      }
+      if (allSteps.length > 0) {
+        await db.insert(processSteps).values(allSteps);
+      }
+      return { id: templateId, name: blueprint.name, stepsCreated: allSteps.length };
+    }),
 });

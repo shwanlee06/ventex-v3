@@ -1978,4 +1978,47 @@ export const agentsRouter = router({
         daysInStage,
       };
     }),
+
+  // ── agents.listEvents — alias for agents.list filtered by organizationId ──
+  listEvents: protectedProcedure
+    .input(
+      z.object({
+        organizationId: z.number(),
+        limit: z.number().min(1).max(200).default(50),
+        agentName: z.string().optional(),
+        severity: z.string().optional(),
+        actionType: z.string().optional(),
+        unreadOnly: z.boolean().optional(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) return [];
+      const isAdmin = isAtlasTeam(ctx.user);
+      const effectiveOrgId = isAdmin
+        ? input.organizationId
+        : ctx.user.organizationId;
+      const conditions: any[] = [];
+      if (effectiveOrgId) {
+        conditions.push(eq(agentEvents.organizationId, effectiveOrgId));
+      }
+      if (input.agentName) {
+        conditions.push(eq(agentEvents.agentName, input.agentName));
+      }
+      if (input.severity) {
+        conditions.push(eq(agentEvents.severity, input.severity));
+      }
+      if (input.actionType) {
+        conditions.push(eq(agentEvents.actionType, input.actionType));
+      }
+      if (input.unreadOnly) {
+        conditions.push(eq(agentEvents.isRead, false));
+      }
+      return db
+        .select()
+        .from(agentEvents)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .orderBy(desc(agentEvents.createdAt))
+        .limit(input.limit);
+    }),
 });

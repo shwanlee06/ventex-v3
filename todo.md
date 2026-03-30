@@ -1419,3 +1419,12 @@
 - [x] Verify RESEND_API_KEY is configured
 - [x] Send test email to slee72106@gmail.com from contact@aurovia.co (Message ID: 783669d7)
 - [x] Domain aurovia.co verified in Resend, FROM address updated in emailService.ts + email router
+
+## FINAL BACKEND WIRING (6 items)
+- [x] #1 auth.acceptInvite mutation — validates token, accepts invitation, creates session cookie (public procedure)
+- [x] #2 auth.forgotPassword + auth.resetPassword mutations — generates reset token, sends email via Resend, resets password
+- [x] #3 organizations.onboardingComplete — already existed, confirmed 403 (admin-only, correct)
+- [x] #4 blueprints.list (alias→listTemplates), blueprints.create (manual), blueprints.generateFromSector (LLM), blueprints.applyToVentures (existed)
+- [x] #5 agents.listEvents query — alias for agents.list with required organizationId
+- [x] #6 email.send — already a POST mutation, confirmed 401 (auth required, correct)
+- [x] All 484 tests passing across 31 files including final-wiring.test.ts
