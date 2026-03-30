@@ -118,6 +118,8 @@ export default function OnboardingWizard() {
   const addVentures = trpc.organizations.addVentures.useMutation();
   const sendInvitations = trpc.organizations.sendInvitations.useMutation();
   const configureAgents = trpc.organizations.configureAgents.useMutation();
+  const generateBlueprints = trpc.blueprints.generateStarterBlueprints.useMutation();
+  const recalcHealth = trpc.blueprints.recalculateHealthScores.useMutation();
 
   // ── Step navigation ─────────────────────────────────────────────────
   const canProceed = useCallback(() => {
@@ -143,6 +145,24 @@ export default function OnboardingWizard() {
         });
         setCreatedOrgId(org.id);
         toast.success(`Client "${clientName}" created`);
+        // Connection 1: Auto-generate starter blueprints for selected sectors
+        if (selectedSectors.length > 0) {
+          generateBlueprints.mutate(
+            { organizationId: org.id, sectors: selectedSectors },
+            {
+              onSuccess: (results) => {
+                if (results.length > 0) {
+                  toast.success(`Generated ${results.length} starter blueprint${results.length > 1 ? "s" : ""}`, {
+                    description: results.map(r => `${r.sector}: ${r.stepCount} steps`).join(", "),
+                  });
+                }
+              },
+              onError: () => {
+                // Non-blocking — blueprints can be created later from the Blueprints tab
+              },
+            }
+          );
+        }
         setStep(2);
       } catch (e: any) {
         toast.error(e.message || "Failed to create client");
@@ -204,10 +224,16 @@ export default function OnboardingWizard() {
     if (step < 5) setStep(step + 1);
   }, [step, clientName, description, contactName, contactEmail, aumRange, selectedSectors, tier, ventures, invites, agentConfig, createdOrgId, createOrg, addVentures, sendInvitations, configureAgents]);
 
-  const handleLaunch = useCallback(() => {
+  const handleLaunch = useCallback(async () => {
+    // Connection 4: Recalculate health scores on launch
+    if (createdOrgId) {
+      try {
+        await recalcHealth.mutateAsync({ organizationId: createdOrgId });
+      } catch { /* non-blocking */ }
+    }
     toast.success(`${clientName} is now live!`, { description: "Client portal is ready for access." });
     navigate("/dashboard");
-  }, [clientName, navigate]);
+  }, [clientName, createdOrgId, navigate, recalcHealth]);
 
   // ── Venture helpers ─────────────────────────────────────────────────
   const addVentureEntry = () => {

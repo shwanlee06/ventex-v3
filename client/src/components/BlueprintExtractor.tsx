@@ -42,10 +42,14 @@ type ChatMessage = {
 interface Props {
   organizationId: number;
   onComplete?: (templateId: number) => void;
+  initialMode?: "doc" | "chat";
+  initialSector?: string;
 }
 
-export default function BlueprintExtractor({ organizationId, onComplete }: Props) {
-  const [mode, setMode] = useState<"choose" | "document" | "conversation">("choose");
+export default function BlueprintExtractor({ organizationId, onComplete, initialMode, initialSector }: Props) {
+  const [mode, setMode] = useState<"choose" | "document" | "conversation">(
+    initialMode === "doc" ? "document" : initialMode === "chat" ? "conversation" : "choose"
+  );
   const [extractedText, setExtractedText] = useState("");
   const [blueprint, setBlueprint] = useState<ExtractedBlueprint | null>(null);
   const [templateId, setTemplateId] = useState<number | null>(null);

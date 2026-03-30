@@ -41,6 +41,11 @@ import {
   ArchiveRestore,
   Settings,
   FileText,
+  Zap,
+  MessageSquare,
+  Upload,
+  RefreshCw,
+  ArrowRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useCallback } from "react";
@@ -915,9 +920,68 @@ function BlueprintsTab({ organizationId }: { organizationId: number }) {
   const templatesQ = trpc.blueprints.listTemplates.useQuery({ organizationId });
   const missingSectorsQ = trpc.blueprints.getMissingSectors.useQuery({ organizationId });
   const [showExtractor, setShowExtractor] = useState(false);
+  const [extractorMode, setExtractorMode] = useState<"doc" | "chat" | null>(null);
+  const [activeSector, setActiveSector] = useState<string | null>(null);
+  const [showSectorOptions, setShowSectorOptions] = useState<string | null>(null);
+
+  const generateStarter = trpc.blueprints.generateStarterBlueprints.useMutation();
+  const autoApply = trpc.blueprints.autoApplyToSectorVentures.useMutation();
+  const recalcHealth = trpc.blueprints.recalculateHealthScores.useMutation();
 
   const templates = templatesQ.data || [];
   const missingSectors = missingSectorsQ.data || [];
+
+  const handleGenerateStarter = (sector: string) => {
+    generateStarter.mutate(
+      { organizationId, sectors: [sector] },
+      {
+        onSuccess: (results) => {
+          if (results.length > 0) {
+            toast.success(`Starter blueprint generated for ${sector}`, {
+              description: `${results[0].stepCount} steps across all stages`,
+            });
+            templatesQ.refetch();
+            missingSectorsQ.refetch();
+          }
+          setShowSectorOptions(null);
+        },
+        onError: (e) => toast.error(e.message || "Failed to generate blueprint"),
+      }
+    );
+  };
+
+  const handleAutoApply = (templateId: number, sector: string) => {
+    autoApply.mutate(
+      { templateId, organizationId },
+      {
+        onSuccess: (result) => {
+          toast.success(`Blueprint applied to ${result.appliedCount} ${sector} venture${result.appliedCount !== 1 ? "s" : ""}`);
+          // Connection 4: Recalculate health scores after applying blueprints
+          recalcHealth.mutate({ organizationId }, {
+            onSuccess: () => toast.info("Health scores recalculated"),
+          });
+        },
+        onError: (e) => toast.error(e.message || "Failed to apply blueprint"),
+      }
+    );
+  };
+
+  const handleRecalcHealth = () => {
+    recalcHealth.mutate(
+      { organizationId },
+      {
+        onSuccess: (results) => {
+          const changed = results.filter(r => r.oldScore !== r.newScore);
+          toast.success(`Health scores updated for ${results.length} venture${results.length !== 1 ? "s" : ""}`, {
+            description: changed.length > 0
+              ? `${changed.length} score${changed.length !== 1 ? "s" : ""} changed`
+              : "All scores unchanged",
+          });
+        },
+        onError: (e) => toast.error(e.message || "Failed to recalculate"),
+      }
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -929,23 +993,83 @@ function BlueprintsTab({ organizationId }: { organizationId: number }) {
             Define the steps needed to move ventures through each stage
           </p>
         </div>
-        <Button size="sm" className="text-xs h-7" onClick={() => setShowExtractor(!showExtractor)}>
-          <Plus className="size-3 mr-1" /> New Blueprint
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-xs h-7"
+            onClick={handleRecalcHealth}
+            disabled={recalcHealth.isPending}
+          >
+            <RefreshCw className={cn("size-3 mr-1", recalcHealth.isPending && "animate-spin")} />
+            Recalc Health
+          </Button>
+          <Button size="sm" className="text-xs h-7" onClick={() => { setShowExtractor(!showExtractor); setExtractorMode(null); }}>
+            <Plus className="size-3 mr-1" /> New Blueprint
+          </Button>
+        </div>
       </div>
 
-      {/* Missing sectors alert */}
+      {/* Connection 2: Missing sectors with clickable pills */}
       {missingSectors.length > 0 && (
         <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3">
-          <div className="flex items-center gap-2 text-xs text-amber-400">
+          <div className="flex items-center gap-2 text-xs text-amber-400 mb-2">
             <AlertTriangle className="size-3.5" />
             <span className="font-medium">Missing blueprints for {missingSectors.length} sector{missingSectors.length > 1 ? "s" : ""}</span>
           </div>
-          <div className="flex flex-wrap gap-2 mt-2">
+          <div className="flex flex-wrap gap-2">
             {missingSectors.map(s => (
-              <span key={s.sector} className="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded">
-                {s.sector} ({s.ventureCount} venture{s.ventureCount > 1 ? "s" : ""})
-              </span>
+              <div key={s.sector} className="relative">
+                <button
+                  onClick={() => setShowSectorOptions(showSectorOptions === s.sector ? null : s.sector)}
+                  className={cn(
+                    "text-[10px] px-2.5 py-1 rounded-md border transition-all cursor-pointer",
+                    showSectorOptions === s.sector
+                      ? "bg-amber-500/20 border-amber-500/40 text-amber-300"
+                      : "bg-amber-500/10 border-transparent text-amber-400 hover:bg-amber-500/15 hover:border-amber-500/30"
+                  )}
+                >
+                  {s.sector} ({s.ventureCount})
+                </button>
+
+                {/* 3-option dropdown */}
+                {showSectorOptions === s.sector && (
+                  <div className="absolute top-full left-0 mt-1 z-50 bg-card border border-border rounded-lg shadow-lg p-1.5 min-w-[180px]">
+                    <button
+                      onClick={() => {
+                        setActiveSector(s.sector);
+                        setExtractorMode("doc");
+                        setShowExtractor(true);
+                        setShowSectorOptions(null);
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 text-[11px] text-foreground hover:bg-accent/50 rounded transition-colors text-left"
+                    >
+                      <Upload className="size-3 text-blue-400" />
+                      Upload Document
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveSector(s.sector);
+                        setExtractorMode("chat");
+                        setShowExtractor(true);
+                        setShowSectorOptions(null);
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 text-[11px] text-foreground hover:bg-accent/50 rounded transition-colors text-left"
+                    >
+                      <MessageSquare className="size-3 text-emerald-400" />
+                      Describe via Chat
+                    </button>
+                    <button
+                      onClick={() => handleGenerateStarter(s.sector)}
+                      disabled={generateStarter.isPending}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 text-[11px] text-foreground hover:bg-accent/50 rounded transition-colors text-left"
+                    >
+                      <Zap className="size-3 text-primary" />
+                      {generateStarter.isPending ? "Generating..." : "Auto-Generate Starter"}
+                    </button>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>
@@ -956,9 +1080,14 @@ function BlueprintsTab({ organizationId }: { organizationId: number }) {
         <div className="bg-card border border-border rounded-lg p-4">
           <BlueprintExtractor
             organizationId={organizationId}
-            onComplete={(templateId) => {
+            initialMode={extractorMode || undefined}
+            initialSector={activeSector || undefined}
+            onComplete={() => {
               setShowExtractor(false);
+              setExtractorMode(null);
+              setActiveSector(null);
               templatesQ.refetch();
+              missingSectorsQ.refetch();
               toast.success("Blueprint created successfully");
             }}
           />
@@ -995,13 +1124,26 @@ function BlueprintsTab({ organizationId }: { organizationId: number }) {
                     <span className="text-[10px] text-muted-foreground">via {t.source}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                  {t.refinementCount > 0 && (
-                    <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded">
-                      Refined {t.refinementCount}x
-                    </span>
-                  )}
-                  <span>{formatDate(t.createdAt instanceof Date ? t.createdAt.toISOString() : String(t.createdAt))}</span>
+                <div className="flex items-center gap-2">
+                  {/* Connection 3: Auto-apply button */}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-[10px] h-6 px-2"
+                    onClick={() => handleAutoApply(t.id, t.sector)}
+                    disabled={autoApply.isPending}
+                  >
+                    <ArrowRight className="size-2.5 mr-1" />
+                    {autoApply.isPending ? "Applying..." : "Apply to Ventures"}
+                  </Button>
+                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                    {t.refinementCount > 0 && (
+                      <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                        Refined {t.refinementCount}x
+                      </span>
+                    )}
+                    <span>{formatDate(t.createdAt instanceof Date ? t.createdAt.toISOString() : String(t.createdAt))}</span>
+                  </div>
                 </div>
               </div>
             </div>

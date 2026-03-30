@@ -600,4 +600,297 @@ export const blueprintsRouter = router({
 
       return missingSectors;
     }),
+
+  // ── Connection 1: Generate starter blueprints for selected sectors ──────
+  generateStarterBlueprints: protectedProcedure
+    .input(z.object({
+      organizationId: z.number(),
+      sectors: z.array(z.string()).min(1),
+    }))
+    .mutation(async ({ input }) => {
+      const db = (await getDb())!;
+      const results: { sector: string; templateId: number; stepCount: number }[] = [];
+
+      for (const sector of input.sectors) {
+        // Check if blueprint already exists for this sector
+        const [existing] = await db
+          .select({ id: processTemplates.id })
+          .from(processTemplates)
+          .where(and(
+            eq(processTemplates.organizationId, input.organizationId),
+            eq(processTemplates.sector, sector),
+          ))
+          .limit(1);
+        if (existing) continue;
+
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: `You are an expert at creating operational blueprints for UHNWI holding companies. Output ONLY valid JSON, no markdown.`,
+            },
+            {
+              role: "user",
+              content: `Generate a detailed operational blueprint for a UHNWI holding company running ${sector} ventures. This is their starting process — it will be refined based on their actual operations.
+
+Return JSON:
+{
+  "sector": "${sector}",
+  "blueprintName": "${sector} Operations Blueprint",
+  "stages": [
+    {
+      "stage_name": "In Validation|In Fundraising|Active Ventures|Completed",
+      "stage_order": 1,
+      "typical_duration_days": 30,
+      "steps": [
+        {
+          "order": 1,
+          "name": "specific step name",
+          "description": "what happens",
+          "who_owns": "role",
+          "is_blocking": true,
+          "typical_days": 5,
+          "output": "document or decision produced"
+        }
+      ],
+      "decision_maker": "role",
+      "gate_criteria": "what must be true to advance"
+    }
+  ]
+}
+
+Use these exact stage names: In Validation, In Fundraising, Active Ventures, Completed.
+Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
+            },
+          ],
+        });
+
+        const content = response.choices?.[0]?.message?.content as string;
+        if (!content) continue;
+
+        let jsonStr = content;
+        const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch) jsonStr = jsonMatch[1];
+
+        let blueprint: any;
+        try {
+          blueprint = JSON.parse(jsonStr.trim());
+        } catch {
+          continue;
+        }
+
+        const stages = blueprint.stages || [];
+        if (stages.length === 0) continue;
+
+        // Save template
+        const [templateResult] = await db.insert(processTemplates).values({
+          organizationId: input.organizationId,
+          sector,
+          blueprintName: blueprint.blueprintName || `${sector} Operations Blueprint`,
+          source: "auto_generated",
+          confidence: "Medium",
+          sourceDocumentUrl: null,
+          sourceDocumentName: null,
+        });
+        const templateId = (templateResult as any).insertId;
+
+        let stepCount = 0;
+        for (const stage of stages) {
+          const stageName = stage.stage_name || stage.stageName || "Unknown";
+          const stageOrder = stage.stage_order || stage.stageOrder || 0;
+          const steps = stage.steps || [];
+          for (const step of steps) {
+            await db.insert(processSteps).values({
+              templateId,
+              stageName,
+              stepName: step.name || step.stepName || "Unnamed Step",
+              stepOrder: step.order || step.stepOrder || 0,
+              stageOrder,
+              isBlocking: step.is_blocking ?? step.isBlocking ?? false,
+              whoOwns: step.who_owns || step.whoOwns || null,
+              estimatedDays: step.typical_days || step.estimatedDays || null,
+              evidence: step.output || step.description || null,
+              confidence: "Medium",
+            });
+            stepCount++;
+          }
+        }
+
+        results.push({ sector, templateId, stepCount });
+      }
+
+      return results;
+    }),
+
+  // ── Connection 3: Auto-apply blueprint to all ventures in a sector ─────
+  autoApplyToSectorVentures: protectedProcedure
+    .input(z.object({
+      templateId: z.number(),
+      organizationId: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = (await getDb())!;
+
+      // Get the template and its steps
+      const [template] = await db
+        .select()
+        .from(processTemplates)
+        .where(eq(processTemplates.id, input.templateId))
+        .limit(1);
+      if (!template) throw new TRPCError({ code: "NOT_FOUND", message: "Template not found" });
+
+      const steps = await db
+        .select()
+        .from(processSteps)
+        .where(eq(processSteps.templateId, input.templateId));
+
+      // Get all ventures in this sector for this org
+      const orgVentures = await db
+        .select({ id: ventures.id, name: ventures.name, stage: ventures.stage })
+        .from(ventures)
+        .innerJoin(orgVentureAccess, eq(orgVentureAccess.ventureId, ventures.id))
+        .where(and(
+          eq(orgVentureAccess.organizationId, input.organizationId),
+          eq(ventures.sector, template.sector),
+        ));
+
+      let appliedCount = 0;
+      for (const venture of orgVentures) {
+        // Check if already applied
+        const [existing] = await db
+          .select({ id: ventureProcessTracking.id })
+          .from(ventureProcessTracking)
+          .where(eq(ventureProcessTracking.ventureId, venture.id))
+          .limit(1);
+        if (existing) continue;
+
+        // Create tracking records for all steps
+        for (const step of steps) {
+          // Smart pre-marking: if venture has passed this stage, mark as complete
+          const STAGE_ORDER: Record<string, number> = {
+            "In Validation": 1, "In Fundraising": 2, "Active Ventures": 3, "Completed": 4,
+          };
+          const ventureStageOrder = STAGE_ORDER[venture.stage || ""] || 0;
+          const stepStageOrder = STAGE_ORDER[step.stageName] || 0;
+          const isCompleted = stepStageOrder < ventureStageOrder;
+
+          await db.insert(ventureProcessTracking).values({
+            ventureId: venture.id,
+            templateId: input.templateId,
+            stepId: step.id,
+            stageName: step.stageName,
+            stepName: step.stepName,
+            isBlocking: step.isBlocking,
+            whoOwns: step.whoOwns,
+            status: isCompleted ? "complete" : "pending",
+            completedAt: isCompleted ? new Date() : null,
+          });
+        }
+        appliedCount++;
+      }
+
+      return { appliedCount, ventureNames: orgVentures.map((v: { id: number; name: string; stage: string }) => v.name) };
+    }),
+
+  // ── Connection 4: Calculate real health scores ─────────────────────────
+  recalculateHealthScores: protectedProcedure
+    .input(z.object({
+      organizationId: z.number(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = (await getDb())!;
+      const { tasks: tasksTable } = await import("../../drizzle/schema");
+
+      // Get all ventures for this org
+      const orgVentures = await db
+        .select({
+          id: ventures.id,
+          name: ventures.name,
+          stage: ventures.stage,
+          currentStatus: ventures.currentStatus,
+          nextStep: ventures.nextStep,
+          location: ventures.location,
+        })
+        .from(ventures)
+        .innerJoin(orgVentureAccess, eq(orgVentureAccess.ventureId, ventures.id))
+        .where(eq(orgVentureAccess.organizationId, input.organizationId));
+
+      const results: { ventureId: number; name: string; oldScore: number; newScore: number }[] = [];
+
+      for (const venture of orgVentures) {
+        let score = 0;
+
+        // 1. Blueprint completion: 40 points
+        const tracking = await db
+          .select({
+            isBlocking: ventureProcessTracking.isBlocking,
+            status: ventureProcessTracking.status,
+          })
+          .from(ventureProcessTracking)
+          .where(eq(ventureProcessTracking.ventureId, venture.id));
+
+        const blockingSteps = tracking.filter((t: any) => t.isBlocking);
+        const blockingComplete = blockingSteps.filter((t: any) => t.status === "complete");
+        if (blockingSteps.length > 0) {
+          score += Math.round((blockingComplete.length / blockingSteps.length) * 40);
+        } else if (tracking.length > 0) {
+          const allComplete = tracking.filter((t: any) => t.status === "complete");
+          score += Math.round((allComplete.length / tracking.length) * 40);
+        }
+        // No blueprint = 0 blueprint points
+
+        // 2. Task velocity: 20 points
+        const ventureTasks = await db
+          .select({ status: tasksTable.status })
+          .from(tasksTable)
+          .where(eq(tasksTable.ventureId, venture.id));
+        const overdueTasks = ventureTasks.filter((t: any) => t.status === "overdue");
+        if (overdueTasks.length === 0) score += 20;
+        else if (overdueTasks.length === 1) score += 10;
+        // 2+ overdue = 0
+
+        // 3. Stage momentum: 20 points
+        // Check typical_duration from blueprint template
+        const [templateForStage] = await db
+          .select({ templateId: processSteps.templateId })
+          .from(processSteps)
+          .innerJoin(processTemplates, eq(processTemplates.id, processSteps.templateId))
+          .where(and(
+            eq(processTemplates.organizationId, input.organizationId),
+            eq(processSteps.stageName, venture.stage || ""),
+          ))
+          .limit(1);
+
+        // Simple heuristic: if venture has recent activity, give momentum points
+        if (ventureTasks.length > 0) {
+          const completedTasks = ventureTasks.filter((t: any) => t.status === "complete" || t.status === "done");
+          const completionRate = ventureTasks.length > 0 ? completedTasks.length / ventureTasks.length : 0;
+          if (completionRate > 0.7) score += 20;
+          else if (completionRate > 0.3) score += 10;
+        }
+
+        // 4. Data completeness: 20 points
+        if (venture.currentStatus) score += 5;
+        if (venture.nextStep) score += 5;
+        // Check if team assigned (has tasks with assignees)
+        const assignedTasks = ventureTasks.length > 0 ? 5 : 0;
+        score += assignedTasks;
+        if (venture.location) score += 5;
+
+        // Clamp to 0-100
+        score = Math.max(0, Math.min(100, score));
+
+        // Update in DB
+        await db.update(ventures).set({ healthScore: score }).where(eq(ventures.id, venture.id));
+
+        results.push({
+          ventureId: venture.id,
+          name: venture.name,
+          oldScore: 50,
+          newScore: score,
+        });
+      }
+
+      return results;
+    }),
 });

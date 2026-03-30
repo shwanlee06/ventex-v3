@@ -1343,3 +1343,36 @@
 
 ### Tests
 - [x] 25 test files, 420 tests passing (including blueprints.test.ts with 42 tests)
+
+## SOLIDIFY THE VISION — 5 CONNECTIONS
+
+### Connection 1 — Blueprint Creation from Onboarding
+- [x] When operator clicks "Create & Continue" on Step 1 with sectors selected, auto-generate starter blueprints via LLM
+- [x] Save to process_templates + process_steps tables
+- [x] Show "Blueprints Generated" confirmation toast in Step 1 (non-blocking)
+- [x] Blueprints tab immediately shows starter blueprints (not "No blueprints yet")
+
+### Connection 2 — Document Upload in Blueprints Tab
+- [x] Clickable sector pills open 3-option dropdown
+- [x] Option A: "Upload Document" — opens BlueprintExtractor in doc mode
+- [x] Option B: "Describe via Chat" — opens BlueprintExtractor in chat mode
+- [x] Option C: "Auto-Generate Starter" — calls generateStarterBlueprints
+
+### Connection 3 — Blueprints Apply to Existing Ventures
+- [x] "Apply to Ventures" button on each template card calls autoApplyToSectorVentures
+- [x] Creates venture_process_tracking rows with 'pending' status + smart pre-marking
+- [x] Toast: "Blueprint applied to N ventures" + auto health recalc
+- [x] Venture detail page shows BlueprintJourneyTracker with step progress
+
+### Connection 4 — Health Score Becomes Real
+- [x] Health score formula: task completion (40%) + overdue penalty (20%) + blueprint progress (25%) + velocity bonus (15%)
+- [x] Recalculate on all ventures when blueprints applied + on launch
+- [x] Updates healthScore field in ventures table
+- [x] "Recalc Health" button in Blueprints tab header
+
+### Connection 5 — Agents Read the Blueprints
+- [x] Velocity Agent loads ventureProcessTracking per venture with blocking step context
+- [x] Blueprint context included in stall detection LLM prompt (specific steps + owners)
+- [x] Overdue Agent fetches blueprint blocking steps for richer follow-up drafts
+- [x] Auto-marks blueprint steps as complete on stage advance (refinement hook)
+- [x] 444 tests passing across 26 files (including connections.test.ts)

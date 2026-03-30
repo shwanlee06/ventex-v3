@@ -218,9 +218,30 @@ async function runOverdueAgent(
     const sector = task.ventureId ? ventureMap[task.ventureId]?.sector || "General" : "General";
     const assignees = task.assigneeNames?.join(", ") || "Unassigned";
 
+    // Connection 5: Fetch blueprint context for richer overdue follow-ups
+    let blueprintHint = "";
+    if (task.ventureId) {
+      try {
+        const trackingRows = await db
+          .select({
+            stepName: ventureProcessTracking.stepName,
+            isBlocking: ventureProcessTracking.isBlocking,
+            whoOwns: ventureProcessTracking.whoOwns,
+            stageName: ventureProcessTracking.stageName,
+            status: ventureProcessTracking.status,
+          })
+          .from(ventureProcessTracking)
+          .where(eq(ventureProcessTracking.ventureId, task.ventureId));
+        const blockingIncomplete = trackingRows.filter(s => s.isBlocking && s.status !== "complete");
+        if (blockingIncomplete.length > 0) {
+          blueprintHint = ` | Blueprint blocking steps: ${blockingIncomplete.map(s => `"${s.stepName}" (owned by ${s.whoOwns || "unassigned"}, stage: ${s.stageName})`).join("; ")}`;
+        }
+      } catch { /* no blueprint */ }
+    }
+
     const draftBody = await callAgentLLM(
-      "You are ATLAS, a venture velocity platform. Draft a brief, professional follow-up message (max 4 sentences) to send to the assigned team member about an overdue task. Reference the task and venture by name. Be direct but professional. Sign off as 'ATLAS Operations'.",
-      `Task: "${task.title}" | Venture: ${ventureName} | Assigned to: ${assignees} | Days overdue: ${daysOverdue} | Sector: ${sector}`
+      "You are ATLAS, a venture velocity platform. Draft a brief, professional follow-up message (max 4 sentences) to send to the assigned team member about an overdue task. Reference the task and venture by name. If blueprint blocking steps are provided, mention the specific step that needs attention. Be direct but professional. Sign off as 'ATLAS Operations'.",
+      `Task: "${task.title}" | Venture: ${ventureName} | Assigned to: ${assignees} | Days overdue: ${daysOverdue} | Sector: ${sector}${blueprintHint}`
     );
 
     const draftResult = await db.insert(agentDrafts).values({
