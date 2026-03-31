@@ -1463,3 +1463,8 @@
 - [ ] #10 Rename "Velocity Compression" to "Agent Activity" — show active runs, last execution, next scheduled
 - [ ] #11 Expand "Live 1 active" agent status — clickable to show agent details, current task, last 3 actions
 - [ ] #12 Sector Pulse — link to agent recommendations, show active agent work per sector
+
+## Bug Fixes — 2026-03-31
+- [x] BUG: process_templates SQL query fails on /dashboard and /blueprints — added missing columns (source, sourceDocumentUrl, sourceDocumentName, isActive) to production DB
+- [x] BUG: DialogContent missing DialogTitle — added sr-only DialogTitle to ClientActionModals and ManusDialog
+- [x] BUG: User name fixed to "Shwan Lee" in DB + upsertUser no longer overwrites name on login (preserves manual corrections)

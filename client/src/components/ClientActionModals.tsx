@@ -102,6 +102,9 @@ export default function ClientActionModal({ open, onClose, eventId, actionType, 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-lg bg-card border-border">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Client Action</DialogTitle>
+        </DialogHeader>
         {detailQ.isLoading ? (
           <div className="space-y-4 py-4">
             <Skeleton className="h-6 w-48" />

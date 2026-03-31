@@ -35,10 +35,17 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     };
     const updateSet: Record<string, unknown> = {};
 
-    const textFields = ["name", "email", "loginMethod"] as const;
-    type TextField = (typeof textFields)[number];
+    // name is set on INSERT but NOT overwritten on UPDATE (preserves manual corrections)
+    const insertOnlyFields = ["name"] as const;
+    const updateableFields = ["email", "loginMethod"] as const;
+    type AnyTextField = "name" | "email" | "loginMethod";
 
-    const assignNullable = (field: TextField) => {
+    const assignInsertOnly = (field: AnyTextField) => {
+      const value = user[field];
+      if (value === undefined) return;
+      values[field] = value ?? null;
+    };
+    const assignNullable = (field: AnyTextField) => {
       const value = user[field];
       if (value === undefined) return;
       const normalized = value ?? null;
@@ -46,7 +53,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet[field] = normalized;
     };
 
-    textFields.forEach(assignNullable);
+    insertOnlyFields.forEach(assignInsertOnly);
+    updateableFields.forEach(assignNullable);
 
     if (user.lastSignedIn !== undefined) {
       values.lastSignedIn = user.lastSignedIn;
