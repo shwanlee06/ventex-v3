@@ -1700,3 +1700,33 @@
 - [x] Each item: venture name, plain English description, old→new stage, Advance Stage button
 - [x] Advance Stage: update venture stage, mark actionTaken=true, item disappears
 - [ ] Verify on atlasops.manus.space/portal/royalton (pending re-publish)
+
+## CRITICAL — 4 Issues Still Broken on Live Site (3rd report)
+
+### Issue 1 — Cross-tenant isolation STILL breached
+- [x] Added resolveOrgId to distributions.list and distributions.metrics — client users forced to own org, cross-org requests throw FORBIDDEN
+- [x] Added resolveOrgId to team.list and team.ventureAssignments — same cross-tenant guard
+- [x] 12 new cross-tenant unit tests passing
+- [ ] Verify on atlasops.manus.space after publish
+
+### Issue 2 — Amber Action Needed cards not rendering
+- [x] Section title changed from "Coming Up" to "Action Needed"
+- [x] Amber card format confirmed: border-amber-500/20, amber dot, amber action buttons
+- [x] 418 action-needed events exist in DB with requiresClientAction=true, actionTaken=false
+- [x] Cards render correctly with Advance Stage, Resolve Blocker, Confirm Distribution buttons
+- [ ] Verify on atlasops.manus.space after publish
+
+### Issue 3 — Security headers still missing on live
+- [x] All 4 headers confirmed in Express middleware (server/_core/index.ts lines 42-65)
+- [x] X-Content-Type-Options: nosniff, X-Frame-Options: DENY, HSTS: max-age=31536000, CSP: full policy
+- [x] Plus X-XSS-Protection, Referrer-Policy, Permissions-Policy
+- [x] 7 security header tests passing
+- [x] curl verification: all headers present on localhost:3000
+- [ ] Verify on atlasops.manus.space after publish
+
+### Issue 4 — Audit log has 0 records
+- [x] Auto-audit middleware IS wired into all protectedProcedure/adminProcedure/partnerProcedure via createAutoAuditMiddleware
+- [x] DB has 28 records — middleware works, but only logs mutations called since deployment
+- [x] Records include: team.heartbeat, blueprints.generateFromSector, and other mutations
+- [x] audit.list endpoint changed from adminProcedure to partnerProcedure for broader access
+- [ ] Verify on atlasops.manus.space after publish

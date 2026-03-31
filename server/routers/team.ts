@@ -6,6 +6,7 @@ import crypto from "crypto";
 import { eq, desc, asc, inArray, isNull, isNotNull, and, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { resolveVentureScope, getVentureIdsForOrg, logAudit } from "../security/rbac";
+import { resolveOrgId } from "../security/orgScope";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { storagePut } from "../storage";
 import { sendInvitationEmail, buildInviteLink } from "../invitationEmail";
@@ -42,18 +43,21 @@ export const teamRouter = router({
       const db = await getDb();
       if (!db) return [];
 
+      // Cross-tenant isolation: client users forced to their own org
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
+
       // If org-scoped, return members that belong to that org (by organizationId field)
       // PLUS members assigned to that org's ventures via ventureTeam
-      if (input?.organizationId) {
+      if (effectiveOrgId) {
         // Direct org members
         const directMembers = await db.select().from(teamMembers)
-          .where(eq(teamMembers.organizationId, input.organizationId))
+          .where(eq(teamMembers.organizationId, effectiveOrgId))
           .orderBy(desc(teamMembers.createdAt));
 
         // Also get members assigned to this org's ventures
         const ventureIds = ctx.user
-          ? await resolveVentureScope(ctx.user, input.organizationId)
-          : await getVentureIdsForOrg(input.organizationId);
+          ? await resolveVentureScope(ctx.user, effectiveOrgId)
+          : await getVentureIdsForOrg(effectiveOrgId);
 
         let ventureMembers: typeof directMembers = [];
         if (ventureIds !== null && ventureIds.length > 0) {
@@ -289,9 +293,12 @@ export const teamRouter = router({
         .leftJoin(ventures, eq(ventureTeam.ventureId, ventures.id))
         .leftJoin(teamMembers, eq(ventureTeam.memberId, teamMembers.id));
 
+      // Cross-tenant isolation: client users forced to their own org
+      const effectiveOrgId2 = resolveOrgId(ctx.user, input?.organizationId);
+
       // If org-scoped, filter by venture IDs
-      if (input?.organizationId) {
-        const ventureIds = await resolveVentureScope(ctx.user, input.organizationId);
+      if (effectiveOrgId2) {
+        const ventureIds = await resolveVentureScope(ctx.user, effectiveOrgId2);
         if (ventureIds === null) return rows;
         if (ventureIds.length === 0) return [];
         const ventureIdSet = new Set(ventureIds);

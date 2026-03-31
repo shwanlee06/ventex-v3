@@ -326,7 +326,7 @@ export default function ClientPortal() {
             <div className="flex items-center gap-2 mb-4">
               <AlertCircle className="size-4 text-amber-400" />
               <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-                Coming Up
+                Action Needed
               </h2>
               <span className="text-[11px] text-amber-400 ml-auto font-medium">
                 {actionCards.length} item{actionCards.length !== 1 ? "s" : ""}

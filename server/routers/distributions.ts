@@ -4,26 +4,29 @@ import { getDb } from "../db";
 import { distributions, activityLog } from "../../drizzle/schema";
 import { eq, desc } from "drizzle-orm";
 import { isAtlasTeam, logAudit } from "../security/rbac";
+import { resolveOrgId } from "../security/orgScope";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
 export const distributionsRouter = router({
-  // List distributions — scoped by organizationId
+  // List distributions — scoped by organizationId with cross-tenant isolation
   list: protectedProcedure
     .input(z.object({ organizationId: z.number().optional() }).optional())
     .query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) return [];
 
-      const orgId = input?.organizationId;
-      if (orgId) {
+      // Cross-tenant isolation: client users forced to their own org
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
+
+      if (effectiveOrgId) {
         return db
           .select()
           .from(distributions)
-          .where(eq(distributions.organizationId, orgId))
+          .where(eq(distributions.organizationId, effectiveOrgId))
           .orderBy(desc(distributions.createdAt));
       }
 
-      // No org filter — return all (for global views)
+      // No org filter — only ATLAS team reaches here (resolveOrgId enforces this)
       return db.select().from(distributions).orderBy(desc(distributions.createdAt));
     }),
 
@@ -88,20 +91,22 @@ export const distributionsRouter = router({
     return { success: true };
   }),
 
-  // Metrics — scoped by org
+  // Metrics — scoped by org with cross-tenant isolation
   metrics: protectedProcedure
     .input(z.object({ organizationId: z.number().optional() }).optional())
     .query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) return { total: 0, paid: 0, totalAmount: 0, paidAmount: 0 };
 
-      const orgId = input?.organizationId;
+      // Cross-tenant isolation: client users forced to their own org
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
+
       let all;
-      if (orgId) {
+      if (effectiveOrgId) {
         all = await db
           .select()
           .from(distributions)
-          .where(eq(distributions.organizationId, orgId));
+          .where(eq(distributions.organizationId, effectiveOrgId));
       } else {
         all = await db.select().from(distributions);
       }

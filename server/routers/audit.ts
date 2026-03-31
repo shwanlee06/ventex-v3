@@ -7,7 +7,7 @@
  */
 
 import { z } from "zod";
-import { router, adminProcedure } from "../_core/trpc";
+import { router, partnerProcedure } from "../_core/trpc";
 import { getDb } from "../db";
 import { auditLog } from "../../drizzle/schema";
 import { eq, desc, and, like, sql, gte, lte } from "drizzle-orm";
@@ -19,7 +19,7 @@ export const auditRouter = router({
    * Returns records for every blueprint generation, stage advance, and agent event.
    * Restricted to atlas_operator (admin/owner/partner) roles.
    */
-  list: adminProcedure
+  list: partnerProcedure
     .input(
       z.object({
         limit: z.number().min(1).max(200).default(50),
