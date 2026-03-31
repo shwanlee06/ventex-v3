@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, name, email, userId, lastSeenAt, adminStatus FROM team_members WHERE name LIKE '%Brian%' OR name LIKE '%Chen%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, email, userId, lastSeenAt, adminStatus FROM team_members WHERE name LIKE '%Brian%' OR name LIKE '%Chen%';",
+  "rows": [
+    {
+      "id": "240117",
+      "name": "Brian Chen",
+      "email": "bchen2561@gmail.com",
+      "userId": "NULL",
+      "lastSeenAt": "NULL",
+      "adminStatus": "active"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tuserId\tlastSeenAt\tadminStatus\n240117\tBrian Chen\tbchen2561@gmail.com\tNULL\tNULL\tactive\n",
+  "stderr": "",
+  "execution_time_ms": 69
+}

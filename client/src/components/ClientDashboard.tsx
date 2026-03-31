@@ -174,12 +174,12 @@ function YourProgressSection() {
   );
 
   const metrics = velocityQ.data;
-  if (!metrics || metrics.totalAdvances === 0) return null;
-
-  const { avgDays, totalAdvances, recentAdvances } = metrics;
+  const recentAdvances = metrics?.recentAdvances ?? [];
 
   // Group advances by venture for per-venture progress
+  // NOTE: useMemo must always be called (React hooks rule) — guard with empty array instead of early return
   const ventureProgress = useMemo(() => {
+    if (recentAdvances.length === 0) return [];
     const map: Record<string, { name: string; advances: number; lastStage: string; avgDays: number; totalDays: number }> = {};
     for (const adv of recentAdvances) {
       const key = String(adv.ventureId);
@@ -194,6 +194,11 @@ function YourProgressSection() {
       .map(v => ({ ...v, avgDays: Math.round(v.totalDays / v.advances) }))
       .sort((a, b) => b.advances - a.advances);
   }, [recentAdvances]);
+
+  // Early return AFTER all hooks
+  if (!metrics || metrics.totalAdvances === 0) return null;
+
+  const { avgDays, totalAdvances } = metrics;
 
   return (
     <div>

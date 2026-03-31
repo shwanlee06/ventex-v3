@@ -358,19 +358,39 @@ export const teamRouter = router({
   /**
    * Heartbeat — called by frontend every 2 minutes to update lastSeenAt.
    * Links the current user to their team member record and updates lastSeenAt.
+   * Auto-links unlinked team members by email match when userId is null.
    */
   heartbeat: protectedProcedure.mutation(async ({ ctx }) => {
     const db = await getDb();
     if (!db) return { success: false };
     const userId = ctx.user.id;
+    const userEmail = ctx.user.email;
     const now = new Date();
 
     // Update lastSignedIn on users table
     await db.update(users).set({ lastSignedIn: now }).where(eq(users.id, userId));
 
-    // Find linked team member and update lastSeenAt
-    const [member] = await db.select().from(teamMembers)
+    // Find linked team member by userId
+    let [member] = await db.select().from(teamMembers)
       .where(eq(teamMembers.userId, userId)).limit(1);
+
+    // If no linked member found, try to auto-link by email match
+    if (!member && userEmail) {
+      const [unlinked] = await db.select().from(teamMembers)
+        .where(and(
+          eq(teamMembers.email, userEmail),
+          isNull(teamMembers.userId)
+        ))
+        .limit(1);
+      if (unlinked) {
+        await db.update(teamMembers)
+          .set({ userId, lastSeenAt: now, invitationStatus: "accepted" })
+          .where(eq(teamMembers.id, unlinked.id));
+        member = { ...unlinked, userId, lastSeenAt: now };
+        console.log(`[Heartbeat] Auto-linked team member "${unlinked.name}" (id ${unlinked.id}) to user ${userId} via email match`);
+      }
+    }
+
     if (member) {
       await db.update(teamMembers).set({ lastSeenAt: now }).where(eq(teamMembers.id, member.id));
     }

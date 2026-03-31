@@ -1,0 +1,21 @@
+{
+  "query": "SELECT tm.id, tm.name, tm.email, tm.userId, tm.lastSeenAt, tm.adminStatus, tm.type, tm.status, tm.invitationStatus FROM team_members tm WHERE tm.name LIKE '%Brian%' OR tm.name LIKE '%brian%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT tm.id, tm.name, tm.email, tm.userId, tm.lastSeenAt, tm.adminStatus, tm.type, tm.status, tm.invitationStatus FROM team_members tm WHERE tm.name LIKE '%Brian%' OR tm.name LIKE '%brian%';",
+  "rows": [
+    {
+      "id": "240117",
+      "name": "Brian Chen",
+      "email": "bchen2516@gmail.com",
+      "userId": "NULL",
+      "lastSeenAt": "NULL",
+      "adminStatus": "active",
+      "type": "Internal",
+      "status": "Active",
+      "invitationStatus": "pending"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tuserId\tlastSeenAt\tadminStatus\ttype\tstatus\tinvitationStatus\n240117\tBrian Chen\tbchen2516@gmail.com\tNULL\tNULL\tactive\tInternal\tActive\tpending\n",
+  "stderr": "",
+  "execution_time_ms": 105
+}

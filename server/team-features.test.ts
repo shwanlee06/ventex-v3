@@ -231,8 +231,14 @@ describe("Team — Partner Role-Based Access", () => {
     ).rejects.toThrow();
   });
 
-  it("regular user cannot access partner-level features", () => {
-    expect(isAtlasTeam({ role: "user" })).toBe(false);
+  it("regular user without client org is Atlas team (shared visibility)", () => {
+    // user/manager without organizationId are Atlas internal members
+    expect(isAtlasTeam({ role: "user" })).toBe(true);
+    expect(isAtlasTeam({ role: "user", organizationId: null })).toBe(true);
+    expect(isAtlasTeam({ role: "user", organizationId: 1 })).toBe(true);
+    // user with a client org is NOT Atlas team
+    expect(isAtlasTeam({ role: "user", organizationId: 2 })).toBe(false);
+    // permission checks remain the same (role-based, not Atlas-team-based)
     expect(hasPermission("user", "export_data")).toBe(false);
     expect(hasPermission("user", "view_audit_log")).toBe(false);
   });

@@ -1,0 +1,66 @@
+{
+  "query": "SELECT id, email, inviteStatus, teamMemberId, inviteRole, acceptedAt FROM invitations WHERE email LIKE '%bchen%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, email, inviteStatus, teamMemberId, inviteRole, acceptedAt FROM invitations WHERE email LIKE '%bchen%';",
+  "rows": [
+    {
+      "id": "1",
+      "email": "bchen2561@gmail.com",
+      "inviteStatus": "accepted",
+      "teamMemberId": "NULL",
+      "inviteRole": "admin",
+      "acceptedAt": "2026-03-24 20:46:02"
+    },
+    {
+      "id": "30028",
+      "email": "bchen2561@gmail.com",
+      "inviteStatus": "revoked",
+      "teamMemberId": "60068",
+      "inviteRole": "partner",
+      "acceptedAt": "NULL"
+    },
+    {
+      "id": "60001",
+      "email": "bchen2561@gmail.com",
+      "inviteStatus": "revoked",
+      "teamMemberId": "60068",
+      "inviteRole": "partner",
+      "acceptedAt": "NULL"
+    },
+    {
+      "id": "60025",
+      "email": "bchen2561@gmail.com",
+      "inviteStatus": "revoked",
+      "teamMemberId": "60068",
+      "inviteRole": "partner",
+      "acceptedAt": "NULL"
+    },
+    {
+      "id": "60026",
+      "email": "bchen2561@gmail.com",
+      "inviteStatus": "revoked",
+      "teamMemberId": "60068",
+      "inviteRole": "partner",
+      "acceptedAt": "NULL"
+    },
+    {
+      "id": "60027",
+      "email": "bchen2561@gmail.com",
+      "inviteStatus": "accepted",
+      "teamMemberId": "60068",
+      "inviteRole": "partner",
+      "acceptedAt": "2026-03-26 22:36:09"
+    },
+    {
+      "id": "210133",
+      "email": "bchen2516@gmail.com",
+      "inviteStatus": "pending",
+      "teamMemberId": "240117",
+      "inviteRole": "admin",
+      "acceptedAt": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tinviteStatus\tteamMemberId\tinviteRole\tacceptedAt\n1\tbchen2561@gmail.com\taccepted\tNULL\tadmin\t2026-03-24 20:46:02\n30028\tbchen2561@gmail.com\trevoked\t60068\tpartner\tNULL\n60001\tbchen2561@gmail.com\trevoked\t60068\tpartner\tNULL\n60025\tbchen2561@gmail.com\trevoked\t60068\tpartner\tNULL\n60026\tbchen2561@gmail.com\trevoked\t60068\tpartner\tNULL\n60027\tbchen2561@gmail.com\taccepted\t60068\tpartner\t2026-03-26 22:36:09\n210133\tbchen2516@gmail.com\tpending\t240117\tadmin\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

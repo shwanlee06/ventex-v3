@@ -1522,3 +1522,8 @@
 - [x] Invitation email should reference ATLAS, not Royalton — replaced all "Royalton" references across invitationEmail.ts, emailService.ts, team.ts, agents.ts, ai.ts, intelligence.ts, and AccessManagement.tsx
 - [x] Remove all "Thalora" references — replaced across SpyOps.tsx, data.ts, exportPdf.ts, operatorSession.ts, persistence.ts, aiStream.ts, TeamMemberDetail.tsx, and client/index.html
 - [x] All Atlas team members should be able to see all clients — created shared isAtlasTeam() helper (client/src/lib/atlas.ts + server/security/rbac.ts), updated Home.tsx, App.tsx, AppSidebar.tsx, Topbar.tsx, and organizations router (list/listWithMetrics now use protectedProcedure with isAtlasTeam check)
+
+## Bug Fixes — 2026-03-31 (Online Status)
+- [x] BUG: Brian is logged in but his online status isn't showing — root cause: team member record had userId=NULL because invitation email mismatch
+- [x] BUG: Brian Chen's online status not showing — fixed heartbeat to auto-link team members by email when userId is null (email fallback matching)
+- [x] BUG: Client preview mode crash — fixed React hooks violation in YourProgressSection (early return before useMemo). Also cleaned Thalora fund names from database.

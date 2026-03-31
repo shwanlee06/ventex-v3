@@ -61,6 +61,8 @@ function createOwnerContext(): TrpcContext {
 }
 
 function createRegularUserContext(): TrpcContext {
+  // Client user — belongs to a client org (not ATLAS org 1)
+  // With the new isAtlasTeam logic, user/manager with orgId=1 or null are Atlas team
   const user: AuthenticatedUser = {
     id: 3,
     openId: "regular-user",
@@ -68,7 +70,7 @@ function createRegularUserContext(): TrpcContext {
     name: "Regular User",
     loginMethod: "manus",
     role: "user",
-    organizationId: 1,
+    organizationId: 999,
     status: "active",
     invitationId: null,
     createdAt: new Date(),
@@ -103,10 +105,12 @@ describe("organizations.list", () => {
     expect(Array.isArray(result)).toBe(true);
   });
 
-  it("rejects non-admin users", async () => {
+  it("returns scoped data for non-Atlas client users (not rejected)", async () => {
     const ctx = createRegularUserContext();
     const caller = appRouter.createCaller(ctx);
-    await expect(caller.organizations.list()).rejects.toThrow();
+    // Non-Atlas users get their own org data (or empty array), not a rejection
+    const result = await caller.organizations.list();
+    expect(Array.isArray(result)).toBe(true);
   });
 
   it("each org has ventureCount field", async () => {
@@ -135,10 +139,12 @@ describe("organizations.listWithMetrics", () => {
     expect(Array.isArray(result)).toBe(true);
   });
 
-  it("rejects non-admin users", async () => {
+  it("returns scoped data for non-Atlas client users (not rejected)", async () => {
     const ctx = createRegularUserContext();
     const caller = appRouter.createCaller(ctx);
-    await expect(caller.organizations.listWithMetrics()).rejects.toThrow();
+    // Non-Atlas users get their own org data (or empty array), not a rejection
+    const result = await caller.organizations.listWithMetrics();
+    expect(Array.isArray(result)).toBe(true);
   });
 
   it("each org has aggregate metric fields", async () => {

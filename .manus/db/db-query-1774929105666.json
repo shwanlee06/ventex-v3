@@ -1,0 +1,30 @@
+{
+  "query": "SELECT id, name, fund FROM distributions WHERE fund LIKE '%Thalora%' OR name LIKE '%Thalora%' LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, fund FROM distributions WHERE fund LIKE '%Thalora%' OR name LIKE '%Thalora%' LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Q4 2025 Profit Share",
+      "fund": "Thalora Venture Fund I"
+    },
+    {
+      "id": "2",
+      "name": "2025 Return of Capital - SPV Alpha",
+      "fund": "Thalora SPV Alpha"
+    },
+    {
+      "id": "3",
+      "name": "2026 Scheduled Dividend - REIT Fund I",
+      "fund": "Thalora Real Estate Fund II"
+    },
+    {
+      "id": "4",
+      "name": "Cancelled Profit Distribution - Growth Equity Fund II",
+      "fund": "Thalora Growth Equity Fund II"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tfund\n1\tQ4 2025 Profit Share\tThalora Venture Fund I\n2\t2025 Return of Capital - SPV Alpha\tThalora SPV Alpha\n3\t2026 Scheduled Dividend - REIT Fund I\tThalora Real Estate Fund II\n4\tCancelled Profit Distribution - Growth Equity Fund II\tThalora Growth Equity Fund II\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}
