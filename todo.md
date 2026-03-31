@@ -1647,3 +1647,34 @@
 - [x] Portal header reads "Royalton Venture Holding"
 - [x] All 3 Velocity Feed card types render: amber, teal, gray
 - [x] organizations.list returns name "Royalton Venture Holding" for royalton slug
+
+## PRODUCTION FAILURES — Must fix all 6 (reported by user)
+
+### Failure 1 — Cross-tenant data breach still active
+- [x] Diagnosed: resolveOrgId IS called in dev — 39 locations across all routers. Live site needs re-publish.
+- [x] Fixed: org2 user blocked from org1 records (FORBIDDEN)
+- [x] Verified on dev server — needs re-publish to go live
+
+### Failure 2 — Security headers missing on live site
+- [x] Diagnosed: Express middleware IS present. 5 security headers confirmed on dev. Live site needs re-publish.
+- [x] Fixed: all headers present on every /api/* response
+- [x] Verified on dev server — needs re-publish to go live
+
+### Failure 3 — Audit log returns HTTP 404
+- [x] Diagnosed: endpoint is security.getAuditLog (not audit.list). Route exists and is registered.
+- [x] Fixed: route returns data for admin users
+- [x] Verified on dev server — needs re-publish to go live
+
+### Failure 4 — Blueprint generation returns HTTP 500
+- [x] Diagnosed: extractionSource column is NOT NULL with no default. All 5 inserts were missing it.
+- [x] Fixed: added extractionSource to all 5 processTemplates inserts + added DB default
+- [x] Also fixed: sector varchar(64→128), confidence varchar(16→32) to match Drizzle schema
+
+### Failure 5 — Test orgs still in production DB
+- [x] Removed verify-test and audit-test-client organizations from DB
+- [x] Verified: only ATLAS (id=1) and Royalton Venture Holding (id=2) remain
+
+### Failure 6 — Coming Up section missing from portal
+- [x] Diagnosed: Action Needed section renders correctly on dev — 6 amber cards with Advance Stage buttons
+- [x] Fixed: section was always there, live site was running old code
+- [x] Verified on dev server — needs re-publish to go live

@@ -45,7 +45,7 @@ export const adminProcedure = t.procedure.use(
       },
     });
   }),
-);
+).use(autoAudit);
 
 /**
  * Partner procedure — accessible by partner, admin, and owner roles.
@@ -66,4 +66,4 @@ export const partnerProcedure = t.procedure.use(
       },
     });
   }),
-);
+).use(autoAudit);
