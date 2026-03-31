@@ -1566,3 +1566,33 @@
 - [ ] Remove all hardcoded "Example Venture Holding" from codebase
 - [ ] Delete placeholder distribution records (ATLAS Venture Fund I $250K, ATLAS SPV Alpha $100K, ATLAS Real Estate Fund II $40K, ATLAS Growth Equity Fund II $50K)
 - [x] Remove all "Thalora" references from codebase and database
+
+## CLIENT PORTAL — Wire Velocity to Client Experience
+
+### Fix 1 — Coming Up shows all requiresClientAction events with Advance Stage buttons
+- [x] Query agent_events: orgId, audience=client, requiresClientAction=true, actionTaken=false, clientDismissed=false
+- [x] Show all action-required events (not just 3) with venture name, plain English translation, stage from→to, date, Advance Stage button
+- [x] Advance Stage button: update venture stage in DB, mark actionTaken=true + actionTakenAt, remove from Coming Up
+
+### Fix 2 — This Week translation layer for client language
+- [x] Strip all square bracket content from agent messages
+- [x] Velocity Agent + requiresClientAction → goes to Coming Up, not This Week
+- [x] Velocity Agent + no action + stage changed → "[Venture] moved from [old] to [new]" in This Week
+- [x] Overdue Agent with no issues → hide entirely from client
+- [x] Overdue Agent with overdue → "[Venture] has a task that needs attention — X days overdue" → Coming Up
+- [x] Distribution Sentinel → "Your [distribution] is on schedule" only if meaningful, no repeated cycle noise
+- [x] Deduplicate: same venture + same message from repeated cycles → show once with most recent timestamp
+
+### Fix 3 — Velocity summary line at top of portal
+- [x] Auto-generated summary below client name: "This week, ATLAS advanced X ventures, caught Y items, kept Z distributions on track"
+- [x] X = Velocity Agent events with actual stage change, Y = Overdue Agent flags, Z = Distribution Sentinel events
+- [x] Fallback: "ATLAS is monitoring your portfolio. We'll surface anything that needs your attention."
+
+### Fix 4 — Venture cards show last agent action
+- [x] Each venture card shows most recent agent_events entry translated to plain English
+- [x] Ready to advance → amber "Ready to move to [stage] — your approval needed"
+- [x] Advanced → green "Advanced to [stage] today"
+- [x] Nothing in 7 days → show nothing
+
+### Fix 5 — Operator Preview Mode banner only for operators
+- [x] Confirm banner only shows for operator-role sessions, never for client-role sessions

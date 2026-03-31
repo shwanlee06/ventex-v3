@@ -1,7 +1,7 @@
 // ============================================================================
 // Client Portal — /portal/:orgSlug
 // Premium, outcome-focused. Zero operator language.
-// Three sections: This Week · Your Portfolio · Coming Up
+// Sections: Velocity Summary · This Week · Your Portfolio · Coming Up
 // ============================================================================
 
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -25,11 +25,15 @@ import {
   AlertCircle,
   Loader2,
   LogOut,
+  Zap,
+  ArrowUpRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
+import { useState, useCallback } from "react";
+import { toast } from "sonner";
 
 // ── Sector icons ──────────────────────────────────────────────────────
 const SECTOR_ICONS: Record<string, React.ReactNode> = {
@@ -42,10 +46,11 @@ const SECTOR_ICONS: Record<string, React.ReactNode> = {
 };
 
 // ── Stage progress ────────────────────────────────────────────────────
-const STAGES = ["Under Review", "Fundraising", "Active", "Completed"];
+const STAGES = ["Initial Review", "Under Review", "Fundraising", "Active", "Completed"];
 
 function StageIndicator({ stage }: { stage: string }) {
   const idx = STAGES.indexOf(stage);
+  const activeIdx = idx >= 0 ? idx : 0;
   return (
     <div className="flex items-center gap-1">
       {STAGES.map((s, i) => (
@@ -53,13 +58,13 @@ function StageIndicator({ stage }: { stage: string }) {
           key={s}
           className={cn(
             "h-1 rounded-full flex-1 transition-all",
-            i < idx
+            i < activeIdx
               ? "bg-emerald-500"
-              : i === idx
+              : i === activeIdx
                 ? "bg-primary"
                 : "bg-secondary/40"
           )}
-          style={{ minWidth: 16 }}
+          style={{ minWidth: 12 }}
         />
       ))}
     </div>
@@ -74,27 +79,48 @@ function friendlyDate(d: Date | string | undefined): string {
   return formatDistanceToNow(date, { addSuffix: true });
 }
 
-function formatDueDate(d: string | undefined): string {
-  if (!d) return "";
-  const date = new Date(d);
-  if (isNaN(date.getTime())) return d;
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
 // ── Main Component ────────────────────────────────────────────────────
 export default function ClientPortal() {
   const [, params] = useRoute("/portal/:orgSlug");
   const orgSlug = params?.orgSlug || "";
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
+  const [advancingIds, setAdvancingIds] = useState<Set<number>>(new Set());
 
   const { data, isLoading, error } = trpc.portal.getData.useQuery(
     { orgSlug },
     { enabled: !!orgSlug && !!user, retry: false }
+  );
+
+  const utils = trpc.useUtils();
+
+  const advanceMutation = trpc.agents.clientAdvanceStage.useMutation({
+    onSuccess: (result) => {
+      toast.success(
+        `"${result.ventureName}" advanced to ${result.toStage}`,
+        { duration: 4000 }
+      );
+      // Refresh portal data
+      utils.portal.getData.invalidate({ orgSlug });
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to advance venture");
+    },
+    onSettled: (_data, _err, variables) => {
+      setAdvancingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(variables.ventureId);
+        return next;
+      });
+    },
+  });
+
+  const handleAdvance = useCallback(
+    (ventureId: number, eventId: number) => {
+      setAdvancingIds((prev) => new Set(prev).add(ventureId));
+      advanceMutation.mutate({ ventureId, eventId });
+    },
+    [advanceMutation]
   );
 
   // ── Auth check ──────────────────────────────────────────────────────
@@ -132,6 +158,7 @@ export default function ClientPortal() {
           <Skeleton className="h-8 w-64 mb-2" />
           <Skeleton className="h-4 w-40 mb-10" />
           <div className="space-y-6">
+            <Skeleton className="h-16 rounded-xl" />
             <Skeleton className="h-48 rounded-xl" />
             <Skeleton className="h-64 rounded-xl" />
             <Skeleton className="h-40 rounded-xl" />
@@ -165,7 +192,14 @@ export default function ClientPortal() {
 
   if (!data) return null;
 
-  const { orgName, isOperatorPreview, thisWeek, portfolio, comingUp } = data;
+  const {
+    orgName,
+    isOperatorPreview,
+    velocitySummary,
+    thisWeek,
+    portfolio,
+    comingUp,
+  } = data;
 
   return (
     <div className="min-h-screen bg-background">
@@ -207,11 +241,120 @@ export default function ClientPortal() {
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
-        {/* ── Section 1: This Week ─────────────────────────────────── */}
+        {/* ── Velocity Summary ─────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="bg-card/50 border border-border/50 rounded-xl px-5 py-4 flex items-start gap-3"
+        >
+          <Zap className="size-4 text-primary mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {velocitySummary}
+          </p>
+        </motion.div>
+
+        {/* ── Coming Up (Action Required) ──────────────────────────── */}
+        {comingUp.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <AlertCircle className="size-4 text-amber-400" />
+              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+                Action Required
+              </h2>
+              <span className="text-[11px] text-amber-400 ml-auto font-medium">
+                {comingUp.length} item{comingUp.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              <AnimatePresence mode="popLayout">
+                {comingUp.map((item, i) => {
+                  const isAdvancing = item.ventureId
+                    ? advancingIds.has(item.ventureId)
+                    : false;
+
+                  return (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 8, height: 0 }}
+                      transition={{ delay: i * 0.03, duration: 0.2 }}
+                      className="bg-card border border-amber-500/20 rounded-xl p-4"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="size-2 rounded-full bg-amber-400 mt-2 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          {item.ventureName && (
+                            <h3 className="text-sm font-medium text-foreground mb-1">
+                              {item.ventureName}
+                            </h3>
+                          )}
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            {item.summary}
+                          </p>
+                          <div className="flex items-center gap-3 mt-2">
+                            {item.fromStage && item.toStage && (
+                              <span className="text-[11px] text-muted-foreground/70 font-mono">
+                                {item.fromStage} → {item.toStage}
+                              </span>
+                            )}
+                            <span className="text-[11px] text-muted-foreground/50">
+                              {friendlyDate(item.date ?? undefined)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {item.actionLabel === "Advance Stage" && item.ventureId && (
+                          <Button
+                            size="sm"
+                            className="flex-shrink-0 bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
+                            disabled={isAdvancing}
+                            onClick={() =>
+                              handleAdvance(item.ventureId!, item.id)
+                            }
+                          >
+                            {isAdvancing ? (
+                              <Loader2 className="size-3 animate-spin mr-1.5" />
+                            ) : (
+                              <ArrowUpRight className="size-3 mr-1.5" />
+                            )}
+                            {isAdvancing ? "Advancing..." : "Advance Stage"}
+                          </Button>
+                        )}
+
+                        {item.actionLabel && item.actionLabel !== "Advance Stage" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-shrink-0 text-xs"
+                            onClick={() =>
+                              toast.info("Feature coming soon")
+                            }
+                          >
+                            {item.actionLabel}
+                            <ArrowRight className="size-3 ml-1" />
+                          </Button>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          </motion.section>
+        )}
+
+        {/* ── This Week ───────────────────────────────────────────── */}
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ delay: 0.05, duration: 0.3 }}
         >
           <div className="flex items-center gap-2 mb-4">
             <CalendarDays className="size-4 text-primary" />
@@ -234,25 +377,18 @@ export default function ClientPortal() {
                   key={item.id}
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.04, duration: 0.2 }}
+                  transition={{ delay: 0.1 + i * 0.03, duration: 0.2 }}
                   className="p-4 flex items-start gap-3"
                 >
-                  <div
-                    className={cn(
-                      "size-1.5 rounded-full mt-2 flex-shrink-0",
-                      item.requiresAction
-                        ? "bg-amber-400"
-                        : "bg-emerald-400"
-                    )}
-                  />
+                  <div className="size-1.5 rounded-full mt-2 flex-shrink-0 bg-emerald-400" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-foreground leading-relaxed">
                       {item.summary}
                     </p>
                     <div className="flex items-center gap-3 mt-1.5">
-                      {item.entityName && (
+                      {item.ventureName && (
                         <span className="text-[11px] text-muted-foreground">
-                          {item.entityName}
+                          {item.ventureName}
                         </span>
                       )}
                       <span className="text-[11px] text-muted-foreground/60">
@@ -260,23 +396,13 @@ export default function ClientPortal() {
                       </span>
                     </div>
                   </div>
-                  {item.requiresAction && item.actionLabel && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-xs flex-shrink-0"
-                    >
-                      {item.actionLabel}
-                      <ArrowRight className="size-3 ml-1" />
-                    </Button>
-                  )}
                 </motion.div>
               ))}
             </div>
           )}
         </motion.section>
 
-        {/* ── Section 2: Your Portfolio ────────────────────────────── */}
+        {/* ── Your Portfolio ───────────────────────────────────────── */}
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -308,7 +434,7 @@ export default function ClientPortal() {
                   key={v.id}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 + i * 0.04, duration: 0.25 }}
+                  transition={{ delay: 0.15 + i * 0.03, duration: 0.25 }}
                   className="bg-card border border-border rounded-xl p-4 hover:border-primary/20 transition-colors group"
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -329,9 +455,25 @@ export default function ClientPortal() {
                     {v.name}
                   </h3>
 
-                  <p className="text-xs text-muted-foreground mb-3">
+                  <p className="text-xs text-muted-foreground mb-2">
                     {v.statusLine}
                   </p>
+
+                  {/* Last agent action line */}
+                  {v.lastAgentAction && (
+                    <p
+                      className={cn(
+                        "text-[11px] mb-3 leading-snug",
+                        v.lastAgentActionType === "ready"
+                          ? "text-amber-400"
+                          : v.lastAgentActionType === "advanced"
+                            ? "text-emerald-400"
+                            : "text-muted-foreground/70"
+                      )}
+                    >
+                      {v.lastAgentAction}
+                    </p>
+                  )}
 
                   <div className="space-y-1.5">
                     <StageIndicator stage={v.stage} />
@@ -347,50 +489,27 @@ export default function ClientPortal() {
           )}
         </motion.section>
 
-        {/* ── Section 3: Coming Up ─────────────────────────────────── */}
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.3 }}
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <Clock className="size-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-              Coming Up
-            </h2>
-          </div>
-
-          {comingUp.length === 0 ? (
+        {/* ── Coming Up (empty state when no actions) ──────────────── */}
+        {comingUp.length === 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <CheckCircle2 className="size-4 text-emerald-400" />
+              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+                All Clear
+              </h2>
+            </div>
             <div className="bg-card border border-border rounded-xl p-6 text-center">
               <p className="text-sm text-muted-foreground">
-                Nothing upcoming right now. We'll let you know when something
-                needs your attention.
+                Nothing needs your attention right now. We'll let you know when
+                something comes up.
               </p>
             </div>
-          ) : (
-            <div className="bg-card border border-border rounded-xl divide-y divide-border">
-              {comingUp.map((item, i) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.25 + i * 0.04, duration: 0.2 }}
-                  className="p-4 flex items-center gap-3"
-                >
-                  <CheckCircle2 className="size-4 text-muted-foreground/40 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground">{item.title}</p>
-                  </div>
-                  {item.dueDate && (
-                    <span className="text-[11px] text-muted-foreground flex-shrink-0">
-                      {formatDueDate(item.dueDate)}
-                    </span>
-                  )}
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </motion.section>
+          </motion.section>
+        )}
 
         {/* Footer */}
         <div className="pt-8 pb-12 text-center">

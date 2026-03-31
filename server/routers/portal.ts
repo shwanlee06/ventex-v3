@@ -19,107 +19,286 @@ import { isAtlasTeam } from "../security/rbac";
 
 // ── Stage name mapping: internal → client-friendly ──────────────────────
 const STAGE_DISPLAY: Record<string, string> = {
+  "Pre-Validation": "Initial Review",
   "In Validation": "Under Review",
   "In Fundraising": "Fundraising",
   "Active": "Active",
   "Active ventures": "Active",
+  "In Execution": "Active",
   "Completed": "Completed",
   "On Hold": "On Hold",
 };
 
 function clientFriendlyStage(stage: string): string {
+  // Handle "ready:StageName" format from newStatus
+  if (stage.startsWith("ready:")) {
+    const inner = stage.replace("ready:", "").trim();
+    return STAGE_DISPLAY[inner] || inner;
+  }
   return STAGE_DISPLAY[stage] || stage;
 }
 
-// ── Event types that should NEVER appear in the client portal ───────────
-const BLOCKED_EVENT_TYPES = new Set([
-  "agent_error",
-  "scheduler_run",
-  "config_change",
-  "blueprint_generated",
-  "blueprint_confirmed",
-]);
+// ── Translation layer: agent events → client language ────────────────────
 
-// ── Action labels that are operator-only (should not show to clients) ───
-const OPERATOR_ACTION_LABELS = new Set([
-  "Advance Stage",
-  "Review Blueprint",
-  "Run Agent",
-  "Configure",
-  "Assign",
-]);
-
-// -- Plain English translation for agent events --
-function translateEventToPlainEnglish(event: {
+interface RawEvent {
+  id: number;
+  agentName: string;
   eventType: string;
   message: string;
-  agentEntityName?: string | null;
-  actionLabel?: string | null;
   severity: string;
-}): string {
-  let msg = event.message;
+  agentEntityName?: string | null;
+  agentEntityId?: string | null;
+  actionLabel?: string | null;
+  actionType?: string | null;
+  actionPayload?: Record<string, unknown> | null;
+  oldStatus?: string | null;
+  newStatus?: string | null;
+  requiresClientAction: boolean;
+  actionTaken: boolean;
+  clientDismissed: boolean;
+  createdAt: Date;
+}
 
-  // Remove agent names and internal references
-  msg = msg.replace(
-    /\b(Velocity Agent|Distribution Sentinel|Orchestrator|Overdue Agent|Velocity Intelligence)\b/gi,
-    "your team"
-  );
-  msg = msg.replace(/\b(agent|bot|scheduler|cron|pipeline)\b/gi, "");
+type TranslatedEvent = {
+  id: number;
+  summary: string;
+  date: Date;
+  ventureName: string | null;
+  ventureId: number | null;
+  fromStage: string | null;
+  toStage: string | null;
+  requiresAction: boolean;
+  actionLabel: string | null;
+  section: "thisWeek" | "comingUp" | "hide";
+};
 
-  // ── STEP 1: Rewrite full-sentence patterns FIRST (before individual word replacements) ──
+function translateEvent(e: RawEvent): TranslatedEvent {
+  const ventureName = e.agentEntityName || null;
+  const ventureId = e.agentEntityId ? parseInt(e.agentEntityId, 10) || null : null;
+  const fromStage = e.oldStatus ? clientFriendlyStage(e.oldStatus) : null;
+  const toStage = e.newStatus ? clientFriendlyStage(e.newStatus) : null;
 
-  // Rewrite "ready to advance" messages into client-friendly language
-  msg = msg.replace(
-    /has completed all \d+ tasks? in ([\w\s&-]+?) and is ready to advance to ([\w\s&-]+?)\./gi,
-    (_, fromStage, toStage) => {
-      const from = clientFriendlyStage(fromStage.trim());
-      const to = clientFriendlyStage(toStage.trim());
-      return `has completed the ${from} phase and is moving to ${to}.`;
+  // ── Velocity Agent ──────────────────────────────────────────────
+  if (e.agentName === "Velocity Agent") {
+    // requiresClientAction = true → "Ready to advance" → goes to Coming Up
+    if (e.requiresClientAction && !e.actionTaken && !e.clientDismissed) {
+      return {
+        id: e.id,
+        summary: ventureName
+          ? `"${ventureName}" is ready to move to ${toStage || "the next stage"}. Your approval is needed.`
+          : "A venture is ready to advance. Your approval is needed.",
+        date: e.createdAt,
+        ventureName,
+        ventureId,
+        fromStage,
+        toStage,
+        requiresAction: true,
+        actionLabel: "Advance Stage",
+        section: "comingUp",
+      };
     }
-  );
 
-  // Rewrite "X distributions monitored" messages
-  msg = msg.replace(
-    /\d+ scheduled distributions monitored\.?\s*All recently alerted\.?/gi,
-    "Your distributions are being tracked and are on schedule."
-  );
+    // Stage actually changed (not a "ready:" status) → This Week
+    if (e.oldStatus && e.newStatus && !e.newStatus.startsWith("ready:")) {
+      return {
+        id: e.id,
+        summary: ventureName
+          ? `"${ventureName}" moved from ${fromStage} to ${toStage}.`
+          : `A venture moved from ${fromStage} to ${toStage}.`,
+        date: e.createdAt,
+        ventureName,
+        ventureId,
+        fromStage,
+        toStage,
+        requiresAction: false,
+        actionLabel: null,
+        section: "thisWeek",
+      };
+    }
 
-  // Rewrite "No overdue items detected"
-  msg = msg.replace(
-    /All tasks are on schedule\.?\s*No overdue items detected\.?/gi,
-    "Everything is on track \u2014 no items need your attention right now."
-  );
+    // "No active ventures to monitor" — noise, hide
+    if (e.message.toLowerCase().includes("no active ventures")) {
+      return { id: e.id, summary: "", date: e.createdAt, ventureName, ventureId, fromStage, toStage, requiresAction: false, actionLabel: null, section: "hide" };
+    }
 
-  // Remove operator-only phrases
+    // Velocity summary messages ("X ventures monitored...") → rewrite to client language
+    const monitorMatch = e.message.match(/(\d+)\s*ventures?\s*monitored/i);
+    if (monitorMatch) {
+      const count = monitorMatch[1];
+      const atRiskMatch = e.message.match(/(\d+)\s*(?:at risk|needs? attention)/i);
+      const atRisk = atRiskMatch ? parseInt(atRiskMatch[1]) : 0;
+      const summary = atRisk > 0
+        ? `ATLAS is actively managing ${count} ventures. ${atRisk} ${atRisk === 1 ? "needs" : "need"} closer attention.`
+        : `ATLAS is actively managing ${count} ventures. Everything is on track.`;
+      return {
+        id: e.id,
+        summary,
+        date: e.createdAt,
+        ventureName,
+        ventureId,
+        fromStage,
+        toStage,
+        requiresAction: false,
+        actionLabel: null,
+        section: "thisWeek",
+      };
+    }
+
+    // Generic velocity event — show in This Week with cleaned message
+    return {
+      id: e.id,
+      summary: cleanMessage(e.message, ventureName),
+      date: e.createdAt,
+      ventureName,
+      ventureId,
+      fromStage,
+      toStage,
+      requiresAction: false,
+      actionLabel: null,
+      section: "thisWeek",
+    };
+  }
+
+  // ── Overdue Agent ───────────────────────────────────────────────
+  if (e.agentName === "Overdue Agent") {
+    // No overdue items → hide entirely (noise)
+    if (
+      e.message.toLowerCase().includes("no overdue") ||
+      e.message.toLowerCase().includes("all tasks are on schedule")
+    ) {
+      return { id: e.id, summary: "", date: e.createdAt, ventureName, ventureId, fromStage, toStage, requiresAction: false, actionLabel: null, section: "hide" };
+    }
+
+    // Overdue summary messages ("X tasks remain in overdue status") → rewrite
+    const overdueCountMatch = e.message.match(/(\d+)\s*tasks?\s*remain/i);
+    if (overdueCountMatch) {
+      const count = parseInt(overdueCountMatch[1]);
+      return {
+        id: e.id,
+        summary: count === 1
+          ? "1 task across your portfolio needs attention."
+          : `${count} tasks across your portfolio need attention.`,
+        date: e.createdAt,
+        ventureName,
+        ventureId,
+        fromStage,
+        toStage,
+        requiresAction: false,
+        actionLabel: null,
+        section: "thisWeek",
+      };
+    }
+
+    // Has overdue items with specific venture → Coming Up with action
+    if (ventureName) {
+      // Try to extract days overdue from message
+      const daysMatch = e.message.match(/(\d+)\s*days?\s*overdue/i);
+      const days = daysMatch ? daysMatch[1] : null;
+      return {
+        id: e.id,
+        summary: days
+          ? `"${ventureName}" has a task that needs attention — ${days} days overdue.`
+          : `"${ventureName}" has a task that needs your attention.`,
+        date: e.createdAt,
+        ventureName,
+        ventureId,
+        fromStage,
+        toStage,
+        requiresAction: true,
+        actionLabel: "View Task",
+        section: "comingUp",
+      };
+    }
+
+    // Generic overdue message
+    return {
+      id: e.id,
+      summary: cleanMessage(e.message, ventureName),
+      date: e.createdAt,
+      ventureName,
+      ventureId,
+      fromStage,
+      toStage,
+      requiresAction: false,
+      actionLabel: null,
+      section: "thisWeek",
+    };
+  }
+
+  // ── Distribution Sentinel ───────────────────────────────────────
+  if (e.agentName === "Distribution Sentinel") {
+    // "No distributions scheduled" → hide
+    if (
+      e.message.toLowerCase().includes("no distributions scheduled") ||
+      e.message.toLowerCase().includes("no distributions recorded")
+    ) {
+      return { id: e.id, summary: "", date: e.createdAt, ventureName, ventureId, fromStage, toStage, requiresAction: false, actionLabel: null, section: "hide" };
+    }
+
+    // Meaningful distribution update → This Week
+    return {
+      id: e.id,
+      summary: "Your distributions are being tracked and are on schedule.",
+      date: e.createdAt,
+      ventureName,
+      ventureId,
+      fromStage,
+      toStage,
+      requiresAction: false,
+      actionLabel: null,
+      section: "thisWeek",
+    };
+  }
+
+  // ── Orchestrator → hide from clients (operator-only) ────────────
+  if (e.agentName === "Orchestrator") {
+    return { id: e.id, summary: "", date: e.createdAt, ventureName, ventureId, fromStage, toStage, requiresAction: false, actionLabel: null, section: "hide" };
+  }
+
+  // ── Fallback: show cleaned message in This Week ─────────────────
+  return {
+    id: e.id,
+    summary: cleanMessage(e.message, ventureName),
+    date: e.createdAt,
+    ventureName,
+    ventureId,
+    fromStage,
+    toStage,
+    requiresAction: false,
+    actionLabel: null,
+    section: "thisWeek",
+  };
+}
+
+function cleanMessage(msg: string, ventureName: string | null): string {
+  // Remove square bracket content
+  msg = msg.replace(/\[[^\]]*\]/g, "");
+  // Remove agent names
+  msg = msg.replace(/\b(Velocity Agent|Distribution Sentinel|Orchestrator|Overdue Agent)\b/gi, "");
+  // Remove operator phrases
   msg = msg.replace(/One-click advance available\.?/gi, "");
   msg = msg.replace(/\badvance available\b/gi, "");
-
-  // Remove internal bracket references
-  msg = msg.replace(/\[Client Blueprint[^\]]*\]/gi, "");
-  msg = msg.replace(/\[System Blueprint[^\]]*\]/gi, "");
-  msg = msg.replace(/\[Blueprint[^\]]*\]/gi, "");
-
-  // ── STEP 2: Replace individual terms AFTER sentence rewrites ──
-
-  // Replace internal stage names with client-friendly versions
+  // Replace internal stage names
   msg = msg.replace(/\bIn Validation\b/g, "Under Review");
   msg = msg.replace(/\bIn Fundraising\b/g, "Fundraising");
   msg = msg.replace(/\bActive ventures\b/g, "Active");
-
-  // Replace operator-facing phrases with client-friendly language
+  msg = msg.replace(/\bIn Execution\b/g, "Active");
+  msg = msg.replace(/\bPre-Validation\b/g, "Initial Review");
+  // Replace operator jargon
   msg = msg.replace(/\bat risk\b/gi, "needs attention");
   msg = msg.replace(/\bvelocity score\b/gi, "progress");
   msg = msg.replace(/\bvelocity\b/gi, "progress");
-  msg = msg.replace(/\bescalat(e|ed|ion)\b/gi, "flagged for review");
-  msg = msg.replace(/\bnudge(d)?\b/gi, "reminder sent");
-  msg = msg.replace(/\boverdue task(s)?\b/gi, "pending item(s)");
   msg = msg.replace(/\bsignal(s)?\b/gi, "update(s)");
-
-  // Clean up double spaces, trailing periods, etc.
+  msg = msg.replace(/\bescalat(e|ed|ion)\b/gi, "flagged for review");
+  msg = msg.replace(/\bauto-advance triggers?\b/gi, "actions");
+  msg = msg.replace(/\boverdue status\b/gi, "pending status");
+  msg = msg.replace(/\boverdue tasks? detected\b/gi, "new items flagged");
+  msg = msg.replace(/\boverdue\b/gi, "pending");
+  msg = msg.replace(/\btrigger(s|ed)?\b/gi, "");
+  // Clean up whitespace
   msg = msg.replace(/\s{2,}/g, " ").trim();
   msg = msg.replace(/\. \./g, ".");
   msg = msg.replace(/\s+\./g, ".");
-
   return msg;
 }
 
@@ -138,7 +317,6 @@ function getCleanStatusLine(venture: {
 
   if (venture.currentStatus) {
     let clean = venture.currentStatus;
-    // Strip internal jargon from currentStatus
     clean = clean.replace(
       /\b(at risk|velocity|agent|orchestrator|sentinel|blueprint|SPV)\b/gi,
       ""
@@ -186,7 +364,7 @@ export const portalRouter = {
         });
       }
 
-      // ── Section 1: This Week ──────────────────────────────────
+      // ── Fetch all client-audience events from last 7 days ──────────
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -201,51 +379,83 @@ export const portalRouter = {
           )
         )
         .orderBy(desc(agentEvents.createdAt))
-        .limit(30);
+        .limit(200);
 
-      // Deduplicate and filter: only show client-appropriate events
-      const seen = new Set<string>();
-      const thisWeek: {
-        id: number;
-        summary: string;
-        date: Date | null;
-        requiresAction: boolean;
-        actionLabel: string | undefined;
-        entityName: string | undefined;
-      }[] = [];
+      // ── Translate all events ───────────────────────────────────────
+      const translated = recentEvents.map(translateEvent);
 
-      for (const e of recentEvents) {
-        // Skip blocked event types
-        if (BLOCKED_EVENT_TYPES.has(e.eventType)) continue;
+      // ── Deduplicate ────────────────────────────────────────────────
+      // Same venture + same summary text → keep only the most recent
+      const thisWeekSeen = new Map<string, TranslatedEvent>();
+      const comingUpSeen = new Map<string, TranslatedEvent>();
 
-        const summary = translateEventToPlainEnglish(e);
+      const thisWeek: TranslatedEvent[] = [];
+      const comingUp: TranslatedEvent[] = [];
 
-        // Skip if translated message is too short (stripped to nothing)
-        if (summary.length < 10) continue;
+      for (const ev of translated) {
+        if (ev.section === "hide" || ev.summary.length < 5) continue;
 
-        // Dedup key: ignore numbers/timestamps for comparison
-        const dedupKey = summary.toLowerCase().replace(/\d/g, "").trim();
-        if (seen.has(dedupKey)) continue;
-        seen.add(dedupKey);
+        const dedupKey = `${ev.ventureName || ""}::${ev.summary.toLowerCase().replace(/\d/g, "").trim()}`;
 
-        // Determine if this event has a client-appropriate action
-        const hasClientAction =
-          e.requiresClientAction &&
-          !e.actionTaken &&
-          e.actionLabel != null &&
-          !OPERATOR_ACTION_LABELS.has(e.actionLabel);
-
-        thisWeek.push({
-          id: e.id,
-          summary,
-          date: e.createdAt,
-          requiresAction: hasClientAction,
-          actionLabel: hasClientAction ? e.actionLabel! : undefined,
-          entityName: e.agentEntityName || undefined,
-        });
+        if (ev.section === "comingUp") {
+          if (!comingUpSeen.has(dedupKey)) {
+            comingUpSeen.set(dedupKey, ev);
+            comingUp.push(ev);
+          }
+        } else if (ev.section === "thisWeek") {
+          if (!thisWeekSeen.has(dedupKey)) {
+            thisWeekSeen.set(dedupKey, ev);
+            thisWeek.push(ev);
+          }
+        }
       }
 
-      // ── Section 2: Your Portfolio ─────────────────────────────
+      // ── Velocity Summary ───────────────────────────────────────────
+      const advancedCount = recentEvents.filter(
+        (e) =>
+          e.agentName === "Velocity Agent" &&
+          e.oldStatus &&
+          e.newStatus &&
+          !e.newStatus.startsWith("ready:") &&
+          e.actionTaken
+      ).length;
+
+      const overdueFlags = recentEvents.filter(
+        (e) =>
+          e.agentName === "Overdue Agent" &&
+          !e.message.toLowerCase().includes("no overdue") &&
+          !e.message.toLowerCase().includes("all tasks are on schedule")
+      ).length;
+
+      const distributionEvents = recentEvents.filter(
+        (e) =>
+          e.agentName === "Distribution Sentinel" &&
+          !e.message.toLowerCase().includes("no distributions scheduled") &&
+          !e.message.toLowerCase().includes("no distributions recorded")
+      ).length;
+
+      let velocitySummary: string;
+      if (advancedCount === 0 && overdueFlags === 0 && distributionEvents === 0) {
+        velocitySummary =
+          "ATLAS is monitoring your portfolio. We'll surface anything that needs your attention.";
+      } else {
+        const parts: string[] = [];
+        if (advancedCount > 0)
+          parts.push(
+            `advanced ${advancedCount} venture${advancedCount !== 1 ? "s" : ""}`
+          );
+        if (overdueFlags > 0)
+          parts.push(
+            `caught ${overdueFlags} item${overdueFlags !== 1 ? "s" : ""} before ${overdueFlags !== 1 ? "they became" : "it became"} a problem`
+          );
+        if (distributionEvents > 0)
+          parts.push(
+            `kept ${distributionEvents} distribution${distributionEvents !== 1 ? "s" : ""} on track`
+          );
+        velocitySummary = `This week, ATLAS ${parts.join(", ")}.`;
+      }
+
+      // ── Your Portfolio ─────────────────────────────────────────────
       const access = await db
         .select()
         .from(orgVentureAccess)
@@ -258,6 +468,8 @@ export const portalRouter = {
         stage: string;
         statusLine: string;
         slug: string;
+        lastAgentAction: string | null;
+        lastAgentActionType: "ready" | "advanced" | "info" | null;
       }[] = [];
 
       if (access.length > 0) {
@@ -267,43 +479,68 @@ export const portalRouter = {
           .from(ventures)
           .where(inArray(ventures.id, ventureIds));
 
-        portfolio = orgVentures.map((v) => ({
-          id: v.id,
-          name: v.name,
-          sector: v.sector,
-          stage: clientFriendlyStage(v.stage),
-          statusLine: getCleanStatusLine(v),
-          slug: v.slug,
-        }));
+        // Get last agent event per venture for the card annotation
+        const ventureEventMap = new Map<number, { summary: string; type: "ready" | "advanced" | "info" }>();
+
+        for (const ev of translated) {
+          if (ev.section === "hide" || !ev.ventureId) continue;
+          if (ventureEventMap.has(ev.ventureId)) continue; // already have most recent (events sorted desc)
+
+          if (ev.requiresAction && ev.toStage) {
+            ventureEventMap.set(ev.ventureId, {
+              summary: `Ready to move to ${ev.toStage} — your approval needed`,
+              type: "ready",
+            });
+          } else if (ev.fromStage && ev.toStage && !ev.requiresAction) {
+            ventureEventMap.set(ev.ventureId, {
+              summary: `Advanced to ${ev.toStage}`,
+              type: "advanced",
+            });
+          } else if (ev.summary.length > 10) {
+            ventureEventMap.set(ev.ventureId, {
+              summary: ev.summary.length > 80 ? ev.summary.slice(0, 77) + "..." : ev.summary,
+              type: "info",
+            });
+          }
+        }
+
+        portfolio = orgVentures.map((v) => {
+          const agentAction = ventureEventMap.get(v.id);
+          return {
+            id: v.id,
+            name: v.name,
+            sector: v.sector,
+            stage: clientFriendlyStage(v.stage),
+            statusLine: getCleanStatusLine(v),
+            slug: v.slug,
+            lastAgentAction: agentAction?.summary || null,
+            lastAgentActionType: agentAction?.type || null,
+          };
+        });
       }
-
-      // ── Section 3: Coming Up ──────────────────────────────────
-      const upcomingTasks = await db
-        .select()
-        .from(tasks)
-        .where(
-          and(
-            eq(tasks.organizationId, org.id),
-            sql`${tasks.status} != 'complete'`
-          )
-        )
-        .orderBy(tasks.dueDate)
-        .limit(5);
-
-      const comingUp = upcomingTasks.map((t) => ({
-        id: t.id,
-        title: t.title,
-        dueDate: t.dueDate || undefined,
-        ventureLink: t.ventureLink || undefined,
-      }));
 
       return {
         orgName: org.name,
         orgSlug: org.slug,
         isOperatorPreview: isAdmin,
-        thisWeek,
+        velocitySummary,
+        thisWeek: thisWeek.map((e) => ({
+          id: e.id,
+          summary: e.summary,
+          date: e.date,
+          ventureName: e.ventureName,
+        })),
         portfolio,
-        comingUp,
+        comingUp: comingUp.map((e) => ({
+          id: e.id,
+          summary: e.summary,
+          date: e.date,
+          ventureName: e.ventureName,
+          ventureId: e.ventureId,
+          fromStage: e.fromStage,
+          toStage: e.toStage,
+          actionLabel: e.actionLabel,
+        })),
       };
     }),
 };
