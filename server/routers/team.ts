@@ -221,7 +221,7 @@ export const teamRouter = router({
         if (origin) {
           const inviteLink = buildInviteLink(origin, token);
           // Get org name for the email
-          let orgNameForEmail = "ATLAS / Royalton";
+          let orgNameForEmail = "ATLAS";
           if (organizationId) {
             const [org] = await db.select({ name: organizations.name })
               .from(organizations).where(eq(organizations.id, organizationId)).limit(1);
@@ -586,7 +586,7 @@ export const teamRouter = router({
     // Send invitation email notification
     if (input.origin) {
       const inviteLink = buildInviteLink(input.origin, token);
-      let orgNameForEmail = "ATLAS / Royalton";
+      let orgNameForEmail = "ATLAS";
       if (member.organizationId && member.organizationId !== 1) {
         const [org] = await db.select({ name: organizations.name })
           .from(organizations).where(eq(organizations.id, member.organizationId)).limit(1);

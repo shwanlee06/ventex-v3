@@ -134,7 +134,7 @@ function taskFollowUpHtml(params: TaskFollowUpParams): string {
 function distributionNoticeHtml(params: DistributionNoticeParams): string {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
 <body style="${BODY_STYLE}"><div style="${CONTAINER_STYLE}">
-  <div style="${HEADER_STYLE}"><span style="${HEADER_TEXT}">Royalton Venture Holding</span></div>
+  <div style="${HEADER_STYLE}"><span style="${HEADER_TEXT}">ATLAS</span></div>
   <p style="font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0 0 8px;">Distribution Notice</p>
   <p style="${P_STYLE}">Dear ${params.recipientName},</p>
   <div style="${CARD_STYLE}">
@@ -146,7 +146,7 @@ function distributionNoticeHtml(params: DistributionNoticeParams): string {
   </div>
   <div style="font-size: 14px; color: #333; line-height: 1.6; margin-bottom: 24px; white-space: pre-line;">${params.draftBody}</div>
   ${params.actionUrl ? `<a href="${params.actionUrl}" style="${BUTTON_STYLE}">View Details →</a>` : ""}
-  <div style="${FOOTER_STYLE}"><p style="${FOOTER_TEXT}">Royalton Venture Holding</p></div>
+  <div style="${FOOTER_STYLE}"><p style="${FOOTER_TEXT}">ATLAS · Powered by Aurovia</p></div>
 </div></body></html>`;
 }
 

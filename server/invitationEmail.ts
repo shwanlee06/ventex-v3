@@ -74,7 +74,7 @@ export async function sendInvitationEmail(params: SendInvitationEmailParams): Pr
     role,
     inviterName,
     inviteLink,
-    organizationName = "ATLAS / Royalton",
+    organizationName = "ATLAS",
     expiresInDays = 30,
   } = params;
 
@@ -139,7 +139,7 @@ export async function sendInvitationEmail(params: SendInvitationEmailParams): Pr
 
 /**
  * Build the invitation acceptance URL.
- * @param origin - The frontend origin (e.g., https://royaltonai.manus.space)
+ * @param origin - The frontend origin (e.g., https://atlasventures.manus.space)
  * @param token - The invitation token
  */
 export function buildInviteLink(origin: string, token: string): string {

@@ -431,7 +431,7 @@ function InvitationsTab() {
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Send Invitation</DialogTitle>
-            <DialogDescription>Invite a partner to access the Royalton System</DialogDescription>
+            <DialogDescription>Invite a partner to access the ATLAS System</DialogDescription>
           </DialogHeader>
 
           {generatedToken ? (

@@ -732,7 +732,7 @@ export async function runDistributionSentinel(
     const amount = Number(dist.amount || 0);
 
     const draftBody = await callAgentLLM(
-      "You are ATLAS. Draft a brief, professional LP distribution notification (4 sentences max). Include fund name, amount, timing, and next steps. Professional tone. Sign as 'Royalton Venture Holding'.",
+      "You are ATLAS. Draft a brief, professional LP distribution notification (4 sentences max). Include fund name, amount, timing, and next steps. Professional tone. Sign as 'ATLAS'.",
       `${fundName} | $${amount.toLocaleString()} | Due: ${dist.distributionDate || "TBD"} | Days until: ${daysUntil ?? "Unknown"}`
     );
 

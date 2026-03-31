@@ -1517,3 +1517,6 @@
 ## Bug Fixes — 2026-03-31 (UI)
 - [x] BUG: Dialog/modal overlay doesn't block hover effects on elements behind it — fixed by increasing overlay opacity to 80% and adding body[data-scroll-locked] CSS rules to disable all hover effects on background elements
 - [x] BUG: Dialog/modal content can't scroll when it overflows the viewport — fixed by adding max-h-[calc(100vh-2rem)] overflow-y-auto to DialogContent and AlertDialogContent
+
+## Bug Fixes — 2026-03-31 (Branding)
+- [x] Invitation email should reference ATLAS, not Royalton — replaced all "Royalton" references across invitationEmail.ts, emailService.ts, team.ts, agents.ts, ai.ts, intelligence.ts, and AccessManagement.tsx
