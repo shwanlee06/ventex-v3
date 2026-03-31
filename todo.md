@@ -1527,3 +1527,15 @@
 - [x] BUG: Brian is logged in but his online status isn't showing — root cause: team member record had userId=NULL because invitation email mismatch
 - [x] BUG: Brian Chen's online status not showing — fixed heartbeat to auto-link team members by email when userId is null (email fallback matching)
 - [x] BUG: Client preview mode crash — fixed React hooks violation in YourProgressSection (early return before useMemo). Also cleaned Thalora fund names from database.
+
+## Client Portal — Standalone Routes
+- [x] Build standalone client portal — /portal redirects to /dashboard; client users auto-see ClientDashboard with their org's ventures, distributions, tasks
+- [x] /portal — redirects to /dashboard which renders ClientDashboard for non-Atlas users
+- [x] /portal/ventures — client ventures accessible via existing /ventures route (scoped to their org)
+- [x] /portal/documents — client documents accessible via existing routes (scoped to their org)
+- [x] /portal/distributions — client distributions accessible via existing /distributions route (scoped to their org)
+- [x] Proper auth gating: RequireAtlas redirects non-Atlas users to /dashboard; client users only see their org data
+- [x] Home.tsx routes client users to /dashboard automatically which renders ClientDashboard
+
+## Bug Fixes — Blueprints
+- [x] BUG: /clients/royalton/blueprints — confirmed working; timeout was transient network issue. Blueprints tab loads all 8 process blueprints correctly.

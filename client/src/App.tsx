@@ -86,6 +86,14 @@ function Router() {
       {/* Login / landing page is the root */}
       <Route path="/" component={SpyOps} />
 
+      {/* Client portal alias — redirects to /dashboard for client users */}
+      <Route path="/portal">
+        <Redirect to="/dashboard" />
+      </Route>
+      <Route path="/portal/:rest*">
+        <Redirect to="/dashboard" />
+      </Route>
+
       {/* Partner invite acceptance — public, no auth */}
       <Route path="/invite/:orgSlug/:token" component={InviteAccept} />
 
