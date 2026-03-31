@@ -1678,3 +1678,25 @@
 - [x] Diagnosed: Action Needed section renders correctly on dev — 6 amber cards with Advance Stage buttons
 - [x] Fixed: section was always there, live site was running old code
 - [x] Verified on dev server — needs re-publish to go live
+
+## RBAC & REMAINING FIXES — 3 Issues (user-reported on live site)
+
+### Fix 1 — Cross-tenant isolation: client roles only
+- [x] atlas_operator must access ALL orgs unrestricted (SOC 2 compliant if audited)
+- [x] Client roles must be blocked from other clients' data (HTTP 403)
+- [x] Verify: Royalton client querying org 1 → 403
+- [x] Verify: atlas_operator querying any org → 200
+- [ ] Verify on atlasops.manus.space (pending re-publish)
+
+### Fix 2 — Audit log returns HTTP 404
+- [x] Ensure audit.list tRPC route exists and is registered (new audit router created)
+- [x] Route must be accessible to atlas_operator role (adminProcedure)
+- [x] Returns records for blueprint generation, stage advance, agent events
+- [ ] Verify audit.list returns HTTP 200 on atlasops.manus.space (pending re-publish)
+
+### Fix 3 — Coming Up section missing from portal
+- [x] Add explicit "Coming Up" section to portal (renamed from Action Needed)
+- [x] Shows agent_events where audience=client, requiresClientAction=true, actionTaken=false
+- [x] Each item: venture name, plain English description, old→new stage, Advance Stage button
+- [x] Advance Stage: update venture stage, mark actionTaken=true, item disappears
+- [ ] Verify on atlasops.manus.space/portal/royalton (pending re-publish)

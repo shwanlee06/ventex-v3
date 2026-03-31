@@ -30,6 +30,7 @@ import { blueprintsRouter } from "./routers/blueprints";
 import { emailRouter } from "./routers/email";
 import { onboardingRouter } from "./routers/onboarding";
 import { portalRouter } from "./routers/portal";
+import { auditRouter } from "./routers/audit";
 
 export const appRouter = router({
   system: systemRouter,
@@ -332,6 +333,7 @@ export const appRouter = router({
   email: emailRouter,
   onboarding: onboardingRouter,
   portal: portalRouter,
+  audit: auditRouter,
 });
 
 export type AppRouter = typeof appRouter;

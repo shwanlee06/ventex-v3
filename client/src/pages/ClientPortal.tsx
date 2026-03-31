@@ -316,7 +316,7 @@ export default function ClientPortal() {
             VELOCITY FEED — 3 card types: amber → teal → gray
             ════════════════════════════════════════════════════════════ */}
 
-        {/* ── ACTION NEEDED (amber) ───────────────────────────────── */}
+        {/* ── COMING UP (amber) ─────────────────────────────────── */}
         {actionCards.length > 0 && (
           <motion.section
             initial={{ opacity: 0, y: 12 }}
@@ -326,7 +326,7 @@ export default function ClientPortal() {
             <div className="flex items-center gap-2 mb-4">
               <AlertCircle className="size-4 text-amber-400" />
               <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-                Action Needed
+                Coming Up
               </h2>
               <span className="text-[11px] text-amber-400 ml-auto font-medium">
                 {actionCards.length} item{actionCards.length !== 1 ? "s" : ""}
