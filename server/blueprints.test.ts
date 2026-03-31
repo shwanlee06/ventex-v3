@@ -34,7 +34,7 @@ describe("Blueprint Schema Tables", () => {
     expect(table.stepOrder).toBeDefined();
     expect(table.isBlocking).toBeDefined();
     expect(table.whoOwns).toBeDefined();
-    expect(table.estimatedDays).toBeDefined();
+    expect(table.typicalDays).toBeDefined();
   });
 
   it("ventureProcessTracking table exists with correct columns", async () => {

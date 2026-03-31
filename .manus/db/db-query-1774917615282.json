@@ -1,0 +1,58 @@
+{
+  "query": "SELECT id, sector, blueprintName, source, confidence, blueprintStatus FROM process_templates WHERE organizationId = 2;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, sector, blueprintName, source, confidence, blueprintStatus FROM process_templates WHERE organizationId = 2;",
+  "rows": [
+    {
+      "id": "1",
+      "sector": "Real Estate",
+      "blueprintName": "Real Estate Venture Operations",
+      "source": "system",
+      "confidence": "0.5",
+      "blueprintStatus": "confirmed"
+    },
+    {
+      "id": "2",
+      "sector": "Yacht",
+      "blueprintName": "Yacht Venture Operations",
+      "source": "system",
+      "confidence": "0.5",
+      "blueprintStatus": "confirmed"
+    },
+    {
+      "id": "3",
+      "sector": "F&B",
+      "blueprintName": "Food & Beverage Venture Operations",
+      "source": "system",
+      "confidence": "0.5",
+      "blueprintStatus": "confirmed"
+    },
+    {
+      "id": "4",
+      "sector": "Hospitality",
+      "blueprintName": "Hospitality Venture Operations",
+      "source": "system",
+      "confidence": "0.5",
+      "blueprintStatus": "confirmed"
+    },
+    {
+      "id": "5",
+      "sector": "Oil & Gas",
+      "blueprintName": "Oil & Gas Venture Operations",
+      "source": "system",
+      "confidence": "0.5",
+      "blueprintStatus": "confirmed"
+    },
+    {
+      "id": "6",
+      "sector": "Energy",
+      "blueprintName": "Energy Venture Operations",
+      "source": "system",
+      "confidence": "0.5",
+      "blueprintStatus": "confirmed"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsector\tblueprintName\tsource\tconfidence\tblueprintStatus\n1\tReal Estate\tReal Estate Venture Operations\tsystem\t0.5\tconfirmed\n2\tYacht\tYacht Venture Operations\tsystem\t0.5\tconfirmed\n3\tF&B\tFood & Beverage Venture Operations\tsystem\t0.5\tconfirmed\n4\tHospitality\tHospitality Venture Operations\tsystem\t0.5\tconfirmed\n5\tOil & Gas\tOil & Gas Venture Operations\tsystem\t0.5\tconfirmed\n6\tEnergy\tEnergy Venture Operations\tsystem\t0.5\tconfirmed\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

@@ -13,6 +13,7 @@ import {
   ventures,
   ventureFiles,
   orgVentureAccess,
+  ventureProcessOverrides,
 } from "../../drizzle/schema";
 import { eq, and, sql, desc, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
@@ -137,7 +138,7 @@ export const blueprintsRouter = router({
       }).$returningId();
 
       // Insert steps
-      const steps: Array<{ stageName: string; stepName: string; stepOrder: number; stageOrder: number; isBlocking: boolean; whoOwns: string | null; estimatedDays: number | null; evidence: string | null; confidence: string }> = [];
+      const steps: Array<{ stageName: string; stepName: string; stepOrder: number; stageOrder: number; isBlocking: boolean; whoOwns: string | null; typicalDays: number | null; stepDescription: string | null }> = [];
       for (const stage of blueprint.stages || []) {
         for (const step of stage.steps || []) {
           steps.push({
@@ -147,9 +148,8 @@ export const blueprintsRouter = router({
             stageOrder: stage.stageOrder || 0,
             isBlocking: step.isBlocking || false,
             whoOwns: step.whoOwns || null,
-            estimatedDays: step.estimatedDays || null,
-            evidence: step.evidence || null,
-            confidence: step.confidence || "Medium",
+            typicalDays: step.estimatedDays || null,
+            stepDescription: step.evidence || step.description || null,
           });
         }
       }
@@ -262,9 +262,8 @@ export const blueprintsRouter = router({
                 stageOrder: stage.stageOrder || 0,
                 isBlocking: step.isBlocking || false,
                 whoOwns: step.whoOwns || null,
-                estimatedDays: step.estimatedDays || null,
-                evidence: step.evidence || null,
-                confidence: step.confidence || "Medium",
+                typicalDays: step.estimatedDays || null,
+                stepDescription: step.evidence || step.description || null,
               });
             }
           }
@@ -336,9 +335,8 @@ export const blueprintsRouter = router({
       if (updates.stepName !== undefined) setObj.stepName = updates.stepName;
       if (updates.isBlocking !== undefined) setObj.isBlocking = updates.isBlocking;
       if (updates.whoOwns !== undefined) setObj.whoOwns = updates.whoOwns;
-      if (updates.estimatedDays !== undefined) setObj.estimatedDays = updates.estimatedDays;
-      if (updates.evidence !== undefined) setObj.evidence = updates.evidence;
-      if (updates.confidence !== undefined) setObj.confidence = updates.confidence;
+      if (updates.estimatedDays !== undefined) setObj.typicalDays = updates.estimatedDays;
+      if (updates.evidence !== undefined) setObj.stepDescription = updates.evidence;
 
       await db.update(processSteps).set(setObj).where(eq(processSteps.id, stepId));
       return { success: true };
@@ -379,8 +377,7 @@ export const blueprintsRouter = router({
         stepOrder: input.stepOrder,
         isBlocking: input.isBlocking,
         whoOwns: input.whoOwns || null,
-        estimatedDays: input.estimatedDays || null,
-        confidence: "High", // manually added = high confidence
+        typicalDays: input.estimatedDays || null,
       }).$returningId();
 
       return { stepId: step.id };
@@ -443,7 +440,7 @@ export const blueprintsRouter = router({
             completedAt: isBeforeCurrent ? new Date() : null,
             completedBy: isBeforeCurrent ? "Pre-marked (venture already past stage)" : null,
             actualDays: isBeforeCurrent ? 0 : null,
-            confidence: step.confidence,
+            // confidence inherited from template
           });
 
           totalCreated++;
@@ -708,9 +705,8 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
               stageOrder,
               isBlocking: step.is_blocking ?? step.isBlocking ?? false,
               whoOwns: step.who_owns || step.whoOwns || null,
-              estimatedDays: step.typical_days || step.estimatedDays || null,
-              evidence: step.output || step.description || null,
-              confidence: "Medium",
+              typicalDays: step.typical_days || step.estimatedDays || null,
+              stepDescription: step.output || step.description || null,
             });
             stepCount++;
           }
@@ -948,8 +944,8 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
             stepOrder: s.stepOrder,
             isBlocking: s.isBlocking,
             whoOwns: s.whoOwns ?? null,
-            estimatedDays: s.estimatedDays ?? null,
-            evidence: s.evidence ?? null,
+            typicalDays: s.estimatedDays ?? null,
+            stepDescription: s.evidence ?? null,
           }))
         );
       }
@@ -1050,7 +1046,7 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
             stepOrder: step.stepOrder,
             isBlocking: step.isBlocking,
             whoOwns: step.whoOwns,
-            estimatedDays: step.estimatedDays,
+            typicalDays: step.estimatedDays,
           });
         }
       }
@@ -1058,5 +1054,196 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
         await db.insert(processSteps).values(allSteps);
       }
       return { id: templateId, name: blueprint.name, stepsCreated: allSteps.length };
+    }),
+
+  // ── Confirm a blueprint (human-in-the-loop review) ─────────────────────
+  confirmTemplate: protectedProcedure
+    .input(z.object({ templateId: z.number() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+      await db.update(processTemplates).set({ status: "confirmed" })
+        .where(eq(processTemplates.id, input.templateId));
+      return { success: true };
+    }),
+
+  // ── Archive a blueprint ────────────────────────────────────────────────
+  archiveTemplate: protectedProcedure
+    .input(z.object({ templateId: z.number() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+      await db.update(processTemplates).set({ status: "archived", isActive: false })
+        .where(eq(processTemplates.id, input.templateId));
+      return { success: true };
+    }),
+
+  // ── Update template metadata ───────────────────────────────────────────
+  updateTemplate: protectedProcedure
+    .input(z.object({
+      templateId: z.number(),
+      blueprintName: z.string().optional(),
+      sector: z.string().optional(),
+      confidence: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+      const { templateId, ...updates } = input;
+      const setObj: any = {};
+      if (updates.blueprintName !== undefined) setObj.blueprintName = updates.blueprintName;
+      if (updates.sector !== undefined) setObj.sector = updates.sector;
+      if (updates.confidence !== undefined) setObj.confidence = updates.confidence;
+      await db.update(processTemplates).set(setObj)
+        .where(eq(processTemplates.id, templateId));
+      return { success: true };
+    }),
+
+  // ── Venture Process Overrides (Layer 3) ────────────────────────────────
+  listOverrides: protectedProcedure
+    .input(z.object({ ventureId: z.number() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return [];
+      return db.select().from(ventureProcessOverrides)
+        .where(eq(ventureProcessOverrides.ventureId, input.ventureId));
+    }),
+
+  addOverride: protectedProcedure
+    .input(z.object({
+      ventureId: z.number(),
+      processTemplateId: z.number(),
+      stepId: z.number().optional(),
+      overrideType: z.string(),
+      overrideField: z.string().optional(),
+      overrideValue: z.string(),
+      reason: z.string().optional(),
+      createdBy: z.string().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+      const [result] = await db.insert(ventureProcessOverrides).values({
+        ventureId: input.ventureId,
+        processTemplateId: input.processTemplateId,
+        stepId: input.stepId ?? null,
+        overrideType: input.overrideType,
+        overrideField: input.overrideField ?? null,
+        overrideValue: input.overrideValue,
+        reason: input.reason ?? null,
+        createdBy: input.createdBy || ctx.user?.name || "Operator",
+      }).$returningId();
+      return { id: result.id };
+    }),
+
+  removeOverride: protectedProcedure
+    .input(z.object({ overrideId: z.number() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+      await db.delete(ventureProcessOverrides)
+        .where(eq(ventureProcessOverrides.id, input.overrideId));
+      return { success: true };
+    }),
+
+  // ── 3-Layer Blueprint Lookup (used by agents) ──────────────────────────
+  // Returns the effective blueprint for a venture:
+  //   Layer 3 (venture override) > Layer 2 (client blueprint) > Layer 1 (system default)
+  getBlueprintForVenture: protectedProcedure
+    .input(z.object({ ventureId: z.number() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+
+      // Get the venture and its org
+      const [venture] = await db.select({
+        id: ventures.id,
+        name: ventures.name,
+        sector: ventures.sector,
+        stage: ventures.stage,
+      }).from(ventures)
+        .where(eq(ventures.id, input.ventureId)).limit(1);
+      if (!venture) throw new TRPCError({ code: "NOT_FOUND", message: "Venture not found" });
+
+      // Find org for this venture
+      const [orgAccess] = await db.select({ organizationId: orgVentureAccess.organizationId })
+        .from(orgVentureAccess)
+        .where(eq(orgVentureAccess.ventureId, input.ventureId)).limit(1);
+      const orgId = orgAccess?.organizationId;
+
+      let template: any = null;
+      let steps: any[] = [];
+      let blueprintLayer: "venture_override" | "client_blueprint" | "sector_default" = "sector_default";
+
+      if (orgId) {
+        // Layer 2: Client-specific confirmed blueprint for this sector
+        const [clientBp] = await db.select().from(processTemplates)
+          .where(and(
+            eq(processTemplates.organizationId, orgId),
+            eq(processTemplates.sector, venture.sector || ""),
+            eq(processTemplates.status, "confirmed"),
+            eq(processTemplates.isActive, true),
+          ))
+          .orderBy(desc(processTemplates.updatedAt))
+          .limit(1);
+
+        if (clientBp) {
+          template = clientBp;
+          blueprintLayer = "client_blueprint";
+        }
+      }
+
+      // Layer 1 fallback: system default for this sector (source = 'system')
+      if (!template) {
+        const [systemBp] = await db.select().from(processTemplates)
+          .where(and(
+            eq(processTemplates.source, "system"),
+            eq(processTemplates.sector, venture.sector || ""),
+            eq(processTemplates.isActive, true),
+          ))
+          .orderBy(desc(processTemplates.updatedAt))
+          .limit(1);
+        if (systemBp) {
+          template = systemBp;
+          blueprintLayer = "sector_default";
+        }
+      }
+
+      if (!template) {
+        return { venture, template: null, steps: [], overrides: [], blueprintLayer: null };
+      }
+
+      // Get steps
+      steps = await db.select().from(processSteps)
+        .where(eq(processSteps.templateId, template.id))
+        .orderBy(processSteps.stageOrder, processSteps.stepOrder);
+
+      // Layer 3: Get venture-level overrides
+      const overrides = await db.select().from(ventureProcessOverrides)
+        .where(eq(ventureProcessOverrides.ventureId, input.ventureId));
+
+      // Apply overrides to steps
+      const effectiveSteps = steps.map((step: any) => {
+        const stepOverrides = overrides.filter((o: any) => o.stepId === step.id);
+        if (stepOverrides.length === 0) return { ...step, hasOverride: false };
+
+        const merged = { ...step, hasOverride: true, overrides: stepOverrides };
+        for (const ov of stepOverrides) {
+          if (ov.overrideField === "typicalDays") merged.typicalDays = parseInt(ov.overrideValue);
+          else if (ov.overrideField === "whoOwns") merged.whoOwns = ov.overrideValue;
+          else if (ov.overrideField === "isBlocking") merged.isBlocking = ov.overrideValue === "true";
+          else if (ov.overrideType === "skip") merged.skipped = true;
+        }
+        if (stepOverrides.length > 0) blueprintLayer = "venture_override";
+        return merged;
+      });
+
+      return {
+        venture,
+        template,
+        steps: effectiveSteps,
+        overrides,
+        blueprintLayer,
+      };
     }),
 });

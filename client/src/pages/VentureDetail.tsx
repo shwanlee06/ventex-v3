@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import BlueprintJourneyTracker from "@/components/BlueprintJourneyTracker";
+import VentureOverrides from "@/components/VentureOverrides";
 
 // ── Constants ────────────────────────────────────────────────────────────
 const STAGES = ["In Validation", "Active ventures", "In Fundraising", "On Hold"];
@@ -485,6 +486,9 @@ export default function VentureDetail() {
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
                 <div className="bg-card border border-border rounded-lg p-4">
                   <BlueprintJourneyTracker ventureId={ventureId} />
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <VentureOverrides ventureId={ventureId} />
+                  </div>
                 </div>
               </motion.div>
             )}

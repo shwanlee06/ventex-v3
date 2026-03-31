@@ -1468,3 +1468,15 @@
 - [x] BUG: process_templates SQL query fails on /dashboard and /blueprints — added missing columns (source, sourceDocumentUrl, sourceDocumentName, isActive) to production DB
 - [x] BUG: DialogContent missing DialogTitle — added sr-only DialogTitle to ClientActionModals and ManusDialog
 - [x] BUG: User name fixed to "Shwan Lee" in DB + upsertUser no longer overwrites name on login (preserves manual corrections)
+
+## Blueprint Intelligence Engine — 2026-03-31
+- [x] Layer 1: Pre-populate sector defaults for 6 Royalton sectors — converted existing 6 blueprints to source='system', confidence=0.5, status='confirmed'
+- [x] Layer 2A: Document upload panel on Blueprints page — Upload Document tab with file upload + LLM extraction
+- [x] Layer 2B: Blueprint review editor — Confirm/Edit/Archive flow, inline step editing, status badges
+- [x] Layer 2C: Conversation extraction — Conversation Extract tab with paste-and-extract interface
+- [x] Layer 3: VentureOverrides component on venture detail page — cadence, ownership, skip overrides
+- [x] Agent Blueprint Awareness: Shared lookupBlueprintForVenture() + buildBlueprintContext() used by overdue + velocity agents
+- [x] Agent execution log indicator: "[Client Blueprint → name / Sector Default → name]" appended to all agent signals
+- [x] Schema: process_templates aligned — source types, confidence as decimal, all production columns synced
+- [x] Schema: Added blueprintStatus (draft/confirmed/archived) to process_templates
+- [x] Schema: Created venture_process_overrides table (ventureId, stepId, overrideField, overrideValue, overrideType, reason)

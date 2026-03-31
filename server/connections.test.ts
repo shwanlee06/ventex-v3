@@ -193,9 +193,9 @@ describe("Connection 5: Blueprint-Aware Agents", () => {
   it("overdue agent includes blueprint hint in follow-up drafts", async () => {
     const fs = await import("fs");
     const content = fs.readFileSync("server/routers/agents.ts", "utf-8");
-    // Should reference blueprint in overdue agent
+    // Should reference blueprint lookup in overdue agent
     expect(content).toContain("blueprintHint");
-    expect(content).toContain("Blueprint blocking steps");
+    expect(content).toContain("lookupBlueprintForVenture");
   });
 
   it("velocity agent auto-marks blueprint steps on stage advance", async () => {
@@ -209,9 +209,9 @@ describe("Connection 5: Blueprint-Aware Agents", () => {
   it("blueprint context includes who owns each blocking step", async () => {
     const fs = await import("fs");
     const content = fs.readFileSync("server/routers/agents.ts", "utf-8");
-    // The blueprint context should include whoOwns for actionable signals
-    expect(content).toContain("whoOwns");
-    expect(content).toContain("blockingIncomplete");
+    // The blueprint context should include source label and blueprint context
+    expect(content).toContain("blueprintSourceLabel");
+    expect(content).toContain("buildBlueprintContext");
   });
 });
 

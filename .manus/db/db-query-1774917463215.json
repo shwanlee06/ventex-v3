@@ -1,0 +1,70 @@
+{
+  "query": "SELECT id, organizationId, sector, blueprintName, source, extractionSource, confidence, isActive FROM process_templates ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, organizationId, sector, blueprintName, source, extractionSource, confidence, isActive FROM process_templates ORDER BY id;",
+  "rows": [
+    {
+      "id": "1",
+      "organizationId": "2",
+      "sector": "Real Estate",
+      "blueprintName": "Real Estate Venture Operations",
+      "source": "document",
+      "extractionSource": "manual",
+      "confidence": "High",
+      "isActive": "1"
+    },
+    {
+      "id": "2",
+      "organizationId": "2",
+      "sector": "Yacht",
+      "blueprintName": "Yacht Venture Operations",
+      "source": "document",
+      "extractionSource": "manual",
+      "confidence": "High",
+      "isActive": "1"
+    },
+    {
+      "id": "3",
+      "organizationId": "2",
+      "sector": "F&B",
+      "blueprintName": "Food & Beverage Venture Operations",
+      "source": "document",
+      "extractionSource": "manual",
+      "confidence": "High",
+      "isActive": "1"
+    },
+    {
+      "id": "4",
+      "organizationId": "2",
+      "sector": "Hospitality",
+      "blueprintName": "Hospitality Venture Operations",
+      "source": "document",
+      "extractionSource": "manual",
+      "confidence": "High",
+      "isActive": "1"
+    },
+    {
+      "id": "5",
+      "organizationId": "2",
+      "sector": "Oil & Gas",
+      "blueprintName": "Oil & Gas Venture Operations",
+      "source": "document",
+      "extractionSource": "manual",
+      "confidence": "High",
+      "isActive": "1"
+    },
+    {
+      "id": "6",
+      "organizationId": "2",
+      "sector": "Energy",
+      "blueprintName": "Energy Venture Operations",
+      "source": "document",
+      "extractionSource": "manual",
+      "confidence": "High",
+      "isActive": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\torganizationId\tsector\tblueprintName\tsource\textractionSource\tconfidence\tisActive\n1\t2\tReal Estate\tReal Estate Venture Operations\tdocument\tmanual\tHigh\t1\n2\t2\tYacht\tYacht Venture Operations\tdocument\tmanual\tHigh\t1\n3\t2\tF&B\tFood & Beverage Venture Operations\tdocument\tmanual\tHigh\t1\n4\t2\tHospitality\tHospitality Venture Operations\tdocument\tmanual\tHigh\t1\n5\t2\tOil & Gas\tOil & Gas Venture Operations\tdocument\tmanual\tHigh\t1\n6\t2\tEnergy\tEnergy Venture Operations\tdocument\tmanual\tHigh\t1\n",
+  "stderr": "",
+  "execution_time_ms": 68
+}

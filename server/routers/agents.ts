@@ -31,6 +31,7 @@ import {
 import { eq, desc, sql, and, ne, gte, inArray } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
 import { isAtlasTeam, resolveVentureScope } from "../security/rbac";
+import { lookupBlueprintForVenture, buildBlueprintContext } from "../blueprintLookup";
 import type { User } from "../../drizzle/schema";
 
 // ── Types ──────────────────────────────────────────────────────────────
@@ -218,30 +219,21 @@ async function runOverdueAgent(
     const sector = task.ventureId ? ventureMap[task.ventureId]?.sector || "General" : "General";
     const assignees = task.assigneeNames?.join(", ") || "Unassigned";
 
-    // Connection 5: Fetch blueprint context for richer overdue follow-ups
+    // 3-Layer Blueprint lookup for richer overdue follow-ups
     let blueprintHint = "";
+    let blueprintSourceLabel = "";
     if (task.ventureId) {
       try {
-        const trackingRows = await db
-          .select({
-            stepName: ventureProcessTracking.stepName,
-            isBlocking: ventureProcessTracking.isBlocking,
-            whoOwns: ventureProcessTracking.whoOwns,
-            stageName: ventureProcessTracking.stageName,
-            status: ventureProcessTracking.status,
-          })
-          .from(ventureProcessTracking)
-          .where(eq(ventureProcessTracking.ventureId, task.ventureId));
-        const blockingIncomplete = trackingRows.filter(s => s.isBlocking && s.status !== "complete");
-        if (blockingIncomplete.length > 0) {
-          blueprintHint = ` | Blueprint blocking steps: ${blockingIncomplete.map(s => `"${s.stepName}" (owned by ${s.whoOwns || "unassigned"}, stage: ${s.stageName})`).join("; ")}`;
-        }
+        const bpResult = await lookupBlueprintForVenture(task.ventureId);
+        blueprintSourceLabel = bpResult.sourceLabel;
+        const ctx = buildBlueprintContext(bpResult);
+        if (ctx) blueprintHint = ctx;
       } catch { /* no blueprint */ }
     }
 
     const draftBody = await callAgentLLM(
       "You are ATLAS, a venture velocity platform. Draft a brief, professional follow-up message (max 4 sentences) to send to the assigned team member about an overdue task. Reference the task and venture by name. If blueprint blocking steps are provided, mention the specific step that needs attention. Be direct but professional. Sign off as 'ATLAS Operations'.",
-      `Task: "${task.title}" | Venture: ${ventureName} | Assigned to: ${assignees} | Days overdue: ${daysOverdue} | Sector: ${sector}${blueprintHint}`
+      `Task: "${task.title}" | Venture: ${ventureName} | Assigned to: ${assignees} | Days overdue: ${daysOverdue} | Sector: ${sector}${blueprintHint}${blueprintSourceLabel ? ` | Operating on: ${blueprintSourceLabel}` : ""}`
     );
 
     const draftResult = await db.insert(agentDrafts).values({
@@ -262,7 +254,7 @@ async function runOverdueAgent(
     signals.push({
       agentName: "Overdue Agent",
       eventType: "status_change",
-      message: `"${task.title}" moved to overdue (${daysOverdue} days). Follow-up drafted for ${assignees}.`,
+      message: `"${task.title}" moved to overdue (${daysOverdue} days). Follow-up drafted for ${assignees}.${blueprintSourceLabel ? ` [${blueprintSourceLabel}]` : ""}`,
       severity,
       organizationId: task.organizationId,
       audience: "client",
@@ -389,27 +381,16 @@ async function runVelocityAgent(
     const totalTasks = ventureTasks.length;
     const completedTasks = ventureTasks.filter(t => t.status === "complete").length;
 
-    // ── Blueprint context: fetch process tracking for this venture ──
-    let blueprintSteps: { stepName: string; status: string; isBlocking: boolean; whoOwns: string | null; stageName: string }[] = [];
+    // ── 3-Layer Blueprint context for velocity analysis ──
+    let blueprintSteps: any[] = [];
+    let blueprintContext = "";
+    let bpSourceLabel = "";
     try {
-      const trackingRows = await db
-        .select({
-          stepName: ventureProcessTracking.stepName,
-          status: ventureProcessTracking.status,
-          isBlocking: ventureProcessTracking.isBlocking,
-          whoOwns: ventureProcessTracking.whoOwns,
-          stageName: ventureProcessTracking.stageName,
-        })
-        .from(ventureProcessTracking)
-        .where(eq(ventureProcessTracking.ventureId, venture.id));
-      blueprintSteps = trackingRows;
-    } catch { /* no blueprint applied */ }
-
-    const blockingIncomplete = blueprintSteps.filter(s => s.isBlocking && s.status !== "complete");
-    const blueprintContext = blueprintSteps.length > 0
-      ? `\nBlueprint: ${blueprintSteps.length} steps tracked, ${blockingIncomplete.length} blocking steps incomplete` +
-        (blockingIncomplete.length > 0 ? `: ${blockingIncomplete.slice(0, 3).map(s => `"${s.stepName}" (${s.whoOwns || "unassigned"})`).join(", ")}` : "")
-      : "";
+      const bpResult = await lookupBlueprintForVenture(venture.id);
+      blueprintSteps = bpResult.steps;
+      bpSourceLabel = bpResult.sourceLabel;
+      blueprintContext = buildBlueprintContext(bpResult, venture.stage);
+    } catch { /* no blueprint */ }
 
     if (totalTasks > 0 && completedTasks === totalTasks) {
       const nextStage = getNextStage(venture.stage);
@@ -484,7 +465,7 @@ async function runVelocityAgent(
           signals.push({
             agentName: "Velocity Agent",
             eventType: "status_change",
-            message: `"${venture.name}" auto-advanced from ${venture.stage} → ${nextStage} in ${daysInStage} days. ${totalTasks} tasks completed.`,
+            message: `"${venture.name}" auto-advanced from ${venture.stage} \u2192 ${nextStage} in ${daysInStage} days. ${totalTasks} tasks completed.${bpSourceLabel ? ` [${bpSourceLabel}]` : ""}`,
             severity: "info",
             organizationId: orgId,
             audience: "client",
@@ -545,7 +526,7 @@ async function runVelocityAgent(
           signals.push({
             agentName: "Velocity Agent",
             eventType: "alert",
-            message: `"${venture.name}" has completed all ${totalTasks} tasks in ${venture.stage} and is ready to advance to ${nextStage}.${capitalStage ? " Capital stage — requires explicit approval." : " One-click advance available."}`,
+            message: `"${venture.name}" has completed all ${totalTasks} tasks in ${venture.stage} and is ready to advance to ${nextStage}.${capitalStage ? " Capital stage \u2014 requires explicit approval." : " One-click advance available."}${bpSourceLabel ? ` [${bpSourceLabel}]` : ""}`,
             severity: "info",
             organizationId: orgId,
             audience: "client",
@@ -620,18 +601,12 @@ async function runVelocityAgent(
 
       const teamNames = team.map(t => t.name).join(", ") || "No team assigned";
 
-      // Blueprint context for stall detection
-      let stallBlueprintCtx = "";
-      if (blueprintSteps.length > 0) {
-        const stageSteps = blueprintSteps.filter(s => s.stageName === venture.stage);
-        const incomplete = stageSteps.filter(s => s.status !== "complete");
-        stallBlueprintCtx = `\nBlueprint steps for current stage: ${stageSteps.length} total, ${incomplete.length} incomplete` +
-          (incomplete.length > 0 ? `. Blocking: ${incomplete.filter(s => s.isBlocking).map(s => `"${s.stepName}" owned by ${s.whoOwns || "unassigned"}`).join(", ")}` : "");
-      }
+      // Blueprint context for stall detection (already loaded above)
+      const stallBlueprintCtx = blueprintContext;
 
       const interventionNote = await callAgentLLM(
         "You are ATLAS. Draft a brief internal note (3 sentences max) recommending a specific intervention for a stalled venture. Name the venture, how long it's been stalled, and one concrete next action to unblock it. If blueprint steps are provided, reference the specific blocking step and who owns it.",
-        `Venture: "${venture.name}" | Sector: ${venture.sector} | Stage: In Validation | Days stalled: ${daysStalled} | Team members assigned: ${teamNames}${stallBlueprintCtx}`
+        `Venture: "${venture.name}" | Sector: ${venture.sector} | Stage: In Validation | Days stalled: ${daysStalled} | Team members assigned: ${teamNames}${stallBlueprintCtx}${bpSourceLabel ? ` | Operating on: ${bpSourceLabel}` : ""}`
       );
 
       signals.push({

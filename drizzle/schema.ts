@@ -636,15 +636,27 @@ export type ClientAgentConfig = typeof clientAgentConfig.$inferSelect;
 export type InsertClientAgentConfig = typeof clientAgentConfig.$inferInsert;
 
 // ── Process Templates (Blueprint definitions per sector/org) ─────────────
+// Three-layer architecture:
+//   Layer 1: source='system', status='confirmed', confidence='0.5' — sector defaults
+//   Layer 2: source='document'|'conversation'|'manual', status='draft'|'confirmed' — client-specific
+//   Layer 3: venture_process_overrides — per-venture overrides on top of Layer 2
 export const processTemplates = mysqlTable("process_templates", {
   id: int("id").autoincrement().primaryKey(),
   organizationId: int("organizationId").notNull(),
   sector: varchar("sector", { length: 128 }).notNull(),
   blueprintName: varchar("blueprintName", { length: 255 }).notNull(),
-  source: varchar("source", { length: 64 }).default("document"), // document | conversation | manual
-  confidence: varchar("confidence", { length: 32 }).default("Medium"),
+  source: varchar("source", { length: 64 }).default("document"), // system | document | conversation | ai_generated | manual
+  extractionSource: varchar("extractionSource", { length: 32 }).default("manual").notNull(), // legacy compat
+  confidence: varchar("confidence", { length: 32 }).default("Medium"), // 'High' | 'Medium' | 'Low' or numeric '0.5'
+  status: varchar("blueprintStatus", { length: 32 }).default("draft").notNull(), // draft | confirmed | archived
   sourceDocumentUrl: text("sourceDocumentUrl"),
   sourceDocumentName: varchar("sourceDocumentName", { length: 255 }),
+  extractionNotes: text("extractionNotes"),
+  sourceDocumentIds: json("sourceDocumentIds").$type<number[]>(),
+  keyPeopleRoles: json("keyPeopleRoles").$type<string[]>(),
+  commonBlockers: json("commonBlockers").$type<string[]>(),
+  successSignals: json("successSignals").$type<string[]>(),
+  venturesApplied: int("venturesApplied").default(0).notNull(),
   refinementCount: int("refinementCount").default(0).notNull(),
   lastRefinedAt: timestamp("lastRefinedAt"),
   isActive: boolean("isActive").default(true).notNull(),
@@ -659,17 +671,22 @@ export const processSteps = mysqlTable("process_steps", {
   id: int("id").autoincrement().primaryKey(),
   templateId: int("templateId").notNull(),
   stageName: varchar("stageName", { length: 128 }).notNull(),
-  stepName: varchar("stepName", { length: 255 }).notNull(),
-  stepOrder: int("stepOrder").default(0).notNull(),
   stageOrder: int("stageOrder").default(0).notNull(),
+  stageDescription: text("stageDescription"),
+  stageTypicalDurationDays: int("stageTypicalDurationDays"),
+  decisionMaker: varchar("decisionMaker", { length: 255 }),
+  approvalThreshold: text("approvalThreshold"),
+  stepOrder: int("stepOrder").default(0).notNull(),
+  stepName: varchar("stepName", { length: 255 }).notNull(),
+  stepDescription: text("stepDescription"),
+  whoOwns: varchar("whoOwns", { length: 255 }),
   isBlocking: boolean("isBlocking").default(false).notNull(),
-  whoOwns: varchar("whoOwns", { length: 128 }),
-  estimatedDays: int("estimatedDays"),
+  typicalDays: int("typicalDays"),  // estimated days for this step
+  documentOrOutput: varchar("documentOrOutput", { length: 500 }),
   actualAvgDays: int("actualAvgDays"),
   sampleCount: int("sampleCount").default(0).notNull(),
-  evidence: text("evidence"),
-  confidence: varchar("confidence", { length: 32 }).default("Medium"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 export type ProcessStep = typeof processSteps.$inferSelect;
 export type InsertProcessStep = typeof processSteps.$inferInsert;
@@ -714,3 +731,20 @@ export const clientVelocityBenchmarks = mysqlTable("client_velocity_benchmarks",
 });
 export type ClientVelocityBenchmark = typeof clientVelocityBenchmarks.$inferSelect;
 export type InsertClientVelocityBenchmark = typeof clientVelocityBenchmarks.$inferInsert;
+
+// ── Venture Process Overrides (Layer 3 — per-venture step overrides) ────────
+export const ventureProcessOverrides = mysqlTable("venture_process_overrides", {
+  id: int("id").autoincrement().primaryKey(),
+  ventureId: int("ventureId").notNull(),
+  processTemplateId: int("processTemplateId").notNull(),
+  stepId: int("stepId"),  // null = template-level override
+  overrideType: varchar("overrideType", { length: 32 }).notNull(), // cadence | contact | escalation | skip | custom
+  overrideField: varchar("overrideField", { length: 128 }),  // which field is overridden (e.g., 'estimatedDays', 'whoOwns')
+  overrideValue: text("overrideValue").notNull(),  // the new value
+  reason: text("reason"),  // why this override exists
+  createdBy: varchar("createdBy", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type VentureProcessOverride = typeof ventureProcessOverrides.$inferSelect;
+export type InsertVentureProcessOverride = typeof ventureProcessOverrides.$inferInsert;
