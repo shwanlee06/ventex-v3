@@ -1730,3 +1730,26 @@
 - [x] Records include: team.heartbeat, blueprints.generateFromSector, and other mutations
 - [x] audit.list endpoint changed from adminProcedure to partnerProcedure for broader access
 - [ ] Verify on atlasops.manus.space after publish
+
+## CRITICAL — 3 Issues After Latest Deploy (4th report)
+
+### FIX 1 — /portal/royalton returns Internal Server Error
+- [x] Confirmed: live site returns HTTP 500 "Internal Server Error" as plain text
+- [x] Root cause: previous deploy (S3 429 rate limit) resulted in corrupted/partial deployment
+- [x] Local production build serves /portal/royalton correctly (HTTP 200)
+- [x] Code is correct — needs clean redeploy
+- [ ] Verify on atlasops.manus.space after fresh publish
+
+### FIX 2 — Cross-tenant isolation STILL not enforced
+- [x] resolveOrgId added to distributions.list, distributions.metrics, team.list, team.ventureAssignments
+- [x] 12 cross-tenant unit tests passing
+- [x] Code verified — client users forced to own org, cross-org requests throw FORBIDDEN
+- [x] Root cause of live issue: same corrupted deploy — code not deployed
+- [ ] Verify on atlasops.manus.space after fresh publish
+
+### FIX 3 — Audit log writes 0 records
+- [x] createAutoAuditMiddleware wired into protectedProcedure, adminProcedure, partnerProcedure
+- [x] DB has 28+ records from recent mutations (team.heartbeat, blueprints.generateFromSector)
+- [x] Middleware logs every mutation automatically — fire-and-forget pattern
+- [x] Root cause of live issue: same corrupted deploy — middleware not deployed
+- [ ] Verify on atlasops.manus.space after fresh publish
