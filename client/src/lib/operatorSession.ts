@@ -1,5 +1,5 @@
 // ============================================================================
-// Operator Session Tracking — Thalora System
+// Operator Session Tracking — ATLAS System
 // Tracks operator logins, activity, and session history in localStorage
 // ============================================================================
 

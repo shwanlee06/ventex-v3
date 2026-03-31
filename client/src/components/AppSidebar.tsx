@@ -7,6 +7,7 @@
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { isAtlasTeam } from "@/lib/atlas";
 import { usePreviewMode } from "@/contexts/PreviewMode";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { trpc } from "@/lib/trpc";
@@ -70,10 +71,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: "My Profile", href: "/profile", icon: <User className="size-5" />, clientOnly: true },
 ];
 
-/** Check if user is ATLAS internal team */
-function isAtlasRole(role?: string): boolean {
-  return role === "owner" || role === "admin" || role === "partner";
-}
+
 
 export default function AppSidebar() {
   const [location] = useLocation();
@@ -109,7 +107,7 @@ export default function AppSidebar() {
   };
 
   // In preview mode, treat admin/owner as client
-  const isAtlas = isPreviewMode ? false : isAtlasRole(user?.role);
+  const isAtlas = isPreviewMode ? false : isAtlasTeam(user);
 
   // Filter nav items based on role
   const navItems = useMemo(() => {

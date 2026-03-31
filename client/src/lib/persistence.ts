@@ -5,12 +5,12 @@
 // ============================================================================
 
 const STORAGE_KEYS = {
-  tasks: "thalora_tasks",
-  ventures: "thalora_ventures",
-  distributions: "thalora_distributions",
-  team: "thalora_team",
-  spvs: "thalora_spvs",
-  settings: "thalora_settings",
+  tasks: "atlas_tasks",
+  ventures: "atlas_ventures",
+  distributions: "atlas_distributions",
+  team: "atlas_team",
+  spvs: "atlas_spvs",
+  settings: "atlas_settings",
 } as const;
 
 // Generic helpers

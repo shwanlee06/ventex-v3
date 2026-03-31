@@ -1,5 +1,5 @@
 // ============================================================================
-// PDF Export Utility — Thalora System
+// PDF Export Utility — ATLAS System
 // Generates professional distribution reports using jsPDF
 // ============================================================================
 
@@ -46,7 +46,7 @@ export function exportDistributionPdf(dist: DistributionData) {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text("THALORA", margin, 18);
+  doc.text("ATLAS", margin, 18);
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
@@ -139,7 +139,7 @@ export function exportDistributionPdf(dist: DistributionData) {
 
   // Save
   const safeName = dist.name.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
-  doc.save(`thalora_distribution_${safeName}.pdf`);
+  doc.save(`atlas_distribution_${safeName}.pdf`);
 }
 
 // Export all distributions as a summary PDF
@@ -156,7 +156,7 @@ export function exportAllDistributionsPdf(distributions: DistributionData[]) {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
-  doc.text("THALORA", margin, 16);
+  doc.text("ATLAS", margin, 16);
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
@@ -226,5 +226,5 @@ export function exportAllDistributionsPdf(distributions: DistributionData[]) {
   doc.setTextColor(150, 150, 150);
   doc.text("ATLAS Venture Intelligence Operations — Confidential", margin, footerY);
 
-  doc.save(`thalora_distributions_summary_${new Date().toISOString().split("T")[0]}.pdf`);
+  doc.save(`atlas_distributions_summary_${new Date().toISOString().split("T")[0]}.pdf`);
 }

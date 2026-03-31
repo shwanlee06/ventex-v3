@@ -1,5 +1,5 @@
 // ============================================================================
-// Thalora System — Real Airtable Data
+// ATLAS System — Real Airtable Data
 // Swiss Instrument design: DM Sans + DM Mono, near-black surfaces, gold accent
 // Source: Venture Holding Tracker (appw7nayCfrZBRDg6)
 // ============================================================================
@@ -89,7 +89,7 @@ export interface Meeting {
   agenda: string;
   summary: string;
   attendees: string[];
-  thaloraAttendees: string[];
+  atlasAttendees: string[];
 }
 
 export interface Organization {
@@ -309,10 +309,10 @@ export const CONTACTS: Contact[] = [
 ];
 
 export const DISTRIBUTIONS: Distribution[] = [
-  { id: "reczfbACIbdw01OnB", name: "Q4 2025 Profit Share", date: "2026-01-14", fund: "Thalora Venture Fund I", amount: 250000, currency: "USD", type: "Profit", status: "Paid", method: "Wire", notes: "Quarterly profit share for Q4 2025. Paid to LPs as scheduled.", ageDays: 60, isPaid: true },
-  { id: "recjvCJ8Gf8lLuuZH", name: "2025 Return of Capital - SPV Alpha", date: "2026-01-28", fund: "Thalora SPV Alpha", amount: 100000, currency: "USD", type: "Return of Capital", status: "Paid", method: "Wire", notes: "Return of capital to LPs after exit from SPV Alpha.", ageDays: 46, isPaid: true },
-  { id: "recqNgcoApulVgiih", name: "2026 Scheduled Dividend - REIT Fund I", date: "2026-02-09", fund: "Thalora Real Estate Fund II", amount: 40000, currency: "USD", type: "Dividend", status: "Scheduled", method: "Wire", notes: "Scheduled semi-annual dividend for REIT Fund I.", ageDays: 34, isPaid: false },
-  { id: "recONJPIqJBxlTEBT", name: "Cancelled Profit Distribution - Growth Equity Fund II", date: "2026-02-14", fund: "Thalora Growth Equity Fund II", amount: 50000, currency: "USD", type: "Profit", status: "Cancelled", method: "Wire", notes: "Cancelled due to compliance review.", ageDays: 29, isPaid: false },
+  { id: "reczfbACIbdw01OnB", name: "Q4 2025 Profit Share", date: "2026-01-14", fund: "ATLAS Venture Fund I", amount: 250000, currency: "USD", type: "Profit", status: "Paid", method: "Wire", notes: "Quarterly profit share for Q4 2025. Paid to LPs as scheduled.", ageDays: 60, isPaid: true },
+  { id: "recjvCJ8Gf8lLuuZH", name: "2025 Return of Capital - SPV Alpha", date: "2026-01-28", fund: "ATLAS SPV Alpha", amount: 100000, currency: "USD", type: "Return of Capital", status: "Paid", method: "Wire", notes: "Return of capital to LPs after exit from SPV Alpha.", ageDays: 46, isPaid: true },
+  { id: "recqNgcoApulVgiih", name: "2026 Scheduled Dividend - REIT Fund I", date: "2026-02-09", fund: "ATLAS Real Estate Fund II", amount: 40000, currency: "USD", type: "Dividend", status: "Scheduled", method: "Wire", notes: "Scheduled semi-annual dividend for REIT Fund I.", ageDays: 34, isPaid: false },
+  { id: "recONJPIqJBxlTEBT", name: "Cancelled Profit Distribution - Growth Equity Fund II", date: "2026-02-14", fund: "ATLAS Growth Equity Fund II", amount: 50000, currency: "USD", type: "Profit", status: "Cancelled", method: "Wire", notes: "Cancelled due to compliance review.", ageDays: 29, isPaid: false },
 ];
 
 export const MEETINGS: Meeting[] = [
@@ -322,7 +322,7 @@ export const MEETINGS: Meeting[] = [
     agenda: "The purpose of the meeting was to discuss the vision and storytelling of the project and an introduction of Marwan to the team.",
     summary: "Purpose: Vision Discussion\n\nMeeting Date: 2026-02-21\n\nKey updates:\n- Narrative Direction and Storytelling\n- The team agreed that the plan must evolve beyond a technical master plan into a narrative driven vision.\n- Anton has formed a focused working group consisting of Guy, Mohammed, Marwan, and Jimmy.\n\nNext steps:\n- Small group workshop to be scheduled this week to finalize vision statement/storytelling. Anton to coordinate day/time.",
     attendees: ["Guy", "Mohamed", "Marwan"],
-    thaloraAttendees: ["Jimmy Frangi", "Anton Maghami"],
+    atlasAttendees: ["Jimmy Frangi", "Anton Maghami"],
   },
 ];
 
@@ -381,7 +381,7 @@ export const AGENT_LOGS: AgentLogEntry[] = [
 ];
 
 // Agent context for chat
-export const AGENT_CONTEXT = `You are the ATLAS Venture Ops AI Assistant for the Thalora System. You help manage operations across the venture holding portfolio.
+export const AGENT_CONTEXT = `You are the ATLAS Venture Ops AI Assistant for the ATLAS System. You help manage operations across the venture holding portfolio.
 
 Current Portfolio:
 - ${VENTURES.length} ventures across ${Object.keys(VENTURES_BY_THEME).length} sectors (Real Estate, F&B, Yacht, Entertainment, Others)

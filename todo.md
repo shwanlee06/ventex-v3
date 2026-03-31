@@ -1520,3 +1520,5 @@
 
 ## Bug Fixes — 2026-03-31 (Branding)
 - [x] Invitation email should reference ATLAS, not Royalton — replaced all "Royalton" references across invitationEmail.ts, emailService.ts, team.ts, agents.ts, ai.ts, intelligence.ts, and AccessManagement.tsx
+- [x] Remove all "Thalora" references — replaced across SpyOps.tsx, data.ts, exportPdf.ts, operatorSession.ts, persistence.ts, aiStream.ts, TeamMemberDetail.tsx, and client/index.html
+- [x] All Atlas team members should be able to see all clients — created shared isAtlasTeam() helper (client/src/lib/atlas.ts + server/security/rbac.ts), updated Home.tsx, App.tsx, AppSidebar.tsx, Topbar.tsx, and organizations router (list/listWithMetrics now use protectedProcedure with isAtlasTeam check)

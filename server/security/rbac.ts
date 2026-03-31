@@ -76,11 +76,19 @@ const PERMISSION_MATRIX: Record<string, Set<Action>> = {
 // ── Two-Tier Helpers ──────────────────────────────────────────────────
 
 /**
- * Check if a user is part of the ATLAS internal team (owner or admin).
+ * Check if a user is part of the ATLAS internal team.
  * ATLAS team sees everything; clients see only their org's data.
+ * All roles except 'client' and 'viewer' are considered ATLAS team
+ * when they don't belong to a client organization.
  */
-export function isAtlasTeam(user: { role: string }): boolean {
-  return user.role === "owner" || user.role === "admin" || user.role === "partner";
+export function isAtlasTeam(user: { role: string; organizationId?: number | null }): boolean {
+  // owner/admin/partner are always ATLAS team regardless of org
+  if (user.role === "owner" || user.role === "admin" || user.role === "partner") return true;
+  // manager/user are ATLAS team if they have no client org (orgId null or 1 = ATLAS)
+  if (user.role === "manager" || user.role === "user") {
+    return !user.organizationId || user.organizationId === 1;
+  }
+  return false;
 }
 
 /**

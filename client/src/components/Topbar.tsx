@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { isAtlasTeam } from "@/lib/atlas";
 import { usePreviewMode } from "@/contexts/PreviewMode";
 import { useAgents } from "@/contexts/AgentContext";
 import { Bell, Search, User, Settings, LogOut, Eye, EyeOff, X, FileText, Building2 } from "lucide-react";
@@ -24,9 +25,6 @@ interface TopbarProps {
   subtitle?: string;
 }
 
-function isAtlasRole(role?: string): boolean {
-  return role === "owner" || role === "admin" || role === "partner";
-}
 
 export default function Topbar({ title, subtitle }: TopbarProps) {
   const { unreadCount } = useNotifications();
@@ -50,7 +48,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
     // AgentProvider may not be mounted yet
   }
 
-  const isReallyAtlas = isAtlasRole(user?.role);
+  const isReallyAtlas = isAtlasTeam(user);
   const isAtlas = isPreviewMode ? false : isReallyAtlas;
 
   const displayName = useMemo(() => {

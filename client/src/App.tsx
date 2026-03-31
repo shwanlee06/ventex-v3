@@ -8,6 +8,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { PreviewModeProvider, usePreviewMode } from "./contexts/PreviewMode";
 import { WorkspaceProvider } from "./contexts/WorkspaceContext";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { isAtlasTeam } from "@/lib/atlas";
 import Home from "./pages/Home";
 import Agent from "./pages/Agent";
 import Verticals from "./pages/Verticals";
@@ -63,7 +64,7 @@ function RequireAtlas({ children }: { children: React.ReactNode }) {
   const { isPreviewMode } = usePreviewMode();
   const [, navigate] = useLocation();
 
-  const isAtlas = user && (user.role === "owner" || user.role === "admin" || user.role === "partner");
+  const isAtlas = isAtlasTeam(user);
   const shouldBlock = !isAtlas || isPreviewMode;
 
   useEffect(() => {

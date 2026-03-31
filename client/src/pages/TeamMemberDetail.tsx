@@ -107,7 +107,7 @@ export default function TeamMemberDetail() {
 
   if (!member) {
     return (
-      <DashboardLayout title="Team Member" subtitle="THALORA">
+      <DashboardLayout title="Team Member" subtitle="ATLAS">
         <div className="p-6 flex flex-col items-center justify-center min-h-[60vh]">
           <p className="text-sm text-muted-foreground mb-4">Team member not found.</p>
           <Button variant="outline" size="sm" onClick={() => navigate("/team")}>

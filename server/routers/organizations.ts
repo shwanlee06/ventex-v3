@@ -2,7 +2,7 @@ import { z } from "zod";
 import { eq, inArray, desc, and, ne } from "drizzle-orm";
 import { protectedProcedure, adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { logAudit } from "../security/rbac";
+import { logAudit, isAtlasTeam } from "../security/rbac";
 import {
   organizations,
   orgVentureAccess,
@@ -20,10 +20,18 @@ import {
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
 export const organizationsRouter = router({
-  // List all client organizations (admin only) — basic list
-  list: adminProcedure
+  // List all client organizations — basic list (all Atlas team members can see)
+  list: protectedProcedure
     .input(z.object({ includeArchived: z.boolean().optional() }).optional())
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
+      // All Atlas team members can see all clients; client users see only their own org
+      if (!isAtlasTeam(ctx.user)) {
+        // Non-Atlas users: return only their own organization if they have one
+        const db = await getDb();
+        if (!db || !ctx.user.organizationId) return [];
+        const rows = await db.select().from(organizations).where(eq(organizations.id, ctx.user.organizationId));
+        return rows.map(org => ({ ...org, ventureCount: 0 }));
+      }
       const db = await getDb();
       if (!db) return [];
 
@@ -55,11 +63,42 @@ export const organizationsRouter = router({
       }));
     }),
 
-  // List all client organizations with aggregate metrics — for ATLAS admin dashboard
+  // List all client organizations with aggregate metrics — for ATLAS dashboard
   // By default excludes archived. Pass includeArchived: true to include them.
-  listWithMetrics: adminProcedure
+  listWithMetrics: protectedProcedure
     .input(z.object({ includeArchived: z.boolean().optional() }).optional())
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
+      // All Atlas team members can see all clients; client users see only their own org
+      if (!isAtlasTeam(ctx.user)) {
+        const db = await getDb();
+        if (!db || !ctx.user.organizationId) return [];
+        const rows = await db.select().from(organizations).where(eq(organizations.id, ctx.user.organizationId));
+        return rows.map(org => ({
+          id: org.id,
+          name: org.name,
+          slug: org.slug,
+          type: org.type,
+          status: org.status,
+          description: org.description,
+          createdAt: org.createdAt,
+          ventureCount: 0,
+          sectors: [] as string[],
+          avgHealth: 0,
+          totalTasks: 0,
+          completedTasks: 0,
+          openTasks: 0,
+          overdueTasks: 0,
+          completionRate: 0,
+          spvCount: 0,
+          teamSize: 0,
+          totalDistributions: 0,
+          agentCompletedTasks: 0,
+          lastActivityAt: null as Date | null,
+          lastAgentAction: null as string | null,
+          lastAgentName: null as string | null,
+          lastAgentActionAt: null as Date | null,
+        }));
+      }
       const db = await getDb();
       if (!db) return [];
 

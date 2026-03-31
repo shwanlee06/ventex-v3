@@ -1,5 +1,5 @@
 /**
- * ATLAS × THALORA — Spy-Ops Landing Page
+ * ATLAS — Spy-Ops Landing Page
  * Design: ose-engineering.fr inspired — pure black/white, monospace, military-ops feel
  * Fonts: IBM Plex Mono (body), Bebas Neue (display), Share Tech Mono (data)
  */
@@ -703,7 +703,7 @@ export default function SpyOps() {
                 animation: "spyops-fadeIn 0.6s ease",
               }}
             >
-              {/* THALORA */}
+              {/* ATLAS */}
               <div
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
@@ -714,10 +714,10 @@ export default function SpyOps() {
                   textAlign: "center",
                 }}
               >
-                THALORA
+                A T L A S
               </div>
 
-              {/* engineered by ATLAS */}
+              {/* VENTURE INTELLIGENCE OPERATIONS */}
               <div
                 style={{
                   fontFamily: "'Share Tech Mono', monospace",
@@ -932,7 +932,7 @@ export default function SpyOps() {
               textTransform: "uppercase",
             }}
           >
-            THALORA
+            ATLAS
           </span>
         </div>
         {/* center */}
@@ -1800,7 +1800,7 @@ export default function SpyOps() {
               letterSpacing: "0.4em",
             }}
           >
-            THALORA × ATLAS
+            A T L A S
           </div>
         </div>
       </Section>
@@ -1842,9 +1842,9 @@ export default function SpyOps() {
                 lineHeight: 2,
               }}
             >
-              THALORA
+              ATLAS
               <br />
-              ENGINEERED BY ATLAS
+              POWERED BY AUROVIA
             </div>
           </div>
           {/* col 2 */}
@@ -1920,9 +1920,9 @@ export default function SpyOps() {
                 lineHeight: 2,
               }}
             >
-              © 2026 THALORA
+              © 2026 ATLAS
               <br />
-              POWERED BY ATLAS / AUROVIA LLC
+              POWERED BY AUROVIA LLC
               <br />
               MCLEAN, VIRGINIA
             </div>
