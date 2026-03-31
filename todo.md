@@ -1513,3 +1513,7 @@
 ## Bug Fixes — 2026-03-31 (cont.)
 - [x] BUG: Invitation emails — verified sendInvitationEmail already uses Resend API to send real emails to invitees (notifyOwner is only secondary alert). Added 9 dedicated unit tests for invitationEmail.ts (buildInviteLink + sendInvitationEmail with mock Resend).
 - [x] Atlas members use personal emails, client members use org emails — both receive invitation emails directly via Resend API
+
+## Bug Fixes — 2026-03-31 (UI)
+- [x] BUG: Dialog/modal overlay doesn't block hover effects on elements behind it — fixed by increasing overlay opacity to 80% and adding body[data-scroll-locked] CSS rules to disable all hover effects on background elements
+- [x] BUG: Dialog/modal content can't scroll when it overflows the viewport — fixed by adding max-h-[calc(100vh-2rem)] overflow-y-auto to DialogContent and AlertDialogContent

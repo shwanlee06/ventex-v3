@@ -513,12 +513,38 @@
 
 /* ── MOTION-2: Card Hover States ──────────────────────────── */
 /* Subtle border + bg brightening on interactive cards */
+/* Only apply hover when the card is NOT behind an open dialog/sheet overlay */
 .bg-card {
   transition: border-color 150ms ease, background-color 150ms ease;
 }
-.bg-card:hover {
+.bg-card:hover:not([data-slot]) {
   border-color: rgba(255, 255, 255, 0.15);
   background-color: rgba(255, 255, 255, 0.02);
+}
+/* Disable hover effects on elements behind open overlays */
+body[data-scroll-locked] .bg-card:hover {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: var(--card) !important;
+}
+body[data-scroll-locked] .app-card-hover:hover {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: var(--card) !important;
+}
+body[data-scroll-locked] .client-card:hover {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: var(--card) !important;
+}
+body[data-scroll-locked] .kpi-card:hover {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: var(--card) !important;
+}
+body[data-scroll-locked] .data-table-row:hover {
+  background-color: transparent !important;
+}
+body[data-scroll-locked] button:active,
+body[data-scroll-locked] [role="button"]:active {
+  opacity: 1 !important;
+  transform: none !important;
 }
 .client-card {
   transition: border-color 150ms ease, background-color 150ms ease;
