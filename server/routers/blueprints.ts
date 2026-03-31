@@ -1040,6 +1040,7 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
         organizationId: input.organizationId,
         source: "ai_generated",
         confidence: "Medium",
+        status: "pending_review",
         isActive: true,
       }).$returningId();
       const templateId = templateResult.id;

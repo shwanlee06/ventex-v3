@@ -76,7 +76,7 @@ describe("AES-256-GCM Encryption Module", () => {
     const obj = {
       id: 1,
       name: "Shwan Lee",
-      email: "shwan@thalora.com",
+      email: "shwan@atlas.com",
       amount: "$5,000,000",
       publicField: "This stays plain",
     };

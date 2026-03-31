@@ -1,4 +1,4 @@
-// Schema — Royalton System (ATLAS)
+// Schema — ATLAS System
 import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, bigint, json, boolean } from "drizzle-orm/mysql-core";
 
 // ── Users (existing) ────────────────────────────────────────────────────

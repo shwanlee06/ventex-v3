@@ -29,6 +29,7 @@ import { agentsRouter } from "./routers/agents";
 import { blueprintsRouter } from "./routers/blueprints";
 import { emailRouter } from "./routers/email";
 import { onboardingRouter } from "./routers/onboarding";
+import { portalRouter } from "./routers/portal";
 
 export const appRouter = router({
   system: systemRouter,
@@ -330,6 +331,7 @@ export const appRouter = router({
   blueprints: blueprintsRouter,
   email: emailRouter,
   onboarding: onboardingRouter,
+  portal: portalRouter,
 });
 
 export type AppRouter = typeof appRouter;

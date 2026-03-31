@@ -1539,3 +1539,30 @@
 
 ## Bug Fixes — Blueprints
 - [x] BUG: /clients/royalton/blueprints — confirmed working; timeout was transient network issue. Blueprints tab loads all 8 process blueprints correctly.
+
+## COMBINED BUILD — Blueprint Schema + Client Portal + Branding (2026-03-31)
+
+### PART 1 — Fix blueprints.generateFromSector (HTTP 500, Schema Mismatch)
+- [ ] Run pnpm db:push to sync missing columns to production DB (extractionSource, blueprintStatus, sourceDocumentIds, keyPeopleRoles, commonBlockers, successSignals, venturesApplied)
+- [ ] Verify all 7 columns exist in production process_templates table
+- [ ] Fix Layer 1/Layer 2 architecture: generateFromSector creates Layer 2 (source: 'ai_generated', scoped to orgId) not Layer 1
+- [ ] Agents read only confirmed Layer 2 blueprints (blueprintStatus: 'confirmed'), fall back to Layer 1 only when no confirmed Layer 2 exists
+- [ ] Call generateFromSector for all 8 Royalton sectors and confirm HTTP 200
+- [ ] blueprints.list with organizationId returns all generated blueprints (not empty [])
+- [ ] Verify document ingestion end-to-end: upload PDF/DOCX → Claude extracts → appears as pending_review → Confirm/Edit buttons work
+
+### PART 2 — Build Real Client Portal at /portal/[orgSlug]
+- [x] Build /portal/[orgSlug] as completely isolated authenticated view (not a redirect)
+- [x] Auth: client login scoped to org slug, cannot access other org portals
+- [x] Auth: operator login can access any /portal/[slug] with "Operator Preview Mode" banner
+- [x] Section 1 — This Week: plain English feed of ATLAS actions in last 7 days (no agent names, no internal scoring)
+- [x] Section 2 — Your Portfolio: venture cards with name, sector, stage, plain-English status (no "At Risk", no velocity scores)
+- [x] Section 3 — Coming Up: next 3 items requiring client attention/decision
+- [x] Zero instances of internal operator terms in client portal
+
+### PART 3 — Fix Platform Identity and Data Integrity
+- [x] Browser tab title reads "ATLAS" on every page (no client name, no "Royalton System")
+- [ ] Update org slug=royalton name from "Example Venture Holding" to "Royalton Venture Holding" in DB
+- [ ] Remove all hardcoded "Example Venture Holding" from codebase
+- [ ] Delete placeholder distribution records (ATLAS Venture Fund I $250K, ATLAS SPV Alpha $100K, ATLAS Real Estate Fund II $40K, ATLAS Growth Equity Fund II $50K)
+- [x] Remove all "Thalora" references from codebase and database

@@ -33,6 +33,7 @@ import AgentsPage from "./pages/Agents";
 import DraftsPage from "./pages/Drafts";
 import OnboardingWizard from "./pages/OnboardingWizard";
 import BlueprintsPage from "./pages/Blueprints";
+import ClientPortal from "./pages/ClientPortal";
 import { AgentProvider } from "./contexts/AgentContext";
 import { useHeartbeat } from "./hooks/useHeartbeat";
 
@@ -86,11 +87,9 @@ function Router() {
       {/* Login / landing page is the root */}
       <Route path="/" component={SpyOps} />
 
-      {/* Client portal alias — redirects to /dashboard for client users */}
+      {/* Client portal — standalone client-facing view */}
+      <Route path="/portal/:orgSlug" component={ClientPortal} />
       <Route path="/portal">
-        <Redirect to="/dashboard" />
-      </Route>
-      <Route path="/portal/:rest*">
         <Redirect to="/dashboard" />
       </Route>
 

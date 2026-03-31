@@ -91,7 +91,7 @@ describe("Org Slug Generation", () => {
   it("converts org name to URL-safe slug", () => {
     expect(generateOrgSlug("Aurovia")).toBe("aurovia");
     expect(generateOrgSlug("ATLAS")).toBe("atlas");
-    expect(generateOrgSlug("Royalton Venture Holding")).toBe("royalton-venture-holding");
+    expect(generateOrgSlug("Frangi Family Office")).toBe("frangi-family-office");
   });
 
   it("strips special characters", () => {
