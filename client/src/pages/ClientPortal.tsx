@@ -1,7 +1,7 @@
 // ============================================================================
 // Client Portal — /portal/:orgSlug
 // Premium, outcome-focused. Zero operator language.
-// Sections: Velocity Summary · This Week · Your Portfolio · Coming Up
+// Velocity Feed: 3 card types — amber (action), teal (completed), gray (watching)
 // ============================================================================
 
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -16,6 +16,7 @@ import {
   Clock,
   CheckCircle2,
   ChevronRight,
+  ChevronDown,
   Building2,
   Ship,
   UtensilsCrossed,
@@ -27,9 +28,21 @@ import {
   LogOut,
   Zap,
   ArrowUpRight,
+  Eye,
+  Send,
+  DollarSign,
+  Unlock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { useState, useCallback } from "react";
@@ -43,6 +56,15 @@ const SECTOR_ICONS: Record<string, React.ReactNode> = {
   Entertainment: <Clapperboard className="size-4" />,
   "Oil & Gas": <Fuel className="size-4" />,
   Others: <Package className="size-4" />,
+};
+
+// ── Action flow icons ─────────────────────────────────────────────────
+const ACTION_FLOW_ICONS: Record<string, React.ReactNode> = {
+  advance_stage: <ArrowUpRight className="size-3 mr-1.5" />,
+  approve_followup: <Send className="size-3 mr-1.5" />,
+  confirm_distribution: <DollarSign className="size-3 mr-1.5" />,
+  unblock_venture: <Unlock className="size-3 mr-1.5" />,
+  view_task: <Eye className="size-3 mr-1.5" />,
 };
 
 // ── Stage progress ────────────────────────────────────────────────────
@@ -86,6 +108,15 @@ export default function ClientPortal() {
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
   const [advancingIds, setAdvancingIds] = useState<Set<number>>(new Set());
+  const [resolvingIds, setResolvingIds] = useState<Set<number>>(new Set());
+  const [watchingExpanded, setWatchingExpanded] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    eventId: number;
+    actionFlow: string;
+    actionLabel: string;
+    ventureName: string | null;
+    summary: string;
+  } | null>(null);
 
   const { data, isLoading, error } = trpc.portal.getData.useQuery(
     { orgSlug },
@@ -100,7 +131,6 @@ export default function ClientPortal() {
         `"${result.ventureName}" advanced to ${result.toStage}`,
         { duration: 4000 }
       );
-      // Refresh portal data
       utils.portal.getData.invalidate({ orgSlug });
     },
     onError: (err) => {
@@ -115,12 +145,41 @@ export default function ClientPortal() {
     },
   });
 
+  const resolveActionMutation = trpc.portal.resolveAction.useMutation({
+    onSuccess: (result) => {
+      toast.success(result.message, { duration: 4000 });
+      utils.portal.getData.invalidate({ orgSlug });
+      setConfirmDialog(null);
+    },
+    onError: (err) => {
+      toast.error(err.message || "Action failed");
+    },
+    onSettled: (_data, _err, variables) => {
+      setResolvingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(variables.eventId);
+        return next;
+      });
+    },
+  });
+
   const handleAdvance = useCallback(
     (ventureId: number, eventId: number) => {
       setAdvancingIds((prev) => new Set(prev).add(ventureId));
       advanceMutation.mutate({ ventureId, eventId });
     },
     [advanceMutation]
+  );
+
+  const handleResolveAction = useCallback(
+    (eventId: number, actionFlow: string) => {
+      setResolvingIds((prev) => new Set(prev).add(eventId));
+      resolveActionMutation.mutate({
+        eventId,
+        actionFlow: actionFlow as "approve_followup" | "confirm_distribution" | "unblock_venture",
+      });
+    },
+    [resolveActionMutation]
   );
 
   // ── Auth check ──────────────────────────────────────────────────────
@@ -150,7 +209,6 @@ export default function ClientPortal() {
     );
   }
 
-  // ── Loading state ───────────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -168,7 +226,6 @@ export default function ClientPortal() {
     );
   }
 
-  // ── Error state ─────────────────────────────────────────────────────
   if (error) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -196,9 +253,10 @@ export default function ClientPortal() {
     orgName,
     isOperatorPreview,
     velocitySummary,
-    thisWeek,
+    actionCards,
+    completedCards,
+    watchingCards,
     portfolio,
-    comingUp,
   } = data;
 
   return (
@@ -254,8 +312,12 @@ export default function ClientPortal() {
           </p>
         </motion.div>
 
-        {/* ── Coming Up (Action Required) ──────────────────────────── */}
-        {comingUp.length > 0 && (
+        {/* ════════════════════════════════════════════════════════════
+            VELOCITY FEED — 3 card types: amber → teal → gray
+            ════════════════════════════════════════════════════════════ */}
+
+        {/* ── ACTION NEEDED (amber) ───────────────────────────────── */}
+        {actionCards.length > 0 && (
           <motion.section
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -264,19 +326,21 @@ export default function ClientPortal() {
             <div className="flex items-center gap-2 mb-4">
               <AlertCircle className="size-4 text-amber-400" />
               <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-                Action Required
+                Action Needed
               </h2>
               <span className="text-[11px] text-amber-400 ml-auto font-medium">
-                {comingUp.length} item{comingUp.length !== 1 ? "s" : ""}
+                {actionCards.length} item{actionCards.length !== 1 ? "s" : ""}
               </span>
             </div>
 
             <div className="space-y-2">
               <AnimatePresence mode="popLayout">
-                {comingUp.map((item, i) => {
+                {actionCards.map((item, i) => {
                   const isAdvancing = item.ventureId
                     ? advancingIds.has(item.ventureId)
                     : false;
+                  const isResolving = resolvingIds.has(item.id);
+                  const isBusy = isAdvancing || isResolving;
 
                   return (
                     <motion.div
@@ -310,32 +374,101 @@ export default function ClientPortal() {
                           </div>
                         </div>
 
-                        {item.actionLabel === "Advance Stage" && item.ventureId && (
+                        {/* Action button — route to correct flow */}
+                        {item.actionFlow === "advance_stage" && item.ventureId && (
                           <Button
                             size="sm"
                             className="flex-shrink-0 bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
-                            disabled={isAdvancing}
-                            onClick={() =>
-                              handleAdvance(item.ventureId!, item.id)
-                            }
+                            disabled={isBusy}
+                            onClick={() => handleAdvance(item.ventureId!, item.id)}
                           >
-                            {isAdvancing ? (
+                            {isBusy ? (
                               <Loader2 className="size-3 animate-spin mr-1.5" />
                             ) : (
-                              <ArrowUpRight className="size-3 mr-1.5" />
+                              ACTION_FLOW_ICONS["advance_stage"]
                             )}
-                            {isAdvancing ? "Advancing..." : "Advance Stage"}
+                            {isBusy ? "Advancing..." : "Advance Stage"}
                           </Button>
                         )}
 
-                        {item.actionLabel && item.actionLabel !== "Advance Stage" && (
+                        {item.actionFlow === "approve_followup" && (
+                          <Button
+                            size="sm"
+                            className="flex-shrink-0 bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
+                            disabled={isBusy}
+                            onClick={() =>
+                              setConfirmDialog({
+                                eventId: item.id,
+                                actionFlow: "approve_followup",
+                                actionLabel: "Approve & Send",
+                                ventureName: item.ventureName,
+                                summary: item.summary,
+                              })
+                            }
+                          >
+                            {ACTION_FLOW_ICONS["approve_followup"]}
+                            Review & Approve
+                          </Button>
+                        )}
+
+                        {item.actionFlow === "confirm_distribution" && (
+                          <Button
+                            size="sm"
+                            className="flex-shrink-0 bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
+                            disabled={isBusy}
+                            onClick={() =>
+                              setConfirmDialog({
+                                eventId: item.id,
+                                actionFlow: "confirm_distribution",
+                                actionLabel: "Confirm Distribution",
+                                ventureName: item.ventureName,
+                                summary: item.summary,
+                              })
+                            }
+                          >
+                            {ACTION_FLOW_ICONS["confirm_distribution"]}
+                            Confirm
+                          </Button>
+                        )}
+
+                        {item.actionFlow === "unblock_venture" && (
+                          <Button
+                            size="sm"
+                            className="flex-shrink-0 bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
+                            disabled={isBusy}
+                            onClick={() =>
+                              setConfirmDialog({
+                                eventId: item.id,
+                                actionFlow: "unblock_venture",
+                                actionLabel: "Unblock Venture",
+                                ventureName: item.ventureName,
+                                summary: item.summary,
+                              })
+                            }
+                          >
+                            {ACTION_FLOW_ICONS["unblock_venture"]}
+                            Resolve
+                          </Button>
+                        )}
+
+                        {item.actionFlow === "view_task" && (
                           <Button
                             size="sm"
                             variant="outline"
                             className="flex-shrink-0 text-xs"
-                            onClick={() =>
-                              toast.info("Feature coming soon")
-                            }
+                            onClick={() => toast.info("Task view coming soon")}
+                          >
+                            {ACTION_FLOW_ICONS["view_task"]}
+                            View Task
+                          </Button>
+                        )}
+
+                        {!item.actionFlow && item.actionLabel && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-shrink-0 text-xs"
+                            onClick={() => toast.info("Feature coming soon")}
                           >
                             {item.actionLabel}
                             <ArrowRight className="size-3 ml-1" />
@@ -350,29 +483,25 @@ export default function ClientPortal() {
           </motion.section>
         )}
 
-        {/* ── This Week ───────────────────────────────────────────── */}
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05, duration: 0.3 }}
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <CalendarDays className="size-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-              This Week
-            </h2>
-          </div>
-
-          {thisWeek.length === 0 ? (
-            <div className="bg-card border border-border rounded-xl p-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                No updates this week. We'll notify you when there's something
-                new.
-              </p>
+        {/* ── COMPLETED (teal) ────────────────────────────────────── */}
+        {completedCards.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05, duration: 0.3 }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <CheckCircle2 className="size-4 text-emerald-400" />
+              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+                Completed
+              </h2>
+              <span className="text-[11px] text-muted-foreground ml-auto">
+                {completedCards.length} update{completedCards.length !== 1 ? "s" : ""}
+              </span>
             </div>
-          ) : (
-            <div className="bg-card border border-border rounded-xl divide-y divide-border">
-              {thisWeek.map((item, i) => (
+
+            <div className="bg-card border border-emerald-500/15 rounded-xl divide-y divide-border">
+              {completedCards.map((item, i) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, x: -8 }}
@@ -399,14 +528,102 @@ export default function ClientPortal() {
                 </motion.div>
               ))}
             </div>
-          )}
-        </motion.section>
+          </motion.section>
+        )}
+
+        {/* ── WATCHING (gray, collapsed by default) ───────────────── */}
+        {watchingCards.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+          >
+            <button
+              onClick={() => setWatchingExpanded(!watchingExpanded)}
+              className="flex items-center gap-2 mb-4 w-full text-left group"
+            >
+              <Eye className="size-4 text-muted-foreground/60" />
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                Watching
+              </h2>
+              <span className="text-[11px] text-muted-foreground/60 ml-auto mr-1">
+                {watchingCards.length} item{watchingCards.length !== 1 ? "s" : ""}
+              </span>
+              <ChevronDown
+                className={cn(
+                  "size-3.5 text-muted-foreground/60 transition-transform",
+                  watchingExpanded && "rotate-180"
+                )}
+              />
+            </button>
+
+            <AnimatePresence>
+              {watchingExpanded && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="bg-card border border-border/50 rounded-xl divide-y divide-border/50">
+                    {watchingCards.map((item, i) => (
+                      <div
+                        key={item.id}
+                        className="p-3 flex items-start gap-3"
+                      >
+                        <div className="size-1.5 rounded-full mt-2 flex-shrink-0 bg-muted-foreground/30" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            {item.summary}
+                          </p>
+                          <div className="flex items-center gap-3 mt-1">
+                            {item.ventureName && (
+                              <span className="text-[10px] text-muted-foreground/60">
+                                {item.ventureName}
+                              </span>
+                            )}
+                            <span className="text-[10px] text-muted-foreground/40">
+                              {friendlyDate(item.date ?? undefined)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.section>
+        )}
+
+        {/* ── All Clear (no action cards) ─────────────────────────── */}
+        {actionCards.length === 0 && completedCards.length === 0 && watchingCards.length === 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05, duration: 0.3 }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <CheckCircle2 className="size-4 text-emerald-400" />
+              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+                All Clear
+              </h2>
+            </div>
+            <div className="bg-card border border-border rounded-xl p-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                Nothing needs your attention right now. We'll let you know when
+                something comes up.
+              </p>
+            </div>
+          </motion.section>
+        )}
 
         {/* ── Your Portfolio ───────────────────────────────────────── */}
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.3 }}
+          transition={{ delay: 0.15, duration: 0.3 }}
         >
           <div className="flex items-center gap-2 mb-4">
             <Briefcase className="size-4 text-primary" />
@@ -434,7 +651,7 @@ export default function ClientPortal() {
                   key={v.id}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 + i * 0.03, duration: 0.25 }}
+                  transition={{ delay: 0.2 + i * 0.03, duration: 0.25 }}
                   className="bg-card border border-border rounded-xl p-4 hover:border-primary/20 transition-colors group"
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -459,7 +676,6 @@ export default function ClientPortal() {
                     {v.statusLine}
                   </p>
 
-                  {/* Last agent action line */}
                   {v.lastAgentAction && (
                     <p
                       className={cn(
@@ -489,28 +705,6 @@ export default function ClientPortal() {
           )}
         </motion.section>
 
-        {/* ── Coming Up (empty state when no actions) ──────────────── */}
-        {comingUp.length === 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.3 }}
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <CheckCircle2 className="size-4 text-emerald-400" />
-              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-                All Clear
-              </h2>
-            </div>
-            <div className="bg-card border border-border rounded-xl p-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                Nothing needs your attention right now. We'll let you know when
-                something comes up.
-              </p>
-            </div>
-          </motion.section>
-        )}
-
         {/* Footer */}
         <div className="pt-8 pb-12 text-center">
           <p className="text-[11px] text-muted-foreground/40">
@@ -518,6 +712,56 @@ export default function ClientPortal() {
           </p>
         </div>
       </main>
+
+      {/* ── Confirmation Dialog for non-advance actions ─────────────── */}
+      <Dialog
+        open={!!confirmDialog}
+        onOpenChange={(open) => !open && setConfirmDialog(null)}
+      >
+        {confirmDialog && (
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-base">
+                {confirmDialog.actionLabel}
+              </DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground mt-2">
+                {confirmDialog.ventureName && (
+                  <span className="font-medium text-foreground block mb-1">
+                    {confirmDialog.ventureName}
+                  </span>
+                )}
+                {confirmDialog.summary}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-4 gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setConfirmDialog(null)}
+                disabled={resolvingIds.has(confirmDialog.eventId)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
+                disabled={resolvingIds.has(confirmDialog.eventId)}
+                onClick={() =>
+                  handleResolveAction(
+                    confirmDialog.eventId,
+                    confirmDialog.actionFlow
+                  )
+                }
+              >
+                {resolvingIds.has(confirmDialog.eventId) ? (
+                  <Loader2 className="size-3 animate-spin mr-1.5" />
+                ) : null}
+                {resolvingIds.has(confirmDialog.eventId)
+                  ? "Processing..."
+                  : confirmDialog.actionLabel}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 }

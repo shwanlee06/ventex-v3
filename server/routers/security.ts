@@ -28,6 +28,7 @@ import {
   isAtlasTeam,
 } from "../security/rbac";
 import { isEncryptionConfigured } from "../security/encryption";
+import { resolveOrgId } from "../security/orgScope";
 
 export const securityRouter = router({
   // ── Role Management ────────────────────────────────────────────────
@@ -303,8 +304,7 @@ export const securityRouter = router({
       const db = await getDb();
       if (!db) return { entries: [], total: 0 };
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input.organizationId);
 
       const conditions = [];
       if (effectiveOrgId) conditions.push(eq(auditLog.organizationId, effectiveOrgId));

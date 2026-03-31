@@ -3,7 +3,8 @@ import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { activityLog, ventures } from "../../drizzle/schema";
 import { desc, eq, and, gte, sql, inArray, ne } from "drizzle-orm";
-import { resolveVentureScope } from "../security/rbac";
+import { isAtlasTeam, resolveVentureScope } from "../security/rbac";
+import { resolveOrgId } from "../security/orgScope";
 
 export const activityRouter = router({
   list: protectedProcedure.input(z.object({
@@ -16,13 +17,9 @@ export const activityRouter = router({
     const db = await getDb();
     if (!db) return { items: [], total: 0 };
 
-    const isAdmin = ctx.user.role === "admin";
-
-    // Non-admin users are scoped to their organization
-    let effectiveOrgId = input.organizationId;
-    if (!isAdmin && ctx.user.organizationId) {
-      effectiveOrgId = ctx.user.organizationId;
-    }
+    // Cross-tenant isolation
+    const effectiveOrgId = resolveOrgId(ctx.user, input.organizationId);
+    const isAdmin = isAtlasTeam(ctx.user);
 
     // If org-scoped, filter activity by venture entity IDs
     let ventureIds: number[] | null = null;
@@ -97,7 +94,9 @@ export const activityRouter = router({
     const db = await getDb();
     if (!db) return [];
 
-    const isAdmin = ctx.user.role === "admin";
+    const isAdmin = isAtlasTeam(ctx.user);
+    // Cross-tenant isolation
+    const effectiveOrgId = resolveOrgId(ctx.user, input.organizationId);
 
     // Build base conditions
     const conditions = [];
@@ -115,17 +114,12 @@ export const activityRouter = router({
     }
     const all = await baseQuery.orderBy(desc(activityLog.createdAt)).limit(input.limit * 3);
 
-    // Non-admin users are scoped to their organization
-    const effectiveOrgId = (!isAdmin && ctx.user.organizationId) ? ctx.user.organizationId : input.organizationId;
-
     if (!effectiveOrgId) {
       return all.slice(0, input.limit);
     }
 
     // Org-scoped filtering
-    const ventureIds = ctx.user
-      ? await resolveVentureScope(ctx.user, effectiveOrgId)
-      : await (await import("../security/rbac")).getVentureIdsForOrg(effectiveOrgId);
+    const ventureIds = await resolveVentureScope(ctx.user, effectiveOrgId);
     if (ventureIds === null) return all.slice(0, input.limit);
     if (ventureIds.length === 0) return [];
 

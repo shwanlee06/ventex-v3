@@ -2,6 +2,7 @@ import { NOT_ADMIN_ERR_MSG, UNAUTHED_ERR_MSG } from '@shared/const';
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import type { TrpcContext } from "./context";
+import { createAutoAuditMiddleware } from "../security/auditMiddleware";
 
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
@@ -25,7 +26,9 @@ const requireUser = t.middleware(async opts => {
   });
 });
 
-export const protectedProcedure = t.procedure.use(requireUser);
+const autoAudit = t.middleware(createAutoAuditMiddleware());
+
+export const protectedProcedure = t.procedure.use(requireUser).use(autoAudit);
 
 export const adminProcedure = t.procedure.use(
   t.middleware(async opts => {

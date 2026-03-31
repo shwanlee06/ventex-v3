@@ -3,6 +3,7 @@ import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { ventures, spvs, tasks, teamMembers, distributions, orgVentureAccess } from "../../drizzle/schema";
 import { like, and, eq, inArray } from "drizzle-orm";
+import { resolveOrgId } from "../security/orgScope";
 import { isAtlasTeam, resolveVentureScope } from "../security/rbac";
 
 export const searchRouter = router({
@@ -15,8 +16,7 @@ export const searchRouter = router({
       const db = await getDb();
       if (!db) return { ventures: [], spvs: [], tasks: [], team: [], distributions: [] };
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input.organizationId);
 
       const q = `%${input.query}%`;
 

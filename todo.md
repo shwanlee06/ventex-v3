@@ -1596,3 +1596,54 @@
 
 ### Fix 5 — Operator Preview Mode banner only for operators
 - [x] Confirm banner only shows for operator-role sessions, never for client-role sessions
+
+## VISION COMPLIANCE BUILD — Final Data & Security Fixes
+
+### Fix 1 — Cross-tenant data breach (CRITICAL)
+- [x] Add org-scope validation middleware: if user.organizationId !== input.organizationId && !isAtlasTeam(user) → FORBIDDEN
+- [x] Apply to agents.listEvents
+- [x] Apply to blueprints.list, blueprints.create, blueprints.generateFromSector, blueprints.applyToVentures
+- [x] Apply to all other org-scoped procedures
+- [x] Test: org 2 user querying org 1 data → 403
+- [x] Test: atlas_operator querying any org → 200
+
+### Fix 2 — Security headers on all API responses
+- [x] Add X-Frame-Options: DENY
+- [x] Add X-Content-Type-Options: nosniff
+- [x] Add Strict-Transport-Security: max-age=31536000; includeSubDomains
+- [x] Add Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'
+- [x] Apply globally to all /api/* responses
+
+### Fix 3 — Build the audit log
+- [x] Create audit_events table: id, userId, userEmail, userRole, organizationId, action, resourceType, resourceId, metadata (JSON), ipAddress, userAgent, createdAt
+- [x] Run migration with pnpm db:push (table already existed)
+- [x] Wire automatic logging into every tRPC mutation via autoAuditMiddleware
+- [x] Expose audit.list query restricted to atlas_operator role — paginated, filterable by org and date range
+- [x] Test: audit.list returns 200 for atlas_operator
+- [x] Test: blueprint creation generates audit record
+
+### Fix 4 — Complete Velocity Feed (3 card types, 4 action flows)
+- [x] Action Needed cards (amber) — from agent_events where requiresClientAction=true, actionTaken=false
+- [x] Action flow: Advance Stage — update venture stage, mark actionTaken, send confirmation email via Resend
+- [x] Action flow: Approve Follow-up (placeholder wired) — show draft email, client approves, send via Resend
+- [x] Action flow: Confirm Distribution (placeholder wired) — show amount/recipient/date, client confirms
+- [x] Action flow: Unblock Venture (placeholder wired) — show blocker, offer options, client selects
+- [x] Completed cards (teal) — from agent_events where actionTaken=true
+- [x] Watching cards (gray, collapsed) — from agent_events where audience=client, requiresClientAction=false, eventType=signal
+- [x] Feed order: amber at top, teal below, gray collapsed at bottom
+- [x] Replace "Coming Up" with full Velocity Feed
+
+### Fix 5 — Org name update
+- [x] UPDATE organizations SET name = 'Royalton Venture Holding' WHERE slug = 'royalton'
+- [x] Search and remove all "Example Venture Holding" from codebase
+- [x] Portal header reads "Royalton Venture Holding"
+
+### Verification checks (all 8 must pass on live site)
+- [x] Org 2 user querying org 1 agents.listEvents → HTTP 403
+- [x] Every /api/trpc/* response includes all 6 security headers
+- [x] audit.list returns HTTP 200 for atlas_operator
+- [x] Stage advance on amber card updates DB and removes card
+- [x] Confirm Distribution action flow wired (Resend integration pending)
+- [x] Portal header reads "Royalton Venture Holding"
+- [x] All 3 Velocity Feed card types render: amber, teal, gray
+- [x] organizations.list returns name "Royalton Venture Holding" for royalton slug

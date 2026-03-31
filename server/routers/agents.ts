@@ -31,6 +31,7 @@ import {
 import { eq, desc, sql, and, ne, gte, inArray } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
 import { isAtlasTeam, resolveVentureScope } from "../security/rbac";
+import { resolveOrgId } from "../security/orgScope";
 import { lookupBlueprintForVenture, buildBlueprintContext } from "../blueprintLookup";
 import type { User } from "../../drizzle/schema";
 
@@ -933,12 +934,9 @@ export const agentsRouter = router({
       if (!db) return [];
 
       const limit = input?.limit ?? 50;
-      const isAdmin = isAtlasTeam(ctx.user);
 
-      // Determine effective org ID
-      const effectiveOrgId = isAdmin
-        ? input?.organizationId
-        : ctx.user.organizationId;
+      // Cross-tenant isolation: validates org access, throws FORBIDDEN on mismatch
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       const conditions: any[] = [];
       if (effectiveOrgId) {
@@ -976,8 +974,7 @@ export const agentsRouter = router({
       const db = await getDb();
       if (!db) return { total: 0, unread: 0, critical: 0, warning: 0, draftsGenerated: 0, byAgent: {} as Record<string, number> };
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       const eventConditions: any[] = [];
       if (effectiveOrgId) {
@@ -1135,8 +1132,7 @@ export const agentsRouter = router({
       const db = await getDb();
       if (!db) return { success: false };
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       const conditions: any[] = [eq(agentEvents.isRead, false)];
       if (effectiveOrgId) {
@@ -1192,8 +1188,7 @@ export const agentsRouter = router({
       const db = await getDb();
       if (!db) return [];
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       const conditions: any[] = [];
       if (effectiveOrgId) {
@@ -1322,8 +1317,7 @@ export const agentsRouter = router({
       const db = await getDb();
       if (!db) return { avgDays: null, totalAdvances: 0, recentAdvances: [] };
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       const conditions: any[] = [];
       if (effectiveOrgId) {
@@ -1362,9 +1356,7 @@ export const agentsRouter = router({
     .query(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) return [];
-
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       const conditions: any[] = [];
       if (effectiveOrgId) {
@@ -1396,8 +1388,7 @@ export const agentsRouter = router({
       const db = await getDb();
       if (!db) return { actionNeeded: [], completed: [], watching: [] };
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       const conditions: any[] = [
         sql`${agentEvents.audience} IN ('client', 'both')`,
@@ -1969,10 +1960,8 @@ export const agentsRouter = router({
     .query(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) return [];
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin
-        ? input.organizationId
-        : ctx.user.organizationId;
+      // Cross-tenant isolation: validates org access, throws FORBIDDEN on mismatch
+      const effectiveOrgId = resolveOrgId(ctx.user, input.organizationId);
       const conditions: any[] = [];
       if (effectiveOrgId) {
         conditions.push(eq(agentEvents.organizationId, effectiveOrgId));
@@ -2006,8 +1995,7 @@ export const agentsRouter = router({
       const db = await getDb();
       if (!db) return { sectors: [], overall: null };
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       const conditions: any[] = [];
       if (effectiveOrgId) {

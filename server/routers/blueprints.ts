@@ -19,6 +19,7 @@ import { eq, and, sql, desc, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { invokeLLM } from "../_core/llm";
 import { storagePut } from "../storage";
+import { resolveOrgId } from "../security/orgScope";
 
 // ── LLM extraction prompt ────────────────────────────────────────────────
 const EXTRACTION_SYSTEM_PROMPT = `You are an expert at analyzing business documents and extracting structured process blueprints for venture/investment management.
@@ -98,7 +99,11 @@ export const blueprintsRouter = router({
       sourceDocumentUrl: z.string().optional(),
       sourceDocumentName: z.string().optional(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // Cross-tenant isolation
+      const validatedOrgId = resolveOrgId(ctx.user, input.organizationId);
+      if (!validatedOrgId) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+
       const response = await invokeLLM({
         messages: [
           { role: "system", content: EXTRACTION_SYSTEM_PROMPT },
@@ -135,7 +140,7 @@ export const blueprintsRouter = router({
       }
 
       const [template] = await db.insert(processTemplates).values({
-        organizationId: input.organizationId,
+        organizationId: validatedOrgId,
         sector: blueprint.sector || "General",
         blueprintName: blueprint.blueprintName || "Untitled Blueprint",
         source: "document",
@@ -183,10 +188,14 @@ export const blueprintsRouter = router({
       mimeType: z.string(),
       organizationId: z.number(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // Cross-tenant isolation
+      const validatedOrgId = resolveOrgId(ctx.user, input.organizationId);
+      if (!validatedOrgId) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+
       // Upload to S3
       const buffer = Buffer.from(input.fileBase64, "base64");
-      const fileKey = `blueprints/${input.organizationId}/${Date.now()}-${input.fileName}`;
+      const fileKey = `blueprints/${validatedOrgId}/${Date.now()}-${input.fileName}`;
       const { url } = await storagePut(fileKey, buffer, input.mimeType);
 
       // For now, we'll extract text from the document using LLM vision
@@ -221,7 +230,11 @@ export const blueprintsRouter = router({
       })),
       organizationId: z.number(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // Cross-tenant isolation
+      const validatedOrgId = resolveOrgId(ctx.user, input.organizationId);
+      if (!validatedOrgId) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+
       const llmMessages = [
         { role: "system" as const, content: CONVERSATION_SYSTEM_PROMPT },
         ...input.messages.map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
@@ -250,7 +263,7 @@ export const blueprintsRouter = router({
         const db = await getDb();
         if (db) {
           const [template] = await db.insert(processTemplates).values({
-            organizationId: input.organizationId,
+            organizationId: validatedOrgId,
             sector: blueprint.sector || "General",
             blueprintName: blueprint.blueprintName,
             source: "conversation",
@@ -293,13 +306,15 @@ export const blueprintsRouter = router({
   // ── List templates for an organization ────────────────────────────────
   listTemplates: protectedProcedure
     .input(z.object({ organizationId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) return [];
+      const validatedOrgId = resolveOrgId(ctx.user, input.organizationId);
+      if (!validatedOrgId) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
 
       return db.select().from(processTemplates)
         .where(and(
-          eq(processTemplates.organizationId, input.organizationId),
+          eq(processTemplates.organizationId, validatedOrgId),
           eq(processTemplates.isActive, true),
         ))
         .orderBy(desc(processTemplates.createdAt));
@@ -571,7 +586,9 @@ export const blueprintsRouter = router({
   // ── Get sectors without blueprints for an org ─────────────────────────
   getMissingSectors: protectedProcedure
     .input(z.object({ organizationId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      const validatedOrgId = resolveOrgId(ctx.user, input.organizationId);
+      if (!validatedOrgId) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
@@ -583,7 +600,7 @@ export const blueprintsRouter = router({
           orgVentureAccess,
           eq(orgVentureAccess.ventureId, ventures.id),
         )
-        .where(eq(orgVentureAccess.organizationId, input.organizationId));
+        .where(eq(orgVentureAccess.organizationId, validatedOrgId));
 
       const allSectors = Array.from(new Set(orgVentures.map(v => v.sector)));
 
@@ -591,7 +608,7 @@ export const blueprintsRouter = router({
       const existingBlueprints = await db
         .select({ sector: processTemplates.sector })
         .from(processTemplates)
-        .where(eq(processTemplates.organizationId, input.organizationId));
+        .where(eq(processTemplates.organizationId, validatedOrgId));
 
       const existingSectorsArr = existingBlueprints.map(b => b.sector);
 
@@ -612,7 +629,9 @@ export const blueprintsRouter = router({
       organizationId: z.number(),
       sectors: z.array(z.string()).min(1),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const validatedOrgId = resolveOrgId(ctx.user, input.organizationId);
+      if (!validatedOrgId) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
       const db = (await getDb())!;
       const results: { sector: string; templateId: number; stepCount: number }[] = [];
 
@@ -622,7 +641,7 @@ export const blueprintsRouter = router({
           .select({ id: processTemplates.id })
           .from(processTemplates)
           .where(and(
-            eq(processTemplates.organizationId, input.organizationId),
+            eq(processTemplates.organizationId, validatedOrgId),
             eq(processTemplates.sector, sector),
           ))
           .limit(1);
@@ -689,7 +708,7 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
 
         // Save template
         const [templateResult] = await db.insert(processTemplates).values({
-          organizationId: input.organizationId,
+          organizationId: validatedOrgId,
           sector,
           blueprintName: blueprint.blueprintName || `${sector} Operations Blueprint`,
           source: "auto_generated",
@@ -732,7 +751,9 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
       templateId: z.number(),
       organizationId: z.number(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const validatedOrgId = resolveOrgId(ctx.user, input.organizationId);
+      if (!validatedOrgId) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
       const db = (await getDb())!;
 
       // Get the template and its steps
@@ -754,7 +775,7 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
         .from(ventures)
         .innerJoin(orgVentureAccess, eq(orgVentureAccess.ventureId, ventures.id))
         .where(and(
-          eq(orgVentureAccess.organizationId, input.organizationId),
+          eq(orgVentureAccess.organizationId, validatedOrgId),
           eq(ventures.sector, template.sector),
         ));
 
@@ -801,7 +822,9 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
     .input(z.object({
       organizationId: z.number(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const validatedOrgId = resolveOrgId(ctx.user, input.organizationId);
+      if (!validatedOrgId) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
       const db = (await getDb())!;
       const { tasks: tasksTable } = await import("../../drizzle/schema");
 
@@ -817,7 +840,7 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
         })
         .from(ventures)
         .innerJoin(orgVentureAccess, eq(orgVentureAccess.ventureId, ventures.id))
-        .where(eq(orgVentureAccess.organizationId, input.organizationId));
+        .where(eq(orgVentureAccess.organizationId, validatedOrgId));
 
       const results: { ventureId: number; name: string; oldScore: number; newScore: number }[] = [];
 
@@ -902,12 +925,14 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
   // blueprints.list → alias for listTemplates
   list: protectedProcedure
     .input(z.object({ organizationId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) return [];
+      const validatedOrgId = resolveOrgId(ctx.user, input.organizationId);
+      if (!validatedOrgId) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
       return db.select().from(processTemplates)
         .where(and(
-          eq(processTemplates.organizationId, input.organizationId),
+          eq(processTemplates.organizationId, validatedOrgId),
           eq(processTemplates.isActive, true),
         ))
         .orderBy(desc(processTemplates.createdAt));
@@ -930,13 +955,15 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
         evidence: z.string().optional(),
       })).optional(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const validatedOrgId = resolveOrgId(ctx.user, input.organizationId);
+      if (!validatedOrgId) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
       const [result] = await db.insert(processTemplates).values({
         blueprintName: input.name,
         sector: input.sector,
-        organizationId: input.organizationId,
+        organizationId: validatedOrgId,
         source: "manual",
         confidence: "High",
         isActive: true,
@@ -966,13 +993,15 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
       sector: z.string().min(1),
       organizationId: z.number(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const validatedOrgId = resolveOrgId(ctx.user, input.organizationId);
+      if (!validatedOrgId) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
       // Check if template already exists for this sector
       const [existing] = await db.select().from(processTemplates)
         .where(and(
-          eq(processTemplates.organizationId, input.organizationId),
+          eq(processTemplates.organizationId, validatedOrgId),
           eq(processTemplates.sector, input.sector),
           eq(processTemplates.isActive, true),
         )).limit(1);
@@ -1037,7 +1066,7 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
       const [templateResult] = await db.insert(processTemplates).values({
         blueprintName: blueprint.name || `${input.sector} Standard Process`,
         sector: input.sector,
-        organizationId: input.organizationId,
+        organizationId: validatedOrgId,
         source: "ai_generated",
         confidence: "Medium",
         status: "pending_review",

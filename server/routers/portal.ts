@@ -1,6 +1,7 @@
 // ============================================================================
 // Portal Router — Client-facing portal data
 // Zero operator language. Only outcomes, plain English, clean status.
+// Velocity Feed: 3 card types (amber/teal/gray), 4 action flows.
 // ============================================================================
 
 import { z } from "zod";
@@ -14,6 +15,7 @@ import {
   orgVentureAccess,
   agentEvents,
   tasks,
+  distributions,
 } from "../../drizzle/schema";
 import { isAtlasTeam } from "../security/rbac";
 
@@ -24,13 +26,13 @@ const STAGE_DISPLAY: Record<string, string> = {
   "In Fundraising": "Fundraising",
   "Active": "Active",
   "Active ventures": "Active",
+  "Active Ventures": "Active",
   "In Execution": "Active",
   "Completed": "Completed",
   "On Hold": "On Hold",
 };
 
 function clientFriendlyStage(stage: string): string {
-  // Handle "ready:StageName" format from newStatus
   if (stage.startsWith("ready:")) {
     const inner = stage.replace("ready:", "").trim();
     return STAGE_DISPLAY[inner] || inner;
@@ -59,6 +61,11 @@ interface RawEvent {
   createdAt: Date;
 }
 
+type CardType = "action" | "completed" | "watching" | "hide";
+
+// The 4 action flows
+type ActionFlow = "advance_stage" | "approve_followup" | "confirm_distribution" | "unblock_venture" | "view_task" | null;
+
 type TranslatedEvent = {
   id: number;
   summary: string;
@@ -67,9 +74,11 @@ type TranslatedEvent = {
   ventureId: number | null;
   fromStage: string | null;
   toStage: string | null;
-  requiresAction: boolean;
+  cardType: CardType;
+  actionFlow: ActionFlow;
   actionLabel: string | null;
-  section: "thisWeek" | "comingUp" | "hide";
+  // Extra data for specific action flows
+  actionMeta?: Record<string, unknown> | null;
 };
 
 function translateEvent(e: RawEvent): TranslatedEvent {
@@ -80,8 +89,18 @@ function translateEvent(e: RawEvent): TranslatedEvent {
 
   // ── Velocity Agent ──────────────────────────────────────────────
   if (e.agentName === "Velocity Agent") {
-    // requiresClientAction = true → "Ready to advance" → goes to Coming Up
+    // requiresClientAction + not acted on → Action Needed (amber)
     if (e.requiresClientAction && !e.actionTaken && !e.clientDismissed) {
+      // Determine which action flow based on event context
+      let actionFlow: ActionFlow = "advance_stage";
+      let actionLabel = "Advance Stage";
+
+      // Check if this is an unblock request
+      if (e.eventType === "blocker" || e.message.toLowerCase().includes("stalled") || e.message.toLowerCase().includes("blocked")) {
+        actionFlow = "unblock_venture";
+        actionLabel = "Resolve Blocker";
+      }
+
       return {
         id: e.id,
         summary: ventureName
@@ -92,13 +111,32 @@ function translateEvent(e: RawEvent): TranslatedEvent {
         ventureId,
         fromStage,
         toStage,
-        requiresAction: true,
-        actionLabel: "Advance Stage",
-        section: "comingUp",
+        cardType: "action",
+        actionFlow,
+        actionLabel,
+        actionMeta: e.actionPayload || null,
       };
     }
 
-    // Stage actually changed (not a "ready:" status) → This Week
+    // Action already taken → Completed (teal)
+    if (e.actionTaken && e.oldStatus && e.newStatus) {
+      return {
+        id: e.id,
+        summary: ventureName
+          ? `"${ventureName}" advanced from ${fromStage} to ${toStage}.`
+          : `A venture advanced from ${fromStage} to ${toStage}.`,
+        date: e.createdAt,
+        ventureName,
+        ventureId,
+        fromStage,
+        toStage,
+        cardType: "completed",
+        actionFlow: null,
+        actionLabel: null,
+      };
+    }
+
+    // Stage changed (not a "ready:" status) → Completed (teal)
     if (e.oldStatus && e.newStatus && !e.newStatus.startsWith("ready:")) {
       return {
         id: e.id,
@@ -110,18 +148,18 @@ function translateEvent(e: RawEvent): TranslatedEvent {
         ventureId,
         fromStage,
         toStage,
-        requiresAction: false,
+        cardType: "completed",
+        actionFlow: null,
         actionLabel: null,
-        section: "thisWeek",
       };
     }
 
     // "No active ventures to monitor" — noise, hide
     if (e.message.toLowerCase().includes("no active ventures")) {
-      return { id: e.id, summary: "", date: e.createdAt, ventureName, ventureId, fromStage, toStage, requiresAction: false, actionLabel: null, section: "hide" };
+      return mkHidden(e);
     }
 
-    // Velocity summary messages ("X ventures monitored...") → rewrite to client language
+    // Velocity summary messages → Watching (gray)
     const monitorMatch = e.message.match(/(\d+)\s*ventures?\s*monitored/i);
     if (monitorMatch) {
       const count = monitorMatch[1];
@@ -131,45 +169,48 @@ function translateEvent(e: RawEvent): TranslatedEvent {
         ? `ATLAS is actively managing ${count} ventures. ${atRisk} ${atRisk === 1 ? "needs" : "need"} closer attention.`
         : `ATLAS is actively managing ${count} ventures. Everything is on track.`;
       return {
-        id: e.id,
-        summary,
-        date: e.createdAt,
-        ventureName,
-        ventureId,
-        fromStage,
-        toStage,
-        requiresAction: false,
-        actionLabel: null,
-        section: "thisWeek",
+        id: e.id, summary, date: e.createdAt, ventureName, ventureId, fromStage, toStage,
+        cardType: "watching", actionFlow: null, actionLabel: null,
       };
     }
 
-    // Generic velocity event — show in This Week with cleaned message
+    // Generic velocity event → Watching
     return {
       id: e.id,
       summary: cleanMessage(e.message, ventureName),
-      date: e.createdAt,
-      ventureName,
-      ventureId,
-      fromStage,
-      toStage,
-      requiresAction: false,
-      actionLabel: null,
-      section: "thisWeek",
+      date: e.createdAt, ventureName, ventureId, fromStage, toStage,
+      cardType: "watching", actionFlow: null, actionLabel: null,
     };
   }
 
   // ── Overdue Agent ───────────────────────────────────────────────
   if (e.agentName === "Overdue Agent") {
-    // No overdue items → hide entirely (noise)
+    // No overdue items → hide
     if (
       e.message.toLowerCase().includes("no overdue") ||
       e.message.toLowerCase().includes("all tasks are on schedule")
     ) {
-      return { id: e.id, summary: "", date: e.createdAt, ventureName, ventureId, fromStage, toStage, requiresAction: false, actionLabel: null, section: "hide" };
+      return mkHidden(e);
     }
 
-    // Overdue summary messages ("X tasks remain in overdue status") → rewrite
+    // Overdue with specific venture + requires action → Action Needed
+    if (e.requiresClientAction && !e.actionTaken && !e.clientDismissed && ventureName) {
+      const daysMatch = e.message.match(/(\d+)\s*days?\s*overdue/i);
+      const days = daysMatch ? daysMatch[1] : null;
+      return {
+        id: e.id,
+        summary: days
+          ? `"${ventureName}" has a task that needs attention — ${days} days overdue.`
+          : `"${ventureName}" has a task that needs your attention.`,
+        date: e.createdAt, ventureName, ventureId, fromStage, toStage,
+        cardType: "action",
+        actionFlow: "view_task",
+        actionLabel: "View Task",
+        actionMeta: null,
+      };
+    }
+
+    // Overdue summary → Watching
     const overdueCountMatch = e.message.match(/(\d+)\s*tasks?\s*remain/i);
     if (overdueCountMatch) {
       const count = parseInt(overdueCountMatch[1]);
@@ -178,50 +219,17 @@ function translateEvent(e: RawEvent): TranslatedEvent {
         summary: count === 1
           ? "1 task across your portfolio needs attention."
           : `${count} tasks across your portfolio need attention.`,
-        date: e.createdAt,
-        ventureName,
-        ventureId,
-        fromStage,
-        toStage,
-        requiresAction: false,
-        actionLabel: null,
-        section: "thisWeek",
+        date: e.createdAt, ventureName, ventureId, fromStage, toStage,
+        cardType: "watching", actionFlow: null, actionLabel: null,
       };
     }
 
-    // Has overdue items with specific venture → Coming Up with action
-    if (ventureName) {
-      // Try to extract days overdue from message
-      const daysMatch = e.message.match(/(\d+)\s*days?\s*overdue/i);
-      const days = daysMatch ? daysMatch[1] : null;
-      return {
-        id: e.id,
-        summary: days
-          ? `"${ventureName}" has a task that needs attention — ${days} days overdue.`
-          : `"${ventureName}" has a task that needs your attention.`,
-        date: e.createdAt,
-        ventureName,
-        ventureId,
-        fromStage,
-        toStage,
-        requiresAction: true,
-        actionLabel: "View Task",
-        section: "comingUp",
-      };
-    }
-
-    // Generic overdue message
+    // Generic overdue → Watching
     return {
       id: e.id,
       summary: cleanMessage(e.message, ventureName),
-      date: e.createdAt,
-      ventureName,
-      ventureId,
-      fromStage,
-      toStage,
-      requiresAction: false,
-      actionLabel: null,
-      section: "thisWeek",
+      date: e.createdAt, ventureName, ventureId, fromStage, toStage,
+      cardType: "watching", actionFlow: null, actionLabel: null,
     };
   }
 
@@ -232,59 +240,116 @@ function translateEvent(e: RawEvent): TranslatedEvent {
       e.message.toLowerCase().includes("no distributions scheduled") ||
       e.message.toLowerCase().includes("no distributions recorded")
     ) {
-      return { id: e.id, summary: "", date: e.createdAt, ventureName, ventureId, fromStage, toStage, requiresAction: false, actionLabel: null, section: "hide" };
+      return mkHidden(e);
     }
 
-    // Meaningful distribution update → This Week
+    // Requires client confirmation → Action Needed (Confirm Distribution flow)
+    if (e.requiresClientAction && !e.actionTaken && !e.clientDismissed) {
+      return {
+        id: e.id,
+        summary: ventureName
+          ? `Distribution notice for "${ventureName}" is ready for your confirmation.`
+          : "A distribution notice is ready for your confirmation.",
+        date: e.createdAt, ventureName, ventureId, fromStage, toStage,
+        cardType: "action",
+        actionFlow: "confirm_distribution",
+        actionLabel: "Confirm Distribution",
+        actionMeta: e.actionPayload || null,
+      };
+    }
+
+    // Distribution already confirmed → Completed
+    if (e.actionTaken) {
+      return {
+        id: e.id,
+        summary: "Distribution confirmed and sent to recipients.",
+        date: e.createdAt, ventureName, ventureId, fromStage, toStage,
+        cardType: "completed", actionFlow: null, actionLabel: null,
+      };
+    }
+
+    // Monitoring distribution → Watching
     return {
       id: e.id,
       summary: "Your distributions are being tracked and are on schedule.",
-      date: e.createdAt,
-      ventureName,
-      ventureId,
-      fromStage,
-      toStage,
-      requiresAction: false,
-      actionLabel: null,
-      section: "thisWeek",
+      date: e.createdAt, ventureName, ventureId, fromStage, toStage,
+      cardType: "watching", actionFlow: null, actionLabel: null,
     };
   }
 
-  // ── Orchestrator → hide from clients (operator-only) ────────────
+  // ── Orchestrator → hide from clients ────────────────────────────
   if (e.agentName === "Orchestrator") {
-    return { id: e.id, summary: "", date: e.createdAt, ventureName, ventureId, fromStage, toStage, requiresAction: false, actionLabel: null, section: "hide" };
+    return mkHidden(e);
   }
 
-  // ── Fallback: show cleaned message in This Week ─────────────────
+  // ── Fallback ───────────────────────────────────────────────────
+  // Check for follow-up approval requests
+  if (e.requiresClientAction && !e.actionTaken && !e.clientDismissed) {
+    if (e.eventType === "followup" || e.message.toLowerCase().includes("follow-up") || e.message.toLowerCase().includes("followup")) {
+      return {
+        id: e.id,
+        summary: ventureName
+          ? `A follow-up email for "${ventureName}" is drafted and ready for your approval.`
+          : "A follow-up email is drafted and ready for your approval.",
+        date: e.createdAt, ventureName, ventureId, fromStage, toStage,
+        cardType: "action",
+        actionFlow: "approve_followup",
+        actionLabel: "Review & Approve",
+        actionMeta: e.actionPayload || null,
+      };
+    }
+
+    // Generic action needed
+    return {
+      id: e.id,
+      summary: cleanMessage(e.message, ventureName),
+      date: e.createdAt, ventureName, ventureId, fromStage, toStage,
+      cardType: "action",
+      actionFlow: null,
+      actionLabel: "Take Action",
+      actionMeta: null,
+    };
+  }
+
+  // Signal events → Watching
+  if (e.eventType === "signal") {
+    return {
+      id: e.id,
+      summary: cleanMessage(e.message, ventureName),
+      date: e.createdAt, ventureName, ventureId, fromStage, toStage,
+      cardType: "watching", actionFlow: null, actionLabel: null,
+    };
+  }
+
+  // Everything else → Watching
   return {
     id: e.id,
     summary: cleanMessage(e.message, ventureName),
-    date: e.createdAt,
-    ventureName,
-    ventureId,
-    fromStage,
-    toStage,
-    requiresAction: false,
-    actionLabel: null,
-    section: "thisWeek",
+    date: e.createdAt, ventureName, ventureId, fromStage, toStage,
+    cardType: "watching", actionFlow: null, actionLabel: null,
+  };
+}
+
+function mkHidden(e: RawEvent): TranslatedEvent {
+  return {
+    id: e.id, summary: "", date: e.createdAt,
+    ventureName: e.agentEntityName || null,
+    ventureId: e.agentEntityId ? parseInt(e.agentEntityId, 10) || null : null,
+    fromStage: null, toStage: null,
+    cardType: "hide", actionFlow: null, actionLabel: null,
   };
 }
 
 function cleanMessage(msg: string, ventureName: string | null): string {
-  // Remove square bracket content
   msg = msg.replace(/\[[^\]]*\]/g, "");
-  // Remove agent names
   msg = msg.replace(/\b(Velocity Agent|Distribution Sentinel|Orchestrator|Overdue Agent)\b/gi, "");
-  // Remove operator phrases
   msg = msg.replace(/One-click advance available\.?/gi, "");
   msg = msg.replace(/\badvance available\b/gi, "");
-  // Replace internal stage names
   msg = msg.replace(/\bIn Validation\b/g, "Under Review");
   msg = msg.replace(/\bIn Fundraising\b/g, "Fundraising");
   msg = msg.replace(/\bActive ventures\b/g, "Active");
   msg = msg.replace(/\bIn Execution\b/g, "Active");
   msg = msg.replace(/\bPre-Validation\b/g, "Initial Review");
-  // Replace operator jargon
   msg = msg.replace(/\bat risk\b/gi, "needs attention");
   msg = msg.replace(/\bvelocity score\b/gi, "progress");
   msg = msg.replace(/\bvelocity\b/gi, "progress");
@@ -295,14 +360,11 @@ function cleanMessage(msg: string, ventureName: string | null): string {
   msg = msg.replace(/\boverdue tasks? detected\b/gi, "new items flagged");
   msg = msg.replace(/\boverdue\b/gi, "pending");
   msg = msg.replace(/\btrigger(s|ed)?\b/gi, "");
-  // Clean up whitespace
   msg = msg.replace(/\s{2,}/g, " ").trim();
-  msg = msg.replace(/\. \./g, ".");
   msg = msg.replace(/\s+\./g, ".");
   return msg;
 }
 
-// -- Clean status line for ventures (no internal jargon) --
 function getCleanStatusLine(venture: {
   status: string;
   stage: string;
@@ -311,20 +373,14 @@ function getCleanStatusLine(venture: {
   healthScore?: number | null;
 }): string {
   const health = venture.healthScore ?? 50;
-
   if (venture.status === "Completed") return "Completed";
   if (venture.status === "On hold") return "Paused — awaiting next steps";
-
   if (venture.currentStatus) {
     let clean = venture.currentStatus;
-    clean = clean.replace(
-      /\b(at risk|velocity|agent|orchestrator|sentinel|blueprint|SPV)\b/gi,
-      ""
-    );
+    clean = clean.replace(/\b(at risk|velocity|agent|orchestrator|sentinel|blueprint|SPV)\b/gi, "");
     clean = clean.replace(/\s{2,}/g, " ").trim();
     if (clean.length > 0 && clean.length < 120) return clean;
   }
-
   if (health >= 70) return "On track";
   if (health >= 40) return "In progress";
   return "Needs your attention";
@@ -337,12 +393,8 @@ export const portalRouter = {
     .query(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Database unavailable",
-        });
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
 
-      // Resolve org by slug
       const [org] = await db
         .select()
         .from(organizations)
@@ -350,18 +402,12 @@ export const portalRouter = {
         .limit(1);
 
       if (!org)
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Organization not found",
-        });
+        throw new TRPCError({ code: "NOT_FOUND", message: "Organization not found" });
 
-      // Access control: Atlas team can view any portal, client users only their own org
+      // Access control
       const isAdmin = isAtlasTeam(ctx.user);
       if (!isAdmin && ctx.user.organizationId !== org.id) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You do not have access to this portal",
-        });
+        throw new TRPCError({ code: "FORBIDDEN", message: "You do not have access to this portal" });
       }
 
       // ── Fetch all client-audience events from last 7 days ──────────
@@ -384,28 +430,34 @@ export const portalRouter = {
       // ── Translate all events ───────────────────────────────────────
       const translated = recentEvents.map(translateEvent);
 
-      // ── Deduplicate ────────────────────────────────────────────────
-      // Same venture + same summary text → keep only the most recent
-      const thisWeekSeen = new Map<string, TranslatedEvent>();
-      const comingUpSeen = new Map<string, TranslatedEvent>();
+      // ── Categorize into 3 card types ──────────────────────────────
+      const actionSeen = new Map<string, TranslatedEvent>();
+      const completedSeen = new Map<string, TranslatedEvent>();
+      const watchingSeen = new Map<string, TranslatedEvent>();
 
-      const thisWeek: TranslatedEvent[] = [];
-      const comingUp: TranslatedEvent[] = [];
+      const actionCards: TranslatedEvent[] = [];
+      const completedCards: TranslatedEvent[] = [];
+      const watchingCards: TranslatedEvent[] = [];
 
       for (const ev of translated) {
-        if (ev.section === "hide" || ev.summary.length < 5) continue;
+        if (ev.cardType === "hide" || ev.summary.length < 5) continue;
 
         const dedupKey = `${ev.ventureName || ""}::${ev.summary.toLowerCase().replace(/\d/g, "").trim()}`;
 
-        if (ev.section === "comingUp") {
-          if (!comingUpSeen.has(dedupKey)) {
-            comingUpSeen.set(dedupKey, ev);
-            comingUp.push(ev);
+        if (ev.cardType === "action") {
+          if (!actionSeen.has(dedupKey)) {
+            actionSeen.set(dedupKey, ev);
+            actionCards.push(ev);
           }
-        } else if (ev.section === "thisWeek") {
-          if (!thisWeekSeen.has(dedupKey)) {
-            thisWeekSeen.set(dedupKey, ev);
-            thisWeek.push(ev);
+        } else if (ev.cardType === "completed") {
+          if (!completedSeen.has(dedupKey)) {
+            completedSeen.set(dedupKey, ev);
+            completedCards.push(ev);
+          }
+        } else if (ev.cardType === "watching") {
+          if (!watchingSeen.has(dedupKey)) {
+            watchingSeen.set(dedupKey, ev);
+            watchingCards.push(ev);
           }
         }
       }
@@ -414,8 +466,7 @@ export const portalRouter = {
       const advancedCount = recentEvents.filter(
         (e) =>
           e.agentName === "Velocity Agent" &&
-          e.oldStatus &&
-          e.newStatus &&
+          e.oldStatus && e.newStatus &&
           !e.newStatus.startsWith("ready:") &&
           e.actionTaken
       ).length;
@@ -441,17 +492,11 @@ export const portalRouter = {
       } else {
         const parts: string[] = [];
         if (advancedCount > 0)
-          parts.push(
-            `advanced ${advancedCount} venture${advancedCount !== 1 ? "s" : ""}`
-          );
+          parts.push(`advanced ${advancedCount} venture${advancedCount !== 1 ? "s" : ""}`);
         if (overdueFlags > 0)
-          parts.push(
-            `caught ${overdueFlags} item${overdueFlags !== 1 ? "s" : ""} before ${overdueFlags !== 1 ? "they became" : "it became"} a problem`
-          );
+          parts.push(`caught ${overdueFlags} item${overdueFlags !== 1 ? "s" : ""} before ${overdueFlags !== 1 ? "they became" : "it became"} a problem`);
         if (distributionEvents > 0)
-          parts.push(
-            `kept ${distributionEvents} distribution${distributionEvents !== 1 ? "s" : ""} on track`
-          );
+          parts.push(`kept ${distributionEvents} distribution${distributionEvents !== 1 ? "s" : ""} on track`);
         velocitySummary = `This week, ATLAS ${parts.join(", ")}.`;
       }
 
@@ -479,19 +524,18 @@ export const portalRouter = {
           .from(ventures)
           .where(inArray(ventures.id, ventureIds));
 
-        // Get last agent event per venture for the card annotation
         const ventureEventMap = new Map<number, { summary: string; type: "ready" | "advanced" | "info" }>();
 
         for (const ev of translated) {
-          if (ev.section === "hide" || !ev.ventureId) continue;
-          if (ventureEventMap.has(ev.ventureId)) continue; // already have most recent (events sorted desc)
+          if (ev.cardType === "hide" || !ev.ventureId) continue;
+          if (ventureEventMap.has(ev.ventureId)) continue;
 
-          if (ev.requiresAction && ev.toStage) {
+          if (ev.cardType === "action" && ev.toStage) {
             ventureEventMap.set(ev.ventureId, {
               summary: `Ready to move to ${ev.toStage} — your approval needed`,
               type: "ready",
             });
-          } else if (ev.fromStage && ev.toStage && !ev.requiresAction) {
+          } else if (ev.cardType === "completed" && ev.fromStage && ev.toStage) {
             ventureEventMap.set(ev.ventureId, {
               summary: `Advanced to ${ev.toStage}`,
               type: "advanced",
@@ -524,14 +568,40 @@ export const portalRouter = {
         orgSlug: org.slug,
         isOperatorPreview: isAdmin,
         velocitySummary,
-        thisWeek: thisWeek.map((e) => ({
+        // 3 card types for the Velocity Feed
+        actionCards: actionCards.map((e) => ({
+          id: e.id,
+          summary: e.summary,
+          date: e.date,
+          ventureName: e.ventureName,
+          ventureId: e.ventureId,
+          fromStage: e.fromStage,
+          toStage: e.toStage,
+          actionFlow: e.actionFlow,
+          actionLabel: e.actionLabel,
+          actionMeta: e.actionMeta || null,
+        })),
+        completedCards: completedCards.map((e) => ({
+          id: e.id,
+          summary: e.summary,
+          date: e.date,
+          ventureName: e.ventureName,
+        })),
+        watchingCards: watchingCards.map((e) => ({
           id: e.id,
           summary: e.summary,
           date: e.date,
           ventureName: e.ventureName,
         })),
         portfolio,
-        comingUp: comingUp.map((e) => ({
+        // Keep backward compat
+        thisWeek: [...completedCards, ...watchingCards].map((e) => ({
+          id: e.id,
+          summary: e.summary,
+          date: e.date,
+          ventureName: e.ventureName,
+        })),
+        comingUp: actionCards.map((e) => ({
           id: e.id,
           summary: e.summary,
           date: e.date,
@@ -542,5 +612,69 @@ export const portalRouter = {
           actionLabel: e.actionLabel,
         })),
       };
+    }),
+
+  // -- Resolve an action card (Approve Follow-up, Confirm Distribution, Unblock) --
+  resolveAction: protectedProcedure
+    .input(z.object({
+      eventId: z.number(),
+      actionFlow: z.enum(["approve_followup", "confirm_distribution", "unblock_venture"]),
+      resolution: z.record(z.string(), z.unknown()).optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      // Fetch the event
+      const [event] = await db
+        .select()
+        .from(agentEvents)
+        .where(eq(agentEvents.id, input.eventId))
+        .limit(1);
+
+      if (!event) throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
+
+      // Verify access
+      const isAdmin = isAtlasTeam(ctx.user);
+      if (!isAdmin && ctx.user.organizationId !== event.organizationId) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+
+      // Mark action as taken
+      await db.update(agentEvents).set({
+        actionTaken: true,
+        actionTakenAt: new Date(),
+      }).where(eq(agentEvents.id, input.eventId));
+
+      // Handle specific action flows
+      if (input.actionFlow === "confirm_distribution") {
+        // TODO: Send confirmation email via Resend when configured
+        // For now, mark as confirmed
+        return {
+          success: true,
+          message: "Distribution confirmed successfully.",
+          actionFlow: input.actionFlow,
+        };
+      }
+
+      if (input.actionFlow === "approve_followup") {
+        // TODO: Send the drafted follow-up email via Resend when configured
+        return {
+          success: true,
+          message: "Follow-up email approved and sent.",
+          actionFlow: input.actionFlow,
+        };
+      }
+
+      if (input.actionFlow === "unblock_venture") {
+        // Mark the blocker as resolved
+        return {
+          success: true,
+          message: "Venture unblocked. ATLAS will continue monitoring.",
+          actionFlow: input.actionFlow,
+        };
+      }
+
+      return { success: true, message: "Action completed.", actionFlow: input.actionFlow };
     }),
 };

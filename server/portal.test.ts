@@ -73,142 +73,146 @@ function createUnauthorizedClientContext(): TrpcContext {
   };
 }
 
-describe("Portal Router — Velocity Wired", () => {
-  // ── Fix 1: Coming Up shows requiresClientAction events ──────────────
-  describe("Fix 1 — Coming Up shows action-required events", () => {
-    it("returns comingUp array with action-required events", async () => {
+describe("Portal Router — Vision Compliance", () => {
+  // ══════════════════════════════════════════════════════════════════
+  // FIX 4 — Velocity Feed: 3 card types (amber/teal/gray)
+  // ══════════════════════════════════════════════════════════════════
+
+  describe("Velocity Feed — 3 card types", () => {
+    it("returns actionCards, completedCards, and watchingCards arrays", async () => {
       const caller = appRouter.createCaller(createAdminContext());
       const result = await caller.portal.getData({ orgSlug: "royalton" });
 
-      expect(result).toBeDefined();
-      expect(Array.isArray(result.comingUp)).toBe(true);
-
-      // Each comingUp item should have the required fields
-      for (const item of result.comingUp) {
-        expect(item).toHaveProperty("id");
-        expect(item).toHaveProperty("summary");
-        expect(typeof item.summary).toBe("string");
-        expect(item.summary.length).toBeGreaterThan(0);
-        expect(item).toHaveProperty("date");
-        expect(item).toHaveProperty("ventureName");
-        expect(item).toHaveProperty("ventureId");
-        expect(item).toHaveProperty("actionLabel");
-      }
+      expect(result).toHaveProperty("actionCards");
+      expect(result).toHaveProperty("completedCards");
+      expect(result).toHaveProperty("watchingCards");
+      expect(Array.isArray(result.actionCards)).toBe(true);
+      expect(Array.isArray(result.completedCards)).toBe(true);
+      expect(Array.isArray(result.watchingCards)).toBe(true);
     });
 
-    it("comingUp items have stage from→to information when available", async () => {
+    it("actionCards (amber) have required fields: id, summary, actionFlow, actionLabel", async () => {
       const caller = appRouter.createCaller(createAdminContext());
       const result = await caller.portal.getData({ orgSlug: "royalton" });
 
-      for (const item of result.comingUp) {
-        expect(item).toHaveProperty("fromStage");
-        expect(item).toHaveProperty("toStage");
+      for (const card of result.actionCards) {
+        expect(card).toHaveProperty("id");
+        expect(card).toHaveProperty("summary");
+        expect(typeof card.summary).toBe("string");
+        expect(card.summary.length).toBeGreaterThan(0);
+        expect(card).toHaveProperty("actionFlow");
+        expect(card).toHaveProperty("actionLabel");
+        expect(card).toHaveProperty("ventureName");
+        expect(card).toHaveProperty("ventureId");
       }
     });
 
-    it("comingUp items use client-friendly stage names (not internal)", async () => {
+    it("actionCards have valid actionFlow values", async () => {
+      const caller = appRouter.createCaller(createAdminContext());
+      const result = await caller.portal.getData({ orgSlug: "royalton" });
+
+      const validFlows = [
+        "advance_stage",
+        "approve_followup",
+        "confirm_distribution",
+        "unblock_venture",
+        "view_task",
+        null,
+      ];
+
+      for (const card of result.actionCards) {
+        expect(validFlows).toContain(card.actionFlow);
+      }
+    });
+
+    it("completedCards (teal) have id, summary, date, ventureName", async () => {
+      const caller = appRouter.createCaller(createAdminContext());
+      const result = await caller.portal.getData({ orgSlug: "royalton" });
+
+      for (const card of result.completedCards) {
+        expect(card).toHaveProperty("id");
+        expect(card).toHaveProperty("summary");
+        expect(card).toHaveProperty("date");
+        expect(card).toHaveProperty("ventureName");
+      }
+    });
+
+    it("watchingCards (gray) have id, summary, date, ventureName", async () => {
+      const caller = appRouter.createCaller(createAdminContext());
+      const result = await caller.portal.getData({ orgSlug: "royalton" });
+
+      for (const card of result.watchingCards) {
+        expect(card).toHaveProperty("id");
+        expect(card).toHaveProperty("summary");
+        expect(card).toHaveProperty("date");
+        expect(card).toHaveProperty("ventureName");
+      }
+    });
+
+    it("no card type contains raw agent names", async () => {
+      const caller = appRouter.createCaller(createAdminContext());
+      const result = await caller.portal.getData({ orgSlug: "royalton" });
+
+      const agentNames = ["Velocity Agent", "Distribution Sentinel", "Orchestrator", "Overdue Agent"];
+      const allCards = [
+        ...result.actionCards.map((c) => c.summary),
+        ...result.completedCards.map((c) => c.summary),
+        ...result.watchingCards.map((c) => c.summary),
+      ];
+
+      for (const summary of allCards) {
+        for (const name of agentNames) {
+          expect(summary.toLowerCase()).not.toContain(name.toLowerCase());
+        }
+      }
+    });
+
+    it("no card type contains square bracket content", async () => {
+      const caller = appRouter.createCaller(createAdminContext());
+      const result = await caller.portal.getData({ orgSlug: "royalton" });
+
+      const allCards = [
+        ...result.actionCards.map((c) => c.summary),
+        ...result.completedCards.map((c) => c.summary),
+        ...result.watchingCards.map((c) => c.summary),
+      ];
+
+      for (const summary of allCards) {
+        expect(summary).not.toMatch(/\[.*\]/);
+      }
+    });
+
+    it("cards are deduplicated within each type", async () => {
+      const caller = appRouter.createCaller(createAdminContext());
+      const result = await caller.portal.getData({ orgSlug: "royalton" });
+
+      for (const cards of [result.actionCards, result.completedCards, result.watchingCards]) {
+        const keys = new Set<string>();
+        for (const card of cards) {
+          const key = `${card.ventureName || ""}::${card.summary.toLowerCase().replace(/\d/g, "").trim()}`;
+          expect(keys.has(key)).toBe(false);
+          keys.add(key);
+        }
+      }
+    });
+
+    it("actionCards use client-friendly stage names", async () => {
       const caller = appRouter.createCaller(createAdminContext());
       const result = await caller.portal.getData({ orgSlug: "royalton" });
 
       const internalStages = ["In Validation", "In Fundraising", "Active ventures", "In Execution"];
-      for (const item of result.comingUp) {
-        if (item.fromStage) {
-          expect(internalStages).not.toContain(item.fromStage);
-        }
-        if (item.toStage) {
-          expect(internalStages).not.toContain(item.toStage);
-        }
-      }
-    });
-
-    it("comingUp items have actionLabel for Advance Stage events", async () => {
-      const caller = appRouter.createCaller(createAdminContext());
-      const result = await caller.portal.getData({ orgSlug: "royalton" });
-
-      // At least some comingUp items should have Advance Stage label
-      const advanceItems = result.comingUp.filter(
-        (i) => i.actionLabel === "Advance Stage"
-      );
-      // We know there are 28 requiresClientAction events in the DB
-      // After dedup, there should be at least some
-      expect(advanceItems.length).toBeGreaterThanOrEqual(0);
-    });
-  });
-
-  // ── Fix 2: This Week uses proper translation ────────────────────────
-  describe("Fix 2 — This Week translation layer", () => {
-    it("thisWeek events do not contain raw agent names", async () => {
-      const caller = appRouter.createCaller(createAdminContext());
-      const result = await caller.portal.getData({ orgSlug: "royalton" });
-
-      const agentNames = [
-        "Velocity Agent",
-        "Distribution Sentinel",
-        "Orchestrator",
-        "Overdue Agent",
-      ];
-
-      for (const event of result.thisWeek) {
-        for (const name of agentNames) {
-          expect(event.summary.toLowerCase()).not.toContain(name.toLowerCase());
-        }
-      }
-    });
-
-    it("thisWeek events do not contain square bracket content", async () => {
-      const caller = appRouter.createCaller(createAdminContext());
-      const result = await caller.portal.getData({ orgSlug: "royalton" });
-
-      for (const event of result.thisWeek) {
-        expect(event.summary).not.toMatch(/\[.*\]/);
-      }
-    });
-
-    it("thisWeek events do not contain operator phrases", async () => {
-      const caller = appRouter.createCaller(createAdminContext());
-      const result = await caller.portal.getData({ orgSlug: "royalton" });
-
-      const operatorPhrases = [
-        "one-click advance",
-        "advance available",
-        "scheduler",
-        "cron",
-        "pipeline",
-      ];
-
-      for (const event of result.thisWeek) {
-        for (const phrase of operatorPhrases) {
-          expect(event.summary.toLowerCase()).not.toContain(phrase);
-        }
-      }
-    });
-
-    it("thisWeek events are deduplicated", async () => {
-      const caller = appRouter.createCaller(createAdminContext());
-      const result = await caller.portal.getData({ orgSlug: "royalton" });
-
-      const keys = new Set<string>();
-      for (const event of result.thisWeek) {
-        const key = `${event.ventureName || ""}::${event.summary.toLowerCase().replace(/\d/g, "").trim()}`;
-        expect(keys.has(key)).toBe(false);
-        keys.add(key);
-      }
-    });
-
-    it("thisWeek does not contain requiresClientAction events (those go to comingUp)", async () => {
-      const caller = appRouter.createCaller(createAdminContext());
-      const result = await caller.portal.getData({ orgSlug: "royalton" });
-
-      // thisWeek items should not have "your approval is needed" text
-      // (those should be in comingUp instead)
-      for (const event of result.thisWeek) {
-        expect(event.summary.toLowerCase()).not.toContain("your approval is needed");
+      for (const card of result.actionCards) {
+        if (card.fromStage) expect(internalStages).not.toContain(card.fromStage);
+        if (card.toStage) expect(internalStages).not.toContain(card.toStage);
       }
     });
   });
 
-  // ── Fix 3: Velocity summary ─────────────────────────────────────────
-  describe("Fix 3 — Velocity summary", () => {
+  // ══════════════════════════════════════════════════════════════════
+  // Velocity Summary
+  // ══════════════════════════════════════════════════════════════════
+
+  describe("Velocity Summary", () => {
     it("returns a velocitySummary string", async () => {
       const caller = appRouter.createCaller(createAdminContext());
       const result = await caller.portal.getData({ orgSlug: "royalton" });
@@ -228,8 +232,11 @@ describe("Portal Router — Velocity Wired", () => {
     });
   });
 
-  // ── Fix 4: Venture cards show last agent action ─────────────────────
-  describe("Fix 4 — Venture cards with agent action", () => {
+  // ══════════════════════════════════════════════════════════════════
+  // Portfolio
+  // ══════════════════════════════════════════════════════════════════
+
+  describe("Portfolio — venture cards", () => {
     it("portfolio ventures have lastAgentAction and lastAgentActionType fields", async () => {
       const caller = appRouter.createCaller(createAdminContext());
       const result = await caller.portal.getData({ orgSlug: "royalton" });
@@ -237,7 +244,6 @@ describe("Portal Router — Velocity Wired", () => {
       for (const v of result.portfolio) {
         expect(v).toHaveProperty("lastAgentAction");
         expect(v).toHaveProperty("lastAgentActionType");
-        // Type should be null or one of the allowed values
         if (v.lastAgentActionType !== null) {
           expect(["ready", "advanced", "info"]).toContain(v.lastAgentActionType);
         }
@@ -255,8 +261,11 @@ describe("Portal Router — Velocity Wired", () => {
     });
   });
 
-  // ── Fix 5: Operator Preview Mode ────────────────────────────────────
-  describe("Fix 5 — Operator Preview Mode", () => {
+  // ══════════════════════════════════════════════════════════════════
+  // Operator Preview Mode
+  // ══════════════════════════════════════════════════════════════════
+
+  describe("Operator Preview Mode", () => {
     it("admin user sees isOperatorPreview = true", async () => {
       const caller = appRouter.createCaller(createAdminContext());
       const result = await caller.portal.getData({ orgSlug: "royalton" });
@@ -270,8 +279,11 @@ describe("Portal Router — Velocity Wired", () => {
     });
   });
 
-  // ── Access control ──────────────────────────────────────────────────
-  describe("Access control", () => {
+  // ══════════════════════════════════════════════════════════════════
+  // Access control (cross-tenant isolation)
+  // ══════════════════════════════════════════════════════════════════
+
+  describe("Access control — cross-tenant isolation", () => {
     it("throws NOT_FOUND for non-existent org slug", async () => {
       const caller = appRouter.createCaller(createAdminContext());
       await expect(
@@ -291,6 +303,70 @@ describe("Portal Router — Velocity Wired", () => {
       await expect(
         caller.portal.getData({ orgSlug: "" })
       ).rejects.toThrow();
+    });
+
+    it("admin can access any org portal", async () => {
+      const caller = appRouter.createCaller(createAdminContext());
+      const result = await caller.portal.getData({ orgSlug: "royalton" });
+      expect(result.orgName).toBeDefined();
+    });
+
+    it("client user can access their own org portal", async () => {
+      const caller = appRouter.createCaller(createClientContext(2));
+      const result = await caller.portal.getData({ orgSlug: "royalton" });
+      expect(result.orgName).toBeDefined();
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════
+  // FIX 5 — Org name updated
+  // ══════════════════════════════════════════════════════════════════
+
+  describe("FIX 5 — Org name", () => {
+    it("portal header reads 'Royalton Venture Holding'", async () => {
+      const caller = appRouter.createCaller(createAdminContext());
+      const result = await caller.portal.getData({ orgSlug: "royalton" });
+      expect(result.orgName).toBe("Royalton Venture Holding");
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════
+  // resolveAction mutation
+  // ══════════════════════════════════════════════════════════════════
+
+  describe("resolveAction mutation", () => {
+    it("rejects non-existent event", async () => {
+      const caller = appRouter.createCaller(createAdminContext());
+      await expect(
+        caller.portal.resolveAction({
+          eventId: 999999999,
+          actionFlow: "approve_followup",
+        })
+      ).rejects.toThrow("Event not found");
+    });
+
+    it("rejects invalid actionFlow value", async () => {
+      const caller = appRouter.createCaller(createAdminContext());
+      await expect(
+        caller.portal.resolveAction({
+          eventId: 1,
+          actionFlow: "invalid_flow" as any,
+        })
+      ).rejects.toThrow();
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════
+  // Backward compatibility
+  // ══════════════════════════════════════════════════════════════════
+
+  describe("Backward compatibility", () => {
+    it("still returns thisWeek and comingUp arrays", async () => {
+      const caller = appRouter.createCaller(createAdminContext());
+      const result = await caller.portal.getData({ orgSlug: "royalton" });
+
+      expect(Array.isArray(result.thisWeek)).toBe(true);
+      expect(Array.isArray(result.comingUp)).toBe(true);
     });
   });
 });

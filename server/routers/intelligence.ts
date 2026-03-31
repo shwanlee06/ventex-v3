@@ -9,6 +9,7 @@ import {
 import { eq, desc, and, sql, gte, lte, ne, inArray } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
 import { isAtlasTeam, resolveVentureScope } from "../security/rbac";
+import { resolveOrgId } from "../security/orgScope";
 
 // ── Org-scoped venture IDs helper ─────────────────────────────────────
 
@@ -251,8 +252,7 @@ export const intelligenceRouter = router({
       const db = await getDb();
       if (!db) return null;
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       const today = new Date().toISOString().split("T")[0];
       const conditions: any[] = [eq(dailyBriefs.briefDate, today)];
@@ -274,8 +274,7 @@ export const intelligenceRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       const today = new Date().toISOString().split("T")[0];
 
@@ -318,8 +317,7 @@ export const intelligenceRouter = router({
       const db = await getDb();
       if (!db) return [];
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       const conditions: any[] = [];
       if (effectiveOrgId) {
@@ -354,8 +352,7 @@ export const intelligenceRouter = router({
       const db = await getDb();
       if (!db) return [];
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       let ventureIds: number[] | null = null;
       if (effectiveOrgId) {
@@ -382,8 +379,7 @@ export const intelligenceRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       let ventureIds: number[] | null = null;
       if (effectiveOrgId) {
@@ -414,8 +410,7 @@ export const intelligenceRouter = router({
       const db = await getDb();
       if (!db) return [];
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       const conditions: any[] = [];
       if (!input.includeDissmissed) {
@@ -438,8 +433,7 @@ export const intelligenceRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       await generateSmartAlerts(db, effectiveOrgId);
       return { success: true };
@@ -468,8 +462,7 @@ export const intelligenceRouter = router({
       const db = await getDb();
       if (!db) return [];
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       const conditions: any[] = [eq(aiObservations.dismissed, 0)];
       if (input.ventureId) conditions.push(eq(aiObservations.ventureId, input.ventureId));
@@ -539,8 +532,7 @@ export const intelligenceRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
-      const isAdmin = isAtlasTeam(ctx.user);
-      const effectiveOrgId = isAdmin ? input.organizationId : ctx.user.organizationId;
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
       let allVentures;
       if (input.ventureId) {

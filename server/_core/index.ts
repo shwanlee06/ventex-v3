@@ -33,10 +33,36 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 
 async function startServer() {
   const app = express();
+  app.disable("x-powered-by");
   const server = createServer(app);
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+  // ── Security headers (SOC 2 compliance) ──────────────────────────────
+  app.use((_req, res, next) => {
+    // Prevent MIME-type sniffing
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    // Prevent clickjacking
+    res.setHeader("X-Frame-Options", "DENY");
+    // Enable XSS filter (legacy browsers)
+    res.setHeader("X-XSS-Protection", "1; mode=block");
+    // Enforce HTTPS
+    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    // Referrer policy — send origin only on cross-origin requests
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    // Content Security Policy — restrict resource loading
+    res.setHeader(
+      "Content-Security-Policy",
+      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https: wss:; frame-ancestors 'none'"
+    );
+    // Permissions policy — disable unnecessary browser features
+    res.setHeader(
+      "Permissions-Policy",
+      "camera=(), microphone=(), geolocation=(), payment=()"
+    );
+    next();
+  });
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // AI streaming endpoint (SSE)
