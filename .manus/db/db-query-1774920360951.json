@@ -1,0 +1,415 @@
+{
+  "query": "SELECT ps.id, ps.templateId, ps.stepName, ps.stepOrder, ps.stageName, ps.whoOwns, ps.typicalDays FROM process_steps ps ORDER BY ps.templateId, ps.stepOrder",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT ps.id, ps.templateId, ps.stepName, ps.stepOrder, ps.stageName, ps.whoOwns, ps.typicalDays FROM process_steps ps ORDER BY ps.templateId, ps.stepOrder",
+  "rows": [
+    {
+      "id": "1",
+      "templateId": "1",
+      "stepName": "Lease renewal tracking & deadline monitoring",
+      "stepOrder": "1",
+      "stageName": "Acquisition",
+      "whoOwns": "Legal Team",
+      "typicalDays": "30"
+    },
+    {
+      "id": "3",
+      "templateId": "1",
+      "stepName": "Regulatory compliance deadline monitoring",
+      "stepOrder": "1",
+      "stageName": "Compliance",
+      "whoOwns": "Compliance Officer",
+      "typicalDays": "14"
+    },
+    {
+      "id": "5",
+      "templateId": "1",
+      "stepName": "Vendor invoice approval & payment processing",
+      "stepOrder": "1",
+      "stageName": "Operations",
+      "whoOwns": "Finance Team",
+      "typicalDays": "7"
+    },
+    {
+      "id": "7",
+      "templateId": "1",
+      "stepName": "Board reporting & investor update preparation",
+      "stepOrder": "1",
+      "stageName": "Reporting",
+      "whoOwns": "CFO",
+      "typicalDays": "10"
+    },
+    {
+      "id": "2",
+      "templateId": "1",
+      "stepName": "Property due diligence & valuation review",
+      "stepOrder": "2",
+      "stageName": "Acquisition",
+      "whoOwns": "Investment Team",
+      "typicalDays": "21"
+    },
+    {
+      "id": "4",
+      "templateId": "1",
+      "stepName": "Building permit & zoning approval tracking",
+      "stepOrder": "2",
+      "stageName": "Compliance",
+      "whoOwns": "Legal Team",
+      "typicalDays": "45"
+    },
+    {
+      "id": "6",
+      "templateId": "1",
+      "stepName": "Maintenance coordination & contractor scheduling",
+      "stepOrder": "2",
+      "stageName": "Operations",
+      "whoOwns": "Operations Manager",
+      "typicalDays": "5"
+    },
+    {
+      "id": "8",
+      "templateId": "1",
+      "stepName": "Quarterly financial reconciliation",
+      "stepOrder": "2",
+      "stageName": "Reporting",
+      "whoOwns": "Finance Team",
+      "typicalDays": "14"
+    },
+    {
+      "id": "11",
+      "templateId": "2",
+      "stepName": "Scheduled maintenance & dry dock planning",
+      "stepOrder": "1",
+      "stageName": "Maintenance",
+      "whoOwns": "Captain / Marine Engineer",
+      "typicalDays": "14"
+    },
+    {
+      "id": "9",
+      "templateId": "2",
+      "stepName": "Vessel acquisition & survey coordination",
+      "stepOrder": "1",
+      "stageName": "Procurement",
+      "whoOwns": "Marine Surveyor",
+      "typicalDays": "30"
+    },
+    {
+      "id": "13",
+      "templateId": "2",
+      "stepName": "Charter booking management & guest coordination",
+      "stepOrder": "1",
+      "stageName": "Operations",
+      "whoOwns": "Charter Manager",
+      "typicalDays": "7"
+    },
+    {
+      "id": "15",
+      "templateId": "2",
+      "stepName": "Insurance renewal & claims processing",
+      "stepOrder": "1",
+      "stageName": "Financial",
+      "whoOwns": "Insurance Broker",
+      "typicalDays": "30"
+    },
+    {
+      "id": "10",
+      "templateId": "2",
+      "stepName": "Flag state registration & documentation",
+      "stepOrder": "2",
+      "stageName": "Procurement",
+      "whoOwns": "Legal Team",
+      "typicalDays": "21"
+    },
+    {
+      "id": "12",
+      "templateId": "2",
+      "stepName": "Crew certification & safety compliance",
+      "stepOrder": "2",
+      "stageName": "Maintenance",
+      "whoOwns": "HR / Marine Safety",
+      "typicalDays": "10"
+    },
+    {
+      "id": "14",
+      "templateId": "2",
+      "stepName": "Marina berth & port fee management",
+      "stepOrder": "2",
+      "stageName": "Operations",
+      "whoOwns": "Operations Manager",
+      "typicalDays": "5"
+    },
+    {
+      "id": "16",
+      "templateId": "3",
+      "stepName": "Venue licensing & health permit acquisition",
+      "stepOrder": "1",
+      "stageName": "Setup",
+      "whoOwns": "Legal Team",
+      "typicalDays": "30"
+    },
+    {
+      "id": "18",
+      "templateId": "3",
+      "stepName": "Inventory management & reorder automation",
+      "stepOrder": "1",
+      "stageName": "Operations",
+      "whoOwns": "Kitchen Manager",
+      "typicalDays": "3"
+    },
+    {
+      "id": "20",
+      "templateId": "3",
+      "stepName": "Health & safety inspection preparation",
+      "stepOrder": "1",
+      "stageName": "Compliance",
+      "whoOwns": "Compliance Officer",
+      "typicalDays": "14"
+    },
+    {
+      "id": "21",
+      "templateId": "3",
+      "stepName": "Revenue reporting & margin analysis",
+      "stepOrder": "1",
+      "stageName": "Financial",
+      "whoOwns": "Finance Team",
+      "typicalDays": "7"
+    },
+    {
+      "id": "17",
+      "templateId": "3",
+      "stepName": "Supplier contract negotiation & onboarding",
+      "stepOrder": "2",
+      "stageName": "Setup",
+      "whoOwns": "Procurement Manager",
+      "typicalDays": "14"
+    },
+    {
+      "id": "19",
+      "templateId": "3",
+      "stepName": "Staff scheduling & labor cost optimization",
+      "stepOrder": "2",
+      "stageName": "Operations",
+      "whoOwns": "General Manager",
+      "typicalDays": "7"
+    },
+    {
+      "id": "22",
+      "templateId": "3",
+      "stepName": "Franchise fee & royalty payment tracking",
+      "stepOrder": "2",
+      "stageName": "Financial",
+      "whoOwns": "Finance Team",
+      "typicalDays": "10"
+    },
+    {
+      "id": "23",
+      "templateId": "4",
+      "stepName": "Property development & construction milestone tracking",
+      "stepOrder": "1",
+      "stageName": "Development",
+      "whoOwns": "Project Manager",
+      "typicalDays": "60"
+    },
+    {
+      "id": "25",
+      "templateId": "4",
+      "stepName": "Hotel operating license & tourism board registration",
+      "stepOrder": "1",
+      "stageName": "Licensing",
+      "whoOwns": "Legal Team",
+      "typicalDays": "30"
+    },
+    {
+      "id": "26",
+      "templateId": "4",
+      "stepName": "OTA channel management & rate optimization",
+      "stepOrder": "1",
+      "stageName": "Operations",
+      "whoOwns": "Revenue Manager",
+      "typicalDays": "7"
+    },
+    {
+      "id": "28",
+      "templateId": "4",
+      "stepName": "Recruitment pipeline & training program management",
+      "stepOrder": "1",
+      "stageName": "Staffing",
+      "whoOwns": "HR Director",
+      "typicalDays": "21"
+    },
+    {
+      "id": "29",
+      "templateId": "4",
+      "stepName": "RevPAR tracking & investor reporting",
+      "stepOrder": "1",
+      "stageName": "Financial",
+      "whoOwns": "CFO",
+      "typicalDays": "10"
+    },
+    {
+      "id": "27",
+      "templateId": "4",
+      "stepName": "Guest experience & service quality monitoring",
+      "stepOrder": "2",
+      "stageName": "Operations",
+      "whoOwns": "General Manager",
+      "typicalDays": "3"
+    },
+    {
+      "id": "30",
+      "templateId": "4",
+      "stepName": "Capital expenditure approval & budget reconciliation",
+      "stepOrder": "2",
+      "stageName": "Financial",
+      "whoOwns": "Finance Team",
+      "typicalDays": "14"
+    },
+    {
+      "id": "24",
+      "templateId": "4",
+      "stepName": "Interior design & FF&E procurement coordination",
+      "stepOrder": "2",
+      "stageName": "Development",
+      "whoOwns": "Design Team",
+      "typicalDays": "45"
+    },
+    {
+      "id": "36",
+      "templateId": "5",
+      "stepName": "Production volume monitoring & optimization",
+      "stepOrder": "1",
+      "stageName": "Operations",
+      "whoOwns": "Production Engineer",
+      "typicalDays": "3"
+    },
+    {
+      "id": "31",
+      "templateId": "5",
+      "stepName": "License block acquisition & geological survey coordination",
+      "stepOrder": "1",
+      "stageName": "Exploration",
+      "whoOwns": "Exploration Manager",
+      "typicalDays": "90"
+    },
+    {
+      "id": "37",
+      "templateId": "5",
+      "stepName": "Royalty payment calculation & government reporting",
+      "stepOrder": "1",
+      "stageName": "Financial",
+      "whoOwns": "Finance Team",
+      "typicalDays": "14"
+    },
+    {
+      "id": "33",
+      "templateId": "5",
+      "stepName": "Drilling contractor procurement & rig scheduling",
+      "stepOrder": "1",
+      "stageName": "Development",
+      "whoOwns": "Operations Director",
+      "typicalDays": "45"
+    },
+    {
+      "id": "35",
+      "templateId": "5",
+      "stepName": "HSE compliance monitoring & incident reporting",
+      "stepOrder": "1",
+      "stageName": "Compliance",
+      "whoOwns": "HSE Manager",
+      "typicalDays": "7"
+    },
+    {
+      "id": "34",
+      "templateId": "5",
+      "stepName": "Pipeline infrastructure & transport logistics",
+      "stepOrder": "2",
+      "stageName": "Development",
+      "whoOwns": "Engineering Team",
+      "typicalDays": "60"
+    },
+    {
+      "id": "32",
+      "templateId": "5",
+      "stepName": "Environmental impact assessment & regulatory filing",
+      "stepOrder": "2",
+      "stageName": "Exploration",
+      "whoOwns": "Environmental Team",
+      "typicalDays": "60"
+    },
+    {
+      "id": "38",
+      "templateId": "5",
+      "stepName": "Joint venture partner reconciliation",
+      "stepOrder": "2",
+      "stageName": "Financial",
+      "whoOwns": "CFO",
+      "typicalDays": "21"
+    },
+    {
+      "id": "39",
+      "templateId": "6",
+      "stepName": "Power purchase agreement negotiation & execution",
+      "stepOrder": "1",
+      "stageName": "Development",
+      "whoOwns": "Business Development",
+      "typicalDays": "60"
+    },
+    {
+      "id": "41",
+      "templateId": "6",
+      "stepName": "Environmental permit & land use authorization",
+      "stepOrder": "1",
+      "stageName": "Permitting",
+      "whoOwns": "Legal Team",
+      "typicalDays": "30"
+    },
+    {
+      "id": "42",
+      "templateId": "6",
+      "stepName": "EPC contractor management & milestone tracking",
+      "stepOrder": "1",
+      "stageName": "Construction",
+      "whoOwns": "Project Manager",
+      "typicalDays": "90"
+    },
+    {
+      "id": "44",
+      "templateId": "6",
+      "stepName": "Plant performance monitoring & maintenance scheduling",
+      "stepOrder": "1",
+      "stageName": "Operations",
+      "whoOwns": "Plant Manager",
+      "typicalDays": "7"
+    },
+    {
+      "id": "45",
+      "templateId": "6",
+      "stepName": "Carbon credit tracking & renewable energy certificate management",
+      "stepOrder": "1",
+      "stageName": "Financial",
+      "whoOwns": "Sustainability Officer",
+      "typicalDays": "14"
+    },
+    {
+      "id": "40",
+      "templateId": "6",
+      "stepName": "Grid connection application & technical assessment",
+      "stepOrder": "2",
+      "stageName": "Development",
+      "whoOwns": "Engineering Team",
+      "typicalDays": "45"
+    },
+    {
+      "id": "43",
+      "templateId": "6",
+      "stepName": "Equipment procurement & delivery coordination",
+      "stepOrder": "2",
+      "stageName": "Construction",
+      "whoOwns": "Procurement Manager",
+      "typicalDays": "60"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttemplateId\tstepName\tstepOrder\tstageName\twhoOwns\ttypicalDays\n1\t1\tLease renewal tracking & deadline monitoring\t1\tAcquisition\tLegal Team\t30\n3\t1\tRegulatory compliance deadline monitoring\t1\tCompliance\tCompliance Officer\t14\n5\t1\tVendor invoice approval & payment processing\t1\tOperations\tFinance Team\t7\n7\t1\tBoard reporting & investor update preparation\t1\tReporting\tCFO\t10\n2\t1\tProperty due diligence & valuation review\t2\tAcquisition\tInvestment Team\t21\n4\t1\tBuilding permit & zoning approval tracking\t2\tCompliance\tLegal Team\t45\n6\t1\tMaintenance coordination & contractor scheduling\t2\tOperations\tOperations Manager\t5\n8\t1\tQuarterly financial reconciliation\t2\tReporting\tFinance Team\t14\n11\t2\tScheduled maintenance & dry dock planning\t1\tMaintenance\tCaptain / Marine Engineer\t14\n9\t2\tVessel acquisition & survey coordination\t1\tProcurement\tMarine Surveyor\t30\n13\t2\tCharter booking management & guest coordination\t1\tOperations\tCharter Manager\t7\n15\t2\tInsurance renewal & claims processing\t1\tFinancial\tInsurance Broker\t30\n10\t2\tFlag state registration & documentation\t2\tProcurement\tLegal Team\t21\n12\t2\tCrew certification & safety compliance\t2\tMaintenance\tHR / Marine Safety\t10\n14\t2\tMarina berth & port fee management\t2\tOperations\tOperations Manager\t5\n16\t3\tVenue licensing & health permit acquisition\t1\tSetup\tLegal Team\t30\n18\t3\tInventory management & reorder automation\t1\tOperations\tKitchen Manager\t3\n20\t3\tHealth & safety inspection preparation\t1\tCompliance\tCompliance Officer\t14\n21\t3\tRevenue reporting & margin analysis\t1\tFinancial\tFinance Team\t7\n17\t3\tSupplier contract negotiation & onboarding\t2\tSetup\tProcurement Manager\t14\n19\t3\tStaff scheduling & labor cost optimization\t2\tOperations\tGeneral Manager\t7\n22\t3\tFranchise fee & royalty payment tracking\t2\tFinancial\tFinance Team\t10\n23\t4\tProperty development & construction milestone tracking\t1\tDevelopment\tProject Manager\t60\n25\t4\tHotel operating license & tourism board registration\t1\tLicensing\tLegal Team\t30\n26\t4\tOTA channel management & rate optimization\t1\tOperations\tRevenue Manager\t7\n28\t4\tRecruitment pipeline & training program management\t1\tStaffing\tHR Director\t21\n29\t4\tRevPAR tracking & investor reporting\t1\tFinancial\tCFO\t10\n27\t4\tGuest experience & service quality monitoring\t2\tOperations\tGeneral Manager\t3\n30\t4\tCapital expenditure approval & budget reconciliation\t2\tFinancial\tFinance Team\t14\n24\t4\tInterior design & FF&E procurement coordination\t2\tDevelopment\tDesign Team\t45\n36\t5\tProduction volume monitoring & optimization\t1\tOperations\tProduction Engineer\t3\n31\t5\tLicense block acquisition & geological survey coordination\t1\tExploration\tExploration Manager\t90\n37\t5\tRoyalty payment calculation & government reporting\t1\tFinancial\tFinance Team\t14\n33\t5\tDrilling contractor procurement & rig scheduling\t1\tDevelopment\tOperations Director\t45\n35\t5\tHSE compliance monitoring & incident reporting\t1\tCompliance\tHSE Manager\t7\n34\t5\tPipeline infrastructure & transport logistics\t2\tDevelopment\tEngineering Team\t60\n32\t5\tEnvironmental impact assessment & regulatory filing\t2\tExploration\tEnvironmental Team\t60\n38\t5\tJoint venture partner reconciliation\t2\tFinancial\tCFO\t21\n39\t6\tPower purchase agreement negotiation & execution\t1\tDevelopment\tBusiness Development\t60\n41\t6\tEnvironmental permit & land use authorization\t1\tPermitting\tLegal Team\t30\n42\t6\tEPC contractor management & milestone tracking\t1\tConstruction\tProject Manager\t90\n44\t6\tPlant performance monitoring & maintenance scheduling\t1\tOperations\tPlant Manager\t7\n45\t6\tCarbon credit tracking & renewable energy certificate management\t1\tFinancial\tSustainability Officer\t14\n40\t6\tGrid connection application & technical assessment\t2\tDevelopment\tEngineering Team\t45\n43\t6\tEquipment procurement & delivery coordination\t2\tConstruction\tProcurement Manager\t60\n",
+  "stderr": "",
+  "execution_time_ms": 61
+}

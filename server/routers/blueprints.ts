@@ -32,15 +32,14 @@ For each step, identify:
 - stepName: clear action description
 - isBlocking: whether this step must be completed before the venture can advance
 - whoOwns: who is responsible (e.g., "Legal Team", "Client", "ATLAS Operator", "Government Agency")
-- estimatedDays: rough estimate of how many days this step typically takes
-- evidence: brief note about why this step is needed
-- confidence: "High", "Medium", or "Low" based on how clearly the document describes it
+- typicalDays: rough estimate of how many days this step typically takes
+- stepDescription: brief note about why this step is needed or what it involves
 
 Output ONLY valid JSON in this exact format:
 {
   "blueprintName": "string",
-  "sector": "string",
-  "confidence": "High" | "Medium" | "Low",
+  "sector": "Real Estate" | "Yacht" | "F&B" | "Hospitality" | "Oil & Gas" | "Energy" | "Entertainment" | "Others",
+  "confidence": 0.0 to 1.0 (how confident you are in the extraction quality),
   "stages": [
     {
       "stageName": "string",
@@ -51,9 +50,8 @@ Output ONLY valid JSON in this exact format:
           "stepOrder": number,
           "isBlocking": boolean,
           "whoOwns": "string",
-          "estimatedDays": number,
-          "evidence": "string",
-          "confidence": "High" | "Medium" | "Low"
+          "typicalDays": number,
+          "stepDescription": "string"
         }
       ]
     }
@@ -127,12 +125,22 @@ export const blueprintsRouter = router({
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
+      // Convert confidence: accept decimal (0-1) or string ("High"/"Medium"/"Low")
+      let confidence = "0.7";
+      if (typeof blueprint.confidence === "number") {
+        confidence = String(Math.max(0, Math.min(1, blueprint.confidence)));
+      } else if (typeof blueprint.confidence === "string") {
+        const map: Record<string, string> = { High: "0.9", Medium: "0.7", Low: "0.4" };
+        confidence = map[blueprint.confidence] || "0.7";
+      }
+
       const [template] = await db.insert(processTemplates).values({
         organizationId: input.organizationId,
         sector: blueprint.sector || "General",
         blueprintName: blueprint.blueprintName || "Untitled Blueprint",
         source: "document",
-        confidence: blueprint.confidence || "Medium",
+        confidence,
+        status: "draft",
         sourceDocumentUrl: input.sourceDocumentUrl || null,
         sourceDocumentName: input.sourceDocumentName || null,
       }).$returningId();
@@ -148,8 +156,8 @@ export const blueprintsRouter = router({
             stageOrder: stage.stageOrder || 0,
             isBlocking: step.isBlocking || false,
             whoOwns: step.whoOwns || null,
-            typicalDays: step.estimatedDays || null,
-            stepDescription: step.evidence || step.description || null,
+            typicalDays: step.typicalDays || step.estimatedDays || null,
+            stepDescription: step.stepDescription || step.evidence || step.description || null,
           });
         }
       }

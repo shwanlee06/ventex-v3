@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO process_steps (templateId, stepName, stepOrder, stageName, stageOrder, whoOwns, typicalDays) VALUES \n(7, 'Licensing & regulatory approval', 1, 'Setup', 1, 'Legal Team', 45),\n(7, 'Venue design & construction oversight', 2, 'Setup', 1, 'Project Manager', 90),\n(7, 'Talent & programming coordination', 1, 'Operations', 2, 'Creative Director', 14),\n(7, 'Event scheduling & logistics', 2, 'Operations', 2, 'Operations Manager', 7),\n(7, 'Marketing campaign management', 1, 'Marketing', 3, 'Marketing Team', 21),\n(7, 'Revenue tracking & financial reporting', 1, 'Finance', 4, 'Finance Team', 10),\n(7, 'Safety & compliance audits', 1, 'Compliance', 5, 'Compliance Officer', 14)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute INSERT INTO process_steps (templateId, stepName, stepOrder, stageName, stageOrder, whoOwns, typicalDays) VALUES \n(7, 'Licensing & regulatory approval', 1, 'Setup', 1, 'Legal Team', 45),\n(7, 'Venue design & construction oversight', 2, 'Setup', 1, 'Project Manager', 90),\n(7, 'Talent & programming coordination', 1, 'Operations', 2, 'Creative Director', 14),\n(7, 'Event scheduling & logistics', 2, 'Operations', 2, 'Operations Manager', 7),\n(7, 'Marketing campaign management', 1, 'Marketing', 3, 'Marketing Team', 21),\n(7, 'Revenue tracking & financial reporting', 1, 'Finance', 4, 'Finance Team', 10),\n(7, 'Safety & compliance audits', 1, 'Compliance', 5, 'Compliance Officer', 14)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 64
+}

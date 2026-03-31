@@ -1480,3 +1480,32 @@
 - [x] Schema: process_templates aligned — source types, confidence as decimal, all production columns synced
 - [x] Schema: Added blueprintStatus (draft/confirmed/archived) to process_templates
 - [x] Schema: Created venture_process_overrides table (ventureId, stepId, overrideField, overrideValue, overrideType, reason)
+
+## 100/10 Upgrade — 2026-03-31
+
+### P0 — Critical (System Feels Broken Without These)
+- [x] Cron-based agent scheduling: agentScheduler.ts runs every 6h, stores last run, shows next scheduled run via agents.schedulerStatus
+- [x] Seed venture_process_tracking: 148 records across all 20 ventures from sector blueprints
+- [x] Fix blueprint extraction LLM prompt — updated to typicalDays, stepDescription, whoOwns, confidence as decimal
+- [x] Populate venture_velocity: 56 records across all 20 ventures with realistic stage progression data
+
+### P1 — Important (System Feels Empty Without These)
+- [x] Populate realistic tasks: 82 tasks across ventures with varied statuses, priorities, and due dates
+- [x] In-app notification system: already fully wired — severity-based bell icon, badge counts, NotificationPanel slide-out
+- [x] Notification dropdown panel: already in Topbar with critical/warning/normal severity badges
+- [x] Audit log: already wired to all client actions via settings router + security router
+- [x] Audit log viewer: SecurityPage.tsx with Audit Log tab, filters, pagination — accessible from sidebar
+
+### P2 — Expected (Professional System Has These)
+- [x] CSV export: added to AtlasDashboard (ventures list) via shared export utility
+- [x] PDF export: already exists on Distributions page (individual + batch PDF export)
+- [x] Global search: CommandPalette with Cmd+K, searches ventures, SPVs, tasks, team — already fully wired
+- [x] Client portal tasks: TasksPage with Add Task, edit, delete, Kanban view, filters
+- [x] Client portal documents: VentureDetail + SpvDetail have file upload with folder organization
+- [x] Client portal team: AtlasTeam page with Add Member, invite links, role management
+
+### Polish
+- [x] Mobile responsive: AppSidebar has bottom tab bar + More sheet, DashboardLayout handles mobile/desktop offsets
+- [x] Settings page: 5 tabs (General, Security, Compliance, Notifications, Audit) — all fully persistent
+- [x] Empty states: pages have loading skeletons (164 instances), empty messages for zero-data views
+- [x] Velocity Intelligence: VelocityKPI + VelocityIntelligenceCard show real data, sectorBenchmarks procedure added

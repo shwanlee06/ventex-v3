@@ -1,0 +1,16 @@
+{
+  "query": "SELECT COUNT(*) as total, COUNT(DISTINCT ventureId) as ventures, MIN(advancedAt) as earliest, MAX(advancedAt) as latest FROM venture_velocity;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT COUNT(*) as total, COUNT(DISTINCT ventureId) as ventures, MIN(advancedAt) as earliest, MAX(advancedAt) as latest FROM venture_velocity;",
+  "rows": [
+    {
+      "total": "56",
+      "ventures": "20",
+      "earliest": "2025-07-05 21:28:54",
+      "latest": "2026-03-15 21:28:54"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\tventures\tearliest\tlatest\n56\t20\t2025-07-05 21:28:54\t2026-03-15 21:28:54\n",
+  "stderr": "",
+  "execution_time_ms": 71
+}

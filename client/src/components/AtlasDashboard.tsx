@@ -31,6 +31,7 @@ import {
   Minus,
   Brain,
   Bot,
+  Download,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useCallback, useMemo } from "react";
@@ -57,6 +58,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import AITaskGenerator from "@/components/AITaskGenerator";
+import { exportCSV, VENTURE_COLUMNS } from "@/lib/export";
 import OverdueAlertBanner from "@/components/OverdueAlertBanner";
 import LivePresenceWidget from "@/components/LivePresenceWidget";
 import VelocityIntelligenceCard from "@/components/VelocityIntelligenceCard";
@@ -554,6 +556,35 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
               <LayoutGrid className="size-4" />
             </button>
           </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              const rows = filteredClients.map(c => ({
+                name: c.name,
+                sector: "",
+                location: "",
+                status: "Active",
+                stage: "",
+                priority: "",
+                healthScore: c.avgHealth,
+                overdueTasks: c.overdueTasks,
+                totalTasks: c.totalTasks,
+                createdAt: "",
+              }));
+              exportCSV(rows, [
+                { key: "name", label: "Client" },
+                { key: "healthScore", label: "Health Score" },
+                { key: "overdueTasks", label: "Overdue Tasks" },
+                { key: "totalTasks", label: "Total Tasks" },
+              ], `atlas-clients-${new Date().toISOString().slice(0,10)}.csv`);
+              toast.success("Exported client data");
+            }}
+            className="h-9 gap-1.5"
+          >
+            <Download className="size-4" />
+            <span className="hidden sm:inline">Export</span>
+          </Button>
           {tabMode === "active" && (
             <>
               <Button

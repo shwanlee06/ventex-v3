@@ -1,0 +1,52 @@
+{
+  "query": "SELECT pt.id, pt.sector, pt.organizationId, pt.blueprintName, COUNT(ps.id) as stepCount FROM process_templates pt LEFT JOIN process_steps ps ON ps.templateId = pt.id GROUP BY pt.id ORDER BY pt.id",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT pt.id, pt.sector, pt.organizationId, pt.blueprintName, COUNT(ps.id) as stepCount FROM process_templates pt LEFT JOIN process_steps ps ON ps.templateId = pt.id GROUP BY pt.id ORDER BY pt.id",
+  "rows": [
+    {
+      "id": "1",
+      "sector": "Real Estate",
+      "organizationId": "2",
+      "blueprintName": "Real Estate Venture Operations",
+      "stepCount": "8"
+    },
+    {
+      "id": "2",
+      "sector": "Yacht",
+      "organizationId": "2",
+      "blueprintName": "Yacht Venture Operations",
+      "stepCount": "7"
+    },
+    {
+      "id": "3",
+      "sector": "F&B",
+      "organizationId": "2",
+      "blueprintName": "Food & Beverage Venture Operations",
+      "stepCount": "7"
+    },
+    {
+      "id": "4",
+      "sector": "Hospitality",
+      "organizationId": "2",
+      "blueprintName": "Hospitality Venture Operations",
+      "stepCount": "8"
+    },
+    {
+      "id": "5",
+      "sector": "Oil & Gas",
+      "organizationId": "2",
+      "blueprintName": "Oil & Gas Venture Operations",
+      "stepCount": "8"
+    },
+    {
+      "id": "6",
+      "sector": "Energy",
+      "organizationId": "2",
+      "blueprintName": "Energy Venture Operations",
+      "stepCount": "7"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsector\torganizationId\tblueprintName\tstepCount\n1\tReal Estate\t2\tReal Estate Venture Operations\t8\n2\tYacht\t2\tYacht Venture Operations\t7\n3\tF&B\t2\tFood & Beverage Venture Operations\t7\n4\tHospitality\t2\tHospitality Venture Operations\t8\n5\tOil & Gas\t2\tOil & Gas Venture Operations\t8\n6\tEnergy\t2\tEnergy Venture Operations\t7\n",
+  "stderr": "",
+  "execution_time_ms": 69
+}

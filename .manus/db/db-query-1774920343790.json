@@ -1,0 +1,170 @@
+{
+  "query": "SELECT v.id, v.name, v.sector, v.stage, ova.organizationId, pt.id as templateId FROM ventures v LEFT JOIN org_venture_access ova ON ova.ventureId = v.id LEFT JOIN process_templates pt ON pt.sector = v.sector AND pt.organizationId = ova.organizationId ORDER BY v.id",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT v.id, v.name, v.sector, v.stage, ova.organizationId, pt.id as templateId FROM ventures v LEFT JOIN org_venture_access ova ON ova.ventureId = v.id LEFT JOIN process_templates pt ON pt.sector = v.sector AND pt.organizationId = ova.organizationId ORDER BY v.id",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Nammos - Barcelona",
+      "sector": "Real Estate",
+      "stage": "In Validation",
+      "organizationId": "2",
+      "templateId": "1"
+    },
+    {
+      "id": "2",
+      "name": "Nammos - Lagonissi",
+      "sector": "Real Estate",
+      "stage": "In Validation",
+      "organizationId": "2",
+      "templateId": "1"
+    },
+    {
+      "id": "3",
+      "name": "Muscat Bay",
+      "sector": "Real Estate",
+      "stage": "Active ventures",
+      "organizationId": "2",
+      "templateId": "1"
+    },
+    {
+      "id": "4",
+      "name": "Chekka Land - Resort",
+      "sector": "Real Estate",
+      "stage": "Active ventures",
+      "organizationId": "2",
+      "templateId": "1"
+    },
+    {
+      "id": "5",
+      "name": "Shady Hotel",
+      "sector": "Real Estate",
+      "stage": "Active ventures",
+      "organizationId": "2",
+      "templateId": "1"
+    },
+    {
+      "id": "6",
+      "name": "Nammos - Watson Island",
+      "sector": "Real Estate",
+      "stage": "In Validation",
+      "organizationId": "2",
+      "templateId": "1"
+    },
+    {
+      "id": "7",
+      "name": "Zarka City",
+      "sector": "Real Estate",
+      "stage": "In Validation",
+      "organizationId": "2",
+      "templateId": "1"
+    },
+    {
+      "id": "8",
+      "name": "Berbara - Lebanon",
+      "sector": "F&B",
+      "stage": "Active ventures",
+      "organizationId": "2",
+      "templateId": "3"
+    },
+    {
+      "id": "9",
+      "name": "Nammos - Ibiza",
+      "sector": "F&B",
+      "stage": "In Validation",
+      "organizationId": "2",
+      "templateId": "3"
+    },
+    {
+      "id": "10",
+      "name": "Nammos Lebanon",
+      "sector": "F&B",
+      "stage": "In Validation",
+      "organizationId": "2",
+      "templateId": "3"
+    },
+    {
+      "id": "11",
+      "name": "Mar-a-Lago Yacht Club",
+      "sector": "Yacht",
+      "stage": "In Fundraising",
+      "organizationId": "2",
+      "templateId": "2"
+    },
+    {
+      "id": "12",
+      "name": "Bagatelle",
+      "sector": "Yacht",
+      "stage": "In Validation",
+      "organizationId": "2",
+      "templateId": "2"
+    },
+    {
+      "id": "13",
+      "name": "JV Yacht - Nammos",
+      "sector": "Yacht",
+      "stage": "In Validation",
+      "organizationId": "2",
+      "templateId": "2"
+    },
+    {
+      "id": "14",
+      "name": "Berlin",
+      "sector": "Entertainment",
+      "stage": "Active ventures",
+      "organizationId": "2",
+      "templateId": "NULL"
+    },
+    {
+      "id": "15",
+      "name": "KTL-Dubai Casino License",
+      "sector": "Entertainment",
+      "stage": "On Hold",
+      "organizationId": "2",
+      "templateId": "NULL"
+    },
+    {
+      "id": "16",
+      "name": "Casino - Malaysia",
+      "sector": "Entertainment",
+      "stage": "Active ventures",
+      "organizationId": "2",
+      "templateId": "NULL"
+    },
+    {
+      "id": "17",
+      "name": "Kazzafi Daughter",
+      "sector": "Others",
+      "stage": "Active ventures",
+      "organizationId": "2",
+      "templateId": "NULL"
+    },
+    {
+      "id": "18",
+      "name": "Shady Project",
+      "sector": "Others",
+      "stage": "Active ventures",
+      "organizationId": "2",
+      "templateId": "NULL"
+    },
+    {
+      "id": "19",
+      "name": "P430",
+      "sector": "Others",
+      "stage": "In Validation",
+      "organizationId": "2",
+      "templateId": "NULL"
+    },
+    {
+      "id": "20",
+      "name": "Venezuela Mining Rights",
+      "sector": "Oil & Gas",
+      "stage": "In Validation",
+      "organizationId": "2",
+      "templateId": "5"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tsector\tstage\torganizationId\ttemplateId\n1\tNammos - Barcelona\tReal Estate\tIn Validation\t2\t1\n2\tNammos - Lagonissi\tReal Estate\tIn Validation\t2\t1\n3\tMuscat Bay\tReal Estate\tActive ventures\t2\t1\n4\tChekka Land - Resort\tReal Estate\tActive ventures\t2\t1\n5\tShady Hotel\tReal Estate\tActive ventures\t2\t1\n6\tNammos - Watson Island\tReal Estate\tIn Validation\t2\t1\n7\tZarka City\tReal Estate\tIn Validation\t2\t1\n8\tBerbara - Lebanon\tF&B\tActive ventures\t2\t3\n9\tNammos - Ibiza\tF&B\tIn Validation\t2\t3\n10\tNammos Lebanon\tF&B\tIn Validation\t2\t3\n11\tMar-a-Lago Yacht Club\tYacht\tIn Fundraising\t2\t2\n12\tBagatelle\tYacht\tIn Validation\t2\t2\n13\tJV Yacht - Nammos\tYacht\tIn Validation\t2\t2\n14\tBerlin\tEntertainment\tActive ventures\t2\tNULL\n15\tKTL-Dubai Casino License\tEntertainment\tOn Hold\t2\tNULL\n16\tCasino - Malaysia\tEntertainment\tActive ventures\t2\tNULL\n17\tKazzafi Daughter\tOthers\tActive ventures\t2\tNULL\n18\tShady Project\tOthers\tActive ventures\t2\tNULL\n19\tP430\tOthers\tIn Validation\t2\tNULL\n20\tVenezuela Mining Rights\tOil & Gas\tIn Validation\t2\t5\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}

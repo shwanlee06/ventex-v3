@@ -1,0 +1,66 @@
+{
+  "query": "SELECT ps.id, ps.stepName, ps.stepOrder, ps.stageName, ps.whoOwns, ps.typicalDays FROM process_steps ps WHERE ps.templateId = 7 ORDER BY ps.stepOrder",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT ps.id, ps.stepName, ps.stepOrder, ps.stageName, ps.whoOwns, ps.typicalDays FROM process_steps ps WHERE ps.templateId = 7 ORDER BY ps.stepOrder",
+  "rows": [
+    {
+      "id": "53",
+      "stepName": "Licensing & regulatory approval",
+      "stepOrder": "1",
+      "stageName": "Setup",
+      "whoOwns": "Legal Team",
+      "typicalDays": "45"
+    },
+    {
+      "id": "55",
+      "stepName": "Talent & programming coordination",
+      "stepOrder": "1",
+      "stageName": "Operations",
+      "whoOwns": "Creative Director",
+      "typicalDays": "14"
+    },
+    {
+      "id": "57",
+      "stepName": "Marketing campaign management",
+      "stepOrder": "1",
+      "stageName": "Marketing",
+      "whoOwns": "Marketing Team",
+      "typicalDays": "21"
+    },
+    {
+      "id": "58",
+      "stepName": "Revenue tracking & financial reporting",
+      "stepOrder": "1",
+      "stageName": "Finance",
+      "whoOwns": "Finance Team",
+      "typicalDays": "10"
+    },
+    {
+      "id": "59",
+      "stepName": "Safety & compliance audits",
+      "stepOrder": "1",
+      "stageName": "Compliance",
+      "whoOwns": "Compliance Officer",
+      "typicalDays": "14"
+    },
+    {
+      "id": "54",
+      "stepName": "Venue design & construction oversight",
+      "stepOrder": "2",
+      "stageName": "Setup",
+      "whoOwns": "Project Manager",
+      "typicalDays": "90"
+    },
+    {
+      "id": "56",
+      "stepName": "Event scheduling & logistics",
+      "stepOrder": "2",
+      "stageName": "Operations",
+      "whoOwns": "Operations Manager",
+      "typicalDays": "7"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstepName\tstepOrder\tstageName\twhoOwns\ttypicalDays\n53\tLicensing & regulatory approval\t1\tSetup\tLegal Team\t45\n55\tTalent & programming coordination\t1\tOperations\tCreative Director\t14\n57\tMarketing campaign management\t1\tMarketing\tMarketing Team\t21\n58\tRevenue tracking & financial reporting\t1\tFinance\tFinance Team\t10\n59\tSafety & compliance audits\t1\tCompliance\tCompliance Officer\t14\n54\tVenue design & construction oversight\t2\tSetup\tProject Manager\t90\n56\tEvent scheduling & logistics\t2\tOperations\tOperations Manager\t7\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}

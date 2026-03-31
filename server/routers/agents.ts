@@ -122,7 +122,7 @@ async function getVentureIdsForOrg(
 // ── AGENT 1: OVERDUE AGENT ─────────────────────────────────────────────
 // Finds tasks past due, moves them to overdue, drafts follow-up comms
 
-async function runOverdueAgent(
+export async function runOverdueAgent(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   orgId?: number | null
 ): Promise<AgentSignal[]> {
@@ -335,7 +335,7 @@ async function runOverdueAgent(
 
 // ── AGENT 2: VELOCITY AGENT ────────────────────────────────────────────
 
-async function runVelocityAgent(
+export async function runVelocityAgent(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   orgId?: number | null
 ): Promise<AgentSignal[]> {
@@ -646,7 +646,7 @@ async function runVelocityAgent(
 
 // ── AGENT 3: DISTRIBUTION SENTINEL ─────────────────────────────────────
 
-async function runDistributionSentinel(
+export async function runDistributionSentinel(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   orgId?: number | null
 ): Promise<AgentSignal[]> {
@@ -784,7 +784,7 @@ async function runDistributionSentinel(
 
 // ── AGENT 4: ORCHESTRATOR ──────────────────────────────────────────────
 
-async function runOrchestrator(
+export async function runOrchestrator(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   agentSignals: AgentSignal[],
   orgId?: number | null
@@ -882,7 +882,7 @@ async function runOrchestrator(
 
 // ── Persist Signals ────────────────────────────────────────────────────
 
-async function persistSignals(
+export async function persistSignals(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   signals: AgentSignal[]
 ): Promise<void> {
@@ -1995,5 +1995,81 @@ export const agentsRouter = router({
         .where(conditions.length > 0 ? and(...conditions) : undefined)
         .orderBy(desc(agentEvents.createdAt))
         .limit(input.limit);
+    }),
+
+  /**
+   * Sector velocity benchmarks — compare a venture's velocity against its sector average
+   */
+  sectorBenchmarks: protectedProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .query(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) return { sectors: [], overall: null };
+
+      const isAdmin = isAtlasTeam(ctx.user);
+      const effectiveOrgId = isAdmin ? input?.organizationId : ctx.user.organizationId;
+
+      const conditions: any[] = [];
+      if (effectiveOrgId) {
+        conditions.push(eq(ventureVelocity.organizationId, effectiveOrgId));
+      }
+
+      const allAdvances = await db
+        .select()
+        .from(ventureVelocity)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .orderBy(desc(ventureVelocity.advancedAt));
+
+      if (allAdvances.length === 0) return { sectors: [], overall: null };
+
+      // Group by sector
+      const sectorMap: Record<string, { totalDays: number; count: number; ventures: Set<number>; fastest: number; slowest: number }> = {};
+      for (const adv of allAdvances) {
+        const sector = adv.sector || "Others";
+        if (!sectorMap[sector]) sectorMap[sector] = { totalDays: 0, count: 0, ventures: new Set(), fastest: Infinity, slowest: 0 };
+        sectorMap[sector].totalDays += adv.daysInStage;
+        sectorMap[sector].count += 1;
+        sectorMap[sector].ventures.add(adv.ventureId);
+        if (adv.daysInStage < sectorMap[sector].fastest) sectorMap[sector].fastest = adv.daysInStage;
+        if (adv.daysInStage > sectorMap[sector].slowest) sectorMap[sector].slowest = adv.daysInStage;
+      }
+
+      const sectors = Object.entries(sectorMap).map(([name, stats]) => ({
+        sector: name,
+        avgDays: Math.round(stats.totalDays / stats.count),
+        totalAdvances: stats.count,
+        ventureCount: stats.ventures.size,
+        fastest: stats.fastest === Infinity ? 0 : stats.fastest,
+        slowest: stats.slowest,
+      })).sort((a, b) => a.avgDays - b.avgDays);
+
+      const overallAvg = Math.round(allAdvances.reduce((s, a) => s + a.daysInStage, 0) / allAdvances.length);
+
+      return {
+        sectors,
+        overall: {
+          avgDays: overallAvg,
+          totalAdvances: allAdvances.length,
+          totalVentures: new Set(allAdvances.map(a => a.ventureId)).size,
+        },
+      };
+    }),
+
+  /**
+   * Get agent scheduler status — admin only
+   */
+  schedulerStatus: adminProcedure
+    .query(async () => {
+      const { getSchedulerStatus } = await import("../agentScheduler");
+      return getSchedulerStatus();
+    }),
+
+  /**
+   * Manually trigger an agent cycle — admin only
+   */
+  triggerCycle: adminProcedure
+    .mutation(async () => {
+      const { triggerManualCycle } = await import("../agentScheduler");
+      return await triggerManualCycle();
     }),
 });

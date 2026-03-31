@@ -8,6 +8,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { aiStreamRouter } from "../routes/aiStream";
+import { startAgentScheduler, getSchedulerStatus, triggerManualCycle } from "../agentScheduler";
 import airtableSyncRouter from "../routes/airtableSync";
 import inviteValidationRouter from "../routes/inviteValidation";
 
@@ -66,8 +67,15 @@ async function startServer() {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
+  // Agent scheduler status endpoint
+  app.get("/api/agent-scheduler/status", (_req, res) => {
+    res.json(getSchedulerStatus());
+  });
+
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    // Start the agent scheduler after server is ready
+    startAgentScheduler();
   });
 }
 

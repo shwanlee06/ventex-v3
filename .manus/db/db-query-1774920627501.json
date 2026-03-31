@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO venture_process_tracking (ventureId, templateId, stepId, stageName, stepName, stepOrder, status, whoOwns) VALUES (16, 7, 59, 'Compliance', 'Safety & compliance audits', 1, 'pending', 'Compliance Officer')",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute INSERT INTO venture_process_tracking (ventureId, templateId, stepId, stageName, stepName, stepOrder, status, whoOwns) VALUES (16, 7, 59, 'Compliance', 'Safety & compliance audits', 1, 'pending', 'Compliance Officer')",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 66
+}
