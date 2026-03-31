@@ -1509,3 +1509,7 @@
 - [x] Settings page: 5 tabs (General, Security, Compliance, Notifications, Audit) — all fully persistent
 - [x] Empty states: pages have loading skeletons (164 instances), empty messages for zero-data views
 - [x] Velocity Intelligence: VelocityKPI + VelocityIntelligenceCard show real data, sectorBenchmarks procedure added
+
+## Bug Fixes — 2026-03-31 (cont.)
+- [x] BUG: Invitation emails — verified sendInvitationEmail already uses Resend API to send real emails to invitees (notifyOwner is only secondary alert). Added 9 dedicated unit tests for invitationEmail.ts (buildInviteLink + sendInvitationEmail with mock Resend).
+- [x] Atlas members use personal emails, client members use org emails — both receive invitation emails directly via Resend API
