@@ -30,6 +30,7 @@ import {
   ArrowDown,
   Minus,
   Brain,
+  Bot,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useCallback, useMemo } from "react";
@@ -60,6 +61,7 @@ import OverdueAlertBanner from "@/components/OverdueAlertBanner";
 import LivePresenceWidget from "@/components/LivePresenceWidget";
 import VelocityIntelligenceCard from "@/components/VelocityIntelligenceCard";
 import VelocityKPI from "@/components/VelocityKPI";
+import AgentExecutionLog from "@/components/AgentExecutionLog";
 
 // ── Types ───────────────────────────────────────────────────────────────
 type SortField = "name" | "ventures" | "velocity" | "overdue" | "health" | "completion";
@@ -124,6 +126,46 @@ function OverdueBadge({ count }: { count: number }) {
       <AlertTriangle className="size-3" />
       {count}
     </span>
+  );
+}
+
+// ── Time ago helper ─────────────────────────────────────────────────────
+function timeAgo(date: Date | string | null): string {
+  if (!date) return "";
+  const d = typeof date === "string" ? new Date(date) : date;
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay < 7) return `${diffDay}d ago`;
+  return `${Math.floor(diffDay / 7)}w ago`;
+}
+
+// ── Agent action indicator ──────────────────────────────────────────────
+function AgentIndicator({ action, agentName, actionAt }: {
+  action: string | null;
+  agentName: string | null;
+  actionAt: Date | string | null;
+}) {
+  if (!action || !actionAt) {
+    return <span className="text-[10px] text-muted-foreground/40 font-mono">No activity</span>;
+  }
+  const ago = timeAgo(actionAt);
+  const shortName = agentName?.replace(" Agent", "") || "Agent";
+  // Truncate action to first ~30 chars
+  const shortAction = action.length > 35 ? action.slice(0, 32) + "..." : action;
+  return (
+    <div className="flex items-center gap-1.5 max-w-[180px]">
+      <Bot className="size-3 text-primary flex-shrink-0" />
+      <div className="min-w-0">
+        <p className="text-[10px] text-foreground truncate" title={action}>{shortAction}</p>
+        <p className="text-[9px] text-muted-foreground font-mono">{shortName} {ago}</p>
+      </div>
+    </div>
   );
 }
 
@@ -225,8 +267,12 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
   // ── Aggregate KPIs across ACTIVE clients only ─────────────────────
   const kpis = useMemo(() => {
     const activeWithVelocity = activeClients.map(c => {
-      const overdueRate = c.totalTasks > 0 ? (c.overdueTasks / c.totalTasks) * 100 : 0;
-      const velocity = Math.round(c.completionRate * 0.4 + c.avgHealth * 0.3 + (100 - overdueRate) * 0.3);
+      // Velocity = (agent-completed tasks) / (total overdue + open) * 100
+      const denominator = c.overdueTasks + c.openTasks;
+      const agentCompleted = (c as any).agentCompletedTasks ?? 0;
+      const velocity = denominator > 0
+        ? Math.min(100, Math.round((agentCompleted / denominator) * 100))
+        : (agentCompleted > 0 ? 100 : 0);
       return { ...c, velocity };
     });
 
@@ -414,6 +460,8 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
 
       {/* ── Velocity Compression KPI ────────────────────────────── */}
       <VelocityKPI />
+      {/* ── Agent Execution Log ─────────────────────────────────── */}
+      <AgentExecutionLog />
 
       {/* ── Active / Archived Tabs ────────────────────────────────── */}
       <div className="flex items-center gap-1 border-b border-border">
@@ -586,6 +634,9 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                     </div>
                   </th>
                 ))}
+                <th className="p-3 sm:p-4 text-left text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+                  Agent
+                </th>
                 <th className="p-3 sm:p-4 text-right text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
                   Actions
                 </th>
@@ -682,6 +733,15 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                         {client.avgHealth >= 70 ? "Healthy" : client.avgHealth >= 40 ? "At Risk" : "Critical"}
                       </span>
                     </div>
+                  </td>
+
+                  {/* Agent */}
+                  <td className="p-3 sm:p-4">
+                    <AgentIndicator
+                      action={(client as any).lastAgentAction}
+                      agentName={(client as any).lastAgentName}
+                      actionAt={(client as any).lastAgentActionAt}
+                    />
                   </td>
 
                   {/* Actions */}
@@ -872,6 +932,17 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                 </div>
                 {client.overdueTasks > 0 && <OverdueBadge count={client.overdueTasks} />}
               </div>
+
+              {/* Agent activity */}
+              {(client as any).lastAgentAction && (
+                <div className="mt-2 pt-2 border-t border-border/30">
+                  <AgentIndicator
+                    action={(client as any).lastAgentAction}
+                    agentName={(client as any).lastAgentName}
+                    actionAt={(client as any).lastAgentActionAt}
+                  />
+                </div>
+              )}
             </motion.div>
           ))}
         </div>

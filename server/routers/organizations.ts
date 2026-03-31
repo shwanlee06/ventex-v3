@@ -15,6 +15,7 @@ import {
   invitations,
   apiKeys,
   clientAgentConfig,
+  agentEvents,
 } from "../../drizzle/schema";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
@@ -96,6 +97,8 @@ export const organizationsRouter = router({
       const allSpvVentures = await db.select().from(spvVentures);
       const allVentureTeam = await db.select().from(ventureTeam);
       const allDists = await db.select().from(distributions);
+      // Agent events — count tasks completed by agents (advance actions)
+      const allAgentEvents = await db.select().from(agentEvents);
 
       // Get recent activity per org (last activity timestamp)
       const recentActivity = await db
@@ -149,6 +152,13 @@ export const organizationsRouter = router({
         const orgDists = allDists.filter(d => d.organizationId === org.id);
         const totalDistributions = orgDists.reduce((s, d) => s + (d.amount || 0), 0);
 
+        // Agent-completed tasks — count agent events with advance/notify actions for this org
+        const orgAgentEvents = allAgentEvents.filter(e =>
+          e.organizationId === org.id &&
+          (e.actionType === "advance" || e.actionType === "notify")
+        );
+        const agentCompletedTasks = orgAgentEvents.length;
+
         // Last activity — find most recent activity mentioning any of this org's ventures
         const ventureNames = new Set(orgVentures.map(v => v.name.toLowerCase()));
         const lastActivity = recentActivity.find(a => {
@@ -177,7 +187,11 @@ export const organizationsRouter = router({
           spvCount,
           teamSize,
           totalDistributions,
+          agentCompletedTasks,
           lastActivityAt: lastActivity?.createdAt || null,
+          lastAgentAction: orgAgentEvents[0]?.message || null,
+          lastAgentName: orgAgentEvents[0]?.agentName || null,
+          lastAgentActionAt: orgAgentEvents[0]?.createdAt || null,
         };
       });
     }),

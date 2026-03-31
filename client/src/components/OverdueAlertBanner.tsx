@@ -12,8 +12,6 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
-  Bell,
-  Loader2,
   CheckCircle2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -54,16 +52,6 @@ function SeverityBadge({ days }: { days: number }) {
 export default function OverdueAlertBanner({ onNavigate }: OverdueAlertBannerProps) {
   const overdueByClientQ = trpc.tasks.overdueByClient.useQuery(undefined, {
     refetchInterval: 60000,
-  });
-  const scanAndNotify = trpc.tasks.scanAndNotify.useMutation({
-    onSuccess: (result) => {
-      if (result.notified > 0) {
-        toast.success(`Sent ${result.notified} overdue notification${result.notified !== 1 ? "s" : ""}`);
-      } else {
-        toast.info("No overdue tasks to notify about");
-      }
-    },
-    onError: (err) => toast.error(err.message),
   });
 
   const [expanded, setExpanded] = useState(false);
@@ -114,15 +102,6 @@ export default function OverdueAlertBanner({ onNavigate }: OverdueAlertBannerPro
     toast.success("Notification sent");
   }, []);
 
-  const handleNotifyAll = useCallback(() => {
-    const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    const updates: NotifiedState = {};
-    for (const task of allOverdueTasks) {
-      updates[task.id] = now;
-    }
-    setNotified(prev => ({ ...prev, ...updates }));
-    scanAndNotify.mutate();
-  }, [allOverdueTasks, scanAndNotify]);
 
   if (overdueByClientQ.isLoading) return null;
   if (stats.totalOverdue === 0) return null;
@@ -196,29 +175,6 @@ export default function OverdueAlertBanner({ onNavigate }: OverdueAlertBannerPro
             className="overflow-hidden"
           >
             <div className="border-t border-border/30 px-4 py-3">
-              {/* Notify All button */}
-              <div className="flex items-center justify-end mb-3">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className={cn(
-                    "h-7 text-[11px] gap-1",
-                    hasCritical ? "border-red-500/20 text-red-400 hover:bg-red-500/10" : "border-amber-500/20 text-amber-400 hover:bg-amber-500/10"
-                  )}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleNotifyAll();
-                  }}
-                  disabled={scanAndNotify.isPending}
-                >
-                  {scanAndNotify.isPending ? (
-                    <Loader2 className="size-3 animate-spin" />
-                  ) : (
-                    <Bell className="size-3" />
-                  )}
-                  Notify All
-                </Button>
-              </div>
 
               {/* Table */}
               <div className="bg-card/50 border border-border/50 rounded-lg overflow-hidden">

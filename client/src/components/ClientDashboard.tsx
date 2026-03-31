@@ -39,6 +39,7 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import VelocityFeed from "@/components/VelocityFeed";
 import AdvanceBanner from "@/components/AdvanceBanner";
+import AtlasActivitySection from "@/components/AtlasActivitySection";
 
 const THEME_ICONS: Record<string, React.ReactNode> = {
   "Real Estate": <Building2 className="size-5" />,
@@ -49,7 +50,7 @@ const THEME_ICONS: Record<string, React.ReactNode> = {
   "Others": <Package className="size-5" />,
 };
 
-// ── Stage Progress Bar ──────────────────────────────────────────────────
+// -- Stage Progress Bar --------------------------------------------------
 
 const VENTURE_STAGES = ["In Validation", "In Fundraising", "Active", "Completed"];
 
@@ -81,7 +82,7 @@ function StageProgressBar({ currentStage }: { currentStage: string }) {
   );
 }
 
-// ── Sector Filter Pills ─────────────────────────────────────────────────
+// -- Sector Filter Pills -------------------------------------------------
 
 function SectorPills({
   sectors,
@@ -128,7 +129,7 @@ function SectorPills({
   );
 }
 
-// ── Advance Banner Section ────────────────────────────────────────────────
+// -- Advance Banner Section ------------------------------------------------
 
 function AdvanceBannerSection() {
   const { activeOrg } = useWorkspace();
@@ -164,7 +165,7 @@ function AdvanceBannerSection() {
   return <AdvanceBanner readyVentures={readyVentures} />;
 }
 
-// ── Your Progress Section (Mechanic 3) ───────────────────────────────────────
+// -- Your Progress Section (Mechanic 3) ---------------------------------------
 
 function YourProgressSection() {
   const { activeOrg } = useWorkspace();
@@ -236,7 +237,7 @@ function YourProgressSection() {
   );
 }
 
-// ── Main Component ──────────────────────────────────────────────────────
+// -- Main Component ------------------------------------------------------
 
 interface ClientDashboardProps {
   onNavigate: (path: string) => void;
@@ -248,7 +249,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
   const orgFilter = activeOrg?.id ? { organizationId: activeOrg.id } : undefined;
   const [activeSector, setActiveSector] = useState<string | null>(null);
 
-  // ── Data queries (scoped by active org) ──────────────────────
+  // -- Data queries (scoped by active org) ----------------------
   const venturesQ = trpc.ventures.list.useQuery(orgFilter);
   const spvsQ = trpc.spvs.list.useQuery(orgFilter);
   const distQ = trpc.distributions.list.useQuery(orgFilter);
@@ -304,8 +305,8 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
     return (
       <div className="client-portal px-5 py-6 sm:px-8 sm:py-8 space-y-6 pb-28 md:pb-8 max-w-3xl mx-auto">
         <Skeleton className="h-40 rounded-2xl" />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {Array.from({ length: 3 }).map((_, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {Array.from({ length: 2 }).map((_, i) => (
             <Skeleton key={i} className="h-32 rounded-2xl" />
           ))}
         </div>
@@ -318,7 +319,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
   return (
     <div className="client-portal px-5 py-6 sm:px-8 sm:py-8 space-y-6 sm:space-y-8 pb-28 md:pb-8 max-w-3xl mx-auto">
 
-      {/* ── Hero Greeting ─────────────────────────────────────────── */}
+      {/* -- Hero Greeting ------------------------------------------- */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -359,8 +360,11 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
         </div>
       </motion.div>
 
-      {/* ── Action Cards (Section 9A) ─────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* -- ATLAS Activity ------------------------------------------ */}
+      <AtlasActivitySection />
+
+      {/* -- Action Cards (Section 9A) ----------------------------- */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Card 1: Tasks need attention */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -428,13 +432,13 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
         </motion.div>
       </div>
 
-      {/* ── Advance Banners (Mode B — ready to advance) ──────────────── */}
+      {/* -- Advance Banners (Mode B — ready to advance) ---------------- */}
       <AdvanceBannerSection />
 
-      {/* ── Velocity Feed ───────────────────────────────────────────────── */}
+      {/* -- Velocity Feed ------------------------------------------------- */}
       <VelocityFeed onNavigate={onNavigate} />
 
-      {/* ── Ventures with Sector Pills + Stage Bars (Section 9B) ──── */}
+      {/* -- Ventures with Sector Pills + Stage Bars (Section 9B) ---- */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-[11px] uppercase tracking-widest text-muted-foreground font-light">Your Ventures</h2>
@@ -508,7 +512,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
         </div>
       </div>
 
-      {/* ── Distributions ─────────────────────────────────────────── */}
+      {/* -- Distributions ------------------------------------------- */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-[11px] uppercase tracking-widest text-muted-foreground font-light">Distributions</h2>
@@ -581,9 +585,9 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
           ))}
         </div>
       </div>
-      {/* ── Your Progress (Mechanic 3) ────────────────────────────────── */}
+      {/* -- Your Progress (Mechanic 3) ---------------------------------- */}
       <YourProgressSection />
-      {/* ── Recent Activity ───────────────────────────────────────── */}
+      {/* -- Recent Activity ----------------------------------------- */}
       <div>
         <h2 className="text-[11px] uppercase tracking-widest text-muted-foreground font-light mb-4">Recent Activity</h2>
         <div className="space-y-0">

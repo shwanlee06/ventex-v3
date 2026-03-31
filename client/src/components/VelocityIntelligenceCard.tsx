@@ -155,11 +155,11 @@ export default function VelocityIntelligenceCard({
         {highVelocity} High · {lowVelocity} Low · {stalledCount} Stalled
       </span>
 
-      {/* Sector warning line */}
+      {/* Dynamic agent-driven insight */}
       {sectorWarning && (
         <div className="mt-1 pt-1.5 border-t border-amber-500/20">
           <span className="text-[10px] text-amber-400">
-            {sectorWarning.sector} dragging — {sectorWarning.overdue} of {sectorWarning.total} ventures overdue
+            Agent focus: {sectorWarning.sector} — {sectorWarning.overdue} venture{sectorWarning.overdue !== 1 ? "s" : ""} flagged for intervention
           </span>
         </div>
       )}

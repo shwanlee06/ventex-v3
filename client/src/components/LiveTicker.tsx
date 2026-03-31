@@ -1,5 +1,6 @@
 // ============================================================================
-// LiveTicker — Velocity Build: 36px scrolling agent signal strip
+// LiveTicker — Agent Action Strip
+// Shows what agents DID, not what humans should do.
 // Position: between KPI cards and Live presence bar on operator dashboard
 // Operator only — never visible in client portal
 // Uses AgentContext to avoid duplicate agents.list polling
@@ -27,6 +28,45 @@ function timeAgo(date: Date): string {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
+/**
+ * Rewrite agent messages to describe what the agent DID.
+ * Remove "assigning" language, remove human-directed instructions.
+ * Format: "[Agent] — [past-tense action on specific entity]"
+ */
+function rewriteMessage(message: string, agentLabel: string): string {
+  // Strip leading agent name prefix if present
+  let cleaned = message
+    .replace(/^(Velocity Agent|Compliance Agent|Finance Agent|Operations Agent|Overdue Agent|Orchestrator):\s*/i, "")
+    .trim();
+
+  // Remove "assigning" language patterns
+  cleaned = cleaned
+    .replace(/\bby assigning\b.*$/i, "")
+    .replace(/\bAddress the (\d+) overdue tasks? immediately\b/i, `Sent follow-up on $1 overdue task(s)`)
+    .replace(/\bAddress\s+/i, "Acted on ")
+    .replace(/\bassigning\b/gi, "processing")
+    .replace(/\bAssign\b/gi, "Processed")
+    .replace(/\bshould\s+/gi, "")
+    .replace(/\bneeds?\s+to\s+/gi, "")
+    .replace(/\bplease\s+/gi, "")
+    .trim();
+
+  // If message is empty after cleaning, provide a generic action
+  if (!cleaned || cleaned.length < 5) {
+    cleaned = "Completed scheduled check";
+  }
+
+  // Capitalize first letter
+  cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+
+  // Truncate
+  if (cleaned.length > 60) {
+    cleaned = cleaned.slice(0, 57) + "...";
+  }
+
+  return cleaned;
+}
+
 interface LiveTickerProps {
   onEventClick?: () => void;
 }
@@ -46,7 +86,7 @@ export default function LiveTicker({ onEventClick }: LiveTickerProps) {
         agentKey: key,
         label: config.label,
         color: config.color,
-        message: e.message.length > 55 ? e.message.slice(0, 52) + "..." : e.message,
+        message: rewriteMessage(e.message, config.label),
         severity: e.severity as string,
         time: e.createdAt,
       };
@@ -61,7 +101,7 @@ export default function LiveTicker({ onEventClick }: LiveTickerProps) {
           <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-medium">LIVE</span>
           <span className="w-px h-3 bg-border/60 mx-1" />
           <span className="text-[10px] font-mono text-muted-foreground/60">
-            Agent system initializing...
+            Agents standing by — no recent actions
           </span>
         </div>
       </div>
@@ -110,7 +150,7 @@ export default function LiveTicker({ onEventClick }: LiveTickerProps) {
             </span>
             {/* Separator */}
             <span className="text-[10px] text-muted-foreground/40">—</span>
-            {/* Message */}
+            {/* Action description (past tense, what agent DID) */}
             <span className="text-[10px] text-muted-foreground truncate max-w-[280px]">
               {item.message}
             </span>

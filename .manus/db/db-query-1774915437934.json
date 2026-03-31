@@ -1,0 +1,52 @@
+{
+  "query": "SELECT id, sector, blueprintName, extractionSource, confidence FROM process_templates ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, sector, blueprintName, extractionSource, confidence FROM process_templates ORDER BY id;",
+  "rows": [
+    {
+      "id": "1",
+      "sector": "Real Estate",
+      "blueprintName": "Real Estate Venture Operations",
+      "extractionSource": "manual",
+      "confidence": "High"
+    },
+    {
+      "id": "2",
+      "sector": "Yacht",
+      "blueprintName": "Yacht Venture Operations",
+      "extractionSource": "manual",
+      "confidence": "High"
+    },
+    {
+      "id": "3",
+      "sector": "F&B",
+      "blueprintName": "Food & Beverage Venture Operations",
+      "extractionSource": "manual",
+      "confidence": "High"
+    },
+    {
+      "id": "4",
+      "sector": "Hospitality",
+      "blueprintName": "Hospitality Venture Operations",
+      "extractionSource": "manual",
+      "confidence": "High"
+    },
+    {
+      "id": "5",
+      "sector": "Oil & Gas",
+      "blueprintName": "Oil & Gas Venture Operations",
+      "extractionSource": "manual",
+      "confidence": "High"
+    },
+    {
+      "id": "6",
+      "sector": "Energy",
+      "blueprintName": "Energy Venture Operations",
+      "extractionSource": "manual",
+      "confidence": "High"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsector\tblueprintName\textractionSource\tconfidence\n1\tReal Estate\tReal Estate Venture Operations\tmanual\tHigh\n2\tYacht\tYacht Venture Operations\tmanual\tHigh\n3\tF&B\tFood & Beverage Venture Operations\tmanual\tHigh\n4\tHospitality\tHospitality Venture Operations\tmanual\tHigh\n5\tOil & Gas\tOil & Gas Venture Operations\tmanual\tHigh\n6\tEnergy\tEnergy Venture Operations\tmanual\tHigh\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

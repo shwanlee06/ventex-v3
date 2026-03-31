@@ -1,0 +1,25 @@
+{
+  "query": "SELECT id, name, slug FROM organizations LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, slug FROM organizations LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "ATLAS",
+      "slug": "atlas"
+    },
+    {
+      "id": "2",
+      "name": "Royalton Venture Holding",
+      "slug": "royalton"
+    },
+    {
+      "id": "300076",
+      "name": "Test Org",
+      "slug": "test-org"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\n1\tATLAS\tatlas\n2\tRoyalton Venture Holding\troyalton\n300076\tTest Org\ttest-org\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

@@ -1438,3 +1438,28 @@
 - [x] Verify: blueprints.generateFromSector returns 401 (auth required, not 500)
 - [x] Verify: /blueprints page returns HTTP 200 (renders with empty state)
 - [x] 484 tests passing across 31 files, zero TypeScript errors
+
+## Production DB Migration — Blueprint Tables
+- [x] Push process_templates and process_steps tables to production Supabase (confirmed both tables exist)
+- [x] Confirm blueprints.list returns HTTP 401 on production (auth required, not 500 — table exists)
+- [x] Confirm blueprints.generateFromSector returns HTTP 401 on production (auth required, not 500)
+
+## VISION ALIGNMENT BUILD — Close Gap Between Dashboard and Execution
+
+### REMOVE
+- [x] #1 Remove "Notify All" button from Overdue Tasks panel (+ removed scanAndNotify mutation)
+- [x] #2 Rewrite agent ticker copy — past tense, rewriteMessage fn strips 'assigning' language
+- [x] #3 Remove "Portfolio on track" false positive card — grid adjusted to 2-col layout
+
+### ADD
+- [x] #4 Agent Execution Log — timestamped action feed on dashboard (AgentExecutionLog.tsx)
+- [x] #5 Velocity Intelligence wired to real formula: agentCompletedTasks / (overdue + open) * 100
+- [x] #6 Blueprint population for 6 sectors (Real Estate, Yacht, F&B, Hospitality, Oil & Gas, Energy) — 45 steps seeded
+- [x] #7 Agent action indicators on venture cards — table + grid view show last agent action, agent name, timestamp
+- [x] #8 Client portal "ATLAS Activity" section — weekly summary between hero and action cards
+- [ ] #9 Onboarding wizard end-to-end test (org, ventures, invitations, agent config, redirect)
+
+### CHANGE
+- [ ] #10 Rename "Velocity Compression" to "Agent Activity" — show active runs, last execution, next scheduled
+- [ ] #11 Expand "Live 1 active" agent status — clickable to show agent details, current task, last 3 actions
+- [ ] #12 Sector Pulse — link to agent recommendations, show active agent work per sector
