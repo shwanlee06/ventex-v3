@@ -18,6 +18,9 @@ import {
   distributions,
 } from "../../drizzle/schema";
 import { isAtlasTeam } from "../security/rbac";
+import { onClientPortalAction } from "../intelligence/realtimeTriggers";
+import { forecastVentures as getVentureForecasts, computePortfolioHealth as getPortfolioHealth } from "../intelligence/predictiveEngine";
+import { getActiveSignals as getLatestMarketSignals } from "../intelligence/marketIntelligence";
 
 // ── Stage name mapping: internal → client-friendly ──────────────────────
 const STAGE_DISPLAY: Record<string, string> = {
@@ -563,11 +566,57 @@ export const portalRouter = {
         });
       }
 
+      // ── Intelligence Layer: Forecasts + Market Signals ──────────────
+      let forecasts: Array<{ ventureId: number; ventureName: string; projectedDays: number; confidence: number; riskLevel: string; riskFactors: string[] }> = [];
+      let marketSignals: Array<{ sector: string; signalType: string; headline: string; impact: string; relevance: number }> = [];
+      let portfolioHealth: { score: number; trend: string; riskCount: number } | null = null;
+
+      try {
+        const [forecastData, healthData, signalData] = await Promise.allSettled([
+          getVentureForecasts(org.id),
+          getPortfolioHealth(org.id),
+          getLatestMarketSignals(org.id),
+        ]);
+
+        if (forecastData.status === "fulfilled" && forecastData.value) {
+          forecasts = forecastData.value.map((f: any) => ({
+            ventureId: f.ventureId,
+            ventureName: f.ventureName || "",
+            projectedDays: f.projectedDaysRemaining || 0,
+            confidence: f.confidenceScore || 0,
+            riskLevel: f.riskLevel || "low",
+            riskFactors: f.riskFactors || [],
+          }));
+        }
+        if (healthData.status === "fulfilled" && healthData.value) {
+          portfolioHealth = {
+            score: healthData.value.currentHealthScore || 0,
+            trend: healthData.value.healthTrend || "stable",
+            riskCount: healthData.value.venturesAtRisk || 0,
+          };
+        }
+        if (signalData.status === "fulfilled" && signalData.value) {
+          marketSignals = signalData.value.map((s: any) => ({
+            sector: s.sector || "",
+            signalType: s.signalType || "",
+            headline: s.headline || "",
+            impact: s.impactAssessment || "",
+            relevance: s.relevanceScore || 0,
+          }));
+        }
+      } catch (e) {
+        console.error("[Portal] Intelligence layer failed (non-blocking):", e);
+      }
+
       return {
         orgName: org.name,
         orgSlug: org.slug,
         isOperatorPreview: isAdmin,
         velocitySummary,
+        // Intelligence layer
+        forecasts,
+        marketSignals,
+        portfolioHealth,
         // 3 card types for the Velocity Feed
         actionCards: actionCards.map((e) => ({
           id: e.id,
@@ -645,6 +694,16 @@ export const portalRouter = {
         actionTaken: true,
         actionTakenAt: new Date(),
       }).where(eq(agentEvents.id, input.eventId));
+
+      // Fire real-time trigger — intelligence engines react immediately
+      if (event.organizationId) {
+        onClientPortalAction(
+          event.organizationId,
+          input.actionFlow,
+          input.eventId,
+          event.agentEntityName || `event-${input.eventId}`,
+        ).catch((e: any) => console.error("[Portal] Real-time trigger failed (non-blocking):", e));
+      }
 
       // Handle specific action flows
       if (input.actionFlow === "confirm_distribution") {

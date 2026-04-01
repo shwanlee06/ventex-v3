@@ -257,6 +257,9 @@ export default function ClientPortal() {
     completedCards,
     watchingCards,
     portfolio,
+    forecasts,
+    marketSignals,
+    portfolioHealth,
   } = data;
 
   return (
@@ -704,6 +707,187 @@ export default function ClientPortal() {
             </div>
           )}
         </motion.section>
+
+        {/* ── Portfolio Health Score ─────────────────────────────── */}
+        {portfolioHealth && (
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Zap className="size-4 text-primary" />
+              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+                Portfolio Health
+              </h2>
+            </div>
+            <div className="bg-card border border-border rounded-xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className={cn(
+                      "text-3xl font-bold font-mono tracking-tight",
+                      portfolioHealth.score >= 80 ? "text-emerald-400" :
+                      portfolioHealth.score >= 60 ? "text-amber-400" : "text-red-400"
+                    )}>
+                      {portfolioHealth.score}
+                    </span>
+                    <span className="text-xs text-muted-foreground">/100</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Overall portfolio health score
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className={cn(
+                    "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium",
+                    portfolioHealth.trend === "improving" ? "bg-emerald-500/10 text-emerald-400" :
+                    portfolioHealth.trend === "declining" ? "bg-red-500/10 text-red-400" :
+                    "bg-muted text-muted-foreground"
+                  )}>
+                    {portfolioHealth.trend === "improving" ? "↑" : portfolioHealth.trend === "declining" ? "↓" : "→"}
+                    {portfolioHealth.trend}
+                  </div>
+                  {portfolioHealth.riskCount > 0 && (
+                    <p className="text-[11px] text-amber-400 mt-1">
+                      {portfolioHealth.riskCount} venture{portfolioHealth.riskCount !== 1 ? "s" : ""} at risk
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2">
+                <div
+                  className={cn(
+                    "h-2 rounded-full transition-all duration-500",
+                    portfolioHealth.score >= 80 ? "bg-emerald-400" :
+                    portfolioHealth.score >= 60 ? "bg-amber-400" : "bg-red-400"
+                  )}
+                  style={{ width: `${Math.min(portfolioHealth.score, 100)}%` }}
+                />
+              </div>
+            </div>
+          </motion.section>
+        )}
+
+        {/* ── Venture Forecasts ────────────────────────────────────── */}
+        {forecasts && forecasts.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, duration: 0.3 }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Clock className="size-4 text-primary" />
+              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+                Venture Forecasts
+              </h2>
+              <span className="text-[11px] text-muted-foreground ml-auto">
+                AI-projected timelines
+              </span>
+            </div>
+            <div className="space-y-2">
+              {forecasts.map((f: any, i: number) => (
+                <motion.div
+                  key={f.ventureId}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.04, duration: 0.25 }}
+                  className="bg-card border border-border rounded-xl p-4"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <h3 className="text-sm font-medium text-foreground">{f.ventureName}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Projected: <span className="font-mono">{f.projectedDays}</span> days to next stage
+                      </p>
+                    </div>
+                    <div className={cn(
+                      "px-2 py-0.5 rounded-full text-[10px] font-medium",
+                      f.riskLevel === "low" ? "bg-emerald-500/10 text-emerald-400" :
+                      f.riskLevel === "medium" ? "bg-amber-500/10 text-amber-400" :
+                      "bg-red-500/10 text-red-400"
+                    )}>
+                      {f.riskLevel} risk
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 bg-muted rounded-full h-1.5">
+                      <div
+                        className="h-1.5 rounded-full bg-primary/60 transition-all"
+                        style={{ width: `${Math.min(f.confidence, 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-mono text-muted-foreground">
+                      {f.confidence}% confidence
+                    </span>
+                  </div>
+                  {f.riskFactors && f.riskFactors.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {f.riskFactors.slice(0, 3).map((rf: string, j: number) => (
+                        <span key={j} className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                          {rf}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
+        )}
+
+        {/* ── Market Intelligence ──────────────────────────────────── */}
+        {marketSignals && marketSignals.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.3 }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <ArrowUpRight className="size-4 text-primary" />
+              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+                Market Intelligence
+              </h2>
+              <span className="text-[11px] text-muted-foreground ml-auto">
+                Sector signals
+              </span>
+            </div>
+            <div className="space-y-2">
+              {marketSignals.map((s: any, i: number) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.35 + i * 0.04, duration: 0.25 }}
+                  className="bg-card border border-border rounded-xl p-4"
+                >
+                  <div className="flex items-start justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">
+                        {SECTOR_ICONS[s.sector] || <Package className="size-4" />}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">{s.sector}</span>
+                      <span className={cn(
+                        "text-[10px] px-1.5 py-0.5 rounded",
+                        s.signalType === "opportunity" ? "bg-emerald-500/10 text-emerald-400" :
+                        s.signalType === "risk" ? "bg-red-500/10 text-red-400" :
+                        s.signalType === "regulatory" ? "bg-amber-500/10 text-amber-400" :
+                        "bg-muted text-muted-foreground"
+                      )}>
+                        {s.signalType}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono text-muted-foreground">
+                      {s.relevance}% relevant
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-medium text-foreground mb-1">{s.headline}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{s.impact}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
+        )}
 
         {/* Footer */}
         <div className="pt-8 pb-12 text-center">

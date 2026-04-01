@@ -28,6 +28,7 @@ import {
   sendReadyToAdvanceEmail,
   sendStageAdvancedEmail,
 } from "../emailService";
+import { onStageAdvanced, onTaskCompleted, onTaskOverdue } from "../intelligence/realtimeTriggers";
 import { eq, desc, sql, and, ne, gte, inArray } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
 import { isAtlasTeam, resolveVentureScope } from "../security/rbac";
@@ -1894,6 +1895,12 @@ export const agentsRouter = router({
         actionTakenAt: now,
         actionTakenBy: userName,
       });
+
+      // Fire real-time trigger for intelligence engines
+      if (orgId) {
+        onStageAdvanced(orgId, input.ventureId, venture.name, venture.stage, nextStage)
+          .catch((e: any) => console.error("[Agents] Stage advance trigger failed:", e));
+      }
 
       // Mark the "ready to advance" event as actioned
       if (input.eventId) {

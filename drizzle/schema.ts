@@ -748,3 +748,189 @@ export const ventureProcessOverrides = mysqlTable("venture_process_overrides", {
 });
 export type VentureProcessOverride = typeof ventureProcessOverrides.$inferSelect;
 export type InsertVentureProcessOverride = typeof ventureProcessOverrides.$inferInsert;
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ATLAS INTELLIGENCE PLATFORM — 4 Gaps
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Gap 1: Predictive Analytics — Venture Forecasts ─────────────────────
+export const ventureForecast = mysqlTable("venture_forecast", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  ventureId: int("ventureId").notNull(),
+  ventureName: varchar("ventureName", { length: 255 }).notNull(),
+  sector: varchar("sector", { length: 64 }),
+  currentStage: varchar("currentStage", { length: 64 }).notNull(),
+  // Predictions
+  projectedAdvanceDate: timestamp("projectedAdvanceDate"),      // when we predict this stage completes
+  projectedDaysRemaining: int("projectedDaysRemaining"),        // days until stage advance
+  benchmarkDays: int("benchmarkDays"),                          // sector avg for this stage
+  deviationPercent: int("deviationPercent"),                     // % over/under benchmark (negative = faster)
+  riskScore: int("riskScore").default(50).notNull(),            // 0-100, higher = more risk of delay
+  riskFactors: json("riskFactors").$type<string[]>(),           // ["overdue tasks", "resource contention", "slow step"]
+  // Bottleneck detection
+  bottleneckStepName: varchar("bottleneckStepName", { length: 255 }),
+  bottleneckOwner: varchar("bottleneckOwner", { length: 255 }),
+  bottleneckDaysStuck: int("bottleneckDaysStuck"),
+  // Confidence
+  confidence: varchar("forecastConfidence", { length: 16 }).default("medium").notNull(), // low | medium | high
+  sampleSize: int("sampleSize").default(0).notNull(),           // how many historical records this is based on
+  // Deal outcome (for SPV-linked ventures)
+  dealCloseProbability: int("dealCloseProbability"),             // 0-100%
+  dealRiskFactors: json("dealRiskFactors").$type<string[]>(),
+  // LLM narrative
+  narrative: text("narrative"),                                  // human-readable forecast summary
+  recommendedActions: json("recommendedActions").$type<string[]>(),
+  // Meta
+  calculatedAt: timestamp("calculatedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type VentureForecast = typeof ventureForecast.$inferSelect;
+export type InsertVentureForecast = typeof ventureForecast.$inferInsert;
+
+// ── Gap 1: Predictive Analytics — Portfolio Health Trajectory ────────────
+export const portfolioHealthTrajectory = mysqlTable("portfolio_health_trajectory", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  // Current snapshot
+  currentHealthScore: int("currentHealthScore").notNull(),      // 0-100
+  projectedHealthScore30d: int("projectedHealthScore30d"),      // projected 30 days out
+  healthTrend: varchar("healthTrend", { length: 16 }).notNull(), // improving | stable | declining | critical
+  // Breakdown
+  venturesOnTrack: int("venturesOnTrack").default(0).notNull(),
+  venturesAtRisk: int("venturesAtRisk").default(0).notNull(),
+  venturesDelayed: int("venturesDelayed").default(0).notNull(),
+  // Resource contention
+  overloadedMembers: json("overloadedMembers").$type<{ name: string; blockingTasks: number; ventures: string[] }[]>(),
+  // LLM narrative
+  executiveSummary: text("executiveSummary"),
+  topRisks: json("topRisks").$type<string[]>(),
+  topOpportunities: json("topOpportunities").$type<string[]>(),
+  // Meta
+  calculatedAt: timestamp("calculatedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type PortfolioHealthTrajectory = typeof portfolioHealthTrajectory.$inferSelect;
+export type InsertPortfolioHealthTrajectory = typeof portfolioHealthTrajectory.$inferInsert;
+
+// ── Gap 1: Predictive Analytics — Resource Contention Alerts ────────────
+export const resourceContentionAlert = mysqlTable("resource_contention_alert", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId").notNull(),
+  memberId: int("memberId").notNull(),
+  memberName: varchar("memberName", { length: 255 }).notNull(),
+  blockingTaskCount: int("blockingTaskCount").notNull(),
+  ventureNames: json("ventureNames").$type<string[]>(),
+  riskLevel: varchar("riskLevel", { length: 16 }).notNull(),    // low | medium | high | critical
+  recommendation: text("recommendation"),                        // LLM-generated rebalance suggestion
+  resolved: boolean("resolved").default(false).notNull(),
+  resolvedAt: timestamp("resolvedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type ResourceContentionAlert = typeof resourceContentionAlert.$inferSelect;
+
+// ── Gap 2: External Data Ingestion — Market Signals ─────────────────────
+export const marketSignal = mysqlTable("market_signal", {
+  id: int("id").autoincrement().primaryKey(),
+  sector: varchar("sector", { length: 64 }).notNull(),
+  region: varchar("region", { length: 128 }),
+  signalType: varchar("signalType", { length: 32 }).notNull(),  // regulatory | market_trend | competitor | opportunity | risk
+  headline: varchar("headline", { length: 500 }).notNull(),
+  summary: text("summary").notNull(),
+  impact: varchar("impact", { length: 16 }).notNull(),          // positive | negative | neutral
+  impactScore: int("impactScore").default(50).notNull(),        // 0-100, how significant
+  source: varchar("source", { length: 255 }),                   // where this signal came from
+  sourceUrl: text("sourceUrl"),
+  // Venture linking — which ventures are affected
+  affectedVentureIds: json("affectedVentureIds").$type<number[]>(),
+  affectedOrganizationIds: json("affectedOrganizationIds").$type<number[]>(),
+  // LLM analysis
+  actionRecommendation: text("actionRecommendation"),
+  relevanceScore: int("relevanceScore").default(50).notNull(),  // 0-100
+  // Status
+  isActive: boolean("isActive").default(true).notNull(),
+  expiresAt: timestamp("expiresAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type MarketSignal = typeof marketSignal.$inferSelect;
+export type InsertMarketSignal = typeof marketSignal.$inferInsert;
+
+// ── Gap 3: Continuous Learning — Recommendation Outcomes ────────────────
+export const recommendationOutcome = mysqlTable("recommendation_outcome", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId"),
+  // What was recommended
+  agentEventId: int("agentEventId").notNull(),                  // link to the agent_events record
+  agentName: varchar("agentName", { length: 64 }).notNull(),
+  recommendationType: varchar("recommendationType", { length: 64 }).notNull(), // advance_stage | follow_up | distribution | escalation
+  recommendationSummary: text("recommendationSummary"),
+  // What the client did
+  clientAction: varchar("clientAction", { length: 32 }).notNull(), // accepted | rejected | modified | ignored | deferred
+  clientFeedback: text("clientFeedback"),                        // optional text from client
+  actionTakenAt: timestamp("actionTakenAt"),
+  // What actually happened (measured outcome)
+  outcomeType: varchar("outcomeType", { length: 32 }),           // positive | negative | neutral | pending
+  outcomeDescription: text("outcomeDescription"),
+  outcomeMetric: int("outcomeMetric"),                           // e.g., days saved, $ impact
+  outcomeMeasuredAt: timestamp("outcomeMeasuredAt"),
+  // Scoring
+  wasHelpful: boolean("wasHelpful"),                             // client explicit feedback
+  accuracyScore: int("accuracyScore"),                           // 0-100, how accurate was the prediction
+  // Meta
+  ventureId: int("ventureId"),
+  sector: varchar("sector", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type RecommendationOutcome = typeof recommendationOutcome.$inferSelect;
+export type InsertRecommendationOutcome = typeof recommendationOutcome.$inferInsert;
+
+// ── Gap 3: Continuous Learning — Agent Performance ──────────────────────
+export const agentPerformance = mysqlTable("agent_performance", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId"),
+  agentName: varchar("agentName", { length: 64 }).notNull(),
+  sector: varchar("sector", { length: 64 }),
+  // Metrics (rolling 30-day window)
+  totalRecommendations: int("totalRecommendations").default(0).notNull(),
+  acceptedCount: int("acceptedCount").default(0).notNull(),
+  rejectedCount: int("rejectedCount").default(0).notNull(),
+  ignoredCount: int("ignoredCount").default(0).notNull(),
+  positiveOutcomes: int("positiveOutcomes").default(0).notNull(),
+  negativeOutcomes: int("negativeOutcomes").default(0).notNull(),
+  // Derived scores
+  acceptanceRate: int("acceptanceRate"),                         // 0-100%
+  accuracyRate: int("accuracyRate"),                             // 0-100%
+  clientTrustScore: int("clientTrustScore"),                     // composite 0-100
+  // Calibration adjustments
+  severityBias: varchar("severityBias", { length: 16 }),         // over_alerts | under_alerts | calibrated
+  recommendedCalibration: text("recommendedCalibration"),
+  // Meta
+  periodStart: timestamp("periodStart").notNull(),
+  periodEnd: timestamp("periodEnd").notNull(),
+  calculatedAt: timestamp("calculatedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type AgentPerformance = typeof agentPerformance.$inferSelect;
+export type InsertAgentPerformance = typeof agentPerformance.$inferInsert;
+
+// ── Gap 4: Real-time Triggers — Event Trigger Log ───────────────────────
+export const eventTriggerLog = mysqlTable("event_trigger_log", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("organizationId"),
+  triggerType: varchar("triggerType", { length: 32 }).notNull(), // task_overdue | stage_ready | distribution_due | health_drop | contention
+  triggerSource: varchar("triggerSource", { length: 64 }).notNull(), // mutation | scheduler | manual
+  entityType: varchar("entityType", { length: 32 }),             // task | venture | distribution | team_member
+  entityId: int("entityId"),
+  entityName: varchar("entityName", { length: 255 }),
+  // What happened
+  description: text("description"),
+  agentsTriggered: json("agentsTriggered").$type<string[]>(),    // which agents were fired
+  signalsGenerated: int("signalsGenerated").default(0).notNull(),
+  // Timing
+  latencyMs: int("latencyMs"),                                   // how fast the trigger fired
+  processedAt: timestamp("processedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type EventTriggerLog = typeof eventTriggerLog.$inferSelect;
+export type InsertEventTriggerLog = typeof eventTriggerLog.$inferInsert;

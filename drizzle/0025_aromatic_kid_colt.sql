@@ -1,0 +1,142 @@
+CREATE TABLE `agent_performance` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`organizationId` int,
+	`agentName` varchar(64) NOT NULL,
+	`sector` varchar(64),
+	`totalRecommendations` int NOT NULL DEFAULT 0,
+	`acceptedCount` int NOT NULL DEFAULT 0,
+	`rejectedCount` int NOT NULL DEFAULT 0,
+	`ignoredCount` int NOT NULL DEFAULT 0,
+	`positiveOutcomes` int NOT NULL DEFAULT 0,
+	`negativeOutcomes` int NOT NULL DEFAULT 0,
+	`acceptanceRate` int,
+	`accuracyRate` int,
+	`clientTrustScore` int,
+	`severityBias` varchar(16),
+	`recommendedCalibration` text,
+	`periodStart` timestamp NOT NULL,
+	`periodEnd` timestamp NOT NULL,
+	`calculatedAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `agent_performance_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `event_trigger_log` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`organizationId` int,
+	`triggerType` varchar(32) NOT NULL,
+	`triggerSource` varchar(64) NOT NULL,
+	`entityType` varchar(32),
+	`entityId` int,
+	`entityName` varchar(255),
+	`description` text,
+	`agentsTriggered` json,
+	`signalsGenerated` int NOT NULL DEFAULT 0,
+	`latencyMs` int,
+	`processedAt` timestamp,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `event_trigger_log_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `market_signal` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`sector` varchar(64) NOT NULL,
+	`region` varchar(128),
+	`signalType` varchar(32) NOT NULL,
+	`headline` varchar(500) NOT NULL,
+	`summary` text NOT NULL,
+	`impact` varchar(16) NOT NULL,
+	`impactScore` int NOT NULL DEFAULT 50,
+	`source` varchar(255),
+	`sourceUrl` text,
+	`affectedVentureIds` json,
+	`affectedOrganizationIds` json,
+	`actionRecommendation` text,
+	`relevanceScore` int NOT NULL DEFAULT 50,
+	`isActive` boolean NOT NULL DEFAULT true,
+	`expiresAt` timestamp,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `market_signal_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `portfolio_health_trajectory` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`organizationId` int NOT NULL,
+	`currentHealthScore` int NOT NULL,
+	`projectedHealthScore30d` int,
+	`healthTrend` varchar(16) NOT NULL,
+	`venturesOnTrack` int NOT NULL DEFAULT 0,
+	`venturesAtRisk` int NOT NULL DEFAULT 0,
+	`venturesDelayed` int NOT NULL DEFAULT 0,
+	`overloadedMembers` json,
+	`executiveSummary` text,
+	`topRisks` json,
+	`topOpportunities` json,
+	`calculatedAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `portfolio_health_trajectory_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `recommendation_outcome` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`organizationId` int,
+	`agentEventId` int NOT NULL,
+	`agentName` varchar(64) NOT NULL,
+	`recommendationType` varchar(64) NOT NULL,
+	`recommendationSummary` text,
+	`clientAction` varchar(32) NOT NULL,
+	`clientFeedback` text,
+	`actionTakenAt` timestamp,
+	`outcomeType` varchar(32),
+	`outcomeDescription` text,
+	`outcomeMetric` int,
+	`outcomeMeasuredAt` timestamp,
+	`wasHelpful` boolean,
+	`accuracyScore` int,
+	`ventureId` int,
+	`sector` varchar(64),
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `recommendation_outcome_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `resource_contention_alert` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`organizationId` int NOT NULL,
+	`memberId` int NOT NULL,
+	`memberName` varchar(255) NOT NULL,
+	`blockingTaskCount` int NOT NULL,
+	`ventureNames` json,
+	`riskLevel` varchar(16) NOT NULL,
+	`recommendation` text,
+	`resolved` boolean NOT NULL DEFAULT false,
+	`resolvedAt` timestamp,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `resource_contention_alert_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `venture_forecast` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`organizationId` int NOT NULL,
+	`ventureId` int NOT NULL,
+	`ventureName` varchar(255) NOT NULL,
+	`sector` varchar(64),
+	`currentStage` varchar(64) NOT NULL,
+	`projectedAdvanceDate` timestamp,
+	`projectedDaysRemaining` int,
+	`benchmarkDays` int,
+	`deviationPercent` int,
+	`riskScore` int NOT NULL DEFAULT 50,
+	`riskFactors` json,
+	`bottleneckStepName` varchar(255),
+	`bottleneckOwner` varchar(255),
+	`bottleneckDaysStuck` int,
+	`forecastConfidence` varchar(16) NOT NULL DEFAULT 'medium',
+	`sampleSize` int NOT NULL DEFAULT 0,
+	`dealCloseProbability` int,
+	`dealRiskFactors` json,
+	`narrative` text,
+	`recommendedActions` json,
+	`calculatedAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `venture_forecast_id` PRIMARY KEY(`id`)
+);

@@ -1753,3 +1753,49 @@
 - [x] Middleware logs every mutation automatically — fire-and-forget pattern
 - [x] Root cause of live issue: same corrupted deploy — middleware not deployed
 - [ ] Verify on atlasops.manus.space after fresh publish
+
+## Update Executive Summary — Show Executive Members
+- [ ] Find the executive summary section in the codebase
+- [ ] Update it to display executive team members
+
+## ATLAS Intelligence Platform Upgrade — 4 Gaps to Close
+
+### Gap 1 — Predictive Analytics Engine
+- [x] DB schema: client_velocity_benchmarks, venture_velocity tables
+- [x] Benchmarking engine: computeBenchmarks() — sector/stage averages from venture_velocity history
+- [x] Stage duration forecasting: forecastVentures() — project completion dates using weighted averages
+- [x] Bottleneck pattern recognition: detectBottlenecks() — identify consistently slow steps
+- [x] Portfolio health trajectory: computePortfolioHealth() — 30-day health trend per org
+- [x] Resource contention alerts: included in portfolio health analysis
+- [x] Deal outcome probability scoring: integrated into forecast confidence scores
+- [x] runPredictiveEngine() master function orchestrates all sub-engines
+- [x] 14 vitest tests passing for predictive engine
+
+### Gap 2 — External Data Ingestion
+- [x] DB schema: market_signals table with sector, signalType, severity, confidence
+- [x] Market intelligence service: runMarketIntelligence() — LLM-powered sector analysis
+- [x] Sector-specific signal enrichment (real estate, commodities, regulatory, maritime)
+- [x] getActiveSignals() + getVentureSignals() for agent and portal consumption
+- [x] Surface market signals in client portal intelligence section
+- [x] 8 vitest tests passing for market intelligence
+
+### Gap 3 — Continuous Learning / Feedback Loop
+- [x] DB schema: recommendation_outcome table (agentName, recommendationType, clientAction, outcomeType)
+- [x] trackOutcomes() — record when clients accept/reject/ignore recommendations
+- [x] computeAgentPerformance() — accuracy, acceptance rate, positive outcome rate per agent
+- [x] getAgentPerformanceSummary() — aggregate performance metrics for dashboard
+- [x] runContinuousLearning() master function orchestrates tracking + scoring
+- [x] 9 vitest tests passing for continuous learning
+
+### Gap 4 — Real-time Agent Triggers
+- [x] Event-driven trigger system: dispatchTrigger() fires agents on data mutations
+- [x] Task overdue trigger: onTaskOverdue() fires immediately when task due date passes
+- [x] Task completed trigger: onTaskCompleted() checks if venture can advance stage
+- [x] Stage ready trigger: onStageAdvanced() fires when venture advances pipeline stage
+- [x] Distribution due trigger: onDistributionScheduled() fires when distribution approaches
+- [x] Client portal trigger: onClientPortalAction() fires on portal interactions
+- [x] Blueprint trigger: onBlueprintGenerated() fires when new blueprint is created
+- [x] Event trigger log table for audit trail (event_trigger_log)
+- [x] getTriggerHistory() for trigger audit and monitoring
+- [x] 14 vitest tests passing for real-time triggers
+- [x] 6h scheduled cycle remains as fallback/comprehensive sweep

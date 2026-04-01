@@ -176,6 +176,13 @@
       "when": 1774973411141,
       "tag": "0024_lyrical_sway",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "5",
+      "when": 1775003161471,
+      "tag": "0025_aromatic_kid_colt",
+      "breakpoints": true
     }
   ]
 }
