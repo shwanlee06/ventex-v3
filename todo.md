@@ -1892,3 +1892,14 @@
 - [x] Fix invitation acceptance in routers.ts — ATLAS roles get null orgId
 - [x] Fix invitation acceptance in oauth.ts — ATLAS roles get null orgId
 - [x] Fixed 4 existing ATLAS members (Jason, Brian, Shourya, Michael) — set orgId to null
+
+### Security Hardening — Cross-Client Data Isolation
+- [x] Audit all tRPC routes for org-scoped access control
+- [x] documentIntelligence: all 10 procedures converted to adminProcedure (prevents client users from accessing other clients' documents)
+- [x] ai.chat: converted to adminProcedure (builds context from ALL ventures — must be ATLAS-only)
+- [x] Verified: portal routes enforce org-scoped access (getData, resolveAction, getVentureTasks, completeTask)
+- [x] Verified: ventures routes use resolveVentureScope/getOrgVentureIds for client isolation
+- [x] Verified: distributions use resolveOrgId for cross-tenant isolation
+- [x] Verified: access management uses adminProcedure throughout
+- [x] Verified: agent routes use adminProcedure throughout
+- [x] Verified: settings routes are user-scoped via ctx.user.id

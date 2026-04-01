@@ -1,10 +1,13 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import {
   documentIntelligence, ventureFiles, spvFiles, ventureRisks,
   tasks, notifications, meetingBriefs, ventures, teamMembers, activityLog,
+  orgVentureAccess,
 } from "../../drizzle/schema";
+import { isAtlasTeam, getOrgVentureIds } from "../security/rbac";
+import { TRPCError } from "@trpc/server";
 import { eq, desc, and, sql, like, or } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
@@ -269,7 +272,7 @@ Return ONLY valid JSON.`,
 
 export const documentIntelligenceRouter = router({
   // Process a file (called after upload)
-  processFile: protectedProcedure
+  processFile: adminProcedure
     .input(z.object({
       fileId: z.number(),
       ventureId: z.number().optional(),
@@ -310,7 +313,7 @@ export const documentIntelligenceRouter = router({
     }),
 
   // Get intelligence for a specific file
-  getByFileId: protectedProcedure
+  getByFileId: adminProcedure
     .input(z.object({ fileId: z.number() }))
     .query(async ({ input }) => {
       const db = await getDb();
@@ -321,7 +324,7 @@ export const documentIntelligenceRouter = router({
     }),
 
   // Get all intelligence for a venture
-  getByVenture: protectedProcedure
+  getByVenture: adminProcedure
     .input(z.object({ ventureId: z.number() }))
     .query(async ({ input }) => {
       const db = await getDb();
@@ -332,7 +335,7 @@ export const documentIntelligenceRouter = router({
     }),
 
   // Get all intelligence for an SPV
-  getBySpv: protectedProcedure
+  getBySpv: adminProcedure
     .input(z.object({ spvId: z.number() }))
     .query(async ({ input }) => {
       const db = await getDb();
@@ -343,7 +346,7 @@ export const documentIntelligenceRouter = router({
     }),
 
   // Get recent intelligence feed (for dashboard)
-  recentFeed: protectedProcedure
+  recentFeed: adminProcedure
     .input(z.object({ limit: z.number().default(10) }))
     .query(async ({ input }) => {
       const db = await getDb();
@@ -371,7 +374,7 @@ export const documentIntelligenceRouter = router({
     }),
 
   // Retry failed processing
-  retryProcessing: protectedProcedure
+  retryProcessing: adminProcedure
     .input(z.object({ docIntelId: z.number() }))
     .mutation(async ({ input }) => {
       const db = await getDb();
@@ -383,7 +386,7 @@ export const documentIntelligenceRouter = router({
     }),
 
   // Get risks for a venture
-  getVentureRisks: protectedProcedure
+  getVentureRisks: adminProcedure
     .input(z.object({ ventureId: z.number() }))
     .query(async ({ input }) => {
       const db = await getDb();
@@ -394,7 +397,7 @@ export const documentIntelligenceRouter = router({
     }),
 
   // Update risk status
-  updateRiskStatus: protectedProcedure
+  updateRiskStatus: adminProcedure
     .input(z.object({ riskId: z.number(), status: z.string() }))
     .mutation(async ({ input }) => {
       const db = await getDb();
@@ -406,7 +409,7 @@ export const documentIntelligenceRouter = router({
     }),
 
   // Get meeting briefs for a venture
-  getMeetingBriefs: protectedProcedure
+  getMeetingBriefs: adminProcedure
     .input(z.object({ ventureId: z.number() }))
     .query(async ({ input }) => {
       const db = await getDb();
@@ -417,7 +420,7 @@ export const documentIntelligenceRouter = router({
     }),
 
   // Search across document text
-  searchDocuments: protectedProcedure
+  searchDocuments: adminProcedure
     .input(z.object({ query: z.string(), ventureId: z.number().optional() }))
     .query(async ({ input }) => {
       const db = await getDb();

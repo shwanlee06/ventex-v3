@@ -3,7 +3,7 @@
 // ============================================================================
 
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, adminProcedure, router } from "../_core/trpc";
 import { invokeLLM, type Message } from "../_core/llm";
 import { checkRateLimit } from "../rateLimiter";
 import { getDb } from "../db";
@@ -123,7 +123,8 @@ const messageSchema = z.object({
 });
 
 export const aiRouter = router({
-  chat: protectedProcedure
+  // ATLAS-only: chat builds context from ALL ventures across all clients
+  chat: adminProcedure
     .input(
       z.object({
         messages: z.array(messageSchema),
