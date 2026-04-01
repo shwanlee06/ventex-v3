@@ -27,11 +27,16 @@ async function acceptPendingInvitation(
     teamMemberId: number | null;
   }
 ) {
+  // ATLAS team roles (admin/partner/manager) should NOT be scoped to a client org
+  // They need organizationId = null so isAtlasTeam() returns true and they can see all clients
+  const isAtlasRole = ["admin", "partner", "manager", "owner"].includes(pendingInvite.role);
+  const effectiveOrgId = isAtlasRole ? null : pendingInvite.organizationId;
+
   // Update user with organization, role, and invitation reference
   await database
     .update(users)
     .set({
-      organizationId: pendingInvite.organizationId,
+      organizationId: effectiveOrgId,
       role: pendingInvite.role as any,
       status: "active",
       invitationId: pendingInvite.id,

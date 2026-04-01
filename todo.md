@@ -1884,3 +1884,11 @@
 - [x] Fix portal tests: increase vitest timeout from 5s to 15s for DB-heavy queries
 - [x] Fix Chris Phelps role test: update expected role from 'partner' to 'admin'
 - [x] All 619 tests passing across 38 test files — 0 failures
+
+### Bug: ATLAS Members Can't See All Clients
+- [x] Investigate why non-owner ATLAS operators can only see limited clients
+  Root cause: invitation acceptance set organizationId to client org for all roles
+  ATLAS team roles need organizationId=null for isAtlasTeam() to return true
+- [x] Fix invitation acceptance in routers.ts — ATLAS roles get null orgId
+- [x] Fix invitation acceptance in oauth.ts — ATLAS roles get null orgId
+- [x] Fixed 4 existing ATLAS members (Jason, Brian, Shourya, Michael) — set orgId to null

@@ -96,11 +96,16 @@ export const appRouter = router({
 
         // If user is already authenticated, accept the invitation for them
         if (ctx.user) {
+          // ATLAS team roles (admin/partner/manager) should NOT be scoped to a client org
+          // They need organizationId = null so isAtlasTeam() returns true
+          const isAtlasRole = ["admin", "partner", "manager", "owner"].includes(invite.role);
+          const effectiveOrgId = isAtlasRole ? null : invite.organizationId;
+
           // Update user with organization, role, and invitation reference
           await db
             .update(users)
             .set({
-              organizationId: invite.organizationId,
+              organizationId: effectiveOrgId,
               role: invite.role as any,
               status: "active",
               invitationId: invite.id,
