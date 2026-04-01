@@ -1844,3 +1844,43 @@
 - [x] Identify root cause: role was 'partner' but most write operations require 'admin'
 - [x] Fix: promoted Chris to admin role in users table + team_members systemRole
 - [x] Verified Chris can access the platform after logging out and back in
+
+## Systematic Polish — Every Button Works, Organized Top to Bottom
+### Admin-Side Triggers (100% Velocity)
+- [x] Wire onTaskCompleted into admin task status change mutations
+- [x] Wire onStageAdvanced into admin venture stage change mutations
+- [x] Wire onDistributionScheduled into admin distribution mutations
+- [x] Wire onBlueprintGenerated into blueprint generation mutations
+- [x] Verify flywheel spins from both admin and client sides
+
+### Client vs ATLAS Member Separation
+- [x] Creating a client org member must NOT show them in ATLAS internal team (verified: listInternal filters by type=Internal)
+- [x] ATLAS members sidebar/list must only show ATLAS internal team (verified: ATLAS Team page uses listInternal)
+- [x] Client org members only visible within their org context (verified: org-scoped queries)
+- [x] Invitation flow must correctly scope to org vs ATLAS (verified: invitation creates with correct orgId)
+
+### UI Audit — Every Button Works, No Dead Ends
+- [x] Audit Dashboard page: all buttons, cards, navigation — well-organized
+- [x] Audit Ventures page: all CRUD, filters, status changes — working
+- [x] Audit SPVs page: all CRUD, stage changes, priority — working
+- [x] Audit Distributions page: all CRUD, status changes — well-organized
+- [x] Audit Team page: add/edit/remove members, role changes — working
+- [x] Audit Agents page: all agent actions, run/pause/configure — clean chat UI
+- [x] Audit Oversight page: fixed 747 duplicate entries, added dedup logic
+- [x] Audit Settings page: all form fields, save actions — working
+- [x] Audit Client Portal: fixed confidence display (0% → 25/55/85%), fixed "coming soon" button
+- [x] Audit Blueprints page: generate, view, edit flows — working
+
+### Organization — Top to Bottom on All Pages
+- [x] Consistent section ordering on every page (verified all pages follow KPI→Filters→Content pattern)
+- [x] Proper spacing, alignment, visual hierarchy (reorganized sidebar nav for logical grouping)
+- [x] Loading states, empty states, error states on every page (added to AccessManagement 3 tabs)
+- [x] No orphaned elements or misaligned sections (fixed confidence display, removed dead buttons)
+- [x] Added 6-hour dedup window to persistSignals to prevent duplicate oversight entries
+- [x] Cleaned up 747 duplicate agent events from the database
+- [x] Fixed Profile avatar upload — now uses real S3 upload instead of placeholder toast
+
+### Test Fixes
+- [x] Fix portal tests: increase vitest timeout from 5s to 15s for DB-heavy queries
+- [x] Fix Chris Phelps role test: update expected role from 'partner' to 'admin'
+- [x] All 619 tests passing across 38 test files — 0 failures

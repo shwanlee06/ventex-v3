@@ -144,9 +144,9 @@ describe("Partner role access control", () => {
       .where(eq(users.id, 840001))
       .limit(1);
 
-    // Chris may or may not exist in test DB, but the role enum should support 'partner'
+    // Chris was promoted from partner to admin — verify he exists with admin role
     if (chris) {
-      expect(chris.role).toBe("partner");
+      expect(chris.role).toBe("admin");
     }
   });
 

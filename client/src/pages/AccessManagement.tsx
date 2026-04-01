@@ -180,6 +180,25 @@ function OrganizationsTab() {
 
       {/* Org List */}
       <div className="space-y-3">
+        {orgs.isLoading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="bg-card border border-border rounded-lg p-4 animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-lg bg-muted" />
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-32 bg-muted rounded" />
+                  <div className="h-3 w-48 bg-muted rounded" />
+                </div>
+              </div>
+            </div>
+          ))
+        ) : !orgs.data?.length ? (
+          <div className="bg-card border border-border rounded-lg p-8 text-center">
+            <Building2 className="size-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">No organizations yet</p>
+            <p className="text-xs text-muted-foreground mt-1">Create your first partner organization to get started</p>
+          </div>
+        ) : null}
         {orgs.data?.map((org, i) => (
           <motion.div
             key={org.id}
@@ -360,7 +379,27 @@ function InvitationsTab() {
       </div>
 
       {/* Invitations List */}
-      <div className="bg-card border border-border rounded-lg divide-y divide-border">
+      {invites.isLoading ? (
+        <div className="bg-card border border-border rounded-lg divide-y divide-border">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="p-4 animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-40 bg-muted rounded" />
+                  <div className="h-3 w-56 bg-muted rounded" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : !invites.data?.length ? (
+        <div className="bg-card border border-border rounded-lg p-8 text-center">
+          <Mail className="size-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">No invitations sent yet</p>
+          <p className="text-xs text-muted-foreground mt-1">Send an invitation to onboard new team members</p>
+        </div>
+      ) : null}
+      <div className={cn("bg-card border border-border rounded-lg divide-y divide-border", !invites.data?.length && "hidden")}>
         {invites.data?.map((invite, i) => {
           const sc = INVITE_STATUS_CONFIG[invite.status] ?? INVITE_STATUS_CONFIG.pending;
           return (
@@ -572,7 +611,27 @@ function ApiKeysTab() {
       </div>
 
       {/* Keys List */}
-      <div className="bg-card border border-border rounded-lg divide-y divide-border">
+      {keys.isLoading ? (
+        <div className="bg-card border border-border rounded-lg divide-y divide-border">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="p-4 animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-32 bg-muted rounded" />
+                  <div className="h-3 w-48 bg-muted rounded" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : !keys.data?.length ? (
+        <div className="bg-card border border-border rounded-lg p-8 text-center">
+          <Key className="size-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">No API keys generated yet</p>
+          <p className="text-xs text-muted-foreground mt-1">Keys are automatically created when invitations are accepted</p>
+        </div>
+      ) : null}
+      <div className={cn("bg-card border border-border rounded-lg divide-y divide-border", !keys.data?.length && "hidden")}>
         {keys.data?.map((key, i) => {
           const sc = KEY_STATUS_CONFIG[key.status] ?? KEY_STATUS_CONFIG.active;
           return (

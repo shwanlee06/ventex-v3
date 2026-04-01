@@ -525,6 +525,21 @@ export async function runVelocityAgent(
           }
         } else {
           // ── MODE B: Ready to advance — requires client approval ──
+          // Dedup: skip if we already have an unactioned ready-to-advance signal for this venture in the last 24h
+          const dedupConditions: any[] = [
+            eq(agentEvents.agentName, "Velocity Agent"),
+            eq(agentEvents.agentEntityId, String(venture.id)),
+            eq(agentEvents.actionType, "advance"),
+            gte(agentEvents.createdAt, new Date(now.getTime() - 24 * 60 * 60 * 1000)),
+          ];
+          if (orgId) dedupConditions.push(eq(agentEvents.organizationId, orgId));
+          const recentAdvanceSignals = await db
+            .select({ id: agentEvents.id })
+            .from(agentEvents)
+            .where(and(...dedupConditions))
+            .limit(1);
+          if (recentAdvanceSignals.length > 0) continue;
+
           signals.push({
             agentName: "Velocity Agent",
             eventType: "alert",
@@ -890,7 +905,22 @@ export async function persistSignals(
 ): Promise<void> {
   if (signals.length === 0) return;
 
+  const dedupWindow = new Date(Date.now() - 6 * 60 * 60 * 1000); // 6h dedup window
+
   for (const signal of signals) {
+    // Dedup: skip if a matching signal already exists within the dedup window
+    if (signal.agentEntityId) {
+      const dedupConds: any[] = [
+        eq(agentEvents.agentName, signal.agentName),
+        eq(agentEvents.agentEntityId, signal.agentEntityId),
+        gte(agentEvents.createdAt, dedupWindow),
+      ];
+      if (signal.actionType) dedupConds.push(eq(agentEvents.actionType, signal.actionType));
+      if (signal.organizationId) dedupConds.push(eq(agentEvents.organizationId, signal.organizationId));
+      const existing = await db.select({ id: agentEvents.id }).from(agentEvents).where(and(...dedupConds)).limit(1);
+      if (existing.length > 0) continue;
+    }
+
     await db.insert(agentEvents).values({
       organizationId: signal.organizationId ?? null,
       agentName: signal.agentName,

@@ -8,6 +8,7 @@ import { storagePut } from "../storage";
 import { nanoid } from "nanoid";
 import { isAtlasTeam, getOrgVentureIds, resolveVentureScope, logAudit } from "../security/rbac";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
+import { onStageAdvanced } from "../intelligence/realtimeTriggers";
 
 function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -191,6 +192,12 @@ export const venturesRouter = router({
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const { id, ...data } = input;
+    // Capture old stage before update for trigger dispatch
+    let oldStage: string | null = null;
+    if (data.stage) {
+      const [prev] = await db.select({ stage: ventures.stage }).from(ventures).where(eq(ventures.id, id)).limit(1);
+      oldStage = prev?.stage || null;
+    }
     await db.update(ventures).set(data).where(eq(ventures.id, id));
     const rows = await db.select().from(ventures).where(eq(ventures.id, id)).limit(1);
     if (rows[0]) {
@@ -213,6 +220,16 @@ export const venturesRouter = router({
           link: `/ventures/${rows[0].slug}`,
           actorName: ctx.user.name || "System",
         });
+      }
+
+      // Fire real-time trigger when stage changes (admin-side velocity flywheel)
+      if (data.stage && oldStage && oldStage !== data.stage) {
+        const orgAccess = await db.select({ organizationId: orgVentureAccess.organizationId })
+          .from(orgVentureAccess)
+          .where(eq(orgVentureAccess.ventureId, id))
+          .limit(1);
+        const orgId = orgAccess[0]?.organizationId || 0;
+        onStageAdvanced(orgId, id, rows[0].name, oldStage, data.stage).catch(() => {});
       }
     }
     await logAudit({

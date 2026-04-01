@@ -592,12 +592,27 @@ export const portalRouter = {
         ]);
 
         if (forecastData.status === "fulfilled" && forecastData.value) {
+          // Convert string confidence ("low"/"medium"/"high") to numeric percentage
+          const confidenceToNum = (c: string | number | undefined): number => {
+            if (typeof c === "number") return c;
+            if (c === "high") return 85;
+            if (c === "medium") return 55;
+            if (c === "low") return 25;
+            return 0;
+          };
+          // Convert riskScore (0-100) to riskLevel string
+          const riskScoreToLevel = (score: number | undefined): string => {
+            if (!score) return "low";
+            if (score >= 70) return "high";
+            if (score >= 40) return "medium";
+            return "low";
+          };
           forecasts = forecastData.value.map((f: any) => ({
             ventureId: f.ventureId,
             ventureName: f.ventureName || "",
             projectedDays: f.projectedDaysRemaining || 0,
-            confidence: f.confidenceScore || 0,
-            riskLevel: f.riskLevel || "low",
+            confidence: confidenceToNum(f.confidence || f.confidenceScore),
+            riskLevel: f.riskLevel || riskScoreToLevel(f.riskScore),
             riskFactors: f.riskFactors || [],
           }));
         }

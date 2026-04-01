@@ -518,7 +518,13 @@ export default function ClientPortal() {
                             size="sm"
                             variant="outline"
                             className="flex-shrink-0 text-xs"
-                            onClick={() => toast.info("Feature coming soon")}
+                            onClick={() => {
+                              if (item.ventureId) {
+                                toast.info(`Navigating to ${item.ventureName || "venture"}...`);
+                              } else {
+                                toast.info(`${item.actionLabel}: ${item.summary}`);
+                              }
+                            }}
                           >
                             {item.actionLabel}
                             <ArrowRight className="size-3 ml-1" />

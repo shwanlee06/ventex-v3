@@ -5,6 +5,7 @@ import { tasks, activityLog, ventures, orgVentureAccess, organizations, ventureT
 import { eq, desc, and, sql, inArray, isNull, ne } from "drizzle-orm";
 import { isAtlasTeam, getOrgVentureIds, resolveVentureScope, logAudit } from "../security/rbac";
 import { createNotification, createBulkNotifications, NOTIF_TYPES } from "../notificationHelper";
+import { onTaskCompleted, onTaskOverdue } from "../intelligence/realtimeTriggers";
 
 /**
  * Calculate days overdue for a task.
@@ -144,6 +145,15 @@ export const tasksRouter = router({
           entityName: rows[0].title,
           actorName: ctx.user.name || "System",
         });
+        // Fire real-time trigger for velocity flywheel
+        if (rows[0].ventureId) {
+          const orgAccess = await db.select({ organizationId: orgVentureAccess.organizationId })
+            .from(orgVentureAccess)
+            .where(eq(orgVentureAccess.ventureId, rows[0].ventureId))
+            .limit(1);
+          const orgId = orgAccess[0]?.organizationId || 0;
+          onTaskCompleted(orgId, rows[0].ventureId, id, rows[0].title).catch(() => {});
+        }
       }
     }
     return rows[0] || null;

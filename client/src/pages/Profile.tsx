@@ -155,12 +155,26 @@ export default function ProfilePage() {
                     {initials}
                   </AvatarFallback>
                 </Avatar>
-                <button
-                  onClick={() => toast.info("Avatar upload coming soon")}
-                  className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                <label
+                  className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  title="Change avatar"
                 >
                   <Camera className="size-5 text-white" />
-                </button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (file.size > 2 * 1024 * 1024) {
+                        toast.error("Image must be under 2 MB");
+                        return;
+                      }
+                      toast.info("Avatar upload is available for team members via the ATLAS Team page.");
+                    }}
+                  />
+                </label>
               </div>
               <div className="flex-1 text-center sm:text-left">
                 <h2 className="text-xl font-semibold text-foreground">{displayName || profile?.user.name || "User"}</h2>

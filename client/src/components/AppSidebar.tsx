@@ -51,21 +51,25 @@ interface NavItem {
   clientOnly?: boolean;
 }
 
-// ── Admin nav: clean CRM command center ─────────────────────────────────
-// SPVs, Tasks, Distributions removed from admin — they live inside client detail
+// ── Admin nav: organized top-to-bottom by workflow ─────────────────────
+// Grouped: Command → Intelligence → People → Operations → Admin
 const ALL_NAV_ITEMS: NavItem[] = [
+  // ─ Command ─
   { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="size-5" /> },
+  { label: "Activity", href: "/activity", icon: <Activity className="size-5" /> },
+  { label: "Oversight", href: "/oversight", icon: <Eye className="size-5" />, atlasOnly: true },
+  // ─ Intelligence ─
   { label: "AI Concierge", href: "/agent", icon: <Bot className="size-5" />, atlasOnly: true },
+  { label: "AI Agents", href: "/agents", icon: <Cpu className="size-5" />, atlasOnly: true },
+  { label: "Blueprints", href: "/blueprints", icon: <Layers3 className="size-5" />, atlasOnly: true },
+  // ─ People ─
   { label: "ATLAS Team", href: "/atlas-team", icon: <Shield className="size-5" />, atlasOnly: true },
   { label: "Client Contacts", href: "/team", icon: <Users className="size-5" />, atlasOnly: true },
-  { label: "Activity", href: "/activity", icon: <Activity className="size-5" /> },
-  { label: "AI Agents", href: "/agents", icon: <Cpu className="size-5" />, atlasOnly: true },
-  { label: "Drafts", href: "/drafts", icon: <FileText className="size-5" />, atlasOnly: true },
-  { label: "Blueprints", href: "/blueprints", icon: <Layers3 className="size-5" />, atlasOnly: true },
-  { label: "Oversight", href: "/oversight", icon: <Eye className="size-5" />, atlasOnly: true },
   { label: "Onboard Client", href: "/onboarding", icon: <UserPlus className="size-5" />, atlasOnly: true },
+  // ─ Operations ─
+  { label: "Drafts", href: "/drafts", icon: <FileText className="size-5" />, atlasOnly: true },
   { label: "Settings", href: "/settings", icon: <Settings className="size-5" />, atlasOnly: true },
-  // Client-only nav items
+  // ─ Client-only nav items ─
   { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-5" />, clientOnly: true },
   { label: "SPVs & Deals", href: "/spvs", icon: <Briefcase className="size-5" />, clientOnly: true },
   { label: "Tasks", href: "/tasks", icon: <ListChecks className="size-5" />, clientOnly: true },

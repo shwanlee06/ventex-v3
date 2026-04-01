@@ -6,6 +6,7 @@ import { eq, desc } from "drizzle-orm";
 import { isAtlasTeam, logAudit } from "../security/rbac";
 import { resolveOrgId } from "../security/orgScope";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
+import { onDistributionScheduled } from "../intelligence/realtimeTriggers";
 
 export const distributionsRouter = router({
   // List distributions — scoped by organizationId with cross-tenant isolation
@@ -64,6 +65,19 @@ export const distributionsRouter = router({
       link: "/distributions",
       actorName: ctx.user.name || "System",
     });
+
+    // Fire real-time trigger for velocity flywheel
+    if (input.status === "Scheduled" && input.organizationId) {
+      // Get the newly created distribution ID
+      const [created] = await db.select({ id: distributions.id }).from(distributions)
+        .where(eq(distributions.name, input.name)).orderBy(desc(distributions.createdAt)).limit(1);
+      if (created) {
+        onDistributionScheduled(
+          input.organizationId, created.id, input.name,
+          `$${input.amount.toLocaleString()} ${input.currency}`
+        ).catch(() => {});
+      }
+    }
 
     return { success: true };
   }),

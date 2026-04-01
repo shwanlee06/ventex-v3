@@ -20,6 +20,7 @@ import { TRPCError } from "@trpc/server";
 import { invokeLLM } from "../_core/llm";
 import { storagePut } from "../storage";
 import { resolveOrgId } from "../security/orgScope";
+import { onBlueprintGenerated } from "../intelligence/realtimeTriggers";
 
 // ── LLM extraction prompt ────────────────────────────────────────────────
 const EXTRACTION_SYSTEM_PROMPT = `You are an expert at analyzing business documents and extracting structured process blueprints for venture/investment management.
@@ -742,9 +743,11 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
           }
         }
 
-        results.push({ sector, templateId, stepCount });
-      }
+         results.push({ sector, templateId, stepCount });
 
+        // Fire real-time trigger for velocity flywheel
+        onBlueprintGenerated(validatedOrgId, templateId, `${sector} Operations Blueprint`).catch(() => {});
+      }
       return results;
     }),
 
