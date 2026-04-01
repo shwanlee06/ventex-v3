@@ -33,6 +33,7 @@ import {
   Cpu,
   FileText,
   UserPlus,
+  Eye,
 } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useState, useMemo } from "react";
@@ -61,6 +62,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: "AI Agents", href: "/agents", icon: <Cpu className="size-5" />, atlasOnly: true },
   { label: "Drafts", href: "/drafts", icon: <FileText className="size-5" />, atlasOnly: true },
   { label: "Blueprints", href: "/blueprints", icon: <Layers3 className="size-5" />, atlasOnly: true },
+  { label: "Oversight", href: "/oversight", icon: <Eye className="size-5" />, atlasOnly: true },
   { label: "Onboard Client", href: "/onboarding", icon: <UserPlus className="size-5" />, atlasOnly: true },
   { label: "Settings", href: "/settings", icon: <Settings className="size-5" />, atlasOnly: true },
   // Client-only nav items

@@ -34,6 +34,7 @@ import DraftsPage from "./pages/Drafts";
 import OnboardingWizard from "./pages/OnboardingWizard";
 import BlueprintsPage from "./pages/Blueprints";
 import ClientPortal from "./pages/ClientPortal";
+import OversightPage from "./pages/Oversight";
 import { AgentProvider } from "./contexts/AgentContext";
 import { useHeartbeat } from "./hooks/useHeartbeat";
 
@@ -164,6 +165,9 @@ function Router() {
       </Route>
       <Route path="/blueprints">
         <RequireAuth><RequireAtlas><BlueprintsPage /></RequireAtlas></RequireAuth>
+      </Route>
+      <Route path="/oversight">
+        <RequireAuth><RequireAtlas><OversightPage /></RequireAtlas></RequireAuth>
       </Route>
 
       <Route path="/404" component={NotFound} />

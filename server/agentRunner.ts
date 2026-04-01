@@ -18,6 +18,7 @@ import type { ClientAgentConfig } from "../drizzle/schema";
 import { runPredictiveEngine } from "./intelligence/predictiveEngine";
 import { runMarketIntelligence } from "./intelligence/marketIntelligence";
 import { runContinuousLearning } from "./intelligence/continuousLearning";
+import { runEscalationSweep, type EscalationResult } from "./intelligence/escalationEngine";
 
 /**
  * Run all agents for a specific organization.
@@ -27,7 +28,7 @@ export async function runAgentsForOrg(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   organizationId: number,
   config: ClientAgentConfig | null
-): Promise<{ signalCount: number; intelligence?: IntelligenceResult }> {
+): Promise<{ signalCount: number; intelligence?: IntelligenceResult; escalation?: EscalationResult }> {
   // ── Phase 1: Core Agents (existing) ──────────────────────────────────
   const [overdueSignals, velocitySignals, distSignals] = await Promise.all([
     runOverdueAgent(db, organizationId),
@@ -79,7 +80,20 @@ export async function runAgentsForOrg(
     console.error(`[AgentRunner] Intelligence phase failed for org ${organizationId}:`, err.message);
   }
 
-  return { signalCount: allSignals.length, intelligence };
+  // ── Phase 3: Escalation Sweep ────────────────────────────────────────
+  let escalation: EscalationResult | undefined;
+  try {
+    escalation = await runEscalationSweep(organizationId);
+    console.log(
+      `[AgentRunner] Escalation sweep for org ${organizationId}: ` +
+      `${escalation.nudgesSent} nudges, ${escalation.escalationsCreated} escalations, ` +
+      `${escalation.overdueTaskAlerts} overdue alerts`
+    );
+  } catch (err: any) {
+    console.error(`[AgentRunner] Escalation sweep failed for org ${organizationId}:`, err.message);
+  }
+
+  return { signalCount: allSignals.length, intelligence, escalation };
 }
 
 type IntelligenceResult = {
@@ -88,3 +102,5 @@ type IntelligenceResult = {
   learning: Awaited<ReturnType<typeof runContinuousLearning>> | null;
   elapsedSeconds: number;
 };
+
+export type { EscalationResult };

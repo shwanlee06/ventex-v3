@@ -18,7 +18,11 @@ import {
   distributions,
 } from "../../drizzle/schema";
 import { isAtlasTeam } from "../security/rbac";
-import { onClientPortalAction } from "../intelligence/realtimeTriggers";
+import { onClientPortalAction, onTaskCompleted, onStageAdvanced } from "../intelligence/realtimeTriggers";
+import { getNextStage } from "../../shared/pipeline";
+import { activityLog, ventureVelocity } from "../../drizzle/schema";
+import { sendStageAdvancedEmail } from "../emailService";
+import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { forecastVentures as getVentureForecasts, computePortfolioHealth as getPortfolioHealth } from "../intelligence/predictiveEngine";
 import { getActiveSignals as getLatestMarketSignals } from "../intelligence/marketIntelligence";
 
@@ -518,6 +522,14 @@ export const portalRouter = {
         slug: string;
         lastAgentAction: string | null;
         lastAgentActionType: "ready" | "advanced" | "info" | null;
+        momentum: {
+          projectedDays: number;
+          confidence: number;
+          riskLevel: string;
+          riskFactors: string[];
+          benchmarkDays: number | null;
+          velocityVsBenchmark: "faster" | "slower" | "on-pace" | null;
+        } | null;
       }[] = [];
 
       if (access.length > 0) {
@@ -562,6 +574,7 @@ export const portalRouter = {
             slug: v.slug,
             lastAgentAction: agentAction?.summary || null,
             lastAgentActionType: agentAction?.type || null,
+            momentum: null as any, // Will be enriched after intelligence layer runs
           };
         });
       }
@@ -606,6 +619,33 @@ export const portalRouter = {
         }
       } catch (e) {
         console.error("[Portal] Intelligence layer failed (non-blocking):", e);
+      }
+
+      // ── Enrich portfolio items with momentum indicators ──────────
+      if (forecasts.length > 0) {
+        const forecastMap = new Map(forecasts.map(f => [f.ventureId, f]));
+        portfolio = portfolio.map(v => {
+          const f = forecastMap.get(v.id);
+          if (f) {
+            // Compute benchmark comparison
+            const avgDays = forecasts.reduce((sum, fc) => sum + fc.projectedDays, 0) / forecasts.length;
+            const velocityVsBenchmark: "faster" | "slower" | "on-pace" =
+              f.projectedDays < avgDays * 0.85 ? "faster" :
+              f.projectedDays > avgDays * 1.15 ? "slower" : "on-pace";
+            return {
+              ...v,
+              momentum: {
+                projectedDays: f.projectedDays,
+                confidence: f.confidence,
+                riskLevel: f.riskLevel,
+                riskFactors: f.riskFactors,
+                benchmarkDays: Math.round(avgDays),
+                velocityVsBenchmark,
+              },
+            };
+          }
+          return v;
+        });
       }
 
       return {
@@ -735,5 +775,214 @@ export const portalRouter = {
       }
 
       return { success: true, message: "Action completed.", actionFlow: input.actionFlow };
+    }),
+
+  // ── Client Task Velocity: Get tasks for a venture ──────────────────────
+  getVentureTasks: protectedProcedure
+    .input(z.object({ ventureId: z.number() }))
+    .query(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      // Verify access: user must be ATLAS team or have org access to this venture
+      const isAdmin = isAtlasTeam(ctx.user);
+      if (!isAdmin) {
+        const [access] = await db.select({ id: orgVentureAccess.id })
+          .from(orgVentureAccess)
+          .where(and(
+            eq(orgVentureAccess.ventureId, input.ventureId),
+            eq(orgVentureAccess.organizationId, ctx.user.organizationId!),
+          ))
+          .limit(1);
+        if (!access) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+
+      const ventureTasks = await db.select({
+        id: tasks.id,
+        title: tasks.title,
+        status: tasks.status,
+        priority: tasks.priority,
+        dueDate: tasks.dueDate,
+        assigneeNames: tasks.assigneeNames,
+        description: tasks.description,
+      })
+        .from(tasks)
+        .where(eq(tasks.ventureId, input.ventureId));
+
+      return ventureTasks;
+    }),
+
+  // ── Client Task Velocity: Complete a task + auto-advance ──────────────
+  completeTask: protectedProcedure
+    .input(z.object({ taskId: z.number(), ventureId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      // Verify access
+      const isAdmin = isAtlasTeam(ctx.user);
+      if (!isAdmin) {
+        const [access] = await db.select({ id: orgVentureAccess.id })
+          .from(orgVentureAccess)
+          .where(and(
+            eq(orgVentureAccess.ventureId, input.ventureId),
+            eq(orgVentureAccess.organizationId, ctx.user.organizationId!),
+          ))
+          .limit(1);
+        if (!access) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+
+      // Mark task complete
+      await db.update(tasks).set({ status: "complete" }).where(eq(tasks.id, input.taskId));
+
+      // Resolve organizationId: ventures table doesn't have orgId, use ctx or orgVentureAccess
+      const [venture] = await db.select().from(ventures).where(eq(ventures.id, input.ventureId)).limit(1);
+      const orgId = ctx.user.organizationId ?? null;
+
+      // Resolve org from orgVentureAccess if user doesn't have orgId (admin preview)
+      let resolvedOrgId = orgId;
+      if (!resolvedOrgId) {
+        const [accessRow] = await db.select({ organizationId: orgVentureAccess.organizationId })
+          .from(orgVentureAccess)
+          .where(eq(orgVentureAccess.ventureId, input.ventureId))
+          .limit(1);
+        resolvedOrgId = accessRow?.organizationId ?? null;
+      }
+
+      // Fire real-time trigger
+      if (resolvedOrgId) {
+        onTaskCompleted(resolvedOrgId, input.ventureId, input.taskId, `Task #${input.taskId}`)
+          .catch((e: any) => console.error("[Portal] Task completed trigger failed:", e));
+      }
+
+      // Log activity
+      await db.insert(activityLog).values({
+        entityType: "task",
+        entityId: input.taskId,
+        entityName: `Task #${input.taskId}`,
+        action: "Task Completed (Client Portal)",
+        detail: `Client completed task via portal`,
+        userName: ctx.user.name || "Client",
+        activitySource: "client_business",
+        organizationId: resolvedOrgId,
+      });
+
+      // Create notification
+      await createNotification({
+        type: NOTIF_TYPES.TASK_COMPLETED,
+        category: "success",
+        title: `Task completed by client`,
+        message: `Task #${input.taskId} was marked complete via the client portal`,
+        entityType: "task",
+        entityId: input.taskId,
+        organizationId: resolvedOrgId ?? undefined,
+      });
+
+      // ── Auto-advance check ──────────────────────────────────────────
+      let autoAdvanced = false;
+      let newStage: string | null = null;
+
+      if (venture) {
+        const allVentureTasks = await db.select({ id: tasks.id, status: tasks.status })
+          .from(tasks)
+          .where(eq(tasks.ventureId, input.ventureId));
+
+        const totalTasks = allVentureTasks.length;
+        const completedTasks = allVentureTasks.filter(t => t.status === "complete").length;
+
+        if (totalTasks > 0 && completedTasks >= totalTasks) {
+          // All tasks complete — auto-advance
+          const nextStage = getNextStage(venture.stage);
+          if (nextStage) {
+            const now = new Date();
+            const daysInStage = Math.floor(
+              (now.getTime() - new Date(venture.updatedAt).getTime()) / (1000 * 60 * 60 * 24)
+            );
+            const hoursInStage = Math.floor(
+              (now.getTime() - new Date(venture.updatedAt).getTime()) / (1000 * 60 * 60)
+            );
+
+            // Advance venture
+            await db.update(ventures).set({ stage: nextStage }).where(eq(ventures.id, input.ventureId));
+
+            // Log velocity
+            if (resolvedOrgId) {
+              await db.insert(ventureVelocity).values({
+                organizationId: resolvedOrgId,
+                ventureId: input.ventureId,
+                ventureName: venture.name,
+                sector: venture.sector,
+                fromStage: venture.stage,
+                toStage: nextStage,
+                daysInStage,
+                hoursInStage,
+                advancedBy: "Auto-Advance (Client Portal)",
+                blockingStepsTotal: totalTasks,
+                blockingStepsCompleted: completedTasks,
+                tasksCompletedInStage: completedTasks,
+              });
+            }
+
+            // Log agent event
+            await db.insert(agentEvents).values({
+              organizationId: resolvedOrgId!,
+              agentName: "Velocity Agent",
+              eventType: "status_change",
+              message: `"${venture.name}" auto-advanced from ${venture.stage} \u2192 ${nextStage} — all tasks completed by client.`,
+              severity: "info",
+              entityType: "Venture",
+              agentEntityId: String(input.ventureId),
+              agentEntityName: venture.name,
+              oldStatus: venture.stage,
+              newStatus: nextStage,
+              audience: "both",
+              requiresClientAction: false,
+              actionTaken: true,
+              actionTakenAt: now,
+              actionTakenBy: ctx.user.name || "Client",
+            });
+
+            // Fire stage advance trigger
+            if (resolvedOrgId) {
+              onStageAdvanced(resolvedOrgId, input.ventureId, venture.name, venture.stage, nextStage)
+                .catch((e: any) => console.error("[Portal] Stage advance trigger failed:", e));
+            }
+
+            // Send stage advanced email
+            if (resolvedOrgId) {
+              const [org] = await db.select({
+                primaryContactEmail: organizations.primaryContactEmail,
+                primaryContactName: organizations.primaryContactName,
+                name: organizations.name,
+              }).from(organizations).where(eq(organizations.id, resolvedOrgId)).limit(1);
+
+              if (org?.primaryContactEmail) {
+                sendStageAdvancedEmail({
+                  to: org.primaryContactEmail,
+                  contactName: org.primaryContactName || org.name,
+                  ventureName: venture.name,
+                  previousStage: clientFriendlyStage(venture.stage),
+                  newStage: clientFriendlyStage(nextStage),
+                  daysInPreviousStage: daysInStage,
+                  nextBlockingSteps: [],
+                }).catch((e: any) => console.error("[Portal] Stage email failed:", e));
+              }
+            }
+
+            autoAdvanced = true;
+            newStage = nextStage;
+          }
+        }
+      }
+
+      return {
+        success: true,
+        taskId: input.taskId,
+        autoAdvanced,
+        newStage: newStage ? clientFriendlyStage(newStage) : null,
+        message: autoAdvanced
+          ? `Task completed! Your venture has been advanced to ${clientFriendlyStage(newStage!)}.`
+          : "Task completed successfully.",
+      };
     }),
 };

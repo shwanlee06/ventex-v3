@@ -1799,3 +1799,48 @@
 - [x] getTriggerHistory() for trigger audit and monitoring
 - [x] 14 vitest tests passing for real-time triggers
 - [x] 6h scheduled cycle remains as fallback/comprehensive sweep
+
+## Flywheel Feature 1 — Client Task Velocity (One-Click Completion + Auto-Advance)
+- [x] Shared pipeline utility: shared/pipeline.ts (STAGE_PIPELINE, getNextStage, isTerminalStage)
+- [x] portal.completeTask endpoint: marks task complete, checks if all venture tasks done
+- [x] Auto-advance logic: when all tasks complete, venture advances to next pipeline stage
+- [x] portal.getVentureTasks endpoint: returns all tasks for a specific venture
+- [x] Real-time triggers: onTaskCompleted + onStageAdvanced fire on completion
+- [x] Activity log + notification created on task completion and stage advance
+- [x] Stage advance email sent to client when venture auto-advances
+- [x] Frontend: Task drawer in ClientPortal.tsx with one-click completion UI
+- [x] Frontend: View Tasks button on venture cards opens task drawer
+- [x] Frontend: Completed tasks show green checkmark, open tasks show completion button
+
+## Flywheel Feature 2 — Operator Oversight Feed (48h Auto-Escalation)
+- [x] Escalation engine: server/intelligence/escalationEngine.ts
+- [x] runEscalationSweep(): 24h nudge emails, 48h escalation, overdue task alerts
+- [x] getEscalationStats(): total, critical, pending, resolved counts
+- [x] Wired into agentRunner.ts as Phase 3 of the 6h agent cycle
+- [x] Enhanced agents.oversightFeed endpoint with escalation data
+- [x] agents.escalationStats endpoint for dashboard metrics
+- [x] Frontend: Oversight page (client/src/pages/Oversight.tsx)
+- [x] Route: /oversight added to App.tsx with RequireAuth + RequireAtlas
+- [x] Sidebar: Oversight nav item added to AppSidebar.tsx
+
+## Flywheel Feature 3 — Venture Momentum Indicators
+- [x] Backend: Enhanced portal.getData to merge forecast data into portfolio items
+- [x] Each venture now has: momentum, projectedDays, benchmarkDays, riskLevel, riskFactors, confidence
+- [x] Momentum computed as faster/on-pace/slower vs sector benchmark
+- [x] Frontend: Momentum badges on venture cards (green faster, amber on-pace, red slower)
+- [x] Frontend: Risk indicators shown when risk level is not low
+- [x] Frontend: Projected completion days and benchmark comparison displayed
+
+## Flywheel Tests
+- [x] 27 vitest tests in server/flywheel.test.ts covering all 3 features
+- [x] Shared pipeline utility: 5 tests
+- [x] Escalation engine: 4 tests (sweep, empty org, null DB, stats shape)
+- [x] Client task velocity auto-advance logic: 6 tests
+- [x] Venture momentum indicators: 8 tests
+- [x] Escalation timing logic: 4 tests
+
+## Bug Fix — Chris Phelps "Permission Denied"
+- [x] Investigate Chris Phelps user record, role, and team member linkage
+- [x] Identify root cause: role was 'partner' but most write operations require 'admin'
+- [x] Fix: promoted Chris to admin role in users table + team_members systemRole
+- [x] Verified Chris can access the platform after logging out and back in

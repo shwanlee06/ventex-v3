@@ -2051,6 +2051,81 @@ export const agentsRouter = router({
     }),
 
   /**
+   * Enhanced Operator Oversight Feed — with escalation stats and filtering
+   */
+  enhancedOversight: adminProcedure
+    .input(z.object({
+      organizationId: z.number().optional(),
+      severity: z.enum(["all", "critical", "warning", "info"]).default("all"),
+      hoursBack: z.number().default(72),
+      limit: z.number().min(1).max(200).default(100),
+    }).optional())
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return { items: [], stats: { total: 0, critical: 0, pending: 0, resolved: 0 } };
+
+      const hoursBack = input?.hoursBack ?? 72;
+      const cutoff = new Date(Date.now() - hoursBack * 60 * 60 * 1000);
+      const cutoff48h = new Date(Date.now() - 48 * 60 * 60 * 1000);
+      const cutoff24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+      const conditions: any[] = [gte(agentEvents.createdAt, cutoff)];
+      if (input?.organizationId) {
+        conditions.push(eq(agentEvents.organizationId, input.organizationId));
+      }
+      if (input?.severity && input.severity !== "all") {
+        conditions.push(eq(agentEvents.severity, input.severity));
+      }
+
+      const events = await db
+        .select()
+        .from(agentEvents)
+        .where(and(...conditions))
+        .orderBy(desc(agentEvents.createdAt))
+        .limit(input?.limit ?? 100);
+
+      // Enrich with org names
+      const orgIds = Array.from(new Set(events.map(e => e.organizationId).filter(Boolean)));
+      const orgs = orgIds.length > 0
+        ? await db.select({ id: organizations.id, name: organizations.name })
+            .from(organizations)
+            .where(sql`${organizations.id} IN (${sql.join(orgIds.map(id => sql`${id}`), sql`, `)})`)
+        : [];
+      const orgMap = Object.fromEntries(orgs.map(o => [o.id, o.name]));
+
+      const enriched = events.map(e => ({
+        ...e,
+        orgName: e.organizationId ? orgMap[e.organizationId] || "Unknown" : "System",
+        escalationLevel: !e.actionTaken && e.requiresClientAction
+          ? new Date(e.createdAt) < cutoff48h ? "critical" as const
+          : new Date(e.createdAt) < cutoff24h ? "warning" as const
+          : "normal" as const
+          : "resolved" as const,
+      }));
+
+      // Compute stats
+      const unactioned = events.filter(e => e.requiresClientAction && !e.actionTaken && !e.clientDismissed);
+      const critical = unactioned.filter(e => new Date(e.createdAt) < cutoff48h).length;
+      const pending = unactioned.filter(e => new Date(e.createdAt) >= cutoff48h && new Date(e.createdAt) < cutoff24h).length;
+      const resolved = events.filter(e => e.actionTaken).length;
+
+      return {
+        items: enriched,
+        stats: { total: unactioned.length, critical, pending, resolved },
+      };
+    }),
+
+  /**
+   * Get escalation stats summary — admin only
+   */
+  escalationStats: adminProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .query(async ({ input }) => {
+      const { getEscalationStats } = await import("../intelligence/escalationEngine");
+      return getEscalationStats(input?.organizationId);
+    }),
+
+  /**
    * Get agent scheduler status — admin only
    */
   schedulerStatus: adminProcedure

@@ -43,6 +43,15 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { useState, useCallback } from "react";
@@ -117,6 +126,8 @@ export default function ClientPortal() {
     ventureName: string | null;
     summary: string;
   } | null>(null);
+  const [taskDrawer, setTaskDrawer] = useState<{ ventureId: number; ventureName: string } | null>(null);
+  const [completingTaskIds, setCompletingTaskIds] = useState<Set<number>>(new Set());
 
   const { data, isLoading, error } = trpc.portal.getData.useQuery(
     { orgSlug },
@@ -124,6 +135,42 @@ export default function ClientPortal() {
   );
 
   const utils = trpc.useUtils();
+
+  // Task drawer query — only fires when drawer is open
+  const { data: ventureTasks, isLoading: tasksLoading } = trpc.portal.getVentureTasks.useQuery(
+    { ventureId: taskDrawer?.ventureId ?? 0 },
+    { enabled: !!taskDrawer }
+  );
+
+  const completeTaskMutation = trpc.portal.completeTask.useMutation({
+    onSuccess: (result) => {
+      if (result.autoAdvanced) {
+        toast.success(result.message, { duration: 5000 });
+        setTaskDrawer(null);
+      } else {
+        toast.success("Task completed");
+      }
+      utils.portal.getData.invalidate({ orgSlug });
+      utils.portal.getVentureTasks.invalidate({ ventureId: taskDrawer?.ventureId ?? 0 });
+    },
+    onError: (err) => toast.error(err.message || "Failed to complete task"),
+    onSettled: (_data, _err, variables) => {
+      setCompletingTaskIds((prev) => {
+        const next = new Set(prev);
+        next.delete(variables.taskId);
+        return next;
+      });
+    },
+  });
+
+  const handleCompleteTask = useCallback(
+    (taskId: number) => {
+      if (!taskDrawer) return;
+      setCompletingTaskIds((prev) => new Set(prev).add(taskId));
+      completeTaskMutation.mutate({ taskId, ventureId: taskDrawer.ventureId });
+    },
+    [taskDrawer, completeTaskMutation]
+  );
 
   const advanceMutation = trpc.agents.clientAdvanceStage.useMutation({
     onSuccess: (result) => {
@@ -454,15 +501,15 @@ export default function ClientPortal() {
                           </Button>
                         )}
 
-                        {item.actionFlow === "view_task" && (
+                        {item.actionFlow === "view_task" && item.ventureId && (
                           <Button
                             size="sm"
                             variant="outline"
                             className="flex-shrink-0 text-xs"
-                            onClick={() => toast.info("Task view coming soon")}
+                            onClick={() => setTaskDrawer({ ventureId: item.ventureId!, ventureName: item.ventureName || "Venture" })}
                           >
                             {ACTION_FLOW_ICONS["view_task"]}
-                            View Task
+                            View Tasks
                           </Button>
                         )}
 
@@ -702,6 +749,60 @@ export default function ClientPortal() {
                       </span>
                     </div>
                   </div>
+
+                  {/* ── Momentum Indicator ── */}
+                  {v.momentum && (
+                    <div className="mt-3 pt-3 border-t border-border">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-1.5">
+                          <Zap className={cn(
+                            "size-3",
+                            v.momentum.velocityVsBenchmark === "faster" ? "text-emerald-400" :
+                            v.momentum.velocityVsBenchmark === "slower" ? "text-red-400" :
+                            "text-amber-400"
+                          )} />
+                          <span className="text-[10px] font-medium text-foreground">
+                            {v.momentum.projectedDays}d projected
+                          </span>
+                        </div>
+                        <span className={cn(
+                          "text-[9px] font-medium px-1.5 py-0.5 rounded-full",
+                          v.momentum.velocityVsBenchmark === "faster" ? "bg-emerald-500/10 text-emerald-400" :
+                          v.momentum.velocityVsBenchmark === "slower" ? "bg-red-500/10 text-red-400" :
+                          "bg-amber-500/10 text-amber-400"
+                        )}>
+                          {v.momentum.velocityVsBenchmark === "faster" ? "↑ Ahead" :
+                           v.momentum.velocityVsBenchmark === "slower" ? "↓ Behind" :
+                           "→ On pace"}
+                          {v.momentum.benchmarkDays ? ` vs ${v.momentum.benchmarkDays}d avg` : ""}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-muted rounded-full h-1">
+                          <div
+                            className={cn(
+                              "h-1 rounded-full transition-all duration-500",
+                              v.momentum.confidence >= 70 ? "bg-emerald-400" :
+                              v.momentum.confidence >= 40 ? "bg-amber-400" : "bg-red-400"
+                            )}
+                            style={{ width: `${Math.min(v.momentum.confidence, 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-[9px] font-mono text-muted-foreground">
+                          {v.momentum.confidence}%
+                        </span>
+                      </div>
+                      {v.momentum.riskLevel !== "low" && v.momentum.riskFactors.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {v.momentum.riskFactors.slice(0, 2).map((rf: string, j: number) => (
+                            <span key={j} className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/5 text-red-400/80">
+                              {rf}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </motion.div>
               ))}
             </div>
@@ -897,7 +998,148 @@ export default function ClientPortal() {
         </div>
       </main>
 
-      {/* ── Confirmation Dialog for non-advance actions ─────────────── */}
+      {/* ── Task Drawer ─────────────────────────────────────────────── */}
+      <Sheet open={!!taskDrawer} onOpenChange={(open) => !open && setTaskDrawer(null)}>
+        <SheetContent className="sm:max-w-md bg-background border-border">
+          <SheetHeader>
+            <SheetTitle className="text-base font-semibold text-foreground">
+              {taskDrawer?.ventureName}
+            </SheetTitle>
+            <SheetDescription className="text-xs text-muted-foreground">
+              Complete tasks to move this venture forward
+            </SheetDescription>
+          </SheetHeader>
+
+          <ScrollArea className="h-[calc(100vh-120px)] mt-4 pr-2">
+            {tasksLoading ? (
+              <div className="space-y-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-16 rounded-lg" />
+                ))}
+              </div>
+            ) : !ventureTasks || ventureTasks.length === 0 ? (
+              <div className="text-center py-12">
+                <CheckCircle2 className="size-8 text-emerald-400 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">No tasks for this venture yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {/* Progress bar */}
+                {(() => {
+                  const total = ventureTasks.length;
+                  const done = ventureTasks.filter(t => t.status === "complete").length;
+                  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+                  return (
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs text-muted-foreground">
+                          {done} of {total} tasks complete
+                        </span>
+                        <span className={cn(
+                          "text-xs font-mono font-medium",
+                          pct === 100 ? "text-emerald-400" : pct >= 50 ? "text-amber-400" : "text-muted-foreground"
+                        )}>
+                          {pct}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-1.5">
+                        <div
+                          className={cn(
+                            "h-1.5 rounded-full transition-all duration-500",
+                            pct === 100 ? "bg-emerald-400" : pct >= 50 ? "bg-amber-400" : "bg-primary/60"
+                          )}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      {pct === 100 && (
+                        <p className="text-[11px] text-emerald-400 mt-1.5 flex items-center gap-1">
+                          <Zap className="size-3" />
+                          All tasks complete — venture will auto-advance
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Task list */}
+                {ventureTasks.map((task) => {
+                  const isComplete = task.status === "complete";
+                  const isCompleting = completingTaskIds.has(task.id);
+                  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !isComplete;
+
+                  return (
+                    <div
+                      key={task.id}
+                      className={cn(
+                        "rounded-lg border p-3 transition-all",
+                        isComplete
+                          ? "border-emerald-500/20 bg-emerald-500/5"
+                          : isOverdue
+                            ? "border-red-500/20 bg-red-500/5"
+                            : "border-border bg-card hover:border-primary/20"
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="pt-0.5">
+                          {isCompleting ? (
+                            <Loader2 className="size-4 animate-spin text-primary" />
+                          ) : (
+                            <Checkbox
+                              checked={isComplete}
+                              disabled={isComplete || isCompleting}
+                              onCheckedChange={() => handleCompleteTask(task.id)}
+                              className={cn(
+                                "border-muted-foreground/40",
+                                isComplete && "border-emerald-400 bg-emerald-400 text-white"
+                              )}
+                            />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={cn(
+                            "text-sm font-medium leading-snug",
+                            isComplete ? "text-muted-foreground line-through" : "text-foreground"
+                          )}>
+                            {task.title}
+                          </p>
+                          {task.description && (
+                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                              {task.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-3 mt-1.5">
+                            {task.priority && (
+                              <span className={cn(
+                                "text-[10px] px-1.5 py-0.5 rounded font-medium",
+                                task.priority === "High" ? "bg-red-500/10 text-red-400" :
+                                task.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
+                                "bg-muted text-muted-foreground"
+                              )}>
+                                {task.priority}
+                              </span>
+                            )}
+                            {task.dueDate && (
+                              <span className={cn(
+                                "text-[10px] flex items-center gap-1",
+                                isOverdue ? "text-red-400" : "text-muted-foreground"
+                              )}>
+                                <Clock className="size-3" />
+                                {isOverdue ? "Overdue" : friendlyDate(task.dueDate)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
+
+      {/* ── Confirmation Dialog for non-advance actions ───────────── */}
       <Dialog
         open={!!confirmDialog}
         onOpenChange={(open) => !open && setConfirmDialog(null)}
