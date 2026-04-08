@@ -21,7 +21,7 @@ let nextRunAt: Date | null = null;
 let isRunning = false;
 let totalRunCount = 0;
 
-const DEFAULT_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
+const DEFAULT_INTERVAL_MS = 2 * 60 * 60 * 1000; // 2 hours (demo mode — production should be 6h)
 
 /**
  * Run all agents for all active organizations.
@@ -51,7 +51,7 @@ async function executeAgentCycle(): Promise<{
       return { success: false, orgsProcessed: 0, totalSignals: 0, errors: ["Database not available"] };
     }
 
-    // Get all active organizations
+    // Get all active organizations (orgStatus column)
     const activeOrgs = await db
       .select({ id: organizations.id, name: organizations.name })
       .from(organizations)

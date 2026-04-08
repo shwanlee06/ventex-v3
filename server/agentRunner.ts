@@ -20,6 +20,10 @@ import { runMarketIntelligence } from "./intelligence/marketIntelligence";
 import { runContinuousLearning } from "./intelligence/continuousLearning";
 import { runEscalationSweep, type EscalationResult } from "./intelligence/escalationEngine";
 
+// Proactive AI agents — the engine that actually moves ventures
+import { runProactiveTaskGenerator } from "./agents/proactiveTaskGenerator";
+import { runAutonomousTaskExecutor } from "./agents/autonomousTaskExecutor";
+
 /**
  * Run all agents for a specific organization.
  * Returns the total signal count.
@@ -28,7 +32,7 @@ export async function runAgentsForOrg(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   organizationId: number,
   config: ClientAgentConfig | null
-): Promise<{ signalCount: number; intelligence?: IntelligenceResult; escalation?: EscalationResult }> {
+): Promise<{ signalCount: number; intelligence?: IntelligenceResult; escalation?: EscalationResult; proactive?: ProactiveAgentResult }> {
   // ── Phase 1: Core Agents (existing) ──────────────────────────────────
   const [overdueSignals, velocitySignals, distSignals] = await Promise.all([
     runOverdueAgent(db, organizationId),
@@ -80,6 +84,34 @@ export async function runAgentsForOrg(
     console.error(`[AgentRunner] Intelligence phase failed for org ${organizationId}:`, err.message);
   }
 
+  // ── Phase 2.5: Proactive AI Agents (the engine) ─────────────────────
+  let proactiveResult: ProactiveAgentResult | undefined;
+  try {
+    const proactiveStart = Date.now();
+
+    // Step 1: Execute automatable tasks (complete work)
+    const executorResult = await runAutonomousTaskExecutor(organizationId);
+
+    // Step 2: Generate new tasks for ventures that need them
+    const generatorResult = await runProactiveTaskGenerator(organizationId);
+
+    const proactiveElapsed = ((Date.now() - proactiveStart) / 1000).toFixed(1);
+
+    proactiveResult = {
+      tasksCompleted: executorResult.tasksCompleted,
+      tasksCreated: generatorResult.tasksCreated,
+      venturesProcessed: generatorResult.venturesProcessed,
+      elapsedSeconds: parseFloat(proactiveElapsed),
+    };
+
+    console.log(
+      `[AgentRunner] Proactive agents for org ${organizationId}: ` +
+      `${executorResult.tasksCompleted} tasks completed, ${generatorResult.tasksCreated} tasks created (${proactiveElapsed}s)`
+    );
+  } catch (err: any) {
+    console.error(`[AgentRunner] Proactive agents failed for org ${organizationId}:`, err.message);
+  }
+
   // ── Phase 3: Escalation Sweep ────────────────────────────────────────
   let escalation: EscalationResult | undefined;
   try {
@@ -93,8 +125,15 @@ export async function runAgentsForOrg(
     console.error(`[AgentRunner] Escalation sweep failed for org ${organizationId}:`, err.message);
   }
 
-  return { signalCount: allSignals.length, intelligence, escalation };
+  return { signalCount: allSignals.length, intelligence, escalation, proactive: proactiveResult };
 }
+
+type ProactiveAgentResult = {
+  tasksCompleted: number;
+  tasksCreated: number;
+  venturesProcessed: number;
+  elapsedSeconds: number;
+};
 
 type IntelligenceResult = {
   predictive: Awaited<ReturnType<typeof runPredictiveEngine>> | null;

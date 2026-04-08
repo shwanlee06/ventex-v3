@@ -1966,3 +1966,18 @@
 - [x] Fix negative days display in distributions (shows 'X days overdue' instead of 'due in -X days')
 - [x] Fix Shourya Kudaravalli capitalization
 - [x] Fix FUNCTION column header truncation (added min-w-[80px])
+
+### AI Agent Engine — The Core of ATLAS
+- [x] Design agent loop architecture (Agent Runner, per-org scanning, action execution, event logging)
+- [x] Build core Agent Runner — scheduled LLM-powered loop that scans ventures per client org
+- [x] Build Proactive Task Generator — LLM creates next-step tasks for ventures with few open tasks
+- [x] Build Autonomous Task Executor — LLM completes research/analysis/draft/review tasks with real deliverables
+- [x] Wire proactive agents into agentRunner.ts (Phase 2.5: execute tasks → generate tasks)
+- [x] Existing agents already running: Overdue Agent, Velocity Agent, Distribution Sentinel, Orchestrator
+- [x] Existing intelligence engines: Predictive Engine, Market Intelligence, Continuous Learning, Escalation Engine
+- [x] Wire agents to scheduled execution — runs every 2h (demo) via agentScheduler.ts
+- [x] Verify agent events flow into ATLAS Command Center — 170 events in last hour
+- [x] Verify AI completes tasks with real deliverables — 12 tasks completed with executive summaries
+- [x] Manual trigger endpoint already exists via tRPC agents.runAll procedure
+- [x] Fix activity_log insert errors (wrong column names in proactive agents)
+- [x] Fix completionNote → description for task completion storage
