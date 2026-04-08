@@ -45,10 +45,10 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* ── Typography (FIX 1) ─────────────────────────────────── */
+  /* ── Typography ─────────────────────────────────────────── */
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-display: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: "Bodoni Moda", "Didot", "Georgia", serif;
 
   /* ── Vertical Semantic Colours ──────────────────────────── */
   --color-v-realestate: oklch(0.65 0.12 240);
@@ -172,13 +172,27 @@
     overscroll-behavior: none;
   }
 
-  /* FIX 1 — Tabular nums for ALL financial figures */
+  /* Tabular nums for ALL financial figures */
   .tabular-nums,
   [data-financial],
   td:has(.currency),
   .font-mono {
     font-variant-numeric: tabular-nums;
     font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  /* Premium display font for headings and brand elements */
+  .font-display {
+    font-family: "Bodoni Moda", "Didot", "Georgia", serif;
+    font-feature-settings: "liga" 1, "kern" 1;
+  }
+
+  /* Page headings use display font */
+  h1.page-title,
+  .brand-heading {
+    font-family: "Bodoni Moda", "Didot", "Georgia", serif;
+    font-weight: 500;
+    letter-spacing: 0.02em;
   }
 
   /* FIX 10 — Focus states: custom outline */
@@ -385,8 +399,9 @@
     font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   }
   .client-portal .client-heading {
-    font-weight: 300;
-    letter-spacing: 0.08em;
+    font-family: "Bodoni Moda", "Didot", "Georgia", serif;
+    font-weight: 500;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
   }
   .client-portal .client-value {

@@ -124,11 +124,11 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
       )}
 
       <header className="h-14 border-b border-border flex items-center justify-between pl-12 pr-3 md:pl-5 md:pr-5 sticky top-0 z-30" style={{ backgroundColor: 'var(--background)' }}>
-        {/* FIX 7 — Left: Title + subtitle alignment */}
+        {/* Left: Title + subtitle */}
         <div className="flex flex-col justify-center min-w-0">
-          <h1 className="text-[15px] font-medium text-white leading-tight truncate">{title}</h1>
+          <h1 className="text-[15px] font-medium text-foreground leading-tight truncate font-display" style={{ fontFamily: '"Bodoni Moda", "Didot", Georgia, serif', fontWeight: 500, letterSpacing: '0.03em' }}>{title}</h1>
           {subtitle && (
-            <p className="text-[11px] font-normal uppercase tracking-[0.1em] text-white/40 leading-tight truncate">{subtitle}</p>
+            <p className="text-[10px] font-normal uppercase tracking-[0.12em] text-muted-foreground leading-tight truncate">{subtitle}</p>
           )}
         </div>
 

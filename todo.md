@@ -2038,3 +2038,10 @@
 ### Bug Fix — Hamburger Menu Messy
 - [x] Fix: Hamburger menu looks messy on mobile — flat list, no group headers, consistent active states, minimal user section
 - [x] Fix: Hamburger menu looks messy on desktop — cleaner collapsed rail (60px), visible icons, bg-accent active states, removed border-left indicators
+
+### World-Class UI Polish — Investor-Ready MVP
+- [x] Fix: Add hamburger nav icon for client users — mobile drawer works for both admin and client nav
+- [x] Research: Evaluated 007 font — Bodoni Moda (Google Fonts) gives Bond luxury feel without gimmick
+- [x] Polish: Typography upgrade — Bodoni Moda for headings/brand, Inter for body, applied across all key pages
+- [x] Polish: font-display utility class, .page-title, .brand-heading, .client-heading CSS rules added
+- [x] Polish: Key page refinements — Topbar, Sidebar brand, SpyOps hero, ClientDashboard hero + sections, Agent concierge title

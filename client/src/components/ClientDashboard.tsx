@@ -270,7 +270,7 @@ function YourProgressSection() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[11px] uppercase tracking-widest text-muted-foreground font-light">Your Progress</h2>
+        <h2 className="text-[11px] uppercase tracking-widest text-muted-foreground" style={{ fontFamily: '"Bodoni Moda", "Didot", Georgia, serif', fontWeight: 400 }}>Your Progress</h2>
         <span className="text-[10px] font-mono text-muted-foreground">
           {totalAdvances} status advance{totalAdvances !== 1 ? "s" : ""} · {avgDays !== null ? `${avgDays}d avg` : ""}
         </span>
@@ -402,7 +402,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
         <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3 font-light">
           Welcome back
         </p>
-        <h1 className="text-2xl sm:text-3xl font-light text-foreground tracking-tight capitalize">
+        <h1 className="text-2xl sm:text-3xl text-foreground tracking-tight capitalize" style={{ fontFamily: '"Bodoni Moda", "Didot", Georgia, serif', fontWeight: 400, letterSpacing: '0.02em' }}>
           {clientName}
         </h1>
         <p className="text-sm text-muted-foreground mt-1 font-light">
@@ -554,7 +554,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
       {/* -- Distributions ------------------------------------------- */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-[11px] uppercase tracking-widest text-muted-foreground font-light">Distributions</h2>
+          <h2 className="text-[11px] uppercase tracking-widest text-muted-foreground" style={{ fontFamily: '"Bodoni Moda", "Didot", Georgia, serif', fontWeight: 400 }}>Distributions</h2>
           <button
             onClick={() => onNavigate("/distributions")}
             className="text-[11px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
@@ -628,7 +628,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
       <YourProgressSection />
       {/* -- Recent Activity ----------------------------------------- */}
       <div>
-        <h2 className="text-[11px] uppercase tracking-widest text-muted-foreground font-light mb-4">Recent Activity</h2>
+        <h2 className="text-[11px] uppercase tracking-widest text-muted-foreground mb-4" style={{ fontFamily: '"Bodoni Moda", "Didot", Georgia, serif', fontWeight: 400 }}>Recent Activity</h2>
         <div className="space-y-0">
           {activityLogs.length > 0 ? (
             activityLogs.slice(0, 5).map((log, i) => {

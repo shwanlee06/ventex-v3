@@ -172,7 +172,7 @@ export default function AppSidebar() {
               className="size-7 rounded-md object-cover flex-shrink-0"
             />
             {expanded && (
-              <span className="text-[13px] font-semibold text-foreground tracking-wide">ATLAS</span>
+              <span className="text-[14px] font-medium text-foreground" style={{ fontFamily: '"Bodoni Moda", "Didot", Georgia, serif', letterSpacing: '0.08em' }}>ATLAS</span>
             )}
           </Link>
           {expanded && (
@@ -371,7 +371,7 @@ export default function AppSidebar() {
                     alt="ATLAS"
                     className="size-7 rounded-md object-cover"
                   />
-                  <span className="text-[14px] font-semibold text-foreground tracking-wide">ATLAS</span>
+                  <span className="text-[15px] font-medium text-foreground" style={{ fontFamily: '"Bodoni Moda", "Didot", Georgia, serif', letterSpacing: '0.08em' }}>ATLAS</span>
                 </Link>
                 <button
                   onClick={() => setMobileOpen(false)}
