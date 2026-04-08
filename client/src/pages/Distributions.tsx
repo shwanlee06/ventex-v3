@@ -15,7 +15,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { motion, AnimatePresence } from "framer-motion";
-import { DollarSign, Clock, XCircle, CheckCircle2, Plus, FileDown, LayoutGrid, List, Loader2, GitCommitVertical } from "lucide-react";
+import { DollarSign, Clock, XCircle, CheckCircle2, Plus, FileDown, LayoutGrid, List, Loader2, GitCommitVertical, X } from "lucide-react";
 import { useState, useCallback, useMemo } from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -59,6 +59,7 @@ export default function DistributionsPage() {
   const [distModal, setDistModal] = useState<typeof distributions[number] | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"card" | "table" | "timeline">("card");
+  const [activeMetric, setActiveMetric] = useState<string | null>(null);
 
   // ── New distribution form state ─────────────────────────────────────
   const [newName, setNewName] = useState("");
@@ -107,11 +108,21 @@ export default function DistributionsPage() {
   }, [newName, newFund, newAmount, newDate, newType, newMethod, newStatus, newNotes, activeOrgId, createDist]);
 
   const metrics = [
-    { label: "Total", value: formatCurrency(totalDistributed), icon: <DollarSign className="size-4 text-primary" />, sub: `${distributions.length} dist.` },
-    { label: "Paid", value: formatCurrency(paidAmount), icon: <CheckCircle2 className="size-4 text-emerald-400" />, sub: `${distributions.filter(d => d.status === "Paid").length}` },
-    { label: "Scheduled", value: formatCurrency(scheduledAmount), icon: <Clock className="size-4 text-blue-400" />, sub: `${distributions.filter(d => d.status === "Scheduled").length}` },
-    { label: "Cancelled", value: formatCurrency(cancelledAmount), icon: <XCircle className="size-4 text-muted-foreground/50" />, sub: `${distributions.filter(d => d.status === "Cancelled").length}` },
+    { key: "total", label: "Total", value: formatCurrency(totalDistributed), icon: <DollarSign className="size-4 text-primary" />, sub: `${distributions.length} dist.`, activeColor: "border-primary/50" },
+    { key: "paid", label: "Paid", value: formatCurrency(paidAmount), icon: <CheckCircle2 className="size-4 text-emerald-400" />, sub: `${distributions.filter(d => d.status === "Paid").length}`, activeColor: "border-emerald-500/50" },
+    { key: "scheduled", label: "Scheduled", value: formatCurrency(scheduledAmount), icon: <Clock className="size-4 text-blue-400" />, sub: `${distributions.filter(d => d.status === "Scheduled").length}`, activeColor: "border-blue-500/50" },
+    { key: "cancelled", label: "Cancelled", value: formatCurrency(cancelledAmount), icon: <XCircle className="size-4 text-muted-foreground/50" />, sub: `${distributions.filter(d => d.status === "Cancelled").length}`, activeColor: "border-muted-foreground/30" },
   ];
+
+  const displayDistributions = useMemo(() => {
+    if (!activeMetric) return distributions;
+    switch (activeMetric) {
+      case "paid": return distributions.filter(d => d.status === "Paid");
+      case "scheduled": return distributions.filter(d => d.status === "Scheduled");
+      case "cancelled": return distributions.filter(d => d.status === "Cancelled");
+      case "total": default: return distributions;
+    }
+  }, [activeMetric, distributions]);
 
   // Convert DB dist to local Distribution type for PDF export
   const toLocalDist = (d: typeof distributions[number]): Distribution => ({
@@ -142,29 +153,46 @@ export default function DistributionsPage() {
           {!activeOrgId && <span className="text-amber-400 ml-1">(select a client in the sidebar to filter)</span>}
         </div>
 
-        {/* Summary metrics */}
+        {/* Summary metrics — clickable filter cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
           {loading ? (
             Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 sm:h-24 rounded-lg" />)
           ) : (
-            metrics.map((m, i) => (
-              <motion.div
-                key={m.label}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.3 }}
-                className="bg-card border border-border rounded-lg p-3 sm:p-4"
-              >
-                <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
-                  {m.icon}
-                  <span className="text-[9px] sm:text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">{m.label}</span>
-                </div>
-                <span className="text-base sm:text-2xl font-mono font-semibold text-foreground">{m.value}</span>
-                <p className="text-[9px] sm:text-[10px] font-mono text-muted-foreground mt-0.5 sm:mt-1">{m.sub}</p>
-              </motion.div>
-            ))
+            metrics.map((m, i) => {
+              const isActive = activeMetric === m.key;
+              return (
+                <motion.div
+                  key={m.key}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05, duration: 0.3 }}
+                  onClick={() => setActiveMetric(isActive ? null : m.key)}
+                  className={cn(
+                    "bg-card border rounded-lg p-3 sm:p-4 cursor-pointer transition-all active:scale-[0.97]",
+                    isActive ? `${m.activeColor} bg-card/80` : "border-border hover:border-primary/20"
+                  )}
+                >
+                  <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                    {m.icon}
+                    <span className="text-[8px] sm:text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">{m.label}</span>
+                  </div>
+                  <span className="text-base sm:text-2xl font-mono font-semibold text-foreground block">{m.value}</span>
+                  <p className="text-[9px] sm:text-[10px] font-mono text-muted-foreground mt-0.5 sm:mt-1">{m.sub}</p>
+                </motion.div>
+              );
+            })
           )}
         </div>
+        <AnimatePresence>
+          {activeMetric && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+              <div className="flex items-center gap-2 px-3 py-2 bg-primary/5 border border-primary/10 rounded-lg">
+                <span className="text-xs text-primary font-medium">Showing: {metrics.find(m => m.key === activeMetric)?.label}</span>
+                <button onClick={() => setActiveMetric(null)} className="ml-auto text-xs text-muted-foreground hover:text-foreground"><X className="size-3.5" /></button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Actions bar */}
         <div className="flex items-center justify-between gap-2">
@@ -181,7 +209,7 @@ export default function DistributionsPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation hidden sm:flex" onClick={() => {
-              const localDists = distributions.map(toLocalDist);
+              const localDists = displayDistributions.map(toLocalDist);
               exportAllDistributionsPdf(localDists);
               toast.success("Summary PDF downloaded");
             }}>
@@ -200,14 +228,14 @@ export default function DistributionsPage() {
               <h2 className="text-sm font-semibold text-foreground">{clientLabel} Distributions</h2>
               <span className="text-[10px] font-mono text-emerald-400">{formatCurrency(totalDistributed)}</span>
             </div>
-            {distributions.length === 0 ? (
+            {displayDistributions.length === 0 ? (
               <div className="p-12 text-center bg-card border border-border rounded-lg">
                 <DollarSign className="size-8 text-muted-foreground mx-auto mb-3 opacity-40" />
                 <p className="text-sm text-muted-foreground">No distributions recorded for this client.</p>
               </div>
             ) : (
               <AnimatePresence>
-                {distributions.map((dist, i) => {
+                {displayDistributions.map((dist, i) => {
                   const dc = DIST_STATUS_CONFIG[dist.status || "Scheduled"];
                   return (
                     <motion.div
@@ -246,7 +274,7 @@ export default function DistributionsPage() {
               <h2 className="text-sm font-semibold text-foreground">{clientLabel} Distributions</h2>
               <span className="text-[10px] font-mono text-emerald-400">{formatCurrency(totalDistributed)} total</span>
             </div>
-            {distributions.length === 0 ? (
+            {displayDistributions.length === 0 ? (
               <div className="p-12 text-center">
                 <DollarSign className="size-8 text-muted-foreground mx-auto mb-3 opacity-40" />
                 <p className="text-sm text-muted-foreground">No distributions recorded for this client.</p>
@@ -266,7 +294,7 @@ export default function DistributionsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {distributions.map(dist => {
+                    {displayDistributions.map(dist => {
                       const dc = DIST_STATUS_CONFIG[dist.status || "Scheduled"];
                       return (
                         <TableRow key={dist.id} className="cursor-pointer hover:bg-accent/30 active:bg-accent/40 touch-manipulation" onClick={() => setDistModal(dist)}>
@@ -297,9 +325,9 @@ export default function DistributionsPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between px-1">
               <h2 className="text-sm font-semibold text-foreground">Distribution Timeline</h2>
-              <span className="text-[10px] font-mono text-muted-foreground">{distributions.length} events</span>
+              <span className="text-[10px] font-mono text-muted-foreground">{displayDistributions.length} events</span>
             </div>
-            {distributions.length === 0 ? (
+            {displayDistributions.length === 0 ? (
               <div className="p-12 text-center bg-card border border-border rounded-lg">
                 <DollarSign className="size-8 text-muted-foreground mx-auto mb-3 opacity-40" />
                 <p className="text-sm text-muted-foreground">No distributions recorded.</p>
@@ -309,7 +337,7 @@ export default function DistributionsPage() {
                 {/* Vertical timeline line */}
                 <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
                 <div className="space-y-0">
-                  {[...distributions]
+                  {[...displayDistributions]
                     .sort((a, b) => {
                       const dateA = a.distributionDate ? new Date(a.distributionDate).getTime() : 0;
                       const dateB = b.distributionDate ? new Date(b.distributionDate).getTime() : 0;
@@ -373,7 +401,7 @@ export default function DistributionsPage() {
                   <div className="min-w-0 flex-1">
                     <span className="text-xs font-medium text-foreground">{fund}</span>
                     <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {distributions.filter(d => (d.fund || "General") === fund).length} distribution(s)
+                      {displayDistributions.filter(d => (d.fund || "General") === fund).length} distribution(s)
                     </p>
                   </div>
                   <span className="text-sm font-mono font-semibold text-foreground flex-shrink-0">{formatCurrency(amount)}</span>

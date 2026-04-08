@@ -74,7 +74,6 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: "SPVs & Deals", href: "/spvs", icon: <Briefcase className="size-5" />, clientOnly: true },
   { label: "Tasks", href: "/tasks", icon: <ListChecks className="size-5" />, clientOnly: true },
   { label: "Distributions", href: "/distributions", icon: <DollarSign className="size-5" />, clientOnly: true },
-  { label: "My Profile", href: "/profile", icon: <User className="size-5" />, clientOnly: true },
 ];
 
 
@@ -124,7 +123,7 @@ export default function AppSidebar() {
     });
   }, [isAtlas]);
 
-  // Mobile: first 5 items in bottom bar, rest in "More" sheet
+  // Mobile: for clients show all 5 items directly; for admin first 5 + More
   const mobilePrimary = navItems.slice(0, 5);
   const mobileSecondary = navItems.slice(5);
 

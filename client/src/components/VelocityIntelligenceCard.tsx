@@ -62,7 +62,7 @@ function SparklineSVG({ points, color }: { points: number[]; color: string }) {
   const fillD = `${pathD} L ${coords[coords.length - 1].x} ${height} L ${coords[0].x} ${height} Z`;
 
   return (
-    <svg width={width} height={height} className="block">
+    <svg viewBox={`0 0 ${width} ${height}`} className="block w-full h-auto max-w-full">
       <defs>
         <linearGradient id="vel-sparkline-fill" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.15" />
@@ -92,7 +92,8 @@ export default function VelocityIntelligenceCard({
     refetchInterval: 120000,
   });
 
-  const velocityColor = avgVelocity >= 60 ? "#4ADE80" : avgVelocity >= 25 ? "#F59E0B" : "#EF4444";
+  // Velocity = green spectrum; low velocity gets amber warning but base is green
+  const velocityColor = avgVelocity >= 40 ? "#4ADE80" : avgVelocity >= 20 ? "#34D399" : "#F59E0B";
 
   // Stalled = clients with velocity < 10
   const stalledCount = useMemo(
@@ -146,7 +147,7 @@ export default function VelocityIntelligenceCard({
       </div>
 
       {/* Sparkline */}
-      <div className="mt-0.5 mb-0.5">
+      <div className="mt-0.5 mb-0.5 w-full overflow-hidden">
         <SparklineSVG points={sparklinePoints} color={velocityColor} />
       </div>
 

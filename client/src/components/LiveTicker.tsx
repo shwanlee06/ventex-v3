@@ -117,14 +117,14 @@ export default function LiveTicker({ onEventClick }: LiveTickerProps) {
       onClick={onEventClick}
     >
       {/* LIVE indicator */}
-      <div className="flex items-center gap-1.5 px-4 flex-shrink-0 z-20 bg-card/50">
+      <div className="flex items-center gap-1.5 px-2 sm:px-4 flex-shrink-0 z-20 bg-card/80 backdrop-blur-sm">
         <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
         <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-medium">LIVE</span>
         <span className="w-px h-3 bg-border/60 ml-1" />
       </div>
 
       {/* Fade edges */}
-      <div className="absolute left-20 top-0 bottom-0 w-6 bg-gradient-to-r from-card/50 to-transparent z-10" />
+      <div className="absolute left-16 sm:left-20 top-0 bottom-0 w-6 bg-gradient-to-r from-card/80 to-transparent z-10" />
       <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-card/50 to-transparent z-10" />
 
       {/* Scrolling marquee */}

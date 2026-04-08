@@ -50,7 +50,7 @@ export default function AdvanceBanner({ readyVentures, onAdvanced }: AdvanceBann
     },
     onError: (error) => {
       setAdvancingId(null);
-      toast.error(error.message || "Failed to advance stage");
+      toast.error(error.message || "Failed to advance status");
     },
   });
 
@@ -104,7 +104,7 @@ export default function AdvanceBanner({ readyVentures, onAdvanced }: AdvanceBann
                   <span className="text-muted-foreground/50">·</span>
                   <span>{venture.completedTasks} tasks completed</span>
                   <span className="text-muted-foreground/50">·</span>
-                  <span>{venture.daysInStage}d in stage</span>
+                  <span>{venture.daysInStage}d in status</span>
                 </div>
               </div>
 
@@ -128,7 +128,7 @@ export default function AdvanceBanner({ readyVentures, onAdvanced }: AdvanceBann
                 ) : (
                   <>
                     <CheckCircle2 className="size-3.5" />
-                    {venture.isCapitalStage ? "Review & Advance" : "Advance Stage"}
+                    {venture.isCapitalStage ? "Review & Advance" : "Advance Status"}
                   </>
                 )}
               </Button>

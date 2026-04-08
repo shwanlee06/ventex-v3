@@ -1923,3 +1923,21 @@
 - [x] Add H1 heading to landing page — already exists: "VENTURE INTELLIGENCE OPERATIONS"
 - [x] Add H2 headings to landing page sections — already exists: "A STRUCTURED AND PROVEN METHOD_"
 - [x] Add meta keywords and description to index.html
+
+### Mobile UI Fixes — Admin Side
+- [x] Velocity intelligence graph overflows its designated area on mobile — SVG now uses viewBox with w-full, overflow-hidden
+- [x] Cycling status bar at top goes too far left, covers "Live" logo — LIVE indicator now has bg-card/80 backdrop-blur, tighter mobile padding, fade edge adjusted
+- [x] Change velocity intelligence color to green, overdue to red — velocity always green spectrum, overdue always #EF4444
+- [x] Notification tab background is transparent — SheetContent now has explicit bg-card
+
+### Mobile UI Fixes — Client Portal
+- [x] Notification tab background is transparent — same fix as admin side
+- [x] Add portfolio value breakdown — clickable Portfolio Value opens dialog with donut pie chart by sector, sector legend, distribution summary
+- [x] Remove "Your Ventures" section from main dashboard (already in separate tab)
+- [x] Ventures tab: "20 ventures" overlaps with "Active 18" on mobile — stacked label/value vertically on mobile with flex-col, truncated text
+- [x] Rename "Stage" to "Status" across client portal — ClientDashboard, ClientPortal, AdvanceBanner all updated
+- [x] Replace "More" tab with "Distributions" directly — mobile nav now shows all 5 tabs for client users
+- [x] Make the 4 filter boxes at top of Ventures expandable — tap to filter list by Total/Active/Open Tasks/Overdue, active state with colored border, animated filter indicator
+- [x] Same expandable filter pattern for SPVs tab — Total/Active/Distributed/Paid clickable filters
+- [x] Same expandable filter pattern for Tasks tab — Total/Open/Overdue/Done clickable filters
+- [x] Same expandable filter pattern for Distributions tab — Total/Paid/Scheduled/Cancelled clickable filters

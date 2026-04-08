@@ -79,6 +79,7 @@ export default function TasksPage() {
   const [priorityFilter, setPriorityFilter] = useState("All");
   const [assigneeFilter, setAssigneeFilter] = useState("All");
   const [viewMode, setViewMode] = useState<"card" | "table" | "board">("card");
+  const [activeMetric, setActiveMetric] = useState<string | null>(null);
 
   const [addOpen, setAddOpen] = useState(false);
   const [editTaskId, setEditTaskId] = useState<number | null>(null);
@@ -139,12 +140,6 @@ export default function TasksPage() {
     });
   }, [tasks]);
 
-  const boardColumns = useMemo(() => ({
-    open: filtered.filter(t => getTaskStatus(t) === "open"),
-    overdue: filtered.filter(t => getTaskStatus(t) === "overdue"),
-    complete: filtered.filter(t => t.status === "complete"),
-  }), [filtered]);
-
   const editTask = editTaskId ? tasks.find(t => t.id === editTaskId) : null;
 
   const handleToggle = useCallback((taskId: number) => {
@@ -190,11 +185,27 @@ export default function TasksPage() {
   }, [updateTask]);
 
   const metricCards = [
-    { label: "Total", value: metrics.total, icon: <ListChecks className="size-4 text-blue-400" />, color: "text-blue-400" },
-    { label: "Open", value: metrics.open, icon: <Clock className="size-4 text-amber-400" />, color: "text-amber-400" },
-    { label: "Overdue", value: metrics.overdue, icon: <AlertTriangle className="size-4 text-red-400" />, color: "text-red-400" },
-    { label: "Done", value: metrics.complete, icon: <CheckCircle2 className="size-4 text-emerald-400" />, color: "text-emerald-400" },
+    { key: "total", label: "Total", value: metrics.total, icon: <ListChecks className="size-4 text-blue-400" />, color: "text-blue-400", activeColor: "border-blue-500/50" },
+    { key: "open", label: "Open", value: metrics.open, icon: <Clock className="size-4 text-amber-400" />, color: "text-amber-400", activeColor: "border-amber-500/50" },
+    { key: "overdue", label: "Overdue", value: metrics.overdue, icon: <AlertTriangle className="size-4 text-red-400" />, color: "text-red-400", activeColor: "border-red-500/50" },
+    { key: "done", label: "Done", value: metrics.complete, icon: <CheckCircle2 className="size-4 text-emerald-400" />, color: "text-emerald-400", activeColor: "border-emerald-500/50" },
   ];
+
+  const displayTasks = useMemo(() => {
+    if (!activeMetric) return filtered;
+    switch (activeMetric) {
+      case "open": return filtered.filter(t => getTaskStatus(t) === "open");
+      case "overdue": return filtered.filter(t => getTaskStatus(t) === "overdue");
+      case "done": return filtered.filter(t => getTaskStatus(t) === "complete");
+      case "total": default: return filtered;
+    }
+  }, [activeMetric, filtered]);
+
+  const boardColumns = useMemo(() => ({
+    open: displayTasks.filter(t => getTaskStatus(t) === "open"),
+    overdue: displayTasks.filter(t => getTaskStatus(t) === "overdue"),
+    complete: displayTasks.filter(t => t.status === "complete"),
+  }), [displayTasks]);
 
   // Shared task card component for card view and board view
   const TaskCard = ({ task }: { task: typeof tasks[0] }) => {
@@ -246,24 +257,41 @@ export default function TasksPage() {
   return (
     <DashboardLayout title="Tasks">
       <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
-        {/* Metrics */}
+        {/* Metrics — clickable filter cards */}
         <div className="grid grid-cols-4 gap-2 sm:gap-3">
-          {tasksQ.isLoading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 sm:h-24 rounded-lg" />) : metricCards.map((m, i) => (
-            <motion.div
-              key={m.label}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.3 }}
-              className="bg-card border border-border rounded-lg p-2 sm:p-4"
-            >
-              <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
-                {m.icon}
-                <span className="text-[9px] sm:text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium truncate">{m.label}</span>
-              </div>
-              <span className={cn("text-base sm:text-2xl font-mono font-semibold", m.color)}>{m.value}</span>
-            </motion.div>
-          ))}
+          {tasksQ.isLoading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 sm:h-24 rounded-lg" />) : metricCards.map((m, i) => {
+            const isActive = activeMetric === m.key;
+            return (
+              <motion.div
+                key={m.key}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.3 }}
+                onClick={() => setActiveMetric(isActive ? null : m.key)}
+                className={cn(
+                  "bg-card border rounded-lg p-2 sm:p-4 cursor-pointer transition-all active:scale-[0.97]",
+                  isActive ? `${m.activeColor} bg-card/80` : "border-border hover:border-primary/20"
+                )}
+              >
+                <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                  {m.icon}
+                  <span className="text-[8px] sm:text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium truncate">{m.label}</span>
+                </div>
+                <span className={cn("text-base sm:text-2xl font-mono font-semibold block", m.color)}>{m.value}</span>
+              </motion.div>
+            );
+          })}
         </div>
+        <AnimatePresence>
+          {activeMetric && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+              <div className="flex items-center gap-2 px-3 py-2 bg-primary/5 border border-primary/10 rounded-lg">
+                <span className="text-xs text-primary font-medium">Showing: {metricCards.find(m => m.key === activeMetric)?.label}</span>
+                <button onClick={() => setActiveMetric(null)} className="ml-auto text-xs text-muted-foreground hover:text-foreground"><X className="size-3.5" /></button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Overdue Warning Banner */}
         {severelyOverdue.length > 0 && (
@@ -368,7 +396,7 @@ export default function TasksPage() {
             </button>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono text-muted-foreground hidden sm:inline">{filtered.length} tasks</span>
+            <span className="text-[10px] font-mono text-muted-foreground hidden sm:inline">{displayTasks.length} tasks</span>
             <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => setAddOpen(true)}>
               <Plus className="size-3.5 mr-1" /> Add Task
             </Button>
@@ -376,7 +404,7 @@ export default function TasksPage() {
         </div>
 
         {/* Empty state */}
-        {filtered.length === 0 && !tasksQ.isLoading && (
+        {displayTasks.length === 0 && !tasksQ.isLoading && (
           <div className="p-12 text-center bg-card border border-border rounded-lg">
             <CheckCircle2 className="size-8 text-muted-foreground mx-auto mb-3 opacity-30" strokeWidth={1.5} />
             <p className="text-base font-medium text-foreground/80 mb-1">All clear</p>
@@ -385,16 +413,16 @@ export default function TasksPage() {
         )}
 
         {/* Card View (default, mobile-friendly) */}
-        {viewMode === "card" && filtered.length > 0 && (
+        {viewMode === "card" && displayTasks.length > 0 && (
           <div className="space-y-2">
             <AnimatePresence>
-              {filtered.map(task => <TaskCard key={task.id} task={task} />)}
+              {displayTasks.map(task => <TaskCard key={task.id} task={task} />)}
             </AnimatePresence>
           </div>
         )}
 
         {/* Table View (desktop) */}
-        {viewMode === "table" && filtered.length > 0 && (
+        {viewMode === "table" && displayTasks.length > 0 && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card border border-border rounded-lg overflow-hidden">
             <div className="overflow-x-auto">
               <Table>
@@ -410,7 +438,7 @@ export default function TasksPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.map(task => {
+                  {displayTasks.map(task => {
                     const rs = getTaskStatus(task);
                     const sc = STATUS_CONFIG[rs];
                     return (

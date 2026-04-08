@@ -88,6 +88,7 @@ export default function VerticalsPage() {
   const [clientFilter, setClientFilter] = useState("All");
   const [collapsedClients, setCollapsedClients] = useState<Set<string>>(new Set());
   const [addOpen, setAddOpen] = useState(false);
+  const [activeMetric, setActiveMetric] = useState<string | null>(null); // "total" | "active" | "open" | "overdue" | null
 
   // Add form state
   const [newName, setNewName] = useState("");
@@ -139,72 +140,13 @@ export default function VerticalsPage() {
     });
   }, [allVentures, search, themeFilter, stageFilter, statusFilter, clientFilter]);
 
-  // Group by client
-  const clientGroups = useMemo(() => {
-    const groups = new Map<string, ClientGroup>();
-
-    for (const v of filtered) {
-      if (v.organizations.length === 0) {
-        // Unassigned ventures
-        const key = "__unassigned__";
-        if (!groups.has(key)) {
-          groups.set(key, { orgId: null, orgName: "Unassigned", orgSlug: "", ventures: [], activeCount: 0, totalTasks: 0, overdueTasks: 0 });
-        }
-        const g = groups.get(key)!;
-        g.ventures.push(v);
-        if (v.status === "In progress") g.activeCount++;
-      } else {
-        for (const org of v.organizations) {
-          const key = String(org.orgId);
-          if (!groups.has(key)) {
-            groups.set(key, { orgId: org.orgId, orgName: org.orgName, orgSlug: org.orgSlug, ventures: [], activeCount: 0, totalTasks: 0, overdueTasks: 0 });
-          }
-          const g = groups.get(key)!;
-          g.ventures.push(v);
-          if (v.status === "In progress") g.activeCount++;
-        }
-      }
-    }
-
-    // Add task counts
-    for (const g of Array.from(groups.values())) {
-      const ventureIds = new Set(g.ventures.map((v: VentureWithOrgs) => v.id));
-      const groupTasks = allTasks.filter(t => t.ventureId && ventureIds.has(t.ventureId));
-      g.totalTasks = groupTasks.filter(t => t.status !== "complete").length;
-      g.overdueTasks = groupTasks.filter(t => t.status !== "complete" && t.dueDate && new Date(t.dueDate) < now).length;
-    }
-
-    // Sort: assigned clients first (alphabetical), unassigned last
-    return Array.from(groups.values()).sort((a, b) => {
-      if (a.orgId === null) return 1;
-      if (b.orgId === null) return -1;
-      return a.orgName.localeCompare(b.orgName);
-    });
-  }, [filtered, allTasks, now]);
-
-  // Global metrics
+  // Global metrics (always based on full filtered set, not metric-filtered)
   const totalVentures = filtered.length;
   const activeVentures = filtered.filter(v => v.status === "In progress").length;
   const openTasks = allTasks.filter(t => t.status !== "complete").length;
   const overdueTasks = allTasks.filter(t => t.status !== "complete" && t.dueDate && new Date(t.dueDate) < now).length;
 
-  // ── Handlers ───────────────────────────────────────────────────────
-  const toggleClient = useCallback((key: string) => {
-    setCollapsedClients(prev => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  }, []);
-
-  const toggleAll = useCallback(() => {
-    if (collapsedClients.size > 0) {
-      setCollapsedClients(new Set());
-    } else {
-      setCollapsedClients(new Set(clientGroups.map(g => String(g.orgId ?? "__unassigned__"))));
-    }
-  }, [collapsedClients.size, clientGroups]);
+  // ── Handlers (toggleClient/toggleAll moved after clientGroups) ─────
 
   const handleAddVenture = () => {
     if (!newName.trim()) { toast.error("Name is required"); return; }
@@ -233,35 +175,138 @@ export default function VerticalsPage() {
   }
 
   const summaryMetrics = [
-    { label: "Total", value: totalVentures, icon: <Layers3 className="size-4 text-blue-400" /> },
-    { label: "Active", value: activeVentures, icon: <MapPin className="size-4 text-emerald-400" /> },
-    { label: "Open Tasks", value: openTasks, icon: <ListChecks className="size-4 text-amber-400" /> },
-    { label: "Overdue", value: overdueTasks, icon: <AlertTriangle className="size-4 text-red-400" /> },
+    { key: "total", label: "Total", value: totalVentures, icon: <Layers3 className="size-4 text-blue-400" />, activeColor: "border-blue-500/50" },
+    { key: "active", label: "Active", value: activeVentures, icon: <MapPin className="size-4 text-emerald-400" />, activeColor: "border-emerald-500/50" },
+    { key: "open", label: "Open Tasks", value: openTasks, icon: <ListChecks className="size-4 text-amber-400" />, activeColor: "border-amber-500/50" },
+    { key: "overdue", label: "Overdue", value: overdueTasks, icon: <AlertTriangle className="size-4 text-red-400" />, activeColor: "border-red-500/50" },
   ];
+
+  // When a metric card is tapped, filter the list accordingly
+  const metricFiltered = useMemo(() => {
+    if (!activeMetric) return null;
+    switch (activeMetric) {
+      case "active": return filtered.filter(v => v.status === "In progress");
+      case "overdue": {
+        const overdueVentureIds = new Set(allTasks.filter(t => t.status !== "complete" && t.dueDate && new Date(t.dueDate) < now).map(t => t.ventureId).filter(Boolean));
+        return filtered.filter(v => overdueVentureIds.has(v.id));
+      }
+      case "open": {
+        const openVentureIds = new Set(allTasks.filter(t => t.status !== "complete").map(t => t.ventureId).filter(Boolean));
+        return filtered.filter(v => openVentureIds.has(v.id));
+      }
+      default: return null; // "total" = show all
+    }
+  }, [activeMetric, filtered, allTasks, now]);
+
+  const displayVentures = metricFiltered ?? filtered;
+
+  // Group by client
+  const clientGroups = useMemo(() => {
+    const groups = new Map<string, ClientGroup>();
+
+    for (const v of displayVentures) {
+      if (v.organizations.length === 0) {
+        const key = "__unassigned__";
+        if (!groups.has(key)) {
+          groups.set(key, { orgId: null, orgName: "Unassigned", orgSlug: "", ventures: [], activeCount: 0, totalTasks: 0, overdueTasks: 0 });
+        }
+        const g = groups.get(key)!;
+        g.ventures.push(v);
+        if (v.status === "In progress") g.activeCount++;
+      } else {
+        for (const org of v.organizations) {
+          const key = String(org.orgId);
+          if (!groups.has(key)) {
+            groups.set(key, { orgId: org.orgId, orgName: org.orgName, orgSlug: org.orgSlug, ventures: [], activeCount: 0, totalTasks: 0, overdueTasks: 0 });
+          }
+          const g = groups.get(key)!;
+          g.ventures.push(v);
+          if (v.status === "In progress") g.activeCount++;
+        }
+      }
+    }
+
+    for (const g of Array.from(groups.values())) {
+      const ventureIds = new Set(g.ventures.map((v: VentureWithOrgs) => v.id));
+      const groupTasks = allTasks.filter(t => t.ventureId && ventureIds.has(t.ventureId));
+      g.totalTasks = groupTasks.filter(t => t.status !== "complete").length;
+      g.overdueTasks = groupTasks.filter(t => t.status !== "complete" && t.dueDate && new Date(t.dueDate) < now).length;
+    }
+
+    return Array.from(groups.values()).sort((a, b) => {
+      if (a.orgId === null) return 1;
+      if (b.orgId === null) return -1;
+      return a.orgName.localeCompare(b.orgName);
+    });
+  }, [displayVentures, allTasks, now]);
+
+  const toggleClient = useCallback((key: string) => {
+    setCollapsedClients(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const toggleAll = useCallback(() => {
+    if (collapsedClients.size > 0) {
+      setCollapsedClients(new Set());
+    } else {
+      setCollapsedClients(new Set(clientGroups.map(g => String(g.orgId ?? "__unassigned__"))));
+    }
+  }, [collapsedClients.size, clientGroups]);
 
   const hasActiveFilters = themeFilter !== "All" || stageFilter !== "All" || statusFilter !== "All" || clientFilter !== "All" || search.length > 0;
 
   return (
     <DashboardLayout title="Ventures" subtitle="PORTFOLIO OVERVIEW">
       <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5 pb-24 md:pb-6">
-        {/* Summary metrics */}
+        {/* Summary metrics — clickable filter cards */}
         <div className="grid grid-cols-4 gap-2 sm:gap-3">
-          {loading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 sm:h-20 rounded-lg" />) : summaryMetrics.map((m, i) => (
-            <motion.div
-              key={m.label}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.3 }}
-              className="bg-card border border-border rounded-lg p-2.5 sm:p-4"
-            >
-              <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
-                {m.icon}
-                <span className="text-[9px] sm:text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium truncate">{m.label}</span>
-              </div>
-              <span className="text-lg sm:text-2xl font-mono font-semibold text-foreground">{m.value}</span>
-            </motion.div>
-          ))}
+          {loading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 sm:h-20 rounded-lg" />) : summaryMetrics.map((m, i) => {
+            const isActive = activeMetric === m.key;
+            return (
+              <motion.div
+                key={m.key}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.3 }}
+                onClick={() => setActiveMetric(isActive ? null : m.key)}
+                className={cn(
+                  "bg-card border rounded-lg p-2 sm:p-4 cursor-pointer transition-all active:scale-[0.97]",
+                  isActive ? `${m.activeColor} bg-card/80` : "border-border hover:border-primary/20"
+                )}
+              >
+                <div className="flex items-center gap-1 sm:gap-2 mb-1">
+                  {m.icon}
+                  <span className="text-[8px] sm:text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium truncate">{m.label}</span>
+                </div>
+                <span className="text-base sm:text-2xl font-mono font-semibold text-foreground block">{m.value}</span>
+              </motion.div>
+            );
+          })}
         </div>
+        {/* Active metric filter indicator */}
+        <AnimatePresence>
+          {activeMetric && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="flex items-center gap-2 px-3 py-2 bg-primary/5 border border-primary/10 rounded-lg">
+                <span className="text-xs text-primary font-medium">
+                  Showing: {summaryMetrics.find(m => m.key === activeMetric)?.label}
+                </span>
+                <button onClick={() => setActiveMetric(null)} className="ml-auto text-xs text-muted-foreground hover:text-foreground">
+                  <X className="size-3.5" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Search + Filters bar */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">

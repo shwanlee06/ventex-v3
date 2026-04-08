@@ -9,7 +9,7 @@ import { trpc } from "@/lib/trpc";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Briefcase, DollarSign, TrendingUp, TrendingDown, Plus, X, ArrowUpDown, LayoutGrid, List,
 } from "lucide-react";
@@ -86,6 +86,7 @@ export default function SettingsPage() {
   const [distModalId, setDistModalId] = useState<number | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [activeMetric, setActiveMetric] = useState<string | null>(null);
 
   const [newName, setNewName] = useState("");
   const [newSector, setNewSector] = useState("Oil & Gas");
@@ -128,33 +129,58 @@ export default function SettingsPage() {
   }, [newName, newSector, newPriority, newStage, newNotes, createSpv]);
 
   const summaryMetrics = [
-    { label: "SPVs", value: filtered.length, icon: <Briefcase className="size-4 text-blue-400" /> },
-    { label: "Active", value: activeSPVs, icon: <TrendingUp className="size-4 text-emerald-400" /> },
-    { label: "Distributed", value: formatCurrency(distMetrics.totalAmount), icon: <DollarSign className="size-4 text-primary" /> },
-    { label: "Paid", value: formatCurrency(distMetrics.paidAmount), icon: <TrendingDown className="size-4 text-amber-400" /> },
+    { key: "total", label: "SPVs", value: filtered.length, icon: <Briefcase className="size-4 text-blue-400" />, activeColor: "border-blue-500/50" },
+    { key: "active", label: "Active", value: activeSPVs, icon: <TrendingUp className="size-4 text-emerald-400" />, activeColor: "border-emerald-500/50" },
+    { key: "distributed", label: "Distributed", value: formatCurrency(distMetrics.totalAmount), icon: <DollarSign className="size-4 text-primary" />, activeColor: "border-primary/50" },
+    { key: "paid", label: "Paid", value: formatCurrency(distMetrics.paidAmount), icon: <TrendingDown className="size-4 text-amber-400" />, activeColor: "border-amber-500/50" },
   ];
+
+  const displaySpvs = useMemo(() => {
+    if (!activeMetric) return filtered;
+    switch (activeMetric) {
+      case "active": return filtered.filter(s => s.stage === "Active deal");
+      case "total": default: return filtered;
+    }
+  }, [activeMetric, filtered]);
 
   return (
     <DashboardLayout title="SPVs & Deals" subtitle="DEAL PIPELINE & DISTRIBUTIONS">
       <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
-        {/* Summary metrics */}
+        {/* Summary metrics — clickable filter cards */}
         <div className="grid grid-cols-4 gap-2 sm:gap-3">
-          {spvsQ.isLoading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 sm:h-24 rounded-lg" />) : summaryMetrics.map((m, i) => (
-            <motion.div
-              key={m.label}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.3 }}
-              className="bg-card border border-border rounded-lg p-2 sm:p-4"
-            >
-              <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
-                {m.icon}
-                <span className="text-[9px] sm:text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium truncate">{m.label}</span>
-              </div>
-              <span className="text-base sm:text-2xl font-mono font-semibold text-foreground">{m.value}</span>
-            </motion.div>
-          ))}
+          {spvsQ.isLoading ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 sm:h-24 rounded-lg" />) : summaryMetrics.map((m, i) => {
+            const isActive = activeMetric === m.key;
+            return (
+              <motion.div
+                key={m.key}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.3 }}
+                onClick={() => setActiveMetric(isActive ? null : m.key)}
+                className={cn(
+                  "bg-card border rounded-lg p-2 sm:p-4 cursor-pointer transition-all active:scale-[0.97]",
+                  isActive ? `${m.activeColor} bg-card/80` : "border-border hover:border-primary/20"
+                )}
+              >
+                <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                  {m.icon}
+                  <span className="text-[8px] sm:text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium truncate">{m.label}</span>
+                </div>
+                <span className="text-base sm:text-2xl font-mono font-semibold text-foreground block">{m.value}</span>
+              </motion.div>
+            );
+          })}
         </div>
+        <AnimatePresence>
+          {activeMetric && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+              <div className="flex items-center gap-2 px-3 py-2 bg-primary/5 border border-primary/10 rounded-lg">
+                <span className="text-xs text-primary font-medium">Showing: {summaryMetrics.find(m => m.key === activeMetric)?.label}</span>
+                <button onClick={() => setActiveMetric(null)} className="ml-auto text-xs text-muted-foreground hover:text-foreground"><X className="size-3.5" /></button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Filters — horizontal scroll on mobile */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
@@ -188,7 +214,7 @@ export default function SettingsPage() {
             </button>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono text-muted-foreground hidden sm:inline">{filtered.length} deals</span>
+            <span className="text-[10px] font-mono text-muted-foreground hidden sm:inline">{displaySpvs.length} deals</span>
             <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => setAddOpen(true)}>
               <Plus className="size-3.5 mr-1" /> New Deal
             </Button>
@@ -196,7 +222,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Empty state */}
-        {filtered.length === 0 && !spvsQ.isLoading && (
+        {displaySpvs.length === 0 && !spvsQ.isLoading && (
           <div className="p-12 text-center bg-card border border-border rounded-lg">
             <Briefcase className="size-8 text-muted-foreground mx-auto mb-3 opacity-40" />
             <p className="text-sm text-muted-foreground">No deals match the current filters.</p>
@@ -205,9 +231,9 @@ export default function SettingsPage() {
         )}
 
         {/* Card View */}
-        {viewMode === "card" && filtered.length > 0 && (
+        {viewMode === "card" && displaySpvs.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filtered.map((spv, i) => {
+            {displaySpvs.map((spv, i) => {
               const color = THEME_COLORS[spv.sector || "Others"] || "#6b7280";
               const sc = SPV_STAGE_CONFIG[spv.stage || "Active deal"];
               return (
@@ -256,7 +282,7 @@ export default function SettingsPage() {
         )}
 
         {/* Table View */}
-        {viewMode === "table" && filtered.length > 0 && (
+        {viewMode === "table" && displaySpvs.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -276,7 +302,7 @@ export default function SettingsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.map((spv) => {
+                  {displaySpvs.map((spv) => {
                     const color = THEME_COLORS[spv.sector || "Others"] || "#6b7280";
                     const sc = SPV_STAGE_CONFIG[spv.stage || "Active deal"];
                     return (

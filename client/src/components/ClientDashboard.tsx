@@ -32,14 +32,81 @@ import {
   ListChecks,
   CheckCircle2,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import VelocityFeed from "@/components/VelocityFeed";
 import AdvanceBanner from "@/components/AdvanceBanner";
 import AtlasActivitySection from "@/components/AtlasActivitySection";
+
+// ── Sector colors for pie chart ──────────────────────────────────────────
+const SECTOR_COLORS: Record<string, string> = {
+  "Real Estate": "#3B82F6",
+  "Yacht": "#06B6D4",
+  "F&B": "#F59E0B",
+  "Entertainment": "#8B5CF6",
+  "Oil & Gas": "#EF4444",
+  "Others": "#6B7280",
+};
+
+function getSectorColor(sector: string): string {
+  return SECTOR_COLORS[sector] || SECTOR_COLORS["Others"];
+}
+
+// ── SVG Pie Chart ────────────────────────────────────────────────────────
+function PieChart({ slices }: { slices: { label: string; value: number; color: string }[] }) {
+  const total = slices.reduce((s, sl) => s + sl.value, 0);
+  if (total === 0) return null;
+
+  let cumAngle = -90; // start from top
+  const paths = slices.map((sl) => {
+    const pct = sl.value / total;
+    const angle = pct * 360;
+    const startAngle = cumAngle;
+    const endAngle = cumAngle + angle;
+    cumAngle = endAngle;
+
+    const startRad = (startAngle * Math.PI) / 180;
+    const endRad = (endAngle * Math.PI) / 180;
+    const x1 = 100 + 80 * Math.cos(startRad);
+    const y1 = 100 + 80 * Math.sin(startRad);
+    const x2 = 100 + 80 * Math.cos(endRad);
+    const y2 = 100 + 80 * Math.sin(endRad);
+    const largeArc = angle > 180 ? 1 : 0;
+
+    // For single-slice, draw a full circle
+    if (pct >= 0.999) {
+      return (
+        <circle key={sl.label} cx="100" cy="100" r="80" fill={sl.color} />
+      );
+    }
+
+    return (
+      <path
+        key={sl.label}
+        d={`M 100 100 L ${x1} ${y1} A 80 80 0 ${largeArc} 1 ${x2} ${y2} Z`}
+        fill={sl.color}
+        className="transition-opacity hover:opacity-80"
+      />
+    );
+  });
+
+  return (
+    <svg viewBox="0 0 200 200" className="w-full h-full">
+      {paths}
+      {/* Inner circle for donut effect */}
+      <circle cx="100" cy="100" r="50" className="fill-card" />
+    </svg>
+  );
+}
 
 const THEME_ICONS: Record<string, React.ReactNode> = {
   "Real Estate": <Building2 className="size-5" />,
@@ -205,7 +272,7 @@ function YourProgressSection() {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-[11px] uppercase tracking-widest text-muted-foreground font-light">Your Progress</h2>
         <span className="text-[10px] font-mono text-muted-foreground">
-          {totalAdvances} stage advance{totalAdvances !== 1 ? "s" : ""} · {avgDays !== null ? `${avgDays}d avg` : ""}
+          {totalAdvances} status advance{totalAdvances !== 1 ? "s" : ""} · {avgDays !== null ? `${avgDays}d avg` : ""}
         </span>
       </div>
 
@@ -253,6 +320,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
   const { activeOrg } = useWorkspace();
   const orgFilter = activeOrg?.id ? { organizationId: activeOrg.id } : undefined;
   const [activeSector, setActiveSector] = useState<string | null>(null);
+  const [showPortfolioBreakdown, setShowPortfolioBreakdown] = useState(false);
 
   // -- Data queries (scoped by active org) ----------------------
   const venturesQ = trpc.ventures.list.useQuery(orgFilter);
@@ -341,7 +409,10 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
           {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         </p>
 
-        <div className="mt-6 flex items-end gap-8">
+        <button
+          onClick={() => setShowPortfolioBreakdown(true)}
+          className="mt-6 flex items-end gap-8 w-full text-left group cursor-pointer hover:opacity-90 transition-opacity"
+        >
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-light">Portfolio Value</p>
             <p className="text-2xl sm:text-3xl font-light text-foreground tabular-nums tracking-tight">
@@ -362,7 +433,8 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
               <span className="text-lg font-light text-emerald-400 tabular-nums">+18.4%</span>
             </div>
           </div>
-        </div>
+          <span className="text-[10px] text-muted-foreground/40 ml-auto group-hover:text-muted-foreground transition-colors">Tap for breakdown</span>
+        </button>
       </motion.div>
 
       {/* -- ATLAS Activity ------------------------------------------ */}
@@ -443,79 +515,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
       {/* -- Velocity Feed ------------------------------------------------- */}
       <VelocityFeed onNavigate={onNavigate} />
 
-      {/* -- Ventures with Sector Pills + Stage Bars (Section 9B) ---- */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-[11px] uppercase tracking-widest text-muted-foreground font-light">Your Ventures</h2>
-          <button
-            onClick={() => onNavigate("/ventures")}
-            className="text-[11px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-          >
-            View all <ArrowUpRight className="size-3" />
-          </button>
-        </div>
-
-        {/* Sector filter pills */}
-        <div className="mb-4">
-          <SectorPills
-            sectors={sectors}
-            active={activeSector}
-            onSelect={setActiveSector}
-          />
-        </div>
-
-        <div className="space-y-3">
-          {filteredVentures.slice(0, 6).map((v, i) => {
-            const tc = getThemeColor(v.sector);
-            return (
-              <motion.div
-                key={v.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 + i * 0.04, duration: 0.3 }}
-                onClick={() => onNavigate(`/ventures/${v.slug}`)}
-                className="client-card cursor-pointer group"
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className="size-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: `${tc.color}10` }}
-                  >
-                    <span style={{ color: tc.color }}>
-                      {THEME_ICONS[v.sector] || <Package className="size-5" />}
-                    </span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">{v.name}</h3>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{v.sector}{v.location && v.location !== "TBD" ? ` · ${v.location}` : ""}</p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className={cn(
-                      "text-[10px] font-medium px-2 py-1 rounded-full",
-                      v.status === "In progress" ? "bg-emerald-500/10 text-emerald-400" :
-                      v.status === "On-Hold" ? "bg-amber-500/10 text-amber-400" :
-                      v.status === "Completed" ? "bg-blue-500/10 text-blue-400" :
-                      "bg-secondary text-muted-foreground"
-                    )}>
-                      {v.status}
-                    </span>
-                    <ChevronRight className="size-4 text-muted-foreground/40" />
-                  </div>
-                </div>
-                {/* Stage Progress Bar */}
-                <StageProgressBar currentStage={v.stage || v.status} />
-              </motion.div>
-            );
-          })}
-
-          {filteredVentures.length === 0 && (
-            <div className="client-card text-center py-8">
-              <Layers3 className="size-6 text-muted-foreground/20 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground font-light">No ventures in this sector</p>
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Ventures section removed — available via dedicated Ventures tab */}
 
       {/* -- Distributions ------------------------------------------- */}
       <div>
@@ -624,6 +624,108 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
           )}
         </div>
       </div>
+
+      {/* -- Portfolio Breakdown Dialog -------------------------------- */}
+      <Dialog open={showPortfolioBreakdown} onOpenChange={setShowPortfolioBreakdown}>
+        <DialogContent className="sm:max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold text-foreground">
+              Portfolio Breakdown
+            </DialogTitle>
+          </DialogHeader>
+
+          {(() => {
+            // Build sector allocation from ventures
+            const sectorMap: Record<string, { count: number; value: number }> = {};
+            const portfolioVal = totalDistAmount * 8;
+            for (const v of allVentures) {
+              if (!sectorMap[v.sector]) sectorMap[v.sector] = { count: 0, value: 0 };
+              sectorMap[v.sector].count += 1;
+            }
+            // Distribute value proportionally by venture count
+            const totalVentures = allVentures.length || 1;
+            for (const [sector, data] of Object.entries(sectorMap)) {
+              data.value = (data.count / totalVentures) * portfolioVal;
+            }
+            const sectorEntries = Object.entries(sectorMap)
+              .sort((a, b) => b[1].value - a[1].value);
+
+            const pieSlices = sectorEntries.map(([sector, data]) => ({
+              label: sector,
+              value: data.value,
+              color: getSectorColor(sector),
+            }));
+
+            return (
+              <div className="space-y-6">
+                {/* Total value */}
+                <div className="text-center">
+                  <p className="text-3xl font-light text-foreground tabular-nums tracking-tight">
+                    {portfolioVal >= 1_000_000
+                      ? `$${(portfolioVal / 1_000_000).toFixed(2)}M`
+                      : portfolioVal >= 1_000
+                        ? `$${(portfolioVal / 1_000).toFixed(0)}K`
+                        : formatCurrency(portfolioVal)}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">Total Portfolio Value</p>
+                </div>
+
+                {/* Pie chart */}
+                <div className="flex justify-center">
+                  <div className="size-48">
+                    <PieChart slices={pieSlices} />
+                  </div>
+                </div>
+
+                {/* Legend / breakdown list */}
+                <div className="space-y-2">
+                  {sectorEntries.map(([sector, data]) => {
+                    const pct = portfolioVal > 0 ? ((data.value / portfolioVal) * 100).toFixed(1) : "0";
+                    return (
+                      <div key={sector} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="size-3 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: getSectorColor(sector) }}
+                          />
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{sector}</p>
+                            <p className="text-[11px] text-muted-foreground">
+                              {data.count} venture{data.count !== 1 ? "s" : ""}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-foreground tabular-nums">
+                            {data.value >= 1_000_000
+                              ? `$${(data.value / 1_000_000).toFixed(2)}M`
+                              : formatCurrency(data.value)}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground tabular-nums">{pct}%</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Distribution summary */}
+                <div className="bg-secondary/30 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-muted-foreground">Total Distributed</span>
+                    <span className="text-sm font-medium text-emerald-400 tabular-nums">{formatCurrency(paidDistAmount)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Upcoming</span>
+                    <span className="text-sm font-medium text-amber-400 tabular-nums">
+                      {formatCurrency(scheduledDists.reduce((s, d) => s + (d.amount || 0), 0))}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

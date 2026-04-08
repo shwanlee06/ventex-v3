@@ -423,7 +423,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
             value: kpis.totalOverdue,
             sub: kpis.totalOverdue > 0 ? "require action" : "none pending",
             icon: <AlertTriangle className="size-4" />,
-            color: kpis.totalOverdue > 0 ? "#EF4444" : "#4ADE80",
+            color: "#EF4444",
           },
         ].map((m, i) => (
           <motion.div

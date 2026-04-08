@@ -61,11 +61,13 @@ describe("Client portal removals", () => {
     expect(content).toContain('!== "TBD"');
   });
 
-  it("ClientDashboard already hides TBD location", () => {
+  it("ClientDashboard no longer shows venture locations (Your Ventures removed)", () => {
     const content = readFileSync(
       join(__dirname, "../client/src/components/ClientDashboard.tsx"),
       "utf-8"
     );
-    expect(content).toContain('!== "TBD"');
+    // Your Ventures section was removed from dashboard (redundant with Ventures tab)
+    // So there's no location display to filter TBD from
+    expect(content).not.toContain('Your Ventures');
   });
 });

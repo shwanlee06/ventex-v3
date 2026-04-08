@@ -280,7 +280,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-[420px] sm:max-w-[420px] bg-card border-border p-0 flex flex-col">
+        <SheetContent side="right" className="w-[420px] sm:max-w-[420px] !bg-background border-border p-0 flex flex-col">
           {/* Header */}
           <SheetHeader className="px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
             <div className="flex items-center justify-between">

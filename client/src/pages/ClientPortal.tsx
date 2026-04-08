@@ -471,7 +471,7 @@ export default function ClientPortal() {
                             ) : (
                               ACTION_FLOW_ICONS["advance_stage"]
                             )}
-                            {isBusy ? "Advancing..." : "Advance Stage"}
+                            {isBusy ? "Advancing..." : "Advance Status"}
                           </Button>
                         )}
 
@@ -939,7 +939,7 @@ export default function ClientPortal() {
                     <div>
                       <h3 className="text-sm font-medium text-foreground">{f.ventureName}</h3>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Projected: <span className="font-mono">{f.projectedDays}</span> days to next stage
+                        Projected: <span className="font-mono">{f.projectedDays}</span> days to next status
                       </p>
                     </div>
                     <div className={cn(
