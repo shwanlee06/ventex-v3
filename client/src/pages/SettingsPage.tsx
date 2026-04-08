@@ -22,8 +22,11 @@ import {
   Shield, Lock, Eye, Server, Database, FileText, AlertTriangle,
   CheckCircle2, Clock, Globe, Zap, Key, Users, Activity,
   Bell, Download, Trash2, UserCheck, Monitor, Wifi, WifiOff,
-  Mail, MessageSquare, RefreshCw, Loader2, Save,
+  Mail, MessageSquare, RefreshCw, Loader2, Save, Smartphone, Copy, AlertCircle,
 } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { toast } from "sonner";
@@ -106,6 +109,79 @@ export default function SettingsConfigPage() {
       utils.settings.getProfile.invalidate();
     },
   });
+
+  // ── MFA state & mutations ──────────────────────────────────────────
+  const { data: mfaStatus, refetch: refetchMfa } = trpc.settings.getMfaStatus.useQuery(undefined, { enabled: !!authUser });
+  const mfaSetup = trpc.settings.mfaSetup.useMutation();
+  const mfaVerify = trpc.settings.mfaVerify.useMutation({
+    onSuccess: () => { refetchMfa(); utils.settings.getProfile.invalidate(); },
+  });
+  const mfaDisable = trpc.settings.mfaDisable.useMutation({
+    onSuccess: () => { refetchMfa(); utils.settings.getProfile.invalidate(); },
+  });
+  const mfaRegenCodes = trpc.settings.mfaRegenerateBackupCodes.useMutation();
+
+  const [mfaStep, setMfaStep] = useState<"idle" | "setup" | "verify" | "backup" | "disable" | "regen">("idle");
+  const [mfaQr, setMfaQr] = useState<string | null>(null);
+  const [mfaSecretKey, setMfaSecretKey] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
+  const [mfaBackupCodes, setMfaBackupCodes] = useState<string[]>([]);
+  const [mfaError, setMfaError] = useState<string | null>(null);
+
+  const handleMfaSetup = useCallback(async () => {
+    setMfaError(null);
+    try {
+      const result = await mfaSetup.mutateAsync();
+      setMfaQr(result.qrCodeDataUrl);
+      setMfaSecretKey(result.secret);
+      setMfaStep("setup");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to start MFA setup");
+    }
+  }, [mfaSetup]);
+
+  const handleMfaVerify = useCallback(async () => {
+    setMfaError(null);
+    try {
+      const result = await mfaVerify.mutateAsync({ code: mfaCode });
+      setMfaBackupCodes(result.backupCodes);
+      setMfaStep("backup");
+      setMfaCode("");
+      toast.success("MFA enabled successfully");
+    } catch (e: any) {
+      setMfaError(e.message || "Invalid code");
+    }
+  }, [mfaCode, mfaVerify]);
+
+  const handleMfaDisable = useCallback(async () => {
+    setMfaError(null);
+    try {
+      await mfaDisable.mutateAsync({ code: mfaCode });
+      setMfaStep("idle");
+      setMfaCode("");
+      toast.success("MFA disabled");
+    } catch (e: any) {
+      setMfaError(e.message || "Invalid code");
+    }
+  }, [mfaCode, mfaDisable]);
+
+  const handleMfaRegenCodes = useCallback(async () => {
+    setMfaError(null);
+    try {
+      const result = await mfaRegenCodes.mutateAsync({ code: mfaCode });
+      setMfaBackupCodes(result.backupCodes);
+      setMfaStep("backup");
+      setMfaCode("");
+      toast.success("Backup codes regenerated");
+    } catch (e: any) {
+      setMfaError(e.message || "Invalid code");
+    }
+  }, [mfaCode, mfaRegenCodes]);
+
+  const copyBackupCodes = useCallback(() => {
+    navigator.clipboard.writeText(mfaBackupCodes.join("\n"));
+    toast.success("Backup codes copied to clipboard");
+  }, [mfaBackupCodes]);
 
   // ── Handlers ────────────────────────────────────────────────────────
   const handleDisplayToggle = useCallback(async (field: "compactView" | "autoRefresh", value: boolean) => {
@@ -376,6 +452,240 @@ export default function SettingsConfigPage() {
                   </div>
                 </Card>
               </motion.div>
+
+              {/* ═══ MFA / Two-Factor Authentication ═══ */}
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.075 }}>
+                <Card className="p-4 sm:p-6 bg-card border-border">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <Smartphone className="size-4 text-primary" />
+                      Two-Factor Authentication (TOTP)
+                    </h3>
+                    {mfaStatus?.mfaEnabled ? (
+                      <Badge variant="outline" className="text-[10px] font-mono text-green-400 border-green-500/30">ENABLED</Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-[10px] font-mono text-amber-400 border-amber-500/30">DISABLED</Badge>
+                    )}
+                  </div>
+
+                  {mfaStatus?.mfaEnabled ? (
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-lg bg-green-500/5 border border-green-500/20">
+                        <div className="flex items-center gap-2 mb-1">
+                          <CheckCircle2 className="size-4 text-green-400" />
+                          <span className="text-xs font-semibold text-green-400">MFA ACTIVE</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">
+                          Enabled {mfaStatus.mfaVerifiedAt ? new Date(mfaStatus.mfaVerifiedAt).toLocaleDateString() : "recently"}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs h-8"
+                          onClick={() => { setMfaStep("regen"); setMfaCode(""); setMfaError(null); }}
+                        >
+                          <Key className="size-3 mr-1" /> Regenerate Backup Codes
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs h-8 text-red-400 hover:text-red-400"
+                          onClick={() => { setMfaStep("disable"); setMfaCode(""); setMfaError(null); }}
+                        >
+                          <Lock className="size-3 mr-1" /> Disable MFA
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                        <div className="flex items-center gap-2 mb-1">
+                          <AlertCircle className="size-4 text-amber-400" />
+                          <span className="text-xs font-semibold text-amber-400">NOT CONFIGURED</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">
+                          Add an extra layer of security with a TOTP authenticator app (Google Authenticator, Authy, 1Password).
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        className="text-xs h-8"
+                        onClick={handleMfaSetup}
+                        disabled={mfaSetup.isPending}
+                      >
+                        {mfaSetup.isPending ? <Loader2 className="size-3 mr-1 animate-spin" /> : <Smartphone className="size-3 mr-1" />}
+                        Enable Two-Factor Authentication
+                      </Button>
+                    </div>
+                  )}
+                </Card>
+              </motion.div>
+
+              {/* MFA Setup Dialog */}
+              <Dialog open={mfaStep === "setup"} onOpenChange={(open) => { if (!open) setMfaStep("idle"); }}>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-sm flex items-center gap-2">
+                      <Smartphone className="size-4 text-primary" /> Set Up Two-Factor Authentication
+                    </DialogTitle>
+                    <DialogDescription className="text-xs">
+                      Scan this QR code with your authenticator app, then enter the 6-digit code to verify.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    {mfaQr && (
+                      <div className="flex justify-center p-4 bg-white rounded-lg">
+                        <img src={mfaQr} alt="TOTP QR Code" className="w-48 h-48" />
+                      </div>
+                    )}
+                    {mfaSecretKey && (
+                      <div className="p-3 rounded-lg bg-secondary/20 border border-border">
+                        <p className="text-[10px] text-muted-foreground mb-1">Manual entry key:</p>
+                        <code className="text-xs font-mono text-foreground break-all select-all">{mfaSecretKey}</code>
+                      </div>
+                    )}
+                    <div>
+                      <Label className="text-xs mb-1.5 block">Verification Code</Label>
+                      <Input
+                        placeholder="000000"
+                        value={mfaCode}
+                        onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                        maxLength={6}
+                        className="font-mono text-center text-lg tracking-[0.3em]"
+                        autoFocus
+                      />
+                      {mfaError && <p className="text-xs text-red-400 mt-1">{mfaError}</p>}
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" size="sm" onClick={() => setMfaStep("idle")}>Cancel</Button>
+                    <Button
+                      size="sm"
+                      onClick={handleMfaVerify}
+                      disabled={mfaCode.length !== 6 || mfaVerify.isPending}
+                    >
+                      {mfaVerify.isPending ? <Loader2 className="size-3 mr-1 animate-spin" /> : <CheckCircle2 className="size-3 mr-1" />}
+                      Verify & Enable
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* Backup Codes Dialog */}
+              <Dialog open={mfaStep === "backup"} onOpenChange={(open) => { if (!open) setMfaStep("idle"); }}>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-sm flex items-center gap-2">
+                      <Key className="size-4 text-primary" /> Backup Recovery Codes
+                    </DialogTitle>
+                    <DialogDescription className="text-xs">
+                      Save these codes in a secure location. Each code can only be used once.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg bg-secondary/20 border border-border">
+                      <div className="grid grid-cols-2 gap-2">
+                        {mfaBackupCodes.map((code, i) => (
+                          <code key={i} className="text-xs font-mono text-foreground p-1.5 bg-secondary/30 rounded text-center">
+                            {code}
+                          </code>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="size-4 text-amber-400 shrink-0" />
+                        <p className="text-[10px] text-amber-400">
+                          These codes will not be shown again. Store them securely.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" size="sm" onClick={copyBackupCodes}>
+                      <Copy className="size-3 mr-1" /> Copy All
+                    </Button>
+                    <Button size="sm" onClick={() => setMfaStep("idle")}>
+                      I've Saved These Codes
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* Disable MFA Dialog */}
+              <Dialog open={mfaStep === "disable"} onOpenChange={(open) => { if (!open) setMfaStep("idle"); }}>
+                <DialogContent className="max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle className="text-sm flex items-center gap-2 text-red-400">
+                      <AlertTriangle className="size-4" /> Disable Two-Factor Authentication
+                    </DialogTitle>
+                    <DialogDescription className="text-xs">
+                      Enter your current TOTP code to confirm disabling MFA.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div>
+                    <Input
+                      placeholder="000000"
+                      value={mfaCode}
+                      onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      maxLength={6}
+                      className="font-mono text-center text-lg tracking-[0.3em]"
+                      autoFocus
+                    />
+                    {mfaError && <p className="text-xs text-red-400 mt-1">{mfaError}</p>}
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" size="sm" onClick={() => setMfaStep("idle")}>Cancel</Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleMfaDisable}
+                      disabled={mfaCode.length !== 6 || mfaDisable.isPending}
+                    >
+                      {mfaDisable.isPending ? <Loader2 className="size-3 mr-1 animate-spin" /> : null}
+                      Disable MFA
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* Regenerate Backup Codes Dialog */}
+              <Dialog open={mfaStep === "regen"} onOpenChange={(open) => { if (!open) setMfaStep("idle"); }}>
+                <DialogContent className="max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle className="text-sm flex items-center gap-2">
+                      <Key className="size-4 text-primary" /> Regenerate Backup Codes
+                    </DialogTitle>
+                    <DialogDescription className="text-xs">
+                      Enter your current TOTP code. This will invalidate all existing backup codes.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div>
+                    <Input
+                      placeholder="000000"
+                      value={mfaCode}
+                      onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      maxLength={6}
+                      className="font-mono text-center text-lg tracking-[0.3em]"
+                      autoFocus
+                    />
+                    {mfaError && <p className="text-xs text-red-400 mt-1">{mfaError}</p>}
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" size="sm" onClick={() => setMfaStep("idle")}>Cancel</Button>
+                    <Button
+                      size="sm"
+                      onClick={handleMfaRegenCodes}
+                      disabled={mfaCode.length !== 6 || mfaRegenCodes.isPending}
+                    >
+                      {mfaRegenCodes.isPending ? <Loader2 className="size-3 mr-1 animate-spin" /> : null}
+                      Regenerate
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
               {/* Active Sessions — Real DB data */}
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>

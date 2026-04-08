@@ -25,6 +25,8 @@ import { sendStageAdvancedEmail } from "../emailService";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { forecastVentures as getVentureForecasts, computePortfolioHealth as getPortfolioHealth } from "../intelligence/predictiveEngine";
 import { getActiveSignals as getLatestMarketSignals } from "../intelligence/marketIntelligence";
+import { invokeLLM, type Message as LLMMessage } from "../_core/llm";
+import { enforceRateLimit } from "../security/rateLimit";
 
 // ── Stage name mapping: internal → client-friendly ──────────────────────
 const STAGE_DISPLAY: Record<string, string> = {
@@ -999,5 +1001,120 @@ export const portalRouter = {
           ? `Task completed! Your venture has been advanced to ${clientFriendlyStage(newStage!)}.`
           : "Task completed successfully.",
       };
+    }),
+
+  // ── Client AI Assistant — scoped to their org only ──────────────────────
+  aiChat: protectedProcedure
+    .input(z.object({
+      orgSlug: z.string(),
+      messages: z.array(z.object({
+        role: z.enum(["user", "assistant"]),
+        content: z.string(),
+      })),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      // Rate limit: 20 portal AI calls per 10 minutes per user
+      enforceRateLimit("portalAi", ctx.user.id);
+
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      // Resolve org — enforce client can only query their own org
+      const [org] = await db.select().from(organizations).where(eq(organizations.slug, input.orgSlug)).limit(1);
+      if (!org) throw new TRPCError({ code: "NOT_FOUND", message: "Organization not found" });
+
+      // Access check: must be ATLAS team OR belong to this org
+      const atlas = isAtlasTeam(ctx.user);
+      if (!atlas && ctx.user.organizationId !== org.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+
+      // Build org-scoped context — ONLY this client's data
+      const accessRows = await db.select({ ventureId: orgVentureAccess.ventureId })
+        .from(orgVentureAccess)
+        .where(eq(orgVentureAccess.organizationId, org.id));
+      const ventureIds = accessRows.map(r => r.ventureId);
+
+      let orgVentures: any[] = [];
+      let orgTasks: any[] = [];
+      let orgDists: any[] = [];
+
+      if (ventureIds.length > 0) {
+        orgVentures = await db.select().from(ventures).where(inArray(ventures.id, ventureIds));
+        orgTasks = await db.select().from(tasks).where(inArray(tasks.ventureId, ventureIds));
+        orgDists = await db.select().from(distributions).where(eq(distributions.organizationId, org.id));
+      }
+
+      const overdueTasks = orgTasks.filter((t: any) => {
+        if (!t.dueDate || t.status === "complete") return false;
+        return new Date(t.dueDate) < new Date();
+      });
+      const activeTasks = orgTasks.filter((t: any) => t.status !== "complete");
+      const completedTasks = orgTasks.filter((t: any) => t.status === "complete");
+
+      const scopedContext = `
+=== YOUR PORTFOLIO DATA ===
+Organization: ${org.name}
+
+VENTURES (${orgVentures.length}):
+${orgVentures.map((v: any) => `- ${v.name} | Sector: ${v.sector} | Location: ${v.location} | Stage: ${clientFriendlyStage(v.stage)} | Health: ${v.healthScore || "N/A"}/100`).join("\n")}
+
+TASKS (${orgTasks.length} total, ${activeTasks.length} active, ${completedTasks.length} completed, ${overdueTasks.length} overdue):
+${orgTasks.slice(0, 20).map((t: any) => `- [${t.status}] ${t.title}${t.dueDate ? ` (due: ${t.dueDate})` : ""}${t.priority ? ` [${t.priority}]` : ""}`).join("\n")}
+
+DISTRIBUTIONS (${orgDists.length} total, ${orgDists.filter((d: any) => d.status === "Paid").length} paid):
+${orgDists.slice(0, 15).map((d: any) => `- ${d.label || "Distribution"} | ${d.status} | $${Number(d.amount || 0).toLocaleString()}`).join("\n")}
+`;
+
+      const systemPrompt = `You are the ATLAS Portfolio Assistant for ${org.name}. You help this client understand their venture portfolio, track progress, and make informed decisions.
+
+You have access ONLY to this client's data — never reference other clients or internal ATLAS operations.
+
+Your capabilities:
+1. Answer questions about their ventures, tasks, and distributions
+2. Explain venture stages and what comes next
+3. Summarize portfolio health and highlight areas needing attention
+4. Help prioritize overdue tasks
+5. Explain distribution schedules and payment status
+
+Communication style:
+- Professional, clear, and client-friendly
+- Use plain English — no internal jargon or operator language
+- Use markdown formatting for structured responses
+- Reference specific ventures and tasks by name
+- Be encouraging about progress while honest about areas needing attention
+
+Important: Only use the portfolio data provided below. Never make up data or reference information outside this client's scope.
+${scopedContext}`;
+
+      const llmMessages: LLMMessage[] = [
+        { role: "system", content: systemPrompt },
+        ...input.messages.map((m) => ({
+          role: m.role as "user" | "assistant",
+          content: m.content,
+        })),
+      ];
+
+      try {
+        const result = await invokeLLM({
+          messages: llmMessages,
+          maxTokens: 2048,
+        });
+        const content = result.choices?.[0]?.message?.content;
+        const textContent =
+          typeof content === "string"
+            ? content
+            : Array.isArray(content)
+              ? content.filter((c: any) => c.type === "text").map((c: any) => c.text).join("")
+              : "I apologize, but I was unable to generate a response. Please try again.";
+
+        return { content: textContent };
+      } catch (error: unknown) {
+        console.error("[Portal AI] Error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "AI response failed. Please try again.",
+        });
+      }
     }),
 };

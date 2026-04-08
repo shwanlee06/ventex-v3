@@ -16,6 +16,7 @@ import {
 } from "../../drizzle/schema";
 import { eq, desc, and, sql } from "drizzle-orm";
 import { logAudit } from "../security/rbac";
+import { enforceRateLimit } from "../security/rateLimit";
 import crypto from "crypto";
 
 // ── Helpers ──────────────────────────────────────────────────────────────
@@ -243,6 +244,9 @@ export const accessRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Rate limit: 20 invitations per hour per user
+      enforceRateLimit("invitation", ctx.user.id);
+
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
@@ -546,6 +550,9 @@ export const accessRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Rate limit: 5 API key creations per hour per user
+      enforceRateLimit("apiKeyCreate", ctx.user.id);
+
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 

@@ -15,6 +15,11 @@ export const users = mysqlTable("users", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  // MFA / TOTP
+  mfaSecret: varchar("mfaSecret", { length: 512 }),  // encrypted TOTP secret
+  mfaEnabled: boolean("mfaEnabled").default(false).notNull(),
+  mfaVerifiedAt: timestamp("mfaVerifiedAt"),
+  mfaBackupCodes: json("mfaBackupCodes").$type<string[]>(),  // hashed backup codes
 });
 
 export type User = typeof users.$inferSelect;

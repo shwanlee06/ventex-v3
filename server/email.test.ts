@@ -1,13 +1,14 @@
 import { describe, it, expect, vi } from "vitest";
 
-// Mock Resend before importing the router
-vi.mock("resend", () => ({
-  Resend: vi.fn().mockImplementation(() => ({
-    emails: {
+// Mock Resend before importing the router — use class-style mock for resend v6
+vi.mock("resend", () => {
+  class MockResend {
+    emails = {
       send: vi.fn().mockResolvedValue({ data: { id: "test-id-123" }, error: null }),
-    },
-  })),
-}));
+    };
+  }
+  return { Resend: MockResend, default: { Resend: MockResend } };
+});
 
 describe("email router", () => {
   it("email router module exports emailRouter", async () => {

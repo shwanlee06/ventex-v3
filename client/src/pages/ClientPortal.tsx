@@ -54,8 +54,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { toast } from "sonner";
+import { MessageSquare, X as XIcon, Sparkles } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Streamdown } from "streamdown";
 
 // ── Sector icons ──────────────────────────────────────────────────────
 const SECTOR_ICONS: Record<string, React.ReactNode> = {
@@ -128,6 +131,37 @@ export default function ClientPortal() {
   } | null>(null);
   const [taskDrawer, setTaskDrawer] = useState<{ ventureId: number; ventureName: string } | null>(null);
   const [completingTaskIds, setCompletingTaskIds] = useState<Set<number>>(new Set());
+
+  // ── AI Chat state ──────────────────────────────────────────────────
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+  const aiChatMutation = trpc.portal.aiChat.useMutation();
+
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [chatMessages, chatLoading]);
+
+  const handleSendChat = useCallback(async () => {
+    const msg = chatInput.trim();
+    if (!msg || chatLoading) return;
+    const newMessages = [...chatMessages, { role: "user" as const, content: msg }];
+    setChatMessages(newMessages);
+    setChatInput("");
+    setChatLoading(true);
+    try {
+      const result = await aiChatMutation.mutateAsync({ orgSlug, messages: newMessages });
+      setChatMessages(prev => [...prev, { role: "assistant", content: result.content }]);
+    } catch (e: any) {
+      setChatMessages(prev => [...prev, { role: "assistant", content: "I apologize, but I encountered an error. Please try again." }]);
+    } finally {
+      setChatLoading(false);
+    }
+  }, [chatInput, chatLoading, chatMessages, orgSlug, aiChatMutation]);
 
   const { data, isLoading, error } = trpc.portal.getData.useQuery(
     { orgSlug },
@@ -1194,6 +1228,112 @@ export default function ClientPortal() {
           </DialogContent>
         )}
       </Dialog>
+
+      {/* ── AI Portfolio Assistant ─────────────────────────────────── */}
+      <AnimatePresence>
+        {chatOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-20 right-4 md:right-8 w-[380px] max-w-[calc(100vw-2rem)] bg-card border border-border rounded-xl shadow-2xl flex flex-col z-50"
+            style={{ maxHeight: "min(520px, calc(100vh - 8rem))" }}
+          >
+            {/* Chat header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <Sparkles className="size-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">Portfolio Assistant</span>
+              </div>
+              <button onClick={() => setChatOpen(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+                <XIcon className="size-4" />
+              </button>
+            </div>
+
+            {/* Messages */}
+            <div ref={chatScrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3" style={{ minHeight: 200 }}>
+              {chatMessages.length === 0 && (
+                <div className="text-center py-8">
+                  <Sparkles className="size-8 text-primary/30 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">Ask me anything about your portfolio</p>
+                  <div className="mt-4 space-y-2">
+                    {["What's the status of my ventures?", "Which tasks are overdue?", "Summarize my distributions"].map(q => (
+                      <button
+                        key={q}
+                        onClick={() => { setChatInput(q); }}
+                        className="block w-full text-left text-xs text-muted-foreground hover:text-foreground bg-secondary/30 hover:bg-secondary/50 rounded-lg px-3 py-2 transition-colors"
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {chatMessages.map((m, i) => (
+                <div key={i} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
+                  <div className={cn(
+                    "max-w-[85%] rounded-lg px-3 py-2 text-sm",
+                    m.role === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary/50 text-foreground"
+                  )}>
+                    {m.role === "assistant" ? <Streamdown>{m.content}</Streamdown> : m.content}
+                  </div>
+                </div>
+              ))}
+              {chatLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-secondary/50 rounded-lg px-3 py-2">
+                    <div className="flex items-center gap-1.5">
+                      <div className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <div className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <div className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Input */}
+            <div className="border-t border-border px-3 py-2">
+              <div className="flex items-end gap-2">
+                <Textarea
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendChat(); } }}
+                  placeholder="Ask about your portfolio..."
+                  className="min-h-[36px] max-h-[100px] resize-none text-sm bg-transparent border-0 focus-visible:ring-0 p-1"
+                  rows={1}
+                />
+                <Button
+                  size="sm"
+                  onClick={handleSendChat}
+                  disabled={!chatInput.trim() || chatLoading}
+                  className="shrink-0 h-8 w-8 p-0"
+                >
+                  <Send className="size-3.5" />
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating chat button */}
+      <motion.button
+        onClick={() => setChatOpen(prev => !prev)}
+        className={cn(
+          "fixed bottom-4 right-4 md:right-8 z-50 flex items-center justify-center size-12 rounded-full shadow-lg transition-colors",
+          chatOpen
+            ? "bg-secondary text-foreground"
+            : "bg-primary text-primary-foreground hover:bg-primary/90"
+        )}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        {chatOpen ? <XIcon className="size-5" /> : <MessageSquare className="size-5" />}
+      </motion.button>
     </div>
   );
 }

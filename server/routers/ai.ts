@@ -5,7 +5,7 @@
 import { z } from "zod";
 import { protectedProcedure, adminProcedure, router } from "../_core/trpc";
 import { invokeLLM, type Message } from "../_core/llm";
-import { checkRateLimit } from "../rateLimiter";
+import { enforceRateLimit } from "../security/rateLimit";
 import { getDb } from "../db";
 import {
   ventures, tasks, spvs, distributions, teamMembers,
@@ -131,11 +131,8 @@ export const aiRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      // Rate limit: max 10 AI calls per minute per user
-      const rl = checkRateLimit(`ai:${ctx.user.id}`, 10, 60_000);
-      if (!rl.allowed) {
-        throw new Error(`Rate limit exceeded. Please wait ${Math.ceil(rl.retryAfterMs / 1000)}s before trying again.`);
-      }
+      // Rate limit: 30 AI calls per 10 minutes per user
+      enforceRateLimit("aiChat", ctx.user.id);
 
       // Build live context from database
       const liveContext = await buildLiveContext();

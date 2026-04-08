@@ -10,6 +10,7 @@ import { resolveOrgId } from "../security/orgScope";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { storagePut } from "../storage";
 import { sendInvitationEmail, buildInviteLink } from "../invitationEmail";
+import { enforceRateLimit } from "../security/rateLimit";
 
 /**
  * Calculate live status from lastSeenAt timestamp and adminStatus.
@@ -528,7 +529,10 @@ export const teamRouter = router({
     base64: z.string(),
     mimeType: z.string().default("image/png"),
     filename: z.string().default("avatar.png"),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    // Rate limit: 30 uploads per 10 minutes per user
+    enforceRateLimit("fileUpload", ctx.user!.id);
+
     const db = await getDb();
     if (!db) throw new Error("Database not available");
 

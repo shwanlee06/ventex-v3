@@ -9,6 +9,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { aiStreamRouter } from "../routes/aiStream";
 import { startAgentScheduler, getSchedulerStatus, triggerManualCycle } from "../agentScheduler";
+import { runDataRetentionPurge, getRetentionStats } from "../security/dataRetention";
 import airtableSyncRouter from "../routes/airtableSync";
 import inviteValidationRouter from "../routes/inviteValidation";
 
@@ -102,6 +103,16 @@ async function startServer() {
     console.log(`Server running on http://localhost:${port}/`);
     // Start the agent scheduler after server is ready
     startAgentScheduler();
+
+    // Data retention purge — runs daily at 03:00 UTC
+    const RETENTION_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
+    setTimeout(() => {
+      console.log("[DataRetention] Running initial purge (2min after startup)");
+      runDataRetentionPurge().catch(err => console.error("[DataRetention] Purge error:", err));
+    }, 120_000);
+    setInterval(() => {
+      runDataRetentionPurge().catch(err => console.error("[DataRetention] Purge error:", err));
+    }, RETENTION_INTERVAL_MS);
   });
 }
 

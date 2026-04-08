@@ -8,6 +8,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { isAtlasTeam } from "../security/rbac";
+import { enforceRateLimit } from "../security/rateLimit";
 import {
   sendTaskFollowUp,
   sendOverdueAutoEmail,
@@ -113,6 +114,9 @@ export const emailRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Rate limit: 10 emails per hour per user
+      enforceRateLimit("emailSend", ctx.user!.id);
+
       // Only ATLAS team can send emails
       if (!isAtlasTeam(ctx.user)) {
         return { success: false, error: "Unauthorized — ATLAS team only" };

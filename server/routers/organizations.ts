@@ -664,6 +664,42 @@ export const organizationsRouter = router({
       return config || null;
     }),
 
+  // ── Update agent config for an organization ─────────────────
+  updateAgentConfig: adminProcedure
+    .input(z.object({
+      organizationId: z.number(),
+      velocityAgentEnabled: z.boolean().optional(),
+      complianceAgentEnabled: z.boolean().optional(),
+      dealFlowAgentEnabled: z.boolean().optional(),
+      orchestratorEnabled: z.boolean().optional(),
+      overdueDaysThreshold: z.number().min(1).max(90).optional(),
+      distributionWarningDays: z.number().min(1).max(90).optional(),
+      healthScoreAlertThreshold: z.number().min(0).max(100).optional(),
+      autoAdvanceEnabled: z.boolean().optional(),
+      autoAdvanceSectors: z.array(z.string()).optional(),
+      pollingIntervalMinutes: z.number().min(5).max(1440).optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database unavailable");
+
+      const { organizationId, ...updates } = input;
+      const [existing] = await db.select().from(clientAgentConfig)
+        .where(eq(clientAgentConfig.organizationId, organizationId)).limit(1);
+
+      if (existing) {
+        await db.update(clientAgentConfig)
+          .set(updates)
+          .where(eq(clientAgentConfig.organizationId, organizationId));
+      } else {
+        await db.insert(clientAgentConfig).values({ organizationId, ...updates });
+      }
+
+      const [updated] = await db.select().from(clientAgentConfig)
+        .where(eq(clientAgentConfig.organizationId, organizationId)).limit(1);
+      return updated;
+    }),
+
   // ── Onboarding Complete — unified mutation ──────────────────────────
   // Creates org + ventures + invitations + agent config in one call
   onboardingComplete: adminProcedure

@@ -183,6 +183,13 @@
       "when": 1775003161471,
       "tag": "0025_aromatic_kid_colt",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "5",
+      "when": 1775651621768,
+      "tag": "0026_lush_lenny_balinger",
+      "breakpoints": true
     }
   ]
 }

@@ -21,6 +21,7 @@ import { invokeLLM } from "../_core/llm";
 import { storagePut } from "../storage";
 import { resolveOrgId } from "../security/orgScope";
 import { onBlueprintGenerated } from "../intelligence/realtimeTriggers";
+import { enforceRateLimit } from "../security/rateLimit";
 
 // ── LLM extraction prompt ────────────────────────────────────────────────
 const EXTRACTION_SYSTEM_PROMPT = `You are an expert at analyzing business documents and extracting structured process blueprints for venture/investment management.
@@ -191,6 +192,9 @@ export const blueprintsRouter = router({
       organizationId: z.number(),
     }))
     .mutation(async ({ input, ctx }) => {
+      // Rate limit: 30 uploads per 10 minutes per user
+      enforceRateLimit("fileUpload", ctx.user!.id);
+
       // Cross-tenant isolation
       const validatedOrgId = resolveOrgId(ctx.user, input.organizationId);
       if (!validatedOrgId) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });

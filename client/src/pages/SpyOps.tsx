@@ -355,6 +355,11 @@ export default function SpyOps() {
   const [, navigate] = useLocation();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
 
+  // SEO: Set document title for the landing page
+  useEffect(() => {
+    document.title = "ATLAS \u2014 Venture Intelligence Operations Platform";
+  }, []);
+
   /* ─── 4-phase flow: cipher → login → welcome → transition ─── */
   type FlowPhase = "cipher" | "login" | "welcome" | "transition" | "page";
   const [flowPhase, setFlowPhase] = useState<FlowPhase>("cipher");

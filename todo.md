@@ -1903,3 +1903,23 @@
 - [x] Verified: access management uses adminProcedure throughout
 - [x] Verified: agent routes use adminProcedure throughout
 - [x] Verified: settings routes are user-scoped via ctx.user.id
+
+### True Velocity — The Missing 30%
+- [x] Email notifications via Resend — already built and wired into agent runs (overdue auto-email, ready-to-advance, stage-advanced, distribution notice, client nudge, task follow-up). Resend API key configured.
+- [x] Client-facing AI assistant — scoped to their org only, accessible from the client portal. Floating chat widget with suggested questions, rate limited.
+- [x] Auto-advance with approval gates — backend already built (clientAgentConfig table, velocity agent auto-advance logic). Added updateAgentConfig mutation + full Agent Configuration UI in ClientSettings (toggle agents, auto-advance per sector, thresholds, polling interval)
+
+### SOC 2 Compliance — The Missing 40%
+- [x] MFA/TOTP for admin/owner accounts — TOTP-based 2FA with QR code setup, encrypted secrets (AES-256-GCM), 10 backup codes (SHA-256 hashed), enable/disable/regenerate flows, full UI in Settings > Security tab, 6 vitest tests passing
+- [x] Rate limiting on all sensitive endpoints — enforceRateLimit() applied to: invitations (20/hr), API key creation (5/hr), file uploads (30/10min), MFA verify (5/5min), AI chat (30/10min), portal AI (20/10min), email send (10/hr), blueprint upload (30/10min). 7 vitest tests passing. Old rateLimiter.ts migrated to new security/rateLimit.ts
+- [x] Patch dependency vulnerabilities — reduced from 49 (1 critical, 23 high, 24 moderate, 1 low) to 3 (2 high, 1 moderate). Remaining 3 are deep transitive deps (xlsx no patch available, esbuild in drizzle-kit). Critical jspdf fixed, express/qs/path-to-regexp fixed, vite/rollup/tar/picomatch fixed, recharts/lodash/streamdown/vitest updated
+- [x] Data retention policy with automated purging — audit logs (365d), activity logs (180d), expired sessions (30d), agent events (180d read only), notifications (90d read only). Automated daily purge job, admin-only manual trigger via tRPC, retention stats endpoint. 4 vitest tests passing
+- [x] Privacy policy page (/privacy) — public route, 11 sections covering data collection, retention, security, sharing, rights, cookies, international transfers
+- [x] Terms of service page (/terms) — public route, 14 sections covering acceptable use, data ownership, AI content, liability, indemnification, termination
+- [x] Generate six SOC 2 policy documents in docs/soc2-policies/: 01-Information Security (ISP-001), 02-Incident Response (IRP-002), 03-Data Retention (DRP-003), 04-Acceptable Use (AUP-004), 05-Vendor Management (VMP-005), 06-Change Management (CMP-006). All reference actual ATLAS controls, tables, and configurations
+
+### SEO Fixes — Landing Page
+- [x] Fix page title — now "ATLAS — Venture Intelligence Operations Platform" (49 chars)
+- [x] Add H1 heading to landing page — already exists: "VENTURE INTELLIGENCE OPERATIONS"
+- [x] Add H2 headings to landing page sections — already exists: "A STRUCTURED AND PROVEN METHOD_"
+- [x] Add meta keywords and description to index.html

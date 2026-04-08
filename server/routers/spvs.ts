@@ -7,6 +7,7 @@ import { nanoid } from "nanoid";
 import { storagePut } from "../storage";
 import { isAtlasTeam, getOrgSpvIds, resolveSpvScope, logAudit } from "../security/rbac";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
+import { enforceRateLimit } from "../security/rateLimit";
 
 function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -245,6 +246,9 @@ export const spvsRouter = router({
     fileData: z.string(),
     folderId: z.number().optional(),
   })).mutation(async ({ input, ctx }) => {
+    // Rate limit: 30 uploads per 10 minutes per user
+    enforceRateLimit("fileUpload", ctx.user!.id);
+
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const buffer = Buffer.from(input.fileData, "base64");

@@ -9,6 +9,7 @@ import { nanoid } from "nanoid";
 import { isAtlasTeam, getOrgVentureIds, resolveVentureScope, logAudit } from "../security/rbac";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { onStageAdvanced } from "../intelligence/realtimeTriggers";
+import { enforceRateLimit } from "../security/rateLimit";
 
 function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -330,6 +331,9 @@ export const venturesRouter = router({
     fileData: z.string(), // base64
     folderId: z.number().optional(),
   })).mutation(async ({ input, ctx }) => {
+    // Rate limit: 30 uploads per 10 minutes per user
+    enforceRateLimit("fileUpload", ctx.user!.id);
+
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const buffer = Buffer.from(input.fileData, "base64");

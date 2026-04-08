@@ -35,6 +35,8 @@ import OnboardingWizard from "./pages/OnboardingWizard";
 import BlueprintsPage from "./pages/Blueprints";
 import ClientPortal from "./pages/ClientPortal";
 import OversightPage from "./pages/Oversight";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import { AgentProvider } from "./contexts/AgentContext";
 import { useHeartbeat } from "./hooks/useHeartbeat";
 
@@ -93,6 +95,10 @@ function Router() {
       <Route path="/portal">
         <Redirect to="/dashboard" />
       </Route>
+
+      {/* Legal pages — public, no auth */}
+      <Route path="/privacy" component={PrivacyPolicy} />
+      <Route path="/terms" component={TermsOfService} />
 
       {/* Partner invite acceptance — public, no auth */}
       <Route path="/invite/:orgSlug/:token" component={InviteAccept} />
