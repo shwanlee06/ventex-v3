@@ -163,8 +163,8 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
             </button>
           )}
 
-          {/* Drafts indicator — ATLAS only */}
-          {isAtlas && pendingDraftCount > 0 && (
+          {/* Drafts indicator — visible to all authenticated users */}
+          {pendingDraftCount > 0 && (
             <button
               onClick={() => navigate("/drafts")}
               className="flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] sm:h-9 sm:min-w-0 sm:px-3 rounded-lg text-xs transition-colors bg-purple-500/10 text-purple-400 hover:bg-purple-500/20"

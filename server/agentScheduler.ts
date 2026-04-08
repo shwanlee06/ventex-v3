@@ -7,10 +7,11 @@
 import { getDb } from "./db";
 import {
   agentEvents,
+  agentDrafts,
   organizations,
   clientAgentConfig,
 } from "../drizzle/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, lt, sql, inArray } from "drizzle-orm";
 
 // Import agent runner functions — they are exported from the agents router module
 // We re-export them here so the scheduler can call them directly without tRPC context
@@ -81,6 +82,25 @@ async function executeAgentCycle(): Promise<{
         errors.push(errMsg);
         console.error(`[AgentScheduler] Error for ${errMsg}`);
       }
+    }
+
+    // Auto-cleanup: archive old sent/dismissed drafts (older than 14 days)
+    try {
+      const cutoffDate = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+      const deleted = await db
+        .delete(agentDrafts)
+        .where(
+          and(
+            inArray(agentDrafts.status, ["sent", "dismissed"]),
+            lt(agentDrafts.createdAt, cutoffDate)
+          )
+        );
+      const deletedCount = (deleted as any)[0]?.affectedRows || 0;
+      if (deletedCount > 0) {
+        console.log(`[AgentScheduler] Auto-cleanup: removed ${deletedCount} old sent/dismissed drafts`);
+      }
+    } catch (cleanupErr: any) {
+      console.error("[AgentScheduler] Draft cleanup error:", cleanupErr.message);
     }
 
     lastRunAt = new Date();

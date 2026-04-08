@@ -164,7 +164,7 @@ function Router() {
         <RequireAuth><RequireAtlas><AgentsPage /></RequireAtlas></RequireAuth>
       </Route>
       <Route path="/drafts">
-        <RequireAuth><RequireAtlas><DraftsPage /></RequireAtlas></RequireAuth>
+        <RequireAuth><DraftsPage /></RequireAuth>
       </Route>
       <Route path="/onboarding">
         <RequireAuth><RequireAtlas><OnboardingWizard /></RequireAtlas></RequireAuth>

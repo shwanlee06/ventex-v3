@@ -1,6 +1,6 @@
 // ============================================================================
-// Draft Center — Review, edit, send, or dismiss agent-generated communications
-// Tabs: Pending | Sent | Dismissed
+// Draft Center — Client-facing: review, edit, send, or dismiss AI-generated comms
+// Grouped by venture, searchable, with bulk actions
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
@@ -9,6 +9,7 @@ import { useAgents, getAgentConfig, type AgentDraft } from "@/contexts/AgentCont
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -29,8 +30,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   FileText, Send, XCircle, Eye, RotateCcw,
-  Bot, Clock, CheckCircle2, Inbox, Filter,
-  Building2, User, Mail, Loader2,
+  Bot, CheckCircle2, Inbox, Filter,
+  Building2, User, Mail, Search,
+  ChevronDown, ChevronRight, Layers3,
+  CheckSquare, Square, Trash2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useCallback, useMemo } from "react";
@@ -39,10 +42,18 @@ import { toast } from "sonner";
 type TabKey = "pending" | "sent" | "dismissed";
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-  { key: "pending", label: "Pending", icon: <Inbox className="size-4" /> },
+  { key: "pending", label: "Pending Review", icon: <Inbox className="size-4" /> },
   { key: "sent", label: "Sent", icon: <Send className="size-4" /> },
   { key: "dismissed", label: "Dismissed", icon: <XCircle className="size-4" /> },
 ];
+
+const DRAFT_TYPE_LABELS: Record<string, string> = {
+  follow_up: "Follow-Up",
+  lp_notice: "LP Notice",
+  status_update: "Status Update",
+  reminder: "Reminder",
+  escalation: "Escalation",
+};
 
 function formatTimestamp(d: string | Date): string {
   const date = new Date(d);
@@ -56,11 +67,16 @@ function formatTimestamp(d: string | Date): string {
 
 function DraftTypeIcon({ type }: { type: string }) {
   switch (type) {
-    case "follow_up_email": return <Mail className="size-3.5 text-blue-400" />;
+    case "follow_up": return <Mail className="size-3.5 text-blue-400" />;
     case "lp_notice": return <Building2 className="size-3.5 text-emerald-400" />;
     case "status_update": return <FileText className="size-3.5 text-purple-400" />;
     default: return <FileText className="size-3.5 text-muted-foreground" />;
   }
+}
+
+interface VentureGroup {
+  ventureName: string;
+  drafts: AgentDraft[];
 }
 
 export default function DraftsPage() {
@@ -68,7 +84,11 @@ export default function DraftsPage() {
   const [previewDraft, setPreviewDraft] = useState<AgentDraft | null>(null);
   const [editedBody, setEditedBody] = useState("");
   const [confirmDismiss, setConfirmDismiss] = useState<AgentDraft | null>(null);
-  const [agentFilter, setAgentFilter] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string | null>(null);
+  const [collapsedVentures, setCollapsedVentures] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [confirmBulkDismiss, setConfirmBulkDismiss] = useState(false);
 
   let drafts: AgentDraft[] = [];
   let sendDraft: (id: number, body?: string) => void = () => {};
@@ -84,7 +104,7 @@ export default function DraftsPage() {
     // AgentProvider not mounted
   }
 
-  // Filter by tab
+  // Filter by tab, search, and type
   const filteredDrafts = useMemo(() => {
     let items = drafts.filter(d => {
       if (activeTab === "pending") return d.status === "pending";
@@ -93,19 +113,41 @@ export default function DraftsPage() {
       return false;
     });
 
-    if (agentFilter) {
-      items = items.filter(d => d.createdByAgent === agentFilter);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      items = items.filter(d =>
+        d.subject?.toLowerCase().includes(q) ||
+        d.ventureName?.toLowerCase().includes(q) ||
+        d.recipientName?.toLowerCase().includes(q) ||
+        d.body?.toLowerCase().includes(q)
+      );
     }
 
-    // Sort by createdAt desc
+    if (typeFilter) {
+      items = items.filter(d => d.draftType === typeFilter);
+    }
+
     items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     return items;
-  }, [drafts, activeTab, agentFilter]);
+  }, [drafts, activeTab, searchQuery, typeFilter]);
 
-  // Unique agents in current tab
-  const agentNames = useMemo(() => {
-    const names = new Set(filteredDrafts.map(d => d.createdByAgent));
-    return Array.from(names);
+  // Group by venture
+  const ventureGroups = useMemo<VentureGroup[]>(() => {
+    const map = new Map<string, AgentDraft[]>();
+    for (const d of filteredDrafts) {
+      const key = d.ventureName || "General";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(d);
+    }
+    return Array.from(map.entries())
+      .map(([ventureName, drafts]) => ({ ventureName, drafts }))
+      .sort((a, b) => b.drafts.length - a.drafts.length);
+  }, [filteredDrafts]);
+
+  // Unique draft types in current tab
+  const draftTypes = useMemo(() => {
+    const types = new Set(filteredDrafts.map(d => d.draftType));
+    return Array.from(types);
   }, [filteredDrafts]);
 
   const tabCounts = useMemo(() => ({
@@ -113,6 +155,32 @@ export default function DraftsPage() {
     sent: drafts.filter(d => d.status === "sent").length,
     dismissed: drafts.filter(d => d.status === "dismissed").length,
   }), [drafts]);
+
+  const toggleVentureCollapse = useCallback((ventureName: string) => {
+    setCollapsedVentures(prev => {
+      const next = new Set(prev);
+      if (next.has(ventureName)) next.delete(ventureName);
+      else next.add(ventureName);
+      return next;
+    });
+  }, []);
+
+  const toggleSelect = useCallback((id: number) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    if (selectedIds.size === filteredDrafts.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredDrafts.map(d => d.id)));
+    }
+  }, [selectedIds, filteredDrafts]);
 
   const handleOpenPreview = useCallback((draft: AgentDraft) => {
     setEditedBody(draft.body);
@@ -139,9 +207,26 @@ export default function DraftsPage() {
     toast.success("Draft restored to pending");
   }, [restoreDraft]);
 
+  const handleBulkDismiss = useCallback(() => {
+    Array.from(selectedIds).forEach(id => {
+      dismissDraft(id);
+    });
+    toast.info(`${selectedIds.size} drafts dismissed`);
+    setSelectedIds(new Set());
+    setConfirmBulkDismiss(false);
+  }, [selectedIds, dismissDraft]);
+
+  const handleBulkRestore = useCallback(() => {
+    Array.from(selectedIds).forEach(id => {
+      restoreDraft(id);
+    });
+    toast.success(`${selectedIds.size} drafts restored`);
+    setSelectedIds(new Set());
+  }, [selectedIds, restoreDraft]);
+
   return (
-    <DashboardLayout title="Draft Center" subtitle="AGENT-GENERATED COMMUNICATIONS">
-      <div className="p-4 sm:p-5 md:p-6 space-y-5 pb-24 md:pb-6">
+    <DashboardLayout title="Draft Center" subtitle="AI-GENERATED COMMUNICATIONS">
+      <div className="p-4 sm:p-5 md:p-6 space-y-4 pb-24 md:pb-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -151,7 +236,7 @@ export default function DraftsPage() {
             <div>
               <h2 className="text-base font-semibold text-foreground">Draft Center</h2>
               <p className="text-xs text-muted-foreground">
-                Review and manage agent-generated communications
+                Review and approve AI-generated communications before they're sent
               </p>
             </div>
           </div>
@@ -166,7 +251,7 @@ export default function DraftsPage() {
           {TABS.map(tab => (
             <button
               key={tab.key}
-              onClick={() => { setActiveTab(tab.key); setAgentFilter(null); }}
+              onClick={() => { setActiveTab(tab.key); setSearchQuery(""); setTypeFilter(null); setSelectedIds(new Set()); }}
               className={cn(
                 "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px",
                 activeTab === tab.key
@@ -188,41 +273,93 @@ export default function DraftsPage() {
           ))}
         </div>
 
-        {/* Agent filter pills */}
-        {agentNames.length > 1 && (
+        {/* Search + Filter bar */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[200px] max-w-[360px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by venture, subject, or recipient..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9 text-xs"
+            />
+          </div>
+
+          {/* Type filter pills */}
           <div className="flex gap-1.5 flex-wrap">
             <button
-              onClick={() => setAgentFilter(null)}
+              onClick={() => setTypeFilter(null)}
               className={cn(
-                "text-[10px] font-medium px-2 py-1 rounded-full transition-colors flex items-center gap-1",
-                !agentFilter ? "bg-primary/15 text-primary" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
+                "text-[10px] font-medium px-2.5 py-1.5 rounded-full transition-colors flex items-center gap-1",
+                !typeFilter ? "bg-primary/15 text-primary" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
               )}
             >
               <Filter className="size-3" />
-              All agents
+              All types
             </button>
-            {agentNames.map(name => {
-              const config = getAgentConfig(name);
-              return (
-                <button
-                  key={name}
-                  onClick={() => setAgentFilter(agentFilter === name ? null : name)}
-                  className={cn(
-                    "text-[10px] font-medium px-2 py-1 rounded-full transition-colors flex items-center gap-1",
-                    agentFilter === name
-                      ? `${config.bgColor} text-foreground`
-                      : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
-                  )}
-                >
-                  <span className="size-1.5 rounded-full" style={{ backgroundColor: config.color }} />
-                  {config.label}
-                </button>
-              );
-            })}
+            {draftTypes.map(type => (
+              <button
+                key={type}
+                onClick={() => setTypeFilter(typeFilter === type ? null : type)}
+                className={cn(
+                  "text-[10px] font-medium px-2.5 py-1.5 rounded-full transition-colors flex items-center gap-1",
+                  typeFilter === type
+                    ? "bg-primary/15 text-primary"
+                    : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
+                )}
+              >
+                <DraftTypeIcon type={type} />
+                {DRAFT_TYPE_LABELS[type] || type}
+              </button>
+            ))}
           </div>
+        </div>
+
+        {/* Bulk action bar */}
+        {selectedIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg"
+          >
+            <span className="text-xs font-medium text-primary">
+              {selectedIds.size} selected
+            </span>
+            <div className="flex-1" />
+            {activeTab === "pending" && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-[11px] px-3 gap-1"
+                onClick={() => setConfirmBulkDismiss(true)}
+              >
+                <Trash2 className="size-3" />
+                Dismiss Selected
+              </Button>
+            )}
+            {activeTab === "dismissed" && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-[11px] px-3 gap-1"
+                onClick={handleBulkRestore}
+              >
+                <RotateCcw className="size-3" />
+                Restore Selected
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-[11px] px-2"
+              onClick={() => setSelectedIds(new Set())}
+            >
+              Clear
+            </Button>
+          </motion.div>
         )}
 
-        {/* Draft list */}
+        {/* Draft list — grouped by venture */}
         {filteredDrafts.length === 0 ? (
           <div className="p-16 text-center flex flex-col items-center gap-3">
             <div className="flex items-center justify-center size-14 rounded-full bg-secondary/50">
@@ -236,135 +373,194 @@ export default function DraftsPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                No {activeTab} drafts
+                {searchQuery ? "No matching drafts" : `No ${activeTab === "pending" ? "pending" : activeTab} drafts`}
               </p>
               <p className="text-xs text-muted-foreground/70 mt-1">
-                {activeTab === "pending"
-                  ? "Run agents to generate new draft communications"
-                  : activeTab === "sent"
-                    ? "Sent drafts will appear here"
-                    : "Dismissed drafts will appear here"
+                {searchQuery
+                  ? "Try adjusting your search or filters"
+                  : activeTab === "pending"
+                    ? "ATLAS AI will generate drafts as it works on your ventures"
+                    : activeTab === "sent"
+                      ? "Approved drafts will appear here"
+                      : "Dismissed drafts will appear here"
                 }
               </p>
             </div>
           </div>
         ) : (
-          <div className="space-y-2">
-            <AnimatePresence mode="popLayout">
-              {filteredDrafts.map((draft, i) => {
-                const config = getAgentConfig(draft.createdByAgent);
-                return (
-                  <motion.div
-                    key={draft.id}
-                    layout
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ delay: i * 0.03, duration: 0.2 }}
-                    className="bg-card border border-border rounded-lg p-4 hover:border-primary/20 transition-all group"
+          <div className="space-y-3">
+            {/* Select all toggle */}
+            {(activeTab === "pending" || activeTab === "dismissed") && filteredDrafts.length > 1 && (
+              <button
+                onClick={toggleSelectAll}
+                className="flex items-center gap-2 text-[11px] text-muted-foreground hover:text-foreground transition-colors px-1"
+              >
+                {selectedIds.size === filteredDrafts.length ? (
+                  <CheckSquare className="size-3.5 text-primary" />
+                ) : (
+                  <Square className="size-3.5" />
+                )}
+                {selectedIds.size === filteredDrafts.length ? "Deselect all" : "Select all"}
+              </button>
+            )}
+
+            {ventureGroups.map((group) => {
+              const isCollapsed = collapsedVentures.has(group.ventureName);
+              return (
+                <div key={group.ventureName} className="bg-card border border-border rounded-lg overflow-hidden">
+                  {/* Venture group header */}
+                  <button
+                    onClick={() => toggleVentureCollapse(group.ventureName)}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-accent/30 transition-colors"
                   >
-                    <div className="flex items-start gap-3">
-                      {/* Agent icon */}
-                      <div
-                        className="flex items-center justify-center size-9 rounded-lg flex-shrink-0 mt-0.5"
-                        style={{ backgroundColor: `${config.color}15` }}
+                    {isCollapsed ? (
+                      <ChevronRight className="size-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="size-4 text-muted-foreground" />
+                    )}
+                    <Layers3 className="size-4 text-primary/60" />
+                    <span className="text-sm font-medium text-foreground">{group.ventureName}</span>
+                    <span className="text-[10px] font-mono text-muted-foreground ml-auto">
+                      {group.drafts.length} {group.drafts.length === 1 ? "draft" : "drafts"}
+                    </span>
+                  </button>
+
+                  {/* Drafts within venture */}
+                  <AnimatePresence initial={false}>
+                    {!isCollapsed && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
                       >
-                        <DraftTypeIcon type={draft.draftType} />
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h3 className="text-sm font-medium text-foreground leading-tight">
-                              {draft.subject}
-                            </h3>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ backgroundColor: `${config.color}15`, color: config.color }}>
-                                {config.label}
-                              </span>
-                              <span className="text-[10px] text-muted-foreground font-mono">
-                                {draft.draftType.replace(/_/g, " ")}
-                              </span>
-                              {draft.recipientName && (
-                                <>
-                                  <span className="text-[10px] text-muted-foreground/50">·</span>
-                                  <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                    <User className="size-3" />
-                                    {draft.recipientName}
-                                  </span>
-                                </>
-                              )}
-                              {draft.ventureName && (
-                                <>
-                                  <span className="text-[10px] text-muted-foreground/50">·</span>
-                                  <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                    <Building2 className="size-3" />
-                                    {draft.ventureName}
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                          <span className="text-[10px] font-mono text-muted-foreground flex-shrink-0">
-                            {formatTimestamp(draft.createdAt)}
-                          </span>
-                        </div>
-
-                        {/* Preview body */}
-                        <p className="text-xs text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
-                          {draft.body}
-                        </p>
-
-                        {/* Actions */}
-                        <div className="flex items-center gap-2 mt-3">
-                          {activeTab === "pending" && (
-                            <>
-                              <Button
-                                size="sm"
-                                className="h-7 text-[11px] px-3 gap-1"
-                                onClick={() => handleOpenPreview(draft)}
+                        <div className="divide-y divide-border border-t border-border">
+                          {group.drafts.map((draft) => {
+                            const config = getAgentConfig(draft.createdByAgent);
+                            const isSelected = selectedIds.has(draft.id);
+                            return (
+                              <div
+                                key={draft.id}
+                                className={cn(
+                                  "px-4 py-3 hover:bg-accent/20 transition-all group flex gap-3",
+                                  isSelected && "bg-primary/5"
+                                )}
                               >
-                                <Eye className="size-3" />
-                                Review & Send
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 text-[11px] px-3 gap-1"
-                                onClick={() => setConfirmDismiss(draft)}
-                              >
-                                <XCircle className="size-3" />
-                                Dismiss
-                              </Button>
-                            </>
-                          )}
-                          {activeTab === "sent" && (
-                            <div className="flex items-center gap-1.5">
-                              <CheckCircle2 className="size-3.5 text-emerald-400" />
-                              <span className="text-[11px] text-emerald-400 font-medium">
-                                Sent {draft.sentAt ? formatTimestamp(draft.sentAt) : ""}
-                              </span>
-                            </div>
-                          )}
-                          {activeTab === "dismissed" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-7 text-[11px] px-3 gap-1"
-                              onClick={() => handleRestore(draft)}
-                            >
-                              <RotateCcw className="size-3" />
-                              Restore
-                            </Button>
-                          )}
+                                {/* Selection checkbox */}
+                                {(activeTab === "pending" || activeTab === "dismissed") && (
+                                  <button
+                                    onClick={() => toggleSelect(draft.id)}
+                                    className="flex-shrink-0 mt-0.5"
+                                  >
+                                    {isSelected ? (
+                                      <CheckSquare className="size-4 text-primary" />
+                                    ) : (
+                                      <Square className="size-4 text-muted-foreground/40 group-hover:text-muted-foreground" />
+                                    )}
+                                  </button>
+                                )}
+
+                                {/* Draft type icon */}
+                                <div
+                                  className="flex items-center justify-center size-8 rounded-lg flex-shrink-0 mt-0.5"
+                                  style={{ backgroundColor: `${config.color}15` }}
+                                >
+                                  <DraftTypeIcon type={draft.draftType} />
+                                </div>
+
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div>
+                                      <h3 className="text-xs font-medium text-foreground leading-tight">
+                                        {draft.subject}
+                                      </h3>
+                                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                        <span
+                                          className="text-[10px] font-mono px-1.5 py-0.5 rounded"
+                                          style={{ backgroundColor: `${config.color}15`, color: config.color }}
+                                        >
+                                          {config.label}
+                                        </span>
+                                        <span className="text-[10px] text-muted-foreground font-mono">
+                                          {DRAFT_TYPE_LABELS[draft.draftType] || draft.draftType}
+                                        </span>
+                                        {draft.recipientName && (
+                                          <>
+                                            <span className="text-[10px] text-muted-foreground/50">·</span>
+                                            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                              <User className="size-3" />
+                                              {draft.recipientName}
+                                            </span>
+                                          </>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <span className="text-[10px] font-mono text-muted-foreground flex-shrink-0">
+                                      {formatTimestamp(draft.createdAt)}
+                                    </span>
+                                  </div>
+
+                                  {/* Preview body */}
+                                  <p className="text-[11px] text-muted-foreground mt-1.5 line-clamp-1 leading-relaxed">
+                                    {draft.body}
+                                  </p>
+
+                                  {/* Actions */}
+                                  <div className="flex items-center gap-2 mt-2">
+                                    {activeTab === "pending" && (
+                                      <>
+                                        <Button
+                                          size="sm"
+                                          className="h-7 text-[11px] px-3 gap-1"
+                                          onClick={() => handleOpenPreview(draft)}
+                                        >
+                                          <Eye className="size-3" />
+                                          Review & Approve
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          className="h-7 text-[11px] px-3 gap-1"
+                                          onClick={() => setConfirmDismiss(draft)}
+                                        >
+                                          <XCircle className="size-3" />
+                                          Dismiss
+                                        </Button>
+                                      </>
+                                    )}
+                                    {activeTab === "sent" && (
+                                      <div className="flex items-center gap-1.5">
+                                        <CheckCircle2 className="size-3.5 text-emerald-400" />
+                                        <span className="text-[11px] text-emerald-400 font-medium">
+                                          Sent {draft.sentAt ? formatTimestamp(draft.sentAt) : ""}
+                                        </span>
+                                      </div>
+                                    )}
+                                    {activeTab === "dismissed" && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-7 text-[11px] px-3 gap-1"
+                                        onClick={() => handleRestore(draft)}
+                                      >
+                                        <RotateCcw className="size-3" />
+                                        Restore
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -375,12 +571,12 @@ export default function DraftsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm">
               <FileText className="size-4 text-purple-400" />
-              Draft Preview
+              Review Draft
             </DialogTitle>
             <DialogDescription className="text-[11px]">
               {previewDraft && (
                 <>
-                  <span className="font-medium">{previewDraft.draftType.replace(/_/g, " ")}</span>
+                  <span className="font-medium">{DRAFT_TYPE_LABELS[previewDraft.draftType] || previewDraft.draftType}</span>
                   {previewDraft.ventureName && (
                     <> · <span>{previewDraft.ventureName}</span></>
                   )}
@@ -409,7 +605,7 @@ export default function DraftsPage() {
                 />
               </div>
               <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-mono">
-                <span>Created by: {previewDraft.createdByAgent}</span>
+                <span>Generated by: {previewDraft.createdByAgent}</span>
                 <span>·</span>
                 <span>{formatTimestamp(previewDraft.createdAt)}</span>
               </div>
@@ -434,7 +630,7 @@ export default function DraftsPage() {
               onClick={handleSend}
             >
               <Send className="size-3" />
-              Send Draft
+              Approve & Send
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -453,6 +649,24 @@ export default function DraftsPage() {
             <AlertDialogCancel className="text-xs">Cancel</AlertDialogCancel>
             <AlertDialogAction className="text-xs" onClick={handleDismiss}>
               Dismiss
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk dismiss confirmation */}
+      <AlertDialog open={confirmBulkDismiss} onOpenChange={setConfirmBulkDismiss}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-sm">Dismiss {selectedIds.size} drafts?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs">
+              These drafts will be moved to the Dismissed tab. You can restore them individually later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-xs">Cancel</AlertDialogCancel>
+            <AlertDialogAction className="text-xs" onClick={handleBulkDismiss}>
+              Dismiss All
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

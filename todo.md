@@ -1981,3 +1981,11 @@
 - [x] Manual trigger endpoint already exists via tRPC agents.runAll procedure
 - [x] Fix activity_log insert errors (wrong column names in proactive agents)
 - [x] Fix completionNote → description for task completion storage
+
+### Draft Center — Restructure as Client-Facing Feature
+- [x] Make Draft Center client-accessible (removed RequireAtlas, added to both admin and client sidebar)
+- [x] Update backend permissions: sendDraft/dismissDraft/restoreDraft now protectedProcedure with org-scoping
+- [x] Redesign Draft Center UI: grouped by venture, search, type filter pills, bulk select/dismiss/restore
+- [x] Add dedup logic: Overdue Agent and Distribution Sentinel check for existing pending drafts before creating
+- [x] Add auto-cleanup: scheduler deletes sent/dismissed drafts older than 14 days each cycle
+- [x] Cleaned up 8 duplicate pending drafts from database (39 → 31 pending)

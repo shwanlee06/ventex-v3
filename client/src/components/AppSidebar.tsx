@@ -67,7 +67,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Client Contacts", href: "/team", icon: <Users className="size-5" />, atlasOnly: true },
   { label: "Onboard Client", href: "/onboarding", icon: <UserPlus className="size-5" />, atlasOnly: true },
   // ─ Operations ─
-  { label: "Drafts", href: "/drafts", icon: <FileText className="size-5" />, atlasOnly: true },
+  { label: "Drafts", href: "/drafts", icon: <FileText className="size-5" /> },
   { label: "Settings", href: "/settings", icon: <Settings className="size-5" />, atlasOnly: true },
   // ─ Client-only nav items ─
   { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-5" />, clientOnly: true },

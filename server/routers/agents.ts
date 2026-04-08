@@ -6,6 +6,7 @@
 // ============================================================================
 
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { protectedProcedure, adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import {
@@ -231,6 +232,35 @@ export async function runOverdueAgent(
         const ctx = buildBlueprintContext(bpResult);
         if (ctx) blueprintHint = ctx;
       } catch { /* no blueprint */ }
+    }
+
+    // Dedup: skip if a pending draft already exists for this task
+    const existingDraft = await db
+      .select({ id: agentDrafts.id })
+      .from(agentDrafts)
+      .where(
+        and(
+          sql`${agentDrafts.organizationId} = ${task.organizationId}`,
+          eq(agentDrafts.draftType, "follow_up"),
+          eq(agentDrafts.status, "pending"),
+          sql`${agentDrafts.subject} LIKE ${`%${task.title}%`}`
+        )
+      )
+      .limit(1);
+
+    if (existingDraft.length > 0) {
+      // Draft already exists for this task — skip
+      signals.push({
+        agentName: "Overdue Agent",
+        eventType: "status_change",
+        message: `"${task.title}" still overdue (${daysOverdue} days). Existing draft pending — skipping duplicate.`,
+        severity: daysOverdue > 7 ? "critical" as Severity : "warning" as Severity,
+        organizationId: task.organizationId,
+        audience: "client",
+        requiresClientAction: false,
+        actionType: "notify" as ActionType,
+      });
+      continue;
     }
 
     const draftBody = await callAgentLLM(
@@ -749,6 +779,35 @@ export async function runDistributionSentinel(
     const fundName = dist.fund || dist.name;
     const amount = Number(dist.amount || 0);
 
+    // Dedup: skip if a pending LP notice draft already exists for this distribution
+    const existingLpDraft = await db
+      .select({ id: agentDrafts.id })
+      .from(agentDrafts)
+      .where(
+        and(
+          sql`${agentDrafts.organizationId} = ${dist.organizationId}`,
+          eq(agentDrafts.draftType, "lp_notice"),
+          eq(agentDrafts.status, "pending"),
+          sql`${agentDrafts.subject} LIKE ${`%${fundName}%`}`
+        )
+      )
+      .limit(1);
+
+    if (existingLpDraft.length > 0) {
+      // Draft already exists — skip
+      signals.push({
+        agentName: "Distribution Sentinel",
+        eventType: "alert",
+        message: `${fundName}: $${amount.toLocaleString()} — existing LP notice pending, skipping duplicate.`,
+        severity,
+        organizationId: dist.organizationId,
+        audience: "client",
+        requiresClientAction: false,
+        actionType: "notify" as ActionType,
+      });
+      continue;
+    }
+
     const draftBody = await callAgentLLM(
       "You are ATLAS. Draft a brief, professional LP distribution notification (4 sentences max). Include fund name, amount, timing, and next steps. Professional tone. Sign as 'ATLAS'.",
       `${fundName} | $${amount.toLocaleString()} | Due: ${dist.distributionDate || "TBD"} | Days until: ${daysUntil ?? "Unknown"}`
@@ -1243,7 +1302,7 @@ export const agentsRouter = router({
   /**
    * Send a draft — marks as sent, logs who sent it
    */
-  sendDraft: adminProcedure
+  sendDraft: protectedProcedure
     .input(z.object({
       draftId: z.number(),
       editedBody: z.string().optional(),
@@ -1252,10 +1311,18 @@ export const agentsRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
+      // Verify the draft belongs to the user's org
+      const effectiveOrgId = resolveOrgId(ctx.user, undefined);
+      const [draft] = await db.select().from(agentDrafts).where(eq(agentDrafts.id, input.draftId)).limit(1);
+      if (!draft) throw new Error("Draft not found");
+      if (effectiveOrgId && draft.organizationId !== effectiveOrgId) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+
       const updates: Record<string, unknown> = {
         status: "sent",
         sentAt: new Date(),
-        sentBy: ctx.user.name || "Admin",
+        sentBy: ctx.user.name || ctx.user.email || "User",
       };
 
       if (input.editedBody) {
@@ -1268,13 +1335,13 @@ export const agentsRouter = router({
         .where(eq(agentDrafts.id, input.draftId));
 
       // Also mark any related agent_event as action_taken
-      const draft = await db
+      const sentDraft = await db
         .select()
         .from(agentDrafts)
         .where(eq(agentDrafts.id, input.draftId))
         .limit(1);
 
-      if (draft[0]) {
+      if (sentDraft[0]) {
         const events = await db
           .select()
           .from(agentEvents)
@@ -1307,11 +1374,19 @@ export const agentsRouter = router({
   /**
    * Dismiss a draft
    */
-  dismissDraft: adminProcedure
+  dismissDraft: protectedProcedure
     .input(z.object({ draftId: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
+
+      // Verify the draft belongs to the user's org
+      const effectiveOrgId = resolveOrgId(ctx.user, undefined);
+      const [draft] = await db.select().from(agentDrafts).where(eq(agentDrafts.id, input.draftId)).limit(1);
+      if (!draft) throw new Error("Draft not found");
+      if (effectiveOrgId && draft.organizationId !== effectiveOrgId) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
 
       await db
         .update(agentDrafts)
@@ -1324,11 +1399,19 @@ export const agentsRouter = router({
   /**
    * Restore a dismissed draft to pending
    */
-  restoreDraft: adminProcedure
+  restoreDraft: protectedProcedure
     .input(z.object({ draftId: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
+
+      // Verify the draft belongs to the user's org
+      const effectiveOrgId = resolveOrgId(ctx.user, undefined);
+      const [draft] = await db.select().from(agentDrafts).where(eq(agentDrafts.id, input.draftId)).limit(1);
+      if (!draft) throw new Error("Draft not found");
+      if (effectiveOrgId && draft.organizationId !== effectiveOrgId) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
 
       await db
         .update(agentDrafts)
