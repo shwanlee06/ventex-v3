@@ -14,6 +14,7 @@ import {
   ventureTeam,
   agentEvents,
   activityLog,
+  auditLog,
 } from "../../drizzle/schema";
 import { eq, and, inArray, sql, ne, gte, desc } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
@@ -258,6 +259,19 @@ Generate ${numToGenerate} next-step tasks to move this venture forward.`,
   console.log(
     `[ProactiveTaskGen] Org ${orgId}: ${venturesProcessed} ventures processed, ${tasksCreated} tasks created`
   );
+
+  // SOC 2 audit trail
+  if (tasksCreated > 0) {
+    try {
+      await db.insert(auditLog).values({
+        action: "ai_tasks_generated",
+        entityType: "system",
+        userName: "SYSTEM:ProactiveTaskGenerator",
+        details: JSON.stringify({ orgId, tasksCreated, venturesProcessed }),
+        result: "success",
+      });
+    } catch { /* non-critical */ }
+  }
 
   return { tasksCreated, venturesProcessed, eventsLogged };
 }

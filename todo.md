@@ -1989,3 +1989,10 @@
 - [x] Add dedup logic: Overdue Agent and Distribution Sentinel check for existing pending drafts before creating
 - [x] Add auto-cleanup: scheduler deletes sent/dismissed drafts older than 14 days each cycle
 - [x] Cleaned up 8 duplicate pending drafts from database (39 → 31 pending)
+
+### SOC 2 Compliance Audit
+- [x] Audit access controls: org-scoping via resolveOrgId, role checks (admin/partner/protected), data isolation verified
+- [x] Audit audit trail: autoAudit middleware on all tRPC procedures (protected, admin, partner)
+- [x] SOC 2 gap fix: Added audit trail logging to agentScheduler, proactiveTaskGenerator, and autonomousTaskExecutor
+- [x] Audit data handling: AES-256-GCM encryption, httpOnly/secure cookies, Zod validation on all inputs
+- [x] Verified: rate limiting, data retention purge (365d audit, 180d activity, 90d notifications), MFA/TOTP, security headers (CSP, HSTS, X-Frame-Options)

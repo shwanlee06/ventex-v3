@@ -10,6 +10,7 @@ import {
   agentDrafts,
   organizations,
   clientAgentConfig,
+  auditLog,
 } from "../drizzle/schema";
 import { eq, desc, and, lt, sql, inArray } from "drizzle-orm";
 
@@ -109,6 +110,25 @@ async function executeAgentCycle(): Promise<{
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     console.log(`[AgentScheduler] Cycle complete: ${orgsProcessed} orgs, ${totalSignals} signals, ${elapsed}s`);
+
+    // SOC 2 audit trail — log every agent cycle
+    try {
+      await db.insert(auditLog).values({
+        action: "agent_cycle_complete",
+        entityType: "system",
+        userName: "SYSTEM:AgentScheduler",
+        details: JSON.stringify({
+          orgsProcessed,
+          totalSignals,
+          elapsedSeconds: parseFloat(elapsed),
+          errors: errors.length > 0 ? errors : undefined,
+          runNumber: totalRunCount,
+        }),
+        result: errors.length > 0 ? "error" : "success",
+      });
+    } catch {
+      // Non-critical — cycle itself succeeded
+    }
 
     return { success: true, orgsProcessed, totalSignals, errors };
   } catch (err: any) {

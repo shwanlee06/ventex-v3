@@ -13,6 +13,7 @@ import {
   agentEvents,
   activityLog,
   ventureVelocity,
+  auditLog,
 } from "../../drizzle/schema";
 import { eq, and, inArray, sql, ne, gte, desc } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
@@ -259,6 +260,19 @@ Execute this task and provide the deliverable.`,
   console.log(
     `[TaskExecutor] Org ${orgId}: ${tasksCompleted} tasks completed, ${eventsLogged} events logged`
   );
+
+  // SOC 2 audit trail
+  if (tasksCompleted > 0) {
+    try {
+      await db.insert(auditLog).values({
+        action: "ai_tasks_completed",
+        entityType: "system",
+        userName: "SYSTEM:AutonomousTaskExecutor",
+        details: JSON.stringify({ orgId, tasksCompleted, venturesAdvanced }),
+        result: "success",
+      });
+    } catch { /* non-critical */ }
+  }
 
   return { tasksCompleted, venturesAdvanced, eventsLogged };
 }
