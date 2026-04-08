@@ -109,7 +109,8 @@ export const teamRouter = router({
     const db = await getDb();
     if (!db) return [];
 
-    // Get all members with an org
+    // Get all members with a CLIENT org — exclude ATLAS internal members
+    // ATLAS team (admin/owner systemRole, or org 1 = ATLAS) should NOT appear in Client Contacts
     const members = await db.select({
       id: teamMembers.id,
       name: teamMembers.name,
@@ -132,7 +133,11 @@ export const teamRouter = router({
     })
       .from(teamMembers)
       .leftJoin(organizations, eq(teamMembers.organizationId, organizations.id))
-      .where(isNotNull(teamMembers.organizationId))
+      .where(and(
+        isNotNull(teamMembers.organizationId),
+        sql`${teamMembers.organizationId} != 1`,  // Exclude ATLAS org
+        sql`(${teamMembers.systemRole} IS NULL OR ${teamMembers.systemRole} NOT IN ('admin', 'owner'))`,  // Exclude ATLAS team roles
+      ))
       .orderBy(organizations.name, desc(teamMembers.createdAt));
 
     return members;

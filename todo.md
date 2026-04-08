@@ -2009,3 +2009,6 @@
 - [x] Updated backend isAtlasTeam (rbac.ts) — removed partner from ATLAS check
 - [x] Updated Topbar role label: "ATLAS Partner" → "Partner"
 - [x] Updated RBAC comments to clarify role hierarchy
+- [x] Fix Shourya and Jason's roles from partner to admin in the database (users 390151, 933332)
+- [x] Remove ATLAS team members (admin/owner) from Client Contacts page — excluded org 1 and admin/owner systemRole
+- [x] Change default new ATLAS team member role from partner to admin in AtlasTeam.tsx

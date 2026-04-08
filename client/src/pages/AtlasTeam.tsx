@@ -70,7 +70,7 @@ export default function AtlasTeam() {
   const [newWhatsapp, setNewWhatsapp] = useState("");
   const [newLinkedin, setNewLinkedin] = useState("");
   const [newLocation, setNewLocation] = useState("");
-  const [newSystemRole, setNewSystemRole] = useState<string>("partner");
+  const [newSystemRole, setNewSystemRole] = useState<string>("admin");
   const [lastInviteLink, setLastInviteLink] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
 
@@ -236,7 +236,7 @@ export default function AtlasTeam() {
     setNewName(""); setNewRole(""); setNewFunc("Operations");
     setNewNotes(""); setNewEmail(""); setNewPhone("");
     setNewTelegram(""); setNewWhatsapp(""); setNewLinkedin(""); setNewLocation("");
-    setNewSystemRole("partner");
+    setNewSystemRole("admin");
   }
 
   function handleAdd() {
