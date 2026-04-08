@@ -3,12 +3,13 @@
  * Design: ose-engineering.fr inspired — pure black/white, monospace, military-ops feel
  * Fonts: IBM Plex Mono (body), Bebas Neue (display), Share Tech Mono (data)
  */
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { startSession, logAction } from "@/lib/operatorSession";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
+import { trpc } from "@/lib/trpc";
 
 /* ─── helpers ─── */
 function estNow() {
@@ -59,12 +60,11 @@ const SECTORS = [
     ventures: ["Berlin Malaysia", "KTL Dubai Casino", "Casino Malaysia"],
   },
   {
-    /* FIX 4: Others shows 04 VENTURES · 03 ACTIVE */
     icon: "⚡",
     name: "OTHERS",
     count: 4,
     active: 3,
-    ventures: ["Kazzafi Daughter", "Shady Project", "P430"],
+    ventures: ["North Africa Development", "Oman Luxury Resort", "P430"],
   },
 ];
 
@@ -237,16 +237,7 @@ function useSingleLineCipher(target: string, startDelay = 0, charDelay = 80) {
   return { display, done, started };
 }
 
-const HERO_READOUTS = [
-  "// SYSTEM STATUS",
-  "ATLAS CORE ........ [ONLINE]",
-  "SEC LAYER ......... [ACTIVE]",
-  "AGENT NODES ....... [247]",
-  "VENTURES TRACKED .. [20]",
-  "SPVs ACTIVE ....... [06]",
-  "TASKS AUTOMATED ... [2,847]",
-  "HRS RECLAIMED ..... [061]",
-];
+// HERO_READOUTS removed — dynamicReadouts (computed from live DB data) is used instead
 
 /* ─── Typewriter hook ─── */
 function useTypewriter(text: string, speed = 30, trigger = true) {
@@ -354,6 +345,35 @@ function Section({
 export default function SpyOps() {
   const [, navigate] = useLocation();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+
+  // Fetch real stats for the hero readouts (public queries)
+  const venturesQ = trpc.ventures.list.useQuery(undefined, { retry: false, staleTime: 60000 });
+  const spvsQ = trpc.spvs.list.useQuery(undefined, { retry: false, staleTime: 60000 });
+  const tasksQ = trpc.tasks.list.useQuery(undefined, { retry: false, staleTime: 60000 });
+
+  const realStats = useMemo(() => {
+    const ventures = venturesQ.data || [];
+    const spvs = spvsQ.data || [];
+    const tasks = tasksQ.data || [];
+    const completedTasks = tasks.filter(t => t.status === "complete").length;
+    const sectors = new Set(ventures.map(v => v.sector)).size;
+    return {
+      ventures: ventures.length,
+      spvs: spvs.length,
+      tasksCompleted: completedTasks,
+      sectors,
+    };
+  }, [venturesQ.data, spvsQ.data, tasksQ.data]);
+
+  const dynamicReadouts = useMemo(() => [
+    "// SYSTEM STATUS",
+    "ATLAS CORE ........ [ONLINE]",
+    "SEC LAYER ......... [ACTIVE]",
+    `VENTURES TRACKED .. [${String(realStats.ventures).padStart(2, '0')}]`,
+    `SPVs ACTIVE ....... [${String(realStats.spvs).padStart(2, '0')}]`,
+    `TASKS COMPLETED ... [${realStats.tasksCompleted.toLocaleString()}]`,
+    `SECTORS ........... [${String(realStats.sectors).padStart(2, '0')}]`,
+  ], [realStats]);
 
   // SEO: Set document title for the landing page
   useEffect(() => {
@@ -1137,7 +1157,7 @@ export default function SpyOps() {
               gap: 6,
             }}
           >
-            {HERO_READOUTS.map((line, i) => (
+            {dynamicReadouts.map((line, i) => (
               <div
                 key={i}
                 style={{
@@ -1200,12 +1220,12 @@ export default function SpyOps() {
           color: "#666",
         }}
       >
-        <span>15/03/2026</span>
+        <span>{estNow().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
         <span>{clock} EST</span>
         <span className="spyops-statusbar-center">
-          LOAD: 0.12s · WEIGHT: 0.08MB · SECTOR: 5 · VENTURES: 20
+          {`SECTORS: ${realStats.sectors} · VENTURES: ${realStats.ventures} · TASKS: ${realStats.tasksCompleted}`}
         </span>
-        <span>Y: {scrollY}PX</span>
+        <span>SYS: NOMINAL</span>
         {/* FIX 17: white blinking ■ SECURE indicator */}
         <span>
           <span className="spyops-blink" style={{ color: "#ffffff" }}>

@@ -6,10 +6,8 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
-import {
-  METRICS, TASKS, SPVS, VENTURES, DISTRIBUTIONS,
-  formatCurrency,
-} from "@/lib/data";
+// Live data is now injected server-side via buildLiveContext() in aiStream.ts
+// No more hardcoded data imports needed for AI context
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
@@ -189,13 +187,7 @@ const WELCOME_MSG: ChatMessage = {
   timestamp: new Date(),
 };
 
-function buildPortfolioContext(): string {
-  const venturesSummary = VENTURES.map(v => `${v.name} (${v.theme}, ${v.stage}, ${v.status}${v.location && v.location !== "TBD" ? `, ${v.location}` : ""})`).join("; ");
-  const spvsSummary = SPVS.map(s => `${s.name} (${s.theme}, ${s.stage}, Priority: ${s.priority}${s.currentStatus ? `, Status: ${s.currentStatus}` : ""})`).join("; ");
-  const tasksSummary = TASKS.map(t => `${t.title} (${t.status}, ${t.priority}, Due: ${t.dueDate}, Assignees: ${t.assignees.join(", ") || "Unassigned"})`).join("; ");
-  const distSummary = DISTRIBUTIONS.map(d => `${d.name}: ${formatCurrency(d.amount)} (${d.status}, ${d.type})`).join("; ");
-  return `Current portfolio data:\nVentures (${VENTURES.length}): ${venturesSummary}\nSPVs (${SPVS.length}): ${spvsSummary}\nTasks (${TASKS.length}): ${tasksSummary}\nDistributions: ${distSummary}\nMetrics: Total Ventures=${METRICS.totalVentures}, Active=${METRICS.activeVentures}, Total SPVs=${METRICS.totalSPVs}, Active SPVs=${METRICS.activeSPVs}, Open Tasks=${METRICS.openTasks}, Total Distributions=${formatCurrency(METRICS.totalDistributions)}, Paid=${formatCurrency(METRICS.paidDistributions)}, Team=${METRICS.totalTeam}`;
-}
+// Portfolio context is now built server-side from live DB data in aiStream.ts
 
 // ── Stream AI response via SSE ──────────────────────────────────────────
 
@@ -501,18 +493,8 @@ export default function Agent() {
         return { role: m.role as string, content: textContent };
       });
 
-    if (history.length > 0) {
-      const last = history[history.length - 1];
-      if (typeof last.content === "string") {
-        history[history.length - 1] = { ...last, content: `[Portfolio Context]\n${buildPortfolioContext()}\n\n[User Question]\n${last.content}` };
-      } else if (Array.isArray(last.content)) {
-        const blocks = last.content as Array<{ type: string; text?: string }>;
-        const textBlock = blocks.find(b => b.type === "text");
-        if (textBlock && textBlock.text) {
-          textBlock.text = `[Portfolio Context]\n${buildPortfolioContext()}\n\n[User Question]\n${textBlock.text}`;
-        }
-      }
-    }
+    // Portfolio context is now injected server-side via buildLiveContext()
+    // No client-side context injection needed
 
     const controller = new AbortController();
     abortRef.current = controller;

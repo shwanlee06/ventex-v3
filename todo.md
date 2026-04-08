@@ -2012,3 +2012,13 @@
 - [x] Fix Shourya and Jason's roles from partner to admin in the database (users 390151, 933332)
 - [x] Remove ATLAS team members (admin/owner) from Client Contacts page — excluded org 1 and admin/owner systemRole
 - [x] Change default new ATLAS team member role from partner to admin in AtlasTeam.tsx
+
+### Investor Readiness Audit — P0/P1 Fixes
+- [x] P0: Replaced fake Portfolio Value/growth with real Active Ventures + Distributed + Open Tasks
+- [x] P0: Added Ventures card in place of removed Card 2 — grid is now balanced
+- [x] P0: Replaced hardcoded stats with real tRPC queries (ventures, spvs, tasks completed, sectors)
+- [x] P0: Wire Agent.tsx AI chat to use real DB data instead of hardcoded VENTURES/SPVS/TASKS
+- [x] P0: Wire TeamMemberDetail to use real tRPC queries instead of hardcoded arrays
+- [x] P0: Clean up venture names (Kazzafi Daughter → North Africa Development, Shady Project → Oman Luxury Resort, Venture Pending → Gulf Logistics Hub) in data.ts
+- [x] P1: Replaced status bar with real stats (SECTORS: X · VENTURES: X · TASKS: X)
+- [x] P1: Update TBD locations in data.ts ventures (Casino Malaysia → Malaysia, P430 → Monaco, JV Yacht → Mediterranean, Bagatelle → France, Gulf Logistics Hub → UAE)

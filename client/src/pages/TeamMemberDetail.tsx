@@ -1,16 +1,13 @@
 // ============================================================================
 // Team Member Profile Page — Swiss Instrument design
 // Shows: profile header, assigned ventures, tasks, activity log
+// Uses LIVE DB data via tRPC queries
 // ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
-import {
-  TEAM, VENTURES, TASKS, AGENT_LOGS,
-  type TeamMember, type Venture, type Task,
-  getTaskStatusFromDate, STATUS_CONFIG, formatDate,
-} from "@/lib/data";
-import { slugify } from "@/lib/slugify";
+import { trpc } from "@/lib/trpc";
+import { formatDate } from "@/lib/data";
 import { useParams, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import {
@@ -22,15 +19,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
-
-function slugifyMember(name: string): string {
-  return slugify(name);
-}
-
-function findMemberBySlug(slug: string): TeamMember | undefined {
-  return TEAM.find((m) => slugifyMember(m.name) === slug);
-}
+import { slugify } from "@/lib/slugify";
 
 function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { bg: string; text: string }> = {
@@ -60,50 +51,117 @@ function TypeBadge({ type }: { type: string }) {
   );
 }
 
+function getTaskStatus(task: { status: string; dueDate?: string | null }) {
+  if (task.status === "complete") return "complete";
+  if (!task.dueDate) return "open";
+  const due = new Date(task.dueDate);
+  const now = new Date();
+  const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays < 0) return "overdue";
+  if (diffDays <= 3) return "due-soon";
+  return "open";
+}
+
+const STATUS_CONFIG: Record<string, { label: string; bg: string; dot: string }> = {
+  "complete": { label: "Complete", bg: "bg-emerald-500/10 text-emerald-400", dot: "bg-emerald-400" },
+  "overdue": { label: "Overdue", bg: "bg-red-500/10 text-red-400", dot: "bg-red-400" },
+  "due-soon": { label: "Due Soon", bg: "bg-amber-500/10 text-amber-400", dot: "bg-amber-400" },
+  "open": { label: "Open", bg: "bg-secondary text-muted-foreground", dot: "bg-muted-foreground" },
+};
+
 export default function TeamMemberDetail() {
   const params = useParams<{ slug: string }>();
   const [, navigate] = useLocation();
-  const member = findMemberBySlug(params.slug || "");
 
-  // Find ventures where this member is assigned (by name in tasks or contactIds)
+  // Fetch member from DB by slug
+  const memberQ = trpc.team.getBySlug.useQuery(
+    { slug: params.slug || "" },
+    { enabled: !!params.slug }
+  );
+
+  // Fetch tasks from DB
+  const tasksQ = trpc.tasks.list.useQuery(undefined, { staleTime: 30000 });
+
+  // Fetch venture assignments
+  const assignmentsQ = trpc.team.ventureAssignments.useQuery(undefined, { staleTime: 30000 });
+
+  // Fetch activity log
+  const activityQ = trpc.activity.list.useQuery(
+    { limit: 20, offset: 0 },
+    { staleTime: 30000 }
+  );
+
+  const member = memberQ.data;
+  const isLoading = memberQ.isLoading;
+
+  // Find ventures where this member is assigned
   const assignedVentures = useMemo(() => {
-    if (!member) return [];
-    // Find tasks assigned to this member
-    const memberTasks = TASKS.filter((t) =>
-      t.assignees.some((a) => a.toLowerCase() === member.name.toLowerCase())
+    if (!member || !assignmentsQ.data) return [];
+    const memberAssignments = assignmentsQ.data.filter(
+      (a: any) => a.memberId === member.id
     );
-    // Get venture names from tasks
-    const ventureNames = new Set(
-      memberTasks.map((t) => t.ventureLink).filter(Boolean) as string[]
-    );
-    // Also check all ventures for any mention
-    return VENTURES.filter(
-      (v) =>
-        ventureNames.has(v.name) ||
-        v.contactIds?.includes(member.id)
-    );
-  }, [member]);
+    return memberAssignments.map((a: any) => ({
+      id: a.ventureId,
+      name: a.ventureName || "Unknown Venture",
+      sector: a.ventureSector || "Others",
+      status: "In progress",
+      location: "",
+    }));
+  }, [member, assignmentsQ.data]);
 
   // Find tasks assigned to this member
   const memberTasks = useMemo(() => {
-    if (!member) return [];
-    return TASKS.filter((t) =>
-      t.assignees.some((a) => a.toLowerCase() === member.name.toLowerCase())
-    );
-  }, [member]);
+    if (!member || !tasksQ.data) return [];
+    const memberName = member.name.toLowerCase();
+    return tasksQ.data.filter((t: any) => {
+      const assignees = t.assignees || t.assignee || "";
+      if (typeof assignees === "string") {
+        return assignees.toLowerCase().includes(memberName);
+      }
+      if (Array.isArray(assignees)) {
+        return assignees.some((a: string) => a.toLowerCase().includes(memberName));
+      }
+      return false;
+    });
+  }, [member, tasksQ.data]);
 
   // Find activity logs related to this member
   const memberActivity = useMemo(() => {
-    if (!member) return [];
-    return AGENT_LOGS.filter(
-      (log) =>
-        log.detail.toLowerCase().includes(member.name.toLowerCase()) ||
-        log.detail.toLowerCase().includes(member.name.split(" ")[0].toLowerCase())
-    ).slice(0, 8);
-  }, [member]);
+    if (!member || !activityQ.data) return [];
+    const memberName = member.name.toLowerCase();
+    const firstName = member.name.split(" ")[0].toLowerCase();
+    return activityQ.data
+      .filter((log: any) => {
+        const detail = (log.detail || "").toLowerCase();
+        const action = (log.action || "").toLowerCase();
+        const userName = (log.userName || "").toLowerCase();
+        return (
+          detail.includes(memberName) ||
+          detail.includes(firstName) ||
+          userName.includes(memberName) ||
+          userName.includes(firstName)
+        );
+      })
+      .slice(0, 8);
+  }, [member, activityQ.data]);
 
-  const openTasks = memberTasks.filter((t) => t.status !== "complete");
-  const completedTasks = memberTasks.filter((t) => t.status === "complete");
+  const openTasks = memberTasks.filter((t: any) => t.status !== "complete");
+  const completedTasks = memberTasks.filter((t: any) => t.status === "complete");
+
+  if (isLoading) {
+    return (
+      <DashboardLayout title="Team Member" subtitle="ATLAS">
+        <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-48 rounded-lg" />
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <Skeleton className="h-64 rounded-lg" />
+            <Skeleton className="h-64 rounded-lg" />
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   if (!member) {
     return (
@@ -120,7 +178,7 @@ export default function TeamMemberDetail() {
 
   const initials = member.name
     .split(" ")
-    .map((n) => n[0])
+    .map((n: string) => n[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
@@ -163,13 +221,15 @@ export default function TeamMemberDetail() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-wrap">
                   <h1 className="text-xl font-semibold text-foreground">{member.name}</h1>
-                  <StatusBadge status={member.status} />
-                  <TypeBadge type={member.type} />
+                  <StatusBadge status={member.status || "Active"} />
+                  <TypeBadge type={member.type || "Internal"} />
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">{member.role}</p>
-                <p className="text-xs text-muted-foreground font-mono mt-0.5">
-                  {member.function}
-                </p>
+                {member.memberFunction && (
+                  <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                    {member.memberFunction}
+                  </p>
+                )}
               </div>
 
               {/* Contact buttons */}
@@ -256,7 +316,7 @@ export default function TeamMemberDetail() {
                 </div>
               ) : (
                 <div className="divide-y divide-border">
-                  {assignedVentures.map((v) => (
+                  {assignedVentures.map((v: any) => (
                     <div
                       key={v.id}
                       className="p-3 flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors group"
@@ -265,8 +325,10 @@ export default function TeamMemberDetail() {
                       <div>
                         <span className="text-xs font-medium text-foreground">{v.name}</span>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] font-mono text-muted-foreground">{v.theme}</span>
-                          {v.location && v.location !== "TBD" && <span className="text-[10px] text-muted-foreground">{v.location}</span>}
+                          <span className="text-[10px] font-mono text-muted-foreground">{v.sector}</span>
+                          {v.location && v.location !== "TBD" && (
+                            <span className="text-[10px] text-muted-foreground">{v.location}</span>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -317,9 +379,9 @@ export default function TeamMemberDetail() {
               ) : (
                 <div className="divide-y divide-border">
                   {[...memberTasks]
-                    .sort((a, b) => (a.status === "complete" ? 1 : 0) - (b.status === "complete" ? 1 : 0))
-                    .map((task) => {
-                      const resolvedStatus = getTaskStatusFromDate(task);
+                    .sort((a: any, b: any) => (a.status === "complete" ? 1 : 0) - (b.status === "complete" ? 1 : 0))
+                    .map((task: any) => {
+                      const resolvedStatus = getTaskStatus(task);
                       const sc = STATUS_CONFIG[resolvedStatus];
                       return (
                         <div key={task.id} className="p-3">
@@ -343,9 +405,11 @@ export default function TeamMemberDetail() {
                             </span>
                           </div>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[10px] font-mono text-muted-foreground">
-                              Due {formatDate(task.dueDate)}
-                            </span>
+                            {task.dueDate && (
+                              <span className="text-[10px] font-mono text-muted-foreground">
+                                Due {formatDate(task.dueDate)}
+                              </span>
+                            )}
                             {task.priority && (
                               <span
                                 className={cn(
@@ -396,14 +460,14 @@ export default function TeamMemberDetail() {
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {memberActivity.map((log) => (
+                {memberActivity.map((log: any) => (
                   <div key={log.id} className="p-3 flex gap-3">
                     <div className="size-1.5 rounded-full mt-1.5 flex-shrink-0 bg-primary/60" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-medium text-foreground">{log.action}</span>
                         <span className="text-[10px] font-mono text-muted-foreground">
-                          {new Date(log.timestamp).toLocaleDateString()}
+                          {log.createdAt ? new Date(log.createdAt).toLocaleDateString() : ""}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5 truncate">{log.detail}</p>

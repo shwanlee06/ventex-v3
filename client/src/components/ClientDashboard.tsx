@@ -411,29 +411,36 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
 
         <button
           onClick={() => setShowPortfolioBreakdown(true)}
-          className="mt-6 flex items-end gap-8 w-full text-left group cursor-pointer hover:opacity-90 transition-opacity"
+          className="mt-6 flex items-end gap-6 sm:gap-8 w-full text-left group cursor-pointer hover:opacity-90 transition-opacity"
         >
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-light">Portfolio Value</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-light">Active Ventures</p>
             <p className="text-2xl sm:text-3xl font-light text-foreground tabular-nums tracking-tight">
-              {(() => {
-                const val = totalDistAmount * 8;
-                if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(2)}M`;
-                if (val >= 1_000) return `$${(val / 1_000).toFixed(0)}K`;
-                return formatCurrency(val);
-              })()}
+              {allVentures.filter(v => v.status === "In progress").length}
             </p>
-            <p className="text-[11px] text-muted-foreground/50 mt-0.5 tabular-nums">
-              {formatCurrency(totalDistAmount * 8)}
+            <p className="text-[11px] text-muted-foreground/50 mt-0.5">
+              of {allVentures.length} total
             </p>
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
-              <TrendingUp className="size-4 text-emerald-400" />
-              <span className="text-lg font-light text-emerald-400 tabular-nums">+18.4%</span>
-            </div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-light">Distributed</p>
+            <p className="text-2xl sm:text-3xl font-light text-emerald-400 tabular-nums tracking-tight">
+              {paidDistAmount >= 1_000_000 ? `$${(paidDistAmount / 1_000_000).toFixed(1)}M` : formatCurrency(paidDistAmount)}
+            </p>
+            <p className="text-[11px] text-muted-foreground/50 mt-0.5">
+              {scheduledDists.length > 0 ? `${scheduledDists.length} upcoming` : "all settled"}
+            </p>
           </div>
-          <span className="text-[10px] text-muted-foreground/40 ml-auto group-hover:text-muted-foreground transition-colors">Tap for breakdown</span>
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-light">Open Tasks</p>
+            <p className="text-2xl sm:text-3xl font-light text-foreground tabular-nums tracking-tight">
+              {openTasks.length}
+            </p>
+            <p className="text-[11px] text-muted-foreground/50 mt-0.5">
+              {overdueTasks.length > 0 ? `${overdueTasks.length} overdue` : "on track"}
+            </p>
+          </div>
+          <span className="text-[10px] text-muted-foreground/40 ml-auto group-hover:text-muted-foreground transition-colors hidden sm:block">Tap for breakdown</span>
         </button>
       </motion.div>
 
@@ -474,7 +481,34 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
           </div>
         </motion.div>
 
-        {/* Card 2: Portfolio velocity — removed: was showing false "on track" data */}
+        {/* Card 2: AI Drafts ready for review */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.3 }}
+          className="client-card relative overflow-hidden"
+        >
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-2xl" />
+          <div className="pl-4 py-4 pr-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Briefcase className="size-4 text-blue-400" />
+              <span className="text-xs font-medium text-foreground">
+                {allVentures.length} venture{allVentures.length !== 1 ? "s" : ""} in portfolio
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+              {allVentures.filter(v => v.status === "In progress").length} active across {sectors.length} sector{sectors.length !== 1 ? "s" : ""}
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-[11px] text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 gap-1 px-0"
+              onClick={() => onNavigate("/ventures")}
+            >
+              View Ventures <ArrowRight className="size-3" />
+            </Button>
+          </div>
+        </motion.div>
 
         {/* Card 3: Distributions */}
         <motion.div
@@ -637,37 +671,30 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
           {(() => {
             // Build sector allocation from ventures
             const sectorMap: Record<string, { count: number; value: number }> = {};
-            const portfolioVal = totalDistAmount * 8;
+            // Use total distribution amount as portfolio metric (real data)
             for (const v of allVentures) {
               if (!sectorMap[v.sector]) sectorMap[v.sector] = { count: 0, value: 0 };
               sectorMap[v.sector].count += 1;
             }
-            // Distribute value proportionally by venture count
-            const totalVentures = allVentures.length || 1;
-            for (const [sector, data] of Object.entries(sectorMap)) {
-              data.value = (data.count / totalVentures) * portfolioVal;
-            }
+            // Show venture count per sector (real data)
+            const totalVentureCount = allVentures.length || 1;
             const sectorEntries = Object.entries(sectorMap)
-              .sort((a, b) => b[1].value - a[1].value);
+              .sort((a, b) => b[1].count - a[1].count);
 
             const pieSlices = sectorEntries.map(([sector, data]) => ({
               label: sector,
-              value: data.value,
+              value: data.count,
               color: getSectorColor(sector),
             }));
 
             return (
               <div className="space-y-6">
-                {/* Total value */}
+                {/* Total ventures */}
                 <div className="text-center">
                   <p className="text-3xl font-light text-foreground tabular-nums tracking-tight">
-                    {portfolioVal >= 1_000_000
-                      ? `$${(portfolioVal / 1_000_000).toFixed(2)}M`
-                      : portfolioVal >= 1_000
-                        ? `$${(portfolioVal / 1_000).toFixed(0)}K`
-                        : formatCurrency(portfolioVal)}
+                    {allVentures.length} Ventures
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">Total Portfolio Value</p>
+                  <p className="text-xs text-muted-foreground mt-1">{allVentures.filter(v => v.status === "In progress").length} active across {sectorEntries.length} sectors</p>
                 </div>
 
                 {/* Pie chart */}
@@ -680,7 +707,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
                 {/* Legend / breakdown list */}
                 <div className="space-y-2">
                   {sectorEntries.map(([sector, data]) => {
-                    const pct = portfolioVal > 0 ? ((data.value / portfolioVal) * 100).toFixed(1) : "0";
+                    const pct = totalVentureCount > 0 ? ((data.count / totalVentureCount) * 100).toFixed(1) : "0";
                     return (
                       <div key={sector} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
                         <div className="flex items-center gap-3">
@@ -697,9 +724,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-medium text-foreground tabular-nums">
-                            {data.value >= 1_000_000
-                              ? `$${(data.value / 1_000_000).toFixed(2)}M`
-                              : formatCurrency(data.value)}
+                            {data.count} venture{data.count !== 1 ? "s" : ""}
                           </p>
                           <p className="text-[11px] text-muted-foreground tabular-nums">{pct}%</p>
                         </div>

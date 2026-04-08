@@ -1,26 +1,113 @@
 // ============================================================================
 // AI Chat Streaming Endpoint — SSE for real-time token delivery
+// Uses LIVE database context instead of hardcoded data
 // ============================================================================
 
 import { Router, Request, Response } from "express";
 import { ENV } from "../_core/env";
+import { getDb } from "../db";
+import {
+  ventures, tasks, spvs, distributions, teamMembers,
+  documentIntelligence, ventureRisks, dailyBriefs, smartAlerts,
+  aiObservations,
+} from "../../drizzle/schema";
+import { desc, eq } from "drizzle-orm";
 
-const SYSTEM_PROMPT = `You are the ATLAS Venture Intelligence Operations assistant. You are powered by Claude 4.6 Sonnet.
+// ── Build live context from database ──────────────────────────────────────
 
-You serve as an AI-powered operations assistant for a multi-sector venture holding company managing ventures across Real Estate, F&B, Yacht, Entertainment, Oil & Gas, and other sectors.
+async function buildLiveContext(): Promise<string> {
+  try {
+    const db = await getDb();
+    if (!db) return "[Database unavailable — answering from general knowledge only]";
 
-Key context:
-- Geographies: Dubai, Oman, Greece, USA, Lebanon
-- Key ventures: Nammos partnerships (Watson Island, Lagonissi), Zarka City (Oman), various real estate
-- SPV stages: Active deal, In negotiation, Closed deal, Dropped deal
-- Team: Jimmy Frangi (Founder), Carl Frangi (IR), Anton Maghami (VP Ops), Jon Eichner (COO), Maher Abou Chakra (Accounting)
-- Partner: Monterock International (UAE)
+    const [allVentures, allTasks, allSpvs, allDist, allTeam, recentDocs, allRisks, latestBrief, alerts, observations] = await Promise.all([
+      db.select().from(ventures),
+      db.select().from(tasks),
+      db.select().from(spvs),
+      db.select().from(distributions),
+      db.select().from(teamMembers),
+      db.select().from(documentIntelligence).where(eq(documentIntelligence.processingStatus, "completed")).orderBy(desc(documentIntelligence.processedAt)).limit(10),
+      db.select().from(ventureRisks),
+      db.select().from(dailyBriefs).orderBy(desc(dailyBriefs.generatedAt)).limit(1),
+      db.select().from(smartAlerts).where(eq(smartAlerts.dismissed, 0)).limit(10),
+      db.select().from(aiObservations).where(eq(aiObservations.dismissed, 0)).limit(5),
+    ]);
 
-Your role: Answer venture ops questions, draft communications, provide strategic analysis, help with task planning.
+    const overdueTasks = allTasks.filter((t: any) => {
+      if (!t.dueDate || t.status === "complete") return false;
+      return new Date(t.dueDate) < new Date();
+    });
 
-Style: Professional, concise, data-driven. Use markdown. Reference specific ventures/SPVs/team by name. Mark drafted communications as requiring approval.
+    const activeVentures = allVentures.filter((v: any) => v.status === "In progress");
+    const activeSpvs = allSpvs.filter((s: any) => s.stage === "Active deal" || s.stage === "In negotiation");
 
-Important: You are Claude 4.6 Sonnet.`;
+    let context = `
+=== LIVE PORTFOLIO DATA ===
+
+VENTURES (${allVentures.length} total, ${activeVentures.length} active):
+${allVentures.map((v: any) => `- ${v.name} | ${v.sector || v.theme || "N/A"} | ${v.location || "N/A"} | Status: ${v.status} | Health: ${v.healthScore || "N/A"}/100`).join("\n")}
+
+TASKS (${allTasks.length} total, ${overdueTasks.length} overdue):
+${allTasks.slice(0, 20).map((t: any) => `- [${t.status}] ${t.title}${t.dueDate ? ` (due: ${t.dueDate})` : ""}${t.priority ? ` [${t.priority}]` : ""}`).join("\n")}
+
+SPVs (${allSpvs.length} total, ${activeSpvs.length} active):
+${allSpvs.map((s: any) => `- ${s.name} | ${s.theme} | Stage: ${s.stage} | Priority: ${s.priority}`).join("\n")}
+
+TEAM (${allTeam.length} members):
+${allTeam.map((t: any) => `- ${t.name} (${t.role})`).join("\n")}
+
+DISTRIBUTIONS: ${allDist.length} total, ${allDist.filter((d: any) => d.status === "Paid").length} paid
+`;
+
+    if (allRisks.length > 0) {
+      context += `\nIDENTIFIED RISKS (${allRisks.length}):\n${allRisks.slice(0, 10).map((r: any) => `- [${r.status}] ${r.riskDescription}`).join("\n")}\n`;
+    }
+
+    if (recentDocs.length > 0) {
+      context += `\nRECENT DOCUMENT INTELLIGENCE (${recentDocs.length} analyzed):\n${recentDocs.map((d: any) => `- [${d.documentType}] ${d.summary?.slice(0, 150)}`).join("\n")}\n`;
+    }
+
+    if (latestBrief.length > 0) {
+      const brief = latestBrief[0];
+      context += `\nLATEST DAILY BRIEF (${brief.briefDate}):\nHeadline: ${brief.headline}\nPortfolio Health: ${brief.portfolioHealth}\n`;
+    }
+
+    if (alerts.length > 0) {
+      context += `\nACTIVE SMART ALERTS:\n${alerts.map((a: any) => `- [${a.severity}] ${a.message}`).join("\n")}\n`;
+    }
+
+    if (observations.length > 0) {
+      context += `\nAI OBSERVATIONS:\n${observations.map((o: any) => `- [${o.observationType}] ${o.observation}`).join("\n")}\n`;
+    }
+
+    return context;
+  } catch (e) {
+    console.error("[AI Stream] Failed to build live context:", e);
+    return "[Database query failed — answering from general knowledge only]";
+  }
+}
+
+const BASE_SYSTEM_PROMPT = `You are the ATLAS Venture Intelligence Operations assistant.
+
+You serve as an AI-powered operations assistant for a multi-sector venture holding company. The company manages ventures across Real Estate, F&B, Yacht, Entertainment, Oil & Gas, and other sectors.
+
+Your capabilities:
+1. Answer questions about venture operations, SPV pipeline, team, and distributions using LIVE DATA
+2. Draft professional communications (LP updates, investor memos, internal briefs)
+3. Provide strategic analysis and recommendations based on actual portfolio data
+4. Help with task prioritization and operational planning
+5. Analyze document intelligence findings and surface insights
+6. Reference specific risks, deadlines, and action items from processed documents
+7. Provide venture health assessments based on real metrics
+
+Communication style:
+- Professional, concise, and data-driven
+- Use markdown formatting for structured responses
+- When drafting emails or communications, mark them as requiring approval
+- Reference specific ventures, SPVs, and team members by name when relevant
+- Use tables for comparative data when appropriate
+
+Important: Always use the live portfolio data provided below to answer questions accurately. Do not make up data.`;
 
 const resolveApiUrl = () =>
   ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
@@ -42,6 +129,10 @@ aiStreamRouter.post("/api/ai/stream", async (req: Request, res: Response) => {
     return;
   }
 
+  // Build live context from database
+  const liveContext = await buildLiveContext();
+  const systemPrompt = `${BASE_SYSTEM_PROMPT}\n\n${liveContext}`;
+
   // Set SSE headers
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
@@ -50,7 +141,7 @@ aiStreamRouter.post("/api/ai/stream", async (req: Request, res: Response) => {
   res.flushHeaders();
 
   const llmMessages = [
-    { role: "system", content: SYSTEM_PROMPT },
+    { role: "system", content: systemPrompt },
     ...messages.map((m: { role: string; content: string | Array<unknown> }) => ({
       role: m.role,
       content: m.content,
@@ -136,7 +227,7 @@ aiStreamRouter.post("/api/ai/stream", async (req: Request, res: Response) => {
             // Check for finish
             if (chunk.choices?.[0]?.finish_reason) {
               res.write(
-                `data: ${JSON.stringify({ finish_reason: chunk.choices[0].finish_reason, model: chunk.model || "claude-4.6-sonnet" })}\n\n`
+                `data: ${JSON.stringify({ finish_reason: chunk.choices[0].finish_reason, model: chunk.model || "atlas-intelligence" })}\n\n`
               );
             }
           } catch {

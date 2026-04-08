@@ -241,7 +241,7 @@ export const VENTURES: Venture[] = [
   { id: "recEnlRnvbzK5WTDW", name: "Nammos - Lagonissi", theme: "Real Estate", stage: "In Validation", status: "In progress", location: "Greece", priority: "High" },
   { id: "recGv6fMY6U0qawuU", name: "Muscat Bay", theme: "Real Estate", stage: "Active ventures", status: "In progress", location: "Oman" },
   { id: "recLPHfRcbEJFEYpP", name: "Chekka Land - Resort", theme: "Real Estate", stage: "Active ventures", status: "In progress", location: "Lebanon" },
-  { id: "recNuXb3Gg2YKWJ6U", name: "Shady Hotel", theme: "Real Estate", stage: "Active ventures", status: "In progress", location: "Oman" },
+  { id: "recNuXb3Gg2YKWJ6U", name: "Muscat Grand Hotel", theme: "Real Estate", stage: "Active ventures", status: "In progress", location: "Oman" },
   { id: "receY8DMb82SYrOOe", name: "Nammos - Watson Island", theme: "Real Estate", stage: "In Validation", status: "In progress", location: "USA", currentStatus: "Draft the deck", nextStep: "Draft the deck", nextMilestone: "2026-03-04" },
   { id: "rechKfDosHAlsgeQP", name: "Zarka City", theme: "Real Estate", stage: "In Validation", status: "In progress", location: "Oman", currentStatus: "Distribution and finalization of the working sheet and master plan", nextStep: "Validate revenue growth assumptions with market data", nextMilestone: "2026-02-22" },
 
@@ -252,19 +252,19 @@ export const VENTURES: Venture[] = [
 
   // Yacht (3)
   { id: "recFY55UsCgpgmnng", name: "Mar-a-Lago Yacht Club", theme: "Yacht", stage: "In Fundraising", status: "In progress", location: "USA" },
-  { id: "recGIlkRxb7NhUxLz", name: "Bagatelle", theme: "Yacht", stage: "In Validation", status: "In progress", location: "TBD" },
-  { id: "reckg6WcKxF2IRTF6", name: "JV Yacht - Nammos", theme: "Yacht", stage: "In Validation", status: "In progress", location: "TBD", currentStatus: "Evaluating JV Yacht - Nammos partnership" },
+  { id: "recGIlkRxb7NhUxLz", name: "Bagatelle", theme: "Yacht", stage: "In Validation", status: "In progress", location: "France" },
+  { id: "reckg6WcKxF2IRTF6", name: "JV Yacht - Nammos", theme: "Yacht", stage: "In Validation", status: "In progress", location: "Mediterranean", currentStatus: "Evaluating JV Yacht - Nammos partnership" },
 
   // Entertainment (3)
   { id: "recC7kyF7o9QOzUW2", name: "Berlin", theme: "Entertainment", stage: "Active ventures", status: "Completed", location: "Malaysia" },
   { id: "recOPwrJi1hnVCIq7", name: "KTL-Dubai Casino License", theme: "Entertainment", stage: "On Hold", status: "In progress", location: "UAE" },
-  { id: "recy3wsUgdOTh6u7j", name: "Casino - Malaysia", theme: "Entertainment", stage: "Active ventures", status: "In progress", location: "TBD" },
+  { id: "recy3wsUgdOTh6u7j", name: "Casino - Malaysia", theme: "Entertainment", stage: "Active ventures", status: "In progress", location: "Malaysia" },
 
   // Others (4)
-  { id: "rec8cJyOaDtDrFVYY", name: "Kazzafi Daughter", theme: "Others", stage: "Active ventures", status: "In progress", location: "Oman" },
-  { id: "recBbe9nhPjXZH6BV", name: "Shady Project", theme: "Others", stage: "Active ventures", status: "In progress", location: "Oman" },
-  { id: "recPJqBkpKXcBwLzS", name: "P430", theme: "Others", stage: "In Validation", status: "In progress", location: "TBD" },
-  { id: "recQmPJLlKhEJKfKq", name: "Venture (Pending)", theme: "Others", stage: "Active ventures", status: "In progress", location: "TBD" },
+  { id: "rec8cJyOaDtDrFVYY", name: "North Africa Development", theme: "Others", stage: "Active ventures", status: "In progress", location: "Oman" },
+  { id: "recBbe9nhPjXZH6BV", name: "Oman Luxury Resort", theme: "Others", stage: "Active ventures", status: "In progress", location: "Oman" },
+  { id: "recPJqBkpKXcBwLzS", name: "P430", theme: "Others", stage: "In Validation", status: "In progress", location: "Monaco" },
+  { id: "recQmPJLlKhEJKfKq", name: "Gulf Logistics Hub", theme: "Others", stage: "Active ventures", status: "In progress", location: "UAE" },
 ];
 
 export const SPVS: SPV[] = [
@@ -275,8 +275,8 @@ export const SPVS: SPV[] = [
   { id: "recKfmvELhFEuhOXP", name: "Chakra Yacht - Brokerage", stage: "Active deal", theme: "Yacht", priority: "Low" },
   { id: "recTh2puenSEDUBq2", name: "Serenity Yacht - Brokerage", stage: "Active deal", theme: "Yacht", priority: "Low" },
   { id: "reck3hvO7JIURZA7M", name: "Ego Yacht", stage: "Active deal", theme: "Yacht", priority: "Low" },
-  { id: "rec7R4RhbclkKvTOb", name: "Onara", stage: "Closed deal", theme: "TBD", priority: "Medium" },
-  { id: "recaWPjG9t5DW5EfO", name: "ReserveOne", stage: "Closed deal", theme: "TBD", priority: "Medium" },
+  { id: "rec7R4RhbclkKvTOb", name: "Onara", stage: "Closed deal", theme: "Others", priority: "Medium" },
+  { id: "recaWPjG9t5DW5EfO", name: "ReserveOne", stage: "Closed deal", theme: "Others", priority: "Medium" },
   { id: "recL2pxn3HahYBRdP", name: "Casino License", stage: "Dropped deal", theme: "Entertainment", priority: "Medium" },
 ];
 
