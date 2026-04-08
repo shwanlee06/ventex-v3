@@ -2025,3 +2025,8 @@
 
 ### Bug Fix — Draft Center Delete
 - [x] Fix: Cannot delete dismissed drafts in draft center (added deleteDraft + bulkDeleteDrafts backend procedures, Delete button on each dismissed draft, bulk Delete Selected button)
+
+### Bug Fix — Mobile UI Issues
+- [x] Fix: Remove "more" option on mobile navigation — replaced bottom tab bar with slide-out hamburger drawer
+- [x] Fix: Transparent elements on mobile — topbar now uses solid bg-card, no backdrop-blur
+- [x] Fix: Mobile layout feels too compact — larger touch targets (py-3.5), grouped nav with section headers, spacious drawer layout
