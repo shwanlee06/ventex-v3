@@ -1069,13 +1069,12 @@ export default function SpyOps() {
             </div>
             <h1
               style={{
-                fontFamily: "'Bodoni Moda', 'Didot', Georgia, serif",
-                fontSize: "clamp(64px, 11vw, 160px)",
-                letterSpacing: "0.04em",
-                lineHeight: 0.92,
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: "clamp(72px, 12vw, 180px)",
+                letterSpacing: "0.05em",
+                lineHeight: 0.9,
                 margin: 0,
                 color: "#fff",
-                fontWeight: 700,
               }}
             >
               VENTURE
@@ -1391,12 +1390,11 @@ export default function SpyOps() {
           <div>
             <h2
               style={{
-                fontFamily: "'Bodoni Moda', 'Didot', Georgia, serif",
-                fontSize: "clamp(44px, 5.5vw, 72px)",
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: "clamp(48px, 6vw, 80px)",
                 lineHeight: 1,
                 margin: 0,
-                letterSpacing: "0.04em",
-                fontWeight: 600,
+                letterSpacing: "0.05em",
               }}
             >
               A STRUCTURED

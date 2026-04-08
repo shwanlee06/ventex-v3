@@ -2045,3 +2045,6 @@
 - [x] Polish: Typography upgrade — Bodoni Moda for headings/brand, Inter for body, applied across all key pages
 - [x] Polish: font-display utility class, .page-title, .brand-heading, .client-heading CSS rules added
 - [x] Polish: Key page refinements — Topbar, Sidebar brand, SpyOps hero, ClientDashboard hero + sections, Agent concierge title
+
+### Revert — Bodoni Moda Font
+- [x] Revert all Bodoni Moda changes back to previous fonts (Bebas Neue for SpyOps, Inter for everything else)

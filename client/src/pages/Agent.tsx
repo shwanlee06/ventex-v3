@@ -552,7 +552,7 @@ export default function Agent() {
               <Sparkles className="size-4 text-foreground/70" />
             </div>
             <div>
-              <span className="text-sm text-foreground tracking-tight" style={{ fontFamily: '"Bodoni Moda", "Didot", Georgia, serif', fontWeight: 500 }}>
+              <span className="text-sm font-medium text-foreground tracking-tight">
                 {activeChat?.title || "New conversation"}
               </span>
               {isStreaming && (
