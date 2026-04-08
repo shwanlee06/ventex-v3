@@ -168,6 +168,8 @@ interface AgentContextValue {
   sendDraft: (draftId: number, editedBody?: string) => void;
   dismissDraft: (draftId: number) => void;
   restoreDraft: (draftId: number) => void;
+  deleteDraft: (draftId: number) => void;
+  bulkDeleteDrafts: (draftIds: number[]) => void;
   isSendingDraft: boolean;
 
   // Velocity
@@ -230,6 +232,8 @@ export function AgentProvider({ children }: { children: ReactNode }) {
   const sendDraftMut = trpc.agents.sendDraft.useMutation({ onSuccess: invalidateAll });
   const dismissDraftMut = trpc.agents.dismissDraft.useMutation({ onSuccess: invalidateAll });
   const restoreDraftMut = trpc.agents.restoreDraft.useMutation({ onSuccess: invalidateAll });
+  const deleteDraftMut = trpc.agents.deleteDraft.useMutation({ onSuccess: invalidateAll });
+  const bulkDeleteDraftsMut = trpc.agents.bulkDeleteDrafts.useMutation({ onSuccess: invalidateAll });
 
   // ── Computed values ──────────────────────────────────────────────────
 
@@ -312,6 +316,8 @@ export function AgentProvider({ children }: { children: ReactNode }) {
         sendDraftMut.mutate({ draftId, editedBody }),
       dismissDraft: (draftId: number) => dismissDraftMut.mutate({ draftId }),
       restoreDraft: (draftId: number) => restoreDraftMut.mutate({ draftId }),
+      deleteDraft: (draftId: number) => deleteDraftMut.mutate({ draftId }),
+      bulkDeleteDrafts: (draftIds: number[]) => bulkDeleteDraftsMut.mutate({ draftIds }),
       isSendingDraft: sendDraftMut.isPending,
 
       velocityMetrics: velocityMetrics as VelocityMetrics | undefined,
@@ -325,7 +331,7 @@ export function AgentProvider({ children }: { children: ReactNode }) {
       events, metrics, eventsLoading, metricsLoading,
       runAll, runSingle, markReadMut, markAllReadMut, executeActionMut,
       invalidateAll, drafts, pendingDraftCount,
-      sendDraftMut, dismissDraftMut, restoreDraftMut,
+      sendDraftMut, dismissDraftMut, restoreDraftMut, deleteDraftMut, bulkDeleteDraftsMut,
       velocityMetrics, agentStatuses, unreadWithAction,
       criticalUnread, warningUnread,
     ]

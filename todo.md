@@ -2022,3 +2022,6 @@
 - [x] P0: Clean up venture names (Kazzafi Daughter → North Africa Development, Shady Project → Oman Luxury Resort, Venture Pending → Gulf Logistics Hub) in data.ts
 - [x] P1: Replaced status bar with real stats (SECTORS: X · VENTURES: X · TASKS: X)
 - [x] P1: Update TBD locations in data.ts ventures (Casino Malaysia → Malaysia, P430 → Monaco, JV Yacht → Mediterranean, Bagatelle → France, Gulf Logistics Hub → UAE)
+
+### Bug Fix — Draft Center Delete
+- [x] Fix: Cannot delete dismissed drafts in draft center (added deleteDraft + bulkDeleteDrafts backend procedures, Delete button on each dismissed draft, bulk Delete Selected button)

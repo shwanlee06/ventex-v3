@@ -84,22 +84,28 @@ export default function DraftsPage() {
   const [previewDraft, setPreviewDraft] = useState<AgentDraft | null>(null);
   const [editedBody, setEditedBody] = useState("");
   const [confirmDismiss, setConfirmDismiss] = useState<AgentDraft | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<AgentDraft | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [collapsedVentures, setCollapsedVentures] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [confirmBulkDismiss, setConfirmBulkDismiss] = useState(false);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
 
   let drafts: AgentDraft[] = [];
   let sendDraft: (id: number, body?: string) => void = () => {};
   let dismissDraft: (id: number) => void = () => {};
   let restoreDraft: (id: number) => void = () => {};
+  let deleteDraft: (id: number) => void = () => {};
+  let bulkDeleteDrafts: (ids: number[]) => void = () => {};
   try {
     const agents = useAgents();
     drafts = agents.drafts;
     sendDraft = agents.sendDraft;
     dismissDraft = agents.dismissDraft;
     restoreDraft = agents.restoreDraft;
+    deleteDraft = agents.deleteDraft;
+    bulkDeleteDrafts = agents.bulkDeleteDrafts;
   } catch {
     // AgentProvider not mounted
   }
@@ -207,6 +213,13 @@ export default function DraftsPage() {
     toast.success("Draft restored to pending");
   }, [restoreDraft]);
 
+  const handleDelete = useCallback(() => {
+    if (!confirmDelete) return;
+    deleteDraft(confirmDelete.id);
+    toast.success("Draft permanently deleted");
+    setConfirmDelete(null);
+  }, [confirmDelete, deleteDraft]);
+
   const handleBulkDismiss = useCallback(() => {
     Array.from(selectedIds).forEach(id => {
       dismissDraft(id);
@@ -223,6 +236,13 @@ export default function DraftsPage() {
     toast.success(`${selectedIds.size} drafts restored`);
     setSelectedIds(new Set());
   }, [selectedIds, restoreDraft]);
+
+  const handleBulkDelete = useCallback(() => {
+    bulkDeleteDrafts(Array.from(selectedIds));
+    toast.success(`${selectedIds.size} drafts permanently deleted`);
+    setSelectedIds(new Set());
+    setConfirmBulkDelete(false);
+  }, [selectedIds, bulkDeleteDrafts]);
 
   return (
     <DashboardLayout title="Draft Center" subtitle="AI-GENERATED COMMUNICATIONS">
@@ -281,22 +301,10 @@ export default function DraftsPage() {
               placeholder="Search by venture, subject, or recipient..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9 text-xs"
+              className="pl-10 h-9 text-xs"
             />
           </div>
-
-          {/* Type filter pills */}
-          <div className="flex gap-1.5 flex-wrap">
-            <button
-              onClick={() => setTypeFilter(null)}
-              className={cn(
-                "text-[10px] font-medium px-2.5 py-1.5 rounded-full transition-colors flex items-center gap-1",
-                !typeFilter ? "bg-primary/15 text-primary" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
-              )}
-            >
-              <Filter className="size-3" />
-              All types
-            </button>
+          <div className="flex items-center gap-1.5 flex-wrap">
             {draftTypes.map(type => (
               <button
                 key={type}
@@ -333,20 +341,31 @@ export default function DraftsPage() {
                 className="h-7 text-[11px] px-3 gap-1"
                 onClick={() => setConfirmBulkDismiss(true)}
               >
-                <Trash2 className="size-3" />
+                <XCircle className="size-3" />
                 Dismiss Selected
               </Button>
             )}
             {activeTab === "dismissed" && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-[11px] px-3 gap-1"
-                onClick={handleBulkRestore}
-              >
-                <RotateCcw className="size-3" />
-                Restore Selected
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-[11px] px-3 gap-1"
+                  onClick={handleBulkRestore}
+                >
+                  <RotateCcw className="size-3" />
+                  Restore Selected
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-[11px] px-3 gap-1 text-red-400 border-red-500/30 hover:bg-red-500/10"
+                  onClick={() => setConfirmBulkDelete(true)}
+                >
+                  <Trash2 className="size-3" />
+                  Delete Selected
+                </Button>
+              </>
             )}
             <Button
               variant="ghost"
@@ -539,15 +558,26 @@ export default function DraftsPage() {
                                       </div>
                                     )}
                                     {activeTab === "dismissed" && (
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-7 text-[11px] px-3 gap-1"
-                                        onClick={() => handleRestore(draft)}
-                                      >
-                                        <RotateCcw className="size-3" />
-                                        Restore
-                                      </Button>
+                                      <>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          className="h-7 text-[11px] px-3 gap-1"
+                                          onClick={() => handleRestore(draft)}
+                                        >
+                                          <RotateCcw className="size-3" />
+                                          Restore
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          className="h-7 text-[11px] px-3 gap-1 text-red-400 border-red-500/30 hover:bg-red-500/10"
+                                          onClick={() => setConfirmDelete(draft)}
+                                        >
+                                          <Trash2 className="size-3" />
+                                          Delete
+                                        </Button>
+                                      </>
                                     )}
                                   </div>
                                 </div>
@@ -654,6 +684,27 @@ export default function DraftsPage() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Delete confirmation (single) */}
+      <AlertDialog open={!!confirmDelete} onOpenChange={(open) => !open && setConfirmDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-sm">Permanently delete this draft?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs">
+              This action cannot be undone. The draft will be permanently removed from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-xs">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="text-xs bg-red-600 hover:bg-red-700 text-white"
+              onClick={handleDelete}
+            >
+              Delete Permanently
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Bulk dismiss confirmation */}
       <AlertDialog open={confirmBulkDismiss} onOpenChange={setConfirmBulkDismiss}>
         <AlertDialogContent>
@@ -667,6 +718,27 @@ export default function DraftsPage() {
             <AlertDialogCancel className="text-xs">Cancel</AlertDialogCancel>
             <AlertDialogAction className="text-xs" onClick={handleBulkDismiss}>
               Dismiss All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk delete confirmation */}
+      <AlertDialog open={confirmBulkDelete} onOpenChange={setConfirmBulkDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-sm">Permanently delete {selectedIds.size} drafts?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs">
+              This action cannot be undone. All selected drafts will be permanently removed from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-xs">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="text-xs bg-red-600 hover:bg-red-700 text-white"
+              onClick={handleBulkDelete}
+            >
+              Delete All Permanently
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

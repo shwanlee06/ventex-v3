@@ -1421,6 +1421,60 @@ export const agentsRouter = router({
       return { success: true };
     }),
 
+  /**
+   * Permanently delete a dismissed draft
+   */
+  deleteDraft: protectedProcedure
+    .input(z.object({ draftId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Verify the draft belongs to the user's org and is dismissed
+      const effectiveOrgId = resolveOrgId(ctx.user, undefined);
+      const [draft] = await db.select().from(agentDrafts).where(eq(agentDrafts.id, input.draftId)).limit(1);
+      if (!draft) throw new Error("Draft not found");
+      if (effectiveOrgId && draft.organizationId !== effectiveOrgId) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+      if (draft.status !== "dismissed") {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Only dismissed drafts can be deleted" });
+      }
+
+      await db.delete(agentDrafts).where(eq(agentDrafts.id, input.draftId));
+
+      return { success: true };
+    }),
+
+  /**
+   * Bulk delete dismissed drafts
+   */
+  bulkDeleteDrafts: protectedProcedure
+    .input(z.object({ draftIds: z.array(z.number()).min(1).max(100) }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const effectiveOrgId = resolveOrgId(ctx.user, undefined);
+
+      // Verify all drafts exist, belong to user's org, and are dismissed
+      const drafts = await db.select().from(agentDrafts).where(inArray(agentDrafts.id, input.draftIds));
+      for (const draft of drafts) {
+        if (effectiveOrgId && draft.organizationId !== effectiveOrgId) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        }
+        if (draft.status !== "dismissed") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: `Draft ${draft.id} is not dismissed` });
+        }
+      }
+
+      if (drafts.length > 0) {
+        await db.delete(agentDrafts).where(inArray(agentDrafts.id, input.draftIds));
+      }
+
+      return { success: true, deleted: drafts.length };
+    }),
+
   // ── Velocity Tracking ─────────────────────────────────────────────────
 
   /**
