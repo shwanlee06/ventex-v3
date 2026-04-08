@@ -1996,3 +1996,16 @@
 - [x] SOC 2 gap fix: Added audit trail logging to agentScheduler, proactiveTaskGenerator, and autonomousTaskExecutor
 - [x] Audit data handling: AES-256-GCM encryption, httpOnly/secure cookies, Zod validation on all inputs
 - [x] Verified: rate limiting, data retention purge (365d audit, 180d activity, 90d notifications), MFA/TOTP, security headers (CSP, HSTS, X-Frame-Options)
+
+### ATLAS Member Access — Same as Owner
+- [x] Audit current role/permission system (owner vs admin vs partner)
+- [x] Give admin same permissions as owner in RBAC matrix (added manage_settings, manage_access)
+- [x] Allow admins to promote users to admin role (only owner can promote to owner)
+- [x] Frontend isAtlasTeam already treats admin same as owner — no change needed
+- [x] All Command Center pages, settings, client data, agent controls accessible to admin
+- [x] Remove partner from ATLAS team — partners are external, not internal ATLAS members
+- [x] ATLAS team = owner + admin only; partner no longer sees Command Center
+- [x] Updated frontend isAtlasTeam (atlas.ts) — removed partner from ATLAS check
+- [x] Updated backend isAtlasTeam (rbac.ts) — removed partner from ATLAS check
+- [x] Updated Topbar role label: "ATLAS Partner" → "Partner"
+- [x] Updated RBAC comments to clarify role hierarchy

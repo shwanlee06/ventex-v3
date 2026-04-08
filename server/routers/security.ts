@@ -76,12 +76,9 @@ export const securityRouter = router({
         throw new Error("Cannot change your own role");
       }
 
-      // Only owner can promote to admin/owner
-      if (
-        (input.role === "admin" || input.role === "owner") &&
-        ctx.user.role !== "owner"
-      ) {
-        throw new Error("Only the owner can promote users to admin or owner");
+      // Only owner/admin can promote to admin; only owner can promote to owner
+      if (input.role === "owner" && ctx.user.role !== "owner") {
+        throw new Error("Only the owner can promote users to owner");
       }
 
       const db = await getDb();
@@ -147,7 +144,7 @@ export const securityRouter = router({
         throw new Error("Cannot delete the system owner");
       }
 
-      // Only owner can delete admins
+      // Only owner can delete other admins (admins cannot delete each other)
       if (targetUser.role === "admin" && ctx.user.role !== "owner") {
         throw new Error("Only the owner can delete admin users");
       }

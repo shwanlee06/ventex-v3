@@ -1,9 +1,14 @@
 /**
  * Role-Based Access Control (RBAC) Middleware
  * 
- * SOC 2 compliant permission system with 6 roles:
+ * SOC 2 compliant permission system with 7 roles:
+ * 
+ * ATLAS INTERNAL TEAM:
  * - owner: Full system access, can manage all settings and users
- * - admin: Can manage ventures, SPVs, tasks, team, but not system settings
+ * - admin: Same as owner — full Command Center access, all settings, all clients
+ * 
+ * EXTERNAL / CLIENT-SIDE:
+ * - partner: Elevated client access (read all data + limited write) — NOT ATLAS internal
  * - manager: Can view/edit assigned ventures and tasks
  * - user: Standard access to assigned ventures (read + limited write)
  * - client: External client portal — read-only access to assigned ventures
@@ -61,9 +66,9 @@ const PERMISSION_MATRIX: Record<string, Set<Action>> = {
   ]),
   admin: new Set<Action>([
     "read", "create", "update", "delete",
-    "manage_team", "manage_roles", "export_data",
-    "view_audit_log", "process_documents",
-    "manage_spvs", "manage_distributions",
+    "manage_team", "manage_roles", "manage_settings",
+    "manage_access", "export_data", "view_audit_log",
+    "process_documents", "manage_spvs", "manage_distributions",
   ]),
   owner: new Set<Action>([
     "read", "create", "update", "delete",
@@ -78,16 +83,20 @@ const PERMISSION_MATRIX: Record<string, Set<Action>> = {
 /**
  * Check if a user is part of the ATLAS internal team.
  * ATLAS team sees everything; clients see only their org's data.
- * All roles except 'client' and 'viewer' are considered ATLAS team
- * when they don't belong to a client organization.
+ * 
+ * owner/admin = ATLAS team (full Command Center access)
+ * partner = external (elevated client, NOT ATLAS internal)
+ * manager/user = ATLAS team only if no client org assigned
+ * client/viewer = never ATLAS team
  */
 export function isAtlasTeam(user: { role: string; organizationId?: number | null }): boolean {
-  // owner/admin/partner are always ATLAS team regardless of org
-  if (user.role === "owner" || user.role === "admin" || user.role === "partner") return true;
+  // owner/admin are always ATLAS team — they see the full Command Center
+  if (user.role === "owner" || user.role === "admin") return true;
   // manager/user are ATLAS team if they have no client org (orgId null or 1 = ATLAS)
   if (user.role === "manager" || user.role === "user") {
     return !user.organizationId || user.organizationId === 1;
   }
+  // partner, client, viewer are NOT ATLAS team
   return false;
 }
 
