@@ -171,7 +171,8 @@ export default function AppSidebar() {
       {/* ── Mobile Hamburger Button (fixed top-left) ──────────────────── */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed top-3 left-3 z-40 flex items-center justify-center size-11 rounded-xl bg-card border border-border text-foreground shadow-lg active:scale-95 transition-transform"
+        className="md:hidden fixed top-3 left-3 z-40 flex items-center justify-center size-11 rounded-xl border border-border text-foreground shadow-lg active:scale-95 transition-transform"
+        style={{ backgroundColor: 'var(--card)' }}
         aria-label="Open navigation"
       >
         <Menu className="size-5" />
@@ -390,7 +391,8 @@ export default function AppSidebar() {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 280 }}
-              className="md:hidden fixed inset-y-0 left-0 z-50 w-[300px] bg-card border-r border-border flex flex-col"
+              className="md:hidden fixed inset-y-0 left-0 z-50 w-[300px] border-r border-border flex flex-col"
+              style={{ backgroundColor: 'var(--card)' }}
             >
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-5 border-b border-border">
