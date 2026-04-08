@@ -56,7 +56,7 @@ export default function SectorPulsePanel({ ventures }: SectorPulsePanelProps) {
     for (const [sector, vList] of Array.from(map)) {
       const avgCompletion = Math.round(vList.reduce((s: number, v: VentureData) => s + v.completionRate, 0) / vList.length);
       const overdueCount = vList.filter((v: VentureData) => v.overdueTasks > 0).length;
-      const hasOnHold = vList.some((v: VentureData) => v.status === "On hold");
+      const hasOnHold = vList.some((v: VentureData) => v.status === "On Hold" || v.status === "On hold");
 
       let health: SectorRow["health"] = "green";
       let healthLabel = "On Track";

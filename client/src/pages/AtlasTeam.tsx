@@ -424,7 +424,7 @@ export default function AtlasTeam() {
                   <TableRow className="hover:bg-transparent">
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Member</TableHead>
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Role</TableHead>
-                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden md:table-cell">Function</TableHead>
+                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden md:table-cell min-w-[80px]">Function</TableHead>
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden lg:table-cell">Ventures</TableHead>
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden sm:table-cell">Contact</TableHead>
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden md:table-cell">Status</TableHead>

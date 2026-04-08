@@ -742,6 +742,7 @@ export async function runDistributionSentinel(
     if (recentAlerts.length > 0) continue;
 
     const severity: Severity =
+      daysUntil !== null && daysUntil < 0 ? "critical" :
       daysUntil !== null && daysUntil <= 7 ? "critical" :
       daysUntil !== null && daysUntil <= 30 ? "warning" : "info";
 
@@ -770,7 +771,7 @@ export async function runDistributionSentinel(
     signals.push({
       agentName: "Distribution Sentinel",
       eventType: "alert",
-      message: `${fundName}: $${amount.toLocaleString()} ${daysUntil !== null ? `due in ${daysUntil} days` : "date TBD"}. LP notice drafted.`,
+      message: `${fundName}: $${amount.toLocaleString()} ${daysUntil !== null ? (daysUntil < 0 ? `${Math.abs(daysUntil)} days overdue` : daysUntil === 0 ? `due today` : `due in ${daysUntil} days`) : "date TBD"}. LP notice drafted.`,
       severity,
       organizationId: dist.organizationId,
       audience: "client",
@@ -2087,14 +2088,14 @@ export const agentsRouter = router({
     .input(z.object({
       organizationId: z.number().optional(),
       severity: z.enum(["all", "critical", "warning", "info"]).default("all"),
-      hoursBack: z.number().default(72),
-      limit: z.number().min(1).max(200).default(100),
+      hoursBack: z.number().default(720),
+      limit: z.number().min(1).max(500).default(200),
     }).optional())
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) return { items: [], stats: { total: 0, critical: 0, pending: 0, resolved: 0 } };
 
-      const hoursBack = input?.hoursBack ?? 72;
+      const hoursBack = input?.hoursBack ?? 720;
       const cutoff = new Date(Date.now() - hoursBack * 60 * 60 * 1000);
       const cutoff48h = new Date(Date.now() - 48 * 60 * 60 * 1000);
       const cutoff24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -2123,15 +2124,22 @@ export const agentsRouter = router({
         : [];
       const orgMap = Object.fromEntries(orgs.map(o => [o.id, o.name]));
 
-      const enriched = events.map(e => ({
-        ...e,
-        orgName: e.organizationId ? orgMap[e.organizationId] || "Unknown" : "System",
-        escalationLevel: !e.actionTaken && e.requiresClientAction
-          ? new Date(e.createdAt) < cutoff48h ? "critical" as const
-          : new Date(e.createdAt) < cutoff24h ? "warning" as const
-          : "normal" as const
-          : "resolved" as const,
-      }));
+      const enriched = events.map(e => {
+        let escalationLevel: "critical" | "warning" | "normal" | "resolved" = "normal";
+        if (e.actionTaken) {
+          escalationLevel = "resolved";
+        } else if (e.requiresClientAction) {
+          const eventTime = new Date(e.createdAt);
+          if (eventTime < cutoff48h) escalationLevel = "critical";
+          else if (eventTime < cutoff24h) escalationLevel = "warning";
+          else escalationLevel = "normal";
+        }
+        return {
+          ...e,
+          orgName: e.organizationId ? orgMap[e.organizationId] || "Unknown" : "System",
+          escalationLevel,
+        };
+      });
 
       // Compute stats
       const unactioned = events.filter(e => e.requiresClientAction && !e.actionTaken && !e.clientDismissed);
@@ -2141,7 +2149,7 @@ export const agentsRouter = router({
 
       return {
         items: enriched,
-        stats: { total: unactioned.length, critical, pending, resolved },
+        stats: { total: events.length, unactioned: unactioned.length, critical, pending, resolved },
       };
     }),
 

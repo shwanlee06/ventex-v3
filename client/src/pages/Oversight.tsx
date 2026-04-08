@@ -59,10 +59,10 @@ const SEVERITY_CONFIG = {
 export default function OversightPage() {
   const [, navigate] = useLocation();
   const [severityFilter, setSeverityFilter] = useState<"all" | "critical" | "warning" | "info">("all");
-  const [hoursBack, setHoursBack] = useState(72);
+  const [hoursBack, setHoursBack] = useState(720);
 
   const { data, isLoading, refetch, isRefetching } = trpc.agents.enhancedOversight.useQuery(
-    { severity: severityFilter, hoursBack, limit: 100 },
+    { severity: severityFilter, hoursBack, limit: 200 },
     { refetchInterval: 30000 }
   );
 
@@ -72,7 +72,10 @@ export default function OversightPage() {
   );
 
   const items = data?.items ?? [];
-  const stats = data?.stats ?? { total: 0, critical: 0, pending: 0, resolved: 0 };
+  const stats = data?.stats ?? { total: 0, unactioned: 0, critical: 0, pending: 0, resolved: 0 };
+
+  // Compute total action-required items for the stats display
+  const totalActionRequired = stats.unactioned;
 
   // Group items by escalation level
   const grouped = useMemo(() => {
@@ -102,15 +105,15 @@ export default function OversightPage() {
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">
-                    Unactioned
+                    Total Events
                   </span>
-                  <Clock className="size-4 text-amber-400 opacity-60" />
+                  <Zap className="size-4 text-blue-400 opacity-60" />
                 </div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-semibold tracking-tight text-foreground font-mono">
                     {stats.total}
                   </span>
-                  <span className="text-[10px] text-muted-foreground font-mono">items</span>
+                  <span className="text-[10px] text-muted-foreground font-mono">{stats.unactioned} unactioned</span>
                 </div>
               </motion.div>
 
@@ -203,6 +206,7 @@ export default function OversightPage() {
                 <SelectItem value="48">Last 48h</SelectItem>
                 <SelectItem value="72">Last 72h</SelectItem>
                 <SelectItem value="168">Last 7d</SelectItem>
+                <SelectItem value="720">Last 30d</SelectItem>
               </SelectContent>
             </Select>
           </div>

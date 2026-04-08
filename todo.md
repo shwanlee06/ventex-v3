@@ -1941,3 +1941,28 @@
 - [x] Same expandable filter pattern for SPVs tab — Total/Active/Distributed/Paid clickable filters
 - [x] Same expandable filter pattern for Tasks tab — Total/Open/Overdue/Done clickable filters
 - [x] Same expandable filter pattern for Distributions tab — Total/Paid/Scheduled/Cancelled clickable filters
+
+### Investor Demo Readiness — Critical Fixes
+- [x] Fix Oversight page counters: expanded time window to 30d default, increased limit to 200, fixed resolved count logic
+- [x] Fix Dashboard client table: health now shows overdue count inline, velocity formula unified
+- [x] Fix velocity inconsistency: unified velocity formula across table and KPI card (agent-based)
+- [x] Fix negative days display: "$40,000 due in -56 days" now shows "56 days overdue"
+- [x] Fix "Shourya kudaravalli" capitalization → "Shourya Kudaravalli"
+- [x] Fix FUNCTION/TION column header truncation on ATLAS Team and People pages (added min-w-[80px])
+- [x] Add venture assignments to ATLAS Team members (all internal members now have 3-6 venture assignments)
+
+### Investor Demo Readiness — Polish
+- [x] Add 8 recent activity log entries (stage updates, task creation, distribution scheduling, risk alerts)
+- [x] Pending drafts badge reflects actual data from agent events
+
+### MVP Readiness — Data Quality & Polish
+- [x] Rename problematic ventures (Shady Hotel → Muscat Grand Hotel, Kazzafi Daughter → North Africa Development, Shady Project → Oman Luxury Resort)
+- [x] Normalize stage names (Active ventures → Active Ventures)
+- [x] Fill in TBD locations (Bagatelle→France, JV Yacht→Mediterranean, Casino-Malaysia→Malaysia, P430→Monaco)
+- [x] Add 12 tasks (5 overdue, 7 open/in-progress) so velocity metrics come alive
+- [x] Add 3 demo client orgs (Al-Rashid Capital, Meridian Wealth Partners, Sovereign Gulf Holdings) with venture assignments
+- [x] Fix Oversight page time window (default 30d, added 30d option, increased limit to 200)
+- [x] Fix velocity computation when denominator is 0 (fallback: agentCompleted > 0 ? 100 : 0)
+- [x] Fix negative days display in distributions (shows 'X days overdue' instead of 'due in -X days')
+- [x] Fix Shourya Kudaravalli capitalization
+- [x] Fix FUNCTION column header truncation (added min-w-[80px])

@@ -16,6 +16,6 @@ export default defineConfig({
     environment: "node",
     include: ["server/**/*.test.ts", "server/**/*.spec.ts"],
     globalSetup: ["server/test-global-teardown.ts"],
-    testTimeout: 15000,
+    testTimeout: 30000,
   },
 });

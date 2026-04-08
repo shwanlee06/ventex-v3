@@ -253,15 +253,15 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
   const clients = tabMode === "active" ? activeClients : archivedClients;
 
   // ── Velocity calculation per client ───────────────────────────────
-  // Velocity = weighted score: 40% completion rate + 30% health + 30% (100 - overdue%)
+  // Velocity = agent-completed tasks / (overdue + open) * 100
+  // Same formula used in both the table and the KPI aggregation
   const clientsWithVelocity = useMemo(() => {
     return clients.map(c => {
-      const overdueRate = c.totalTasks > 0 ? (c.overdueTasks / c.totalTasks) * 100 : 0;
-      const velocity = Math.round(
-        c.completionRate * 0.4 +
-        c.avgHealth * 0.3 +
-        (100 - overdueRate) * 0.3
-      );
+      const denominator = c.overdueTasks + c.openTasks;
+      const agentCompleted = (c as any).agentCompletedTasks ?? 0;
+      const velocity = denominator > 0
+        ? Math.min(100, Math.round((agentCompleted / denominator) * 100))
+        : (agentCompleted > 0 ? 100 : 0);
       return { ...c, velocity };
     });
   }, [clients]);
@@ -758,11 +758,18 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                           }}
                         />
                       </div>
-                      <span className="text-[10px] font-medium" style={{
-                        color: client.avgHealth >= 70 ? "#4ADE80" : client.avgHealth >= 40 ? "#F59E0B" : "#EF4444"
-                      }}>
-                        {client.avgHealth >= 70 ? "Healthy" : client.avgHealth >= 40 ? "At Risk" : "Critical"}
-                      </span>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-medium" style={{
+                          color: client.avgHealth >= 70 ? "#4ADE80" : client.avgHealth >= 40 ? "#F59E0B" : "#EF4444"
+                        }}>
+                          {client.avgHealth >= 70 ? "Healthy" : client.avgHealth >= 40 ? "At Risk" : "Critical"}
+                        </span>
+                        {client.overdueTasks > 0 && (
+                          <span className="text-[9px] text-muted-foreground">
+                            {client.overdueTasks} overdue
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </td>
 
