@@ -2034,3 +2034,7 @@
 
 ### Fix — Deployment Compatibility
 - [x] Fix: Deployment fails — downgraded Vite 8.0.7 → 6.3.5 and @vitejs/plugin-react 6.0.1 → 4.3.4 for Node.js 20.15 compatibility
+
+### Bug Fix — Hamburger Menu Messy
+- [x] Fix: Hamburger menu looks messy on mobile — flat list, no group headers, consistent active states, minimal user section
+- [x] Fix: Hamburger menu looks messy on desktop — cleaner collapsed rail (60px), visible icons, bg-accent active states, removed border-left indicators

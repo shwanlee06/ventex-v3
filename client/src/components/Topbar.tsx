@@ -123,7 +123,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
         </div>
       )}
 
-      <header className="h-14 border-b border-border flex items-center justify-between pl-14 pr-3 md:pl-6 md:pr-6 sticky top-0 z-30" style={{ backgroundColor: 'var(--card)' }}>
+      <header className="h-14 border-b border-border flex items-center justify-between pl-12 pr-3 md:pl-5 md:pr-5 sticky top-0 z-30" style={{ backgroundColor: 'var(--background)' }}>
         {/* FIX 7 — Left: Title + subtitle alignment */}
         <div className="flex flex-col justify-center min-w-0">
           <h1 className="text-[15px] font-medium text-white leading-tight truncate">{title}</h1>

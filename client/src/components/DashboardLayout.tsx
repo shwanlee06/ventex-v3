@@ -18,8 +18,8 @@ export default function DashboardLayout({ children, title, subtitle }: Dashboard
     <div className="flex h-screen overflow-hidden bg-background">
       <AppSidebar />
 
-      {/* Main content area — offset by sidebar width on desktop, full-width on mobile */}
-      <div className="flex-1 flex flex-col md:ml-16">
+      {/* Main content area — flows naturally next to sidebar */}
+      <div className="flex-1 flex flex-col min-w-0">
         <Topbar title={title} subtitle={subtitle} />
         <main className="flex-1 overflow-y-auto overscroll-contain">
           {children}
