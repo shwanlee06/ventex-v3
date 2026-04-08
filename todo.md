@@ -2031,3 +2031,6 @@
 - [x] Fix: Transparent elements on mobile — topbar now uses solid bg-card, no backdrop-blur
 - [x] Fix: Mobile layout feels too compact — larger touch targets (py-3.5), grouped nav with section headers, spacious drawer layout
 - [x] Fix: Hamburger drawer still appears transparent on mobile — switched to inline style={{ backgroundColor: 'var(--card)' }} to bypass bg-card hover override
+
+### Fix — Deployment Compatibility
+- [x] Fix: Deployment fails — downgraded Vite 8.0.7 → 6.3.5 and @vitejs/plugin-react 6.0.1 → 4.3.4 for Node.js 20.15 compatibility
