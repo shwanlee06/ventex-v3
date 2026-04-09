@@ -2198,3 +2198,7 @@
 - [x] DECK-2: Removed all Manus references — page shows only Aurovia/ATLAS branding
 - [x] DECK-3: Extracted team photos from PDF, uploaded to CDN, used in team section
 - [x] DECK-4: Bebas Neue headlines, IBM Plex Mono body, matching pitch deck style
+- [x] TEAM-1: Replace fake team bios with real team — Shwan (19, CEO), Brian Chen (17, COO), Chris Phelps (CRO)
+- [x] TEAM-2: Add Post-Raise Hires section — Head of AI Engineering + Senior Full-Stack Engineer
+- [x] TEAM-3: Initials-based avatars with color-coded circles
+- [x] TEAM-4: "Three founders. Average age: 18. They didn't study the problem in a classroom."

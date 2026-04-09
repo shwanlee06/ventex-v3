@@ -116,21 +116,40 @@ const USE_OF_FUNDS = [
 const TEAM = [
   {
     name: "Shwan Lee",
+    initials: "SL",
     role: "Founder & CEO",
-    photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/team-shwan_7a760672.png",
-    bio: "19 years old. Built ATLAS from the ground up — 65,349 lines of code, 4 live AI agents, an enterprise-grade platform targeting a $6 trillion market. He didn't study the problem. He watched it happen inside a UHNWI holding company and spent the next year building the solution. Most founders his age are still in class.",
+    age: "19",
+    color: "#22D3EE",
+    bio: "19 years old. Built ATLAS from the ground up — 65,349+ lines of production code, 4 live AI agents, an enterprise-grade platform targeting a $6 trillion market. He didn't study the problem. He watched it happen inside a UHNWI holding company and spent the next year building the solution. Most founders his age are still in class.",
   },
   {
-    name: "Head of AI Engineering",
-    role: "Ph.D. Machine Learning, MIT",
-    photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/team-ai-lead_989d9eb4.png",
-    bio: "Former ML lead at Google DeepMind and Amazon AWS. Architected the ATLAS intelligence layer from day one. Holds 3 patents in applied AI systems.",
+    name: "Brian Chen",
+    initials: "BC",
+    role: "COO",
+    age: "17",
+    color: "#A78BFA",
+    bio: "17 years old. Runs operations and contributed the intelligence behind ATLAS's AI agents, including the Mirofish prediction system. Still in high school — but already operating at a level most professionals never reach. Ambitious, relentless, and built different from anyone his age.",
   },
   {
-    name: "Chief Revenue Officer",
-    role: "15 Years Enterprise Sales",
-    photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/team-cro_29051d28.png",
-    bio: "Led sales at Salesforce and ServiceNow, generating $200M+ in ARR. Knows every enterprise buyer's pain point. Built for this exact moment in the market.",
+    name: "Chris Phelps",
+    initials: "CP",
+    role: "CRO",
+    age: null,
+    color: "#22C55E",
+    bio: "Self-taught into the Chief Revenue Officer role. College grad who learned enterprise sales by doing it. Drives go-to-market execution and client acquisition strategy for ATLAS.",
+  },
+];
+
+const POST_RAISE_HIRES = [
+  {
+    role: "Head of AI Engineering",
+    why: "Scale the intelligence layer — production ML pipelines, agent orchestration, and model fine-tuning.",
+    color: "#EF4444",
+  },
+  {
+    role: "Senior Full-Stack Engineer",
+    why: "Accelerate platform development — client portal, operator tools, and API infrastructure.",
+    color: "#F59E0B",
   },
 ];
 
@@ -621,35 +640,68 @@ export default function Demo() {
           <RevealSection>
             <div className="text-[10px] tracking-[0.3em] text-cyan-400/70 uppercase mb-4">The Team</div>
             <h2
-              className="text-[clamp(28px,5vw,56px)] font-bold leading-[0.95] mb-12"
+              className="text-[clamp(28px,5vw,56px)] font-bold leading-[0.95] mb-4"
               style={{ fontFamily: HEADLINE_FONT }}
             >
               MEET THE TEAM.
             </h2>
+            <p className="text-sm text-white/40 max-w-2xl leading-relaxed mb-12">
+              Three founders. Average age: 18. They didn't study the problem in a classroom —
+              they watched it happen and built the solution.
+            </p>
           </RevealSection>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {TEAM.map((t, i) => (
               <RevealSection key={t.name} delay={i * 0.15}>
                 <div className="border border-white/8 rounded-lg overflow-hidden hover:border-white/15 transition-colors">
-                  {/* Photo */}
-                  <div className="aspect-[4/5] bg-white/5 overflow-hidden">
-                    <img
-                      src={t.photo}
-                      alt={t.name}
-                      className="w-full h-full object-cover object-top grayscale hover:grayscale-0 transition-all duration-500"
-                    />
+                  {/* Initials avatar */}
+                  <div className="aspect-[4/3] flex items-center justify-center" style={{ backgroundColor: `${t.color}08` }}>
+                    <div
+                      className="flex items-center justify-center size-24 rounded-full text-3xl font-bold tracking-wider"
+                      style={{ backgroundColor: `${t.color}15`, color: t.color, fontFamily: HEADLINE_FONT }}
+                    >
+                      {t.initials}
+                    </div>
                   </div>
                   {/* Info */}
                   <div className="p-5">
-                    <div className="text-sm font-semibold text-white mb-0.5">{t.name}</div>
-                    <div className="text-[10px] text-cyan-400/60 tracking-wide mb-3">{t.role}</div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-semibold text-white">{t.name}</span>
+                      {t.age && (
+                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border border-white/10 text-white/30">
+                          {t.age} yrs
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[10px] tracking-wide mb-3" style={{ color: `${t.color}99` }}>{t.role}</div>
                     <p className="text-[11px] text-white/35 leading-relaxed">{t.bio}</p>
                   </div>
                 </div>
               </RevealSection>
             ))}
           </div>
+
+          {/* Post-Raise Hires */}
+          <RevealSection delay={0.5} className="mt-12">
+            <div className="border border-white/8 rounded-lg p-6">
+              <div className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-6">Post-Raise Key Hires</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {POST_RAISE_HIRES.map((h) => (
+                  <div key={h.role} className="flex items-start gap-3 p-4 border border-white/5 rounded-lg">
+                    <div className="size-2 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: h.color }} />
+                    <div>
+                      <div className="text-sm font-semibold text-white mb-1">{h.role}</div>
+                      <p className="text-[11px] text-white/35 leading-relaxed">{h.why}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-white/20 mt-4 text-center">
+                Funded by the $700K raise — 25.6% allocated to engineering talent
+              </p>
+            </div>
+          </RevealSection>
         </div>
       </section>
 
