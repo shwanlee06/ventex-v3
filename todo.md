@@ -2194,3 +2194,7 @@
 - [x] PITCH-8: Polish — animations, scroll-triggered reveals, mobile responsive
 - [x] PITCH-9: "VIEW DEMO" button on login page points to new investor experience
 - [x] FIX: Change all jimmy@aurovia.co references to contact@aurovia.co
+- [x] DECK-1: Rewrite /demo with exact pitch deck content — all 10 slides as scroll sections
+- [x] DECK-2: Removed all Manus references — page shows only Aurovia/ATLAS branding
+- [x] DECK-3: Extracted team photos from PDF, uploaded to CDN, used in team section
+- [x] DECK-4: Bebas Neue headlines, IBM Plex Mono body, matching pitch deck style

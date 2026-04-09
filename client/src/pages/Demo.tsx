@@ -1,13 +1,14 @@
 // ============================================================================
-// INVESTOR DEMO — Cinematic pitch experience for $700K pre-seed
-// Sections: Hero → Problem → Solution → Live Product → Metrics → Team → Ask
-// Design: Matches SpyOps military-ops aesthetic, scroll-driven reveals
+// INVESTOR DEMO — Cinematic pitch experience matching the Atlas pitch deck
+// 10 sections mirroring the 10-slide deck: Title → Problem → Agents →
+// Built Not Mocked → Market → GTM → Traction → The Ask → Team → Close
 // ============================================================================
 
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { motion, useInView } from "framer-motion";
 import AnimatedCounter from "@/components/AnimatedCounter";
+
 /* ─── Scroll-triggered section wrapper ─── */
 function RevealSection({
   children,
@@ -34,85 +35,110 @@ function RevealSection({
 }
 
 /* ─── Animated number that counts up when in view ─── */
-function CountUpWhenVisible({ value, suffix = "" }: { value: number; suffix?: string }) {
+function CountUpWhenVisible({ value, suffix = "", prefix = "" }: { value: number; suffix?: string; prefix?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true });
   return (
     <span ref={ref}>
-      {isInView ? <AnimatedCounter value={value} duration={1500} /> : "0"}
-      {suffix}
+      {prefix}{isInView ? <AnimatedCounter value={value} duration={1500} /> : "0"}{suffix}
     </span>
   );
 }
 
 /* ─── Data ─── */
-const SECTORS = [
-  { icon: "≋", name: "Real Estate", count: 7, color: "#5B8DBE" },
-  { icon: "⚓", name: "Yacht", count: 3, color: "#22D3EE" },
-  { icon: "⌂", name: "Hospitality", count: 3, color: "#F59E0B" },
-  { icon: "◈", name: "Entertainment", count: 3, color: "#A78BFA" },
-  { icon: "⚡", name: "Oil & Gas", count: 2, color: "#EF4444" },
-  { icon: "◇", name: "Others", count: 4, color: "#6B7280" },
-];
-
-const FEATURES = [
+const AGENTS = [
   {
-    num: "01",
-    title: "AI Agent Orchestration",
-    desc: "Autonomous agents handle vendor follow-ups, compliance tracking, and reporting across all ventures simultaneously.",
-    metric: "40+ hrs/week saved",
+    name: "Overdue Agent",
+    desc: "Scans every task across every venture. Sends follow-ups automatically. Every action logged in real time.",
+    color: "#EF4444",
   },
   {
-    num: "02",
-    title: "Real-Time Velocity Tracking",
-    desc: "Every venture, task, and SPV is tracked with AI-computed velocity scores. Bottlenecks surface instantly.",
-    metric: "10x faster ops",
+    name: "Velocity Agent",
+    desc: "Detects stalled ventures. Advances stages automatically or surfaces a one-click approval when capital is involved.",
+    color: "#22D3EE",
   },
   {
-    num: "03",
-    title: "Multi-Tenant Client Portal",
-    desc: "UHNWI/HNWI clients get a white-labeled portal showing their portfolio, progress, and AI-generated updates.",
-    metric: "30+ clients managed",
+    name: "Distribution Sentinel",
+    desc: "Monitors every upcoming distribution. Drafts LP notices. Nothing moves without principal confirmation.",
+    color: "#F59E0B",
   },
   {
-    num: "04",
-    title: "Intelligent Document Processing",
-    desc: "Contracts, term sheets, and compliance docs are analyzed by AI — extracting key terms and flagging risks.",
-    metric: "90% faster review",
+    name: "Orchestrator",
+    desc: "Portfolio-wide intelligence. Cross-venture insights. Market signals by sector.",
+    color: "#A78BFA",
   },
 ];
 
-const TEAM = [
-  { name: "Jimmy Frangi", role: "Founder & CEO", focus: "Finance, Capital Markets, Strategy" },
-  { name: "Anton Maghami", role: "VP Operations", focus: "Systems Architecture, AI Integration" },
-  { name: "Jon Eichner", role: "COO", focus: "Operations, Venture Execution" },
-  { name: "Maher Abou Chakra", role: "CFO", focus: "Accounting, Financial Controls" },
-  { name: "Angie Samadi", role: "Head of People", focus: "HR, Team Operations" },
+const PRODUCT_STATS = [
+  { value: "65,349+", label: "lines of production code" },
+  { value: "4", label: "live AI agent types" },
+  { value: "46", label: "database tables" },
+  { value: "22", label: "tRPC routers" },
+  { value: "655+", label: "automated tests" },
+  { value: "8", label: "sector blueprint templates" },
+];
+
+const GTM_STAGES = [
+  {
+    stage: "01",
+    title: "Operational Discovery",
+    duration: "2–3 weeks",
+    desc: "Full workflow audit across all venture verticals. Task-automation roadmap with projected time savings. Non-refundable. Qualifies the client and creates urgency.",
+    color: "#EF4444",
+  },
+  {
+    stage: "02",
+    title: "Task Automation Pilot",
+    duration: "4–6 weeks",
+    desc: "Live agents on real client data. Client measures their own ROI before committing to a full license.",
+    color: "#F59E0B",
+  },
+  {
+    stage: "03",
+    title: "Full Platform License",
+    duration: "Ongoing",
+    desc: "All agents, all verticals, custom blueprints, client portal, managed services, 99.5% SLA.",
+    color: "#22C55E",
+  },
 ];
 
 const USE_OF_FUNDS = [
-  { label: "Engineering & AI", pct: 45, amount: "$315K", color: "#22D3EE" },
-  { label: "Operations & Hiring", pct: 25, amount: "$175K", color: "#5B8DBE" },
-  { label: "Infrastructure", pct: 15, amount: "$105K", color: "#A78BFA" },
-  { label: "Legal & Compliance", pct: 10, amount: "$70K", color: "#F59E0B" },
-  { label: "Reserve", pct: 5, amount: "$35K", color: "#6B7280" },
+  { label: "Engineers", pct: 25.6, color: "#22D3EE" },
+  { label: "Team Stipends", pct: 20.9, color: "#5B8DBE" },
+  { label: "Reserve", pct: 25.4, color: "#F59E0B" },
+  { label: "Sales & GTM", pct: 10.7, color: "#22C55E" },
+  { label: "Platform Infrastructure", pct: 4.7, color: "#A78BFA" },
+  { label: "Legal & Compliance", pct: 4.6, color: "#EC4899" },
+  { label: "Security Baseline", pct: 2.9, color: "#EF4444" },
+  { label: "LOI / Client Legal", pct: 0.7, color: "#6B7280" },
 ];
+
+const TEAM = [
+  {
+    name: "Shwan Lee",
+    role: "Founder & CEO",
+    photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/team-shwan_7a760672.png",
+    bio: "19 years old. Built ATLAS from the ground up — 65,349 lines of code, 4 live AI agents, an enterprise-grade platform targeting a $6 trillion market. He didn't study the problem. He watched it happen inside a UHNWI holding company and spent the next year building the solution. Most founders his age are still in class.",
+  },
+  {
+    name: "Head of AI Engineering",
+    role: "Ph.D. Machine Learning, MIT",
+    photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/team-ai-lead_989d9eb4.png",
+    bio: "Former ML lead at Google DeepMind and Amazon AWS. Architected the ATLAS intelligence layer from day one. Holds 3 patents in applied AI systems.",
+  },
+  {
+    name: "Chief Revenue Officer",
+    role: "15 Years Enterprise Sales",
+    photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/team-cro_29051d28.png",
+    bio: "Led sales at Salesforce and ServiceNow, generating $200M+ in ARR. Knows every enterprise buyer's pain point. Built for this exact moment in the market.",
+  },
+];
+
+const HEADLINE_FONT = "'Bebas Neue', sans-serif";
 
 export default function Demo() {
   const [, navigate] = useLocation();
   const [scrollY, setScrollY] = useState(0);
-  const heroRef = useRef<HTMLDivElement>(null);
-
-  // Static stats for the investor demo — no auth required
-  const stats = {
-    ventures: 22,
-    clients: 30,
-    tasks: 200,
-    completed: 150,
-    sectors: 6,
-    agents: 12,
-    hoursWeek: 40,
-  };
 
   useEffect(() => {
     const onScroll = () => setScrollY(window.scrollY);
@@ -123,12 +149,9 @@ export default function Demo() {
   return (
     <div className="bg-black text-white min-h-screen" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
 
-      {/* ═══ HERO ═══ */}
-      <section
-        ref={heroRef}
-        className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
-      >
-        {/* Parallax grid background */}
+      {/* ═══ 1. HERO — Title Slide ═══ */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
+        {/* Parallax grid */}
         <div
           className="absolute inset-0 opacity-[0.04]"
           style={{
@@ -141,17 +164,14 @@ export default function Demo() {
         {/* Gradient orb */}
         <div
           className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-[0.06]"
-          style={{
-            background: "radial-gradient(circle, #22D3EE 0%, transparent 70%)",
-            filter: "blur(80px)",
-          }}
+          style={{ background: "radial-gradient(circle, #22D3EE 0%, transparent 70%)", filter: "blur(80px)" }}
         />
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-10 text-center px-6 max-w-4xl"
+          className="relative z-10 text-center px-6 max-w-5xl"
         >
           {/* Badge */}
           <motion.div
@@ -161,26 +181,24 @@ export default function Demo() {
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/5 mb-8"
           >
             <span className="size-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="text-[10px] tracking-[0.2em] text-cyan-400 uppercase">Pre-Seed · $700K Raise</span>
+            <span className="text-[10px] tracking-[0.2em] text-cyan-400 uppercase">Pre-Seed Introduction · Presented by Shwan Lee</span>
           </motion.div>
 
-          {/* Title */}
+          {/* ATLAS. */}
           <h1
-            className="text-[clamp(32px,6vw,72px)] font-bold leading-[0.95] tracking-[-0.02em] mb-6"
-            style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+            className="text-[clamp(60px,12vw,160px)] font-bold leading-[0.85] tracking-[-0.02em] mb-4"
+            style={{ fontFamily: HEADLINE_FONT }}
           >
-            <span className="text-white">VELOCITY AI</span>
-            <br />
-            <span className="text-white/30">FOR VENTURE</span>
-            <br />
-            <span className="text-white/30">HOLDINGS</span>
+            ATLAS.
           </h1>
 
-          {/* Subtitle */}
-          <p className="text-sm md:text-base text-white/50 max-w-xl mx-auto leading-relaxed tracking-wide">
-            ATLAS replaces the 40+ hours/week of manual operations that holding companies
-            burn on managing multi-sector venture portfolios. AI agents handle the work.
-            Principals make decisions.
+          <p className="text-sm text-white/40 tracking-[0.15em] uppercase mb-8">Powered by Aurovia LLC</p>
+
+          {/* Tagline */}
+          <p className="text-sm md:text-base text-white/50 max-w-2xl mx-auto leading-relaxed">
+            ATLAS is an AI velocity platform that runs the operations of multi-vertical holding companies.
+            Automating tasks, advancing deals, and compressing the time between venture stages so principals
+            can run more with less.
           </p>
 
           {/* CTA row */}
@@ -192,12 +210,10 @@ export default function Demo() {
               SCHEDULE A CALL →
             </a>
             <button
-              onClick={() => {
-                document.getElementById("product")?.scrollIntoView({ behavior: "smooth" });
-              }}
+              onClick={() => document.getElementById("problem")?.scrollIntoView({ behavior: "smooth" })}
               className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 text-white/70 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors"
             >
-              SEE THE PRODUCT ↓
+              SEE THE PITCH ↓
             </button>
           </div>
         </motion.div>
@@ -212,320 +228,339 @@ export default function Demo() {
           <span className="text-[9px] tracking-[0.3em] text-white/20 uppercase">Scroll</span>
           <div className="w-px h-8 bg-gradient-to-b from-white/20 to-transparent" />
         </motion.div>
+
+        {/* Contact bar */}
+        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-8 py-4 text-[10px] text-white/15 tracking-wide">
+          <span>aurovia.co</span>
+          <span>contact@aurovia.co</span>
+          <span>McLean, Virginia</span>
+        </div>
       </section>
 
-      {/* ═══ THE PROBLEM ═══ */}
-      <section className="py-24 md:py-32 px-6 border-t border-white/5">
+      {/* ═══ 2. THE PROBLEM ═══ */}
+      <section id="problem" className="py-24 md:py-32 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           <RevealSection>
             <div className="text-[10px] tracking-[0.3em] text-red-400/70 uppercase mb-4">The Problem</div>
             <h2
-              className="text-[clamp(24px,4vw,48px)] font-bold leading-[1.05] mb-8"
-              style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+              className="text-[clamp(28px,5vw,64px)] font-bold leading-[0.95] mb-8"
+              style={{ fontFamily: HEADLINE_FONT }}
             >
-              MANAGING 20+ VENTURES
+              THE PEOPLE RUNNING
               <br />
-              <span className="text-white/25">ACROSS 6 SECTORS</span>
+              $200M+ PORTFOLIOS
               <br />
-              <span className="text-white/25">IS OPERATIONALLY IMPOSSIBLE</span>
+              <span className="text-white/25">ARE STILL DOING IT</span>
+              <br />
+              <span className="text-white/25">ON SPREADSHEETS.</span>
             </h2>
           </RevealSection>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-            {[
-              {
-                stat: "40+",
-                unit: "hrs/week",
-                label: "burned on manual operations",
-                detail: "Vendor follow-ups, compliance tracking, reporting, investor updates — all done by hand across every venture.",
-              },
-              {
-                stat: "6",
-                unit: "sectors",
-                label: "each with different workflows",
-                detail: "Real estate, yacht, hospitality, entertainment, oil & gas — each vertical has unique processes, vendors, and compliance requirements.",
-              },
-              {
-                stat: "$2M+",
-                unit: "/year",
-                label: "in operational overhead",
-                detail: "Hiring operations staff for each vertical doesn't scale. One missed deadline or compliance gap can cost more than the entire ops team.",
-              },
-            ].map((item, i) => (
-              <RevealSection key={item.stat} delay={i * 0.1}>
-                <div className="border border-white/8 rounded-lg p-6 hover:border-white/15 transition-colors h-full">
-                  <div className="flex items-baseline gap-1 mb-1">
-                    <span
-                      className="text-3xl font-bold text-red-400"
-                      style={{ fontFamily: "'Bebas Neue', sans-serif" }}
-                    >
-                      {item.stat}
-                    </span>
-                    <span className="text-xs text-red-400/60">{item.unit}</span>
-                  </div>
-                  <div className="text-xs text-white/70 font-medium mb-3">{item.label}</div>
-                  <p className="text-[11px] text-white/30 leading-relaxed">{item.detail}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+            <RevealSection delay={0.1}>
+              <div className="border border-white/8 rounded-lg p-6">
+                <div className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-4">Market Reality</div>
+                <p className="text-sm text-white/50 leading-relaxed">
+                  10,000+ UHNWI holding companies manage multi-vertical portfolios across real estate, yachts,
+                  energy, hospitality, oil & gas, and F&B — simultaneously.
+                </p>
+              </div>
+            </RevealSection>
+
+            <RevealSection delay={0.2}>
+              <div className="border border-red-500/20 rounded-lg p-6 bg-red-500/[0.03]">
+                <div className="flex items-baseline gap-2 mb-4">
+                  <span className="text-5xl font-bold text-red-400" style={{ fontFamily: HEADLINE_FONT }}>42%</span>
+                  <span className="text-xs text-red-400/60">of them</span>
                 </div>
-              </RevealSection>
-            ))}
+                <p className="text-sm text-white/50 leading-relaxed">
+                  coordinate operations on email chains and disconnected spreadsheets. Tasks go untracked.
+                  Stages stall. Distributions get delayed. The operational infrastructure does not match the
+                  scale of the portfolio.
+                </p>
+              </div>
+            </RevealSection>
           </div>
+
+          <RevealSection delay={0.3} className="mt-12">
+            <div className="text-center">
+              <p className="text-sm text-white/30 mb-2">No platform has been built to fix this.</p>
+              <h3 className="text-[clamp(24px,4vw,48px)] font-bold" style={{ fontFamily: HEADLINE_FONT }}>
+                UNTIL NOW.
+              </h3>
+            </div>
+          </RevealSection>
         </div>
       </section>
 
-      {/* ═══ THE SOLUTION ═══ */}
-      <section className="py-24 md:py-32 px-6 border-t border-white/5 bg-gradient-to-b from-black via-[#020a14] to-black">
+      {/* ═══ 3. AGENTS ═══ */}
+      <section className="py-24 md:py-32 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           <RevealSection>
             <div className="text-[10px] tracking-[0.3em] text-cyan-400/70 uppercase mb-4">The Solution</div>
             <h2
-              className="text-[clamp(24px,4vw,48px)] font-bold leading-[1.05] mb-4"
-              style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+              className="text-[clamp(28px,5vw,64px)] font-bold leading-[0.95] mb-4"
+              style={{ fontFamily: HEADLINE_FONT }}
             >
-              ATLAS VELOCITY AI
+              AGENTS EXECUTE.
+              <br />
+              <span className="text-white/25">THEY DON'T ESCALATE.</span>
             </h2>
-            <p className="text-sm text-white/40 max-w-2xl leading-relaxed">
-              An AI-native operations platform purpose-built for venture holding companies.
-              Autonomous agents execute operational tasks across all verticals while principals
-              retain full control over strategic decisions.
-            </p>
           </RevealSection>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16">
-            {FEATURES.map((f, i) => (
-              <RevealSection key={f.num} delay={i * 0.1}>
-                <div className="border border-white/8 rounded-lg p-6 hover:border-cyan-500/20 transition-colors group h-full">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-[10px] font-mono text-cyan-400/50 tracking-[0.2em]">{f.num}</span>
-                    <span className="text-[10px] font-mono text-cyan-400/80 px-2 py-0.5 rounded-full border border-cyan-500/20 bg-cyan-500/5">
-                      {f.metric}
-                    </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-12">
+            {AGENTS.map((agent, i) => (
+              <RevealSection key={agent.name} delay={i * 0.1}>
+                <div className="border border-white/8 rounded-lg p-6 hover:border-white/15 transition-colors h-full">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="size-2 rounded-full flex-shrink-0" style={{ backgroundColor: agent.color }} />
+                    <span className="text-sm font-semibold text-white">{agent.name}</span>
                   </div>
-                  <h3 className="text-sm font-semibold text-white mb-2 group-hover:text-cyan-300 transition-colors">
-                    {f.title}
-                  </h3>
-                  <p className="text-[11px] text-white/35 leading-relaxed">{f.desc}</p>
+                  <p className="text-[13px] text-white/40 leading-relaxed">{agent.desc}</p>
                 </div>
               </RevealSection>
             ))}
           </div>
+
+          <RevealSection delay={0.5} className="mt-10">
+            <p className="text-center text-sm text-white/30 italic">Agents execute. They don't escalate.</p>
+          </RevealSection>
         </div>
       </section>
 
-      {/* ═══ LIVE PRODUCT ═══ */}
+      {/* ═══ 4. BUILT. NOT MOCKED. ═══ */}
       <section id="product" className="py-24 md:py-32 px-6 border-t border-white/5">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <RevealSection>
-            <div className="text-[10px] tracking-[0.3em] text-emerald-400/70 uppercase mb-4">Live Product</div>
+            <div className="text-[10px] tracking-[0.3em] text-cyan-400/70 uppercase mb-4">The Product</div>
             <h2
-              className="text-[clamp(24px,4vw,48px)] font-bold leading-[1.05] mb-4"
-              style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+              className="text-[clamp(28px,5vw,64px)] font-bold leading-[0.95] mb-8"
+              style={{ fontFamily: HEADLINE_FONT }}
             >
-              NOT A MOCKUP.
-              <br />
-              <span className="text-white/25">A WORKING SYSTEM.</span>
+              BUILT. NOT MOCKED.
             </h2>
-            <p className="text-sm text-white/40 max-w-2xl leading-relaxed mb-12">
-              ATLAS is already deployed and managing live venture operations for Royalton Venture Holding.
-              Below is the actual production system.
+          </RevealSection>
+
+          <RevealSection delay={0.1}>
+            <p className="text-sm text-white/50 max-w-3xl leading-relaxed mb-12">
+              Two completely separate interfaces: a private-banking-grade Client Portal in plain English
+              with no internal jargon, and an Operator Command Center with full visibility across all
+              clients, ventures, and agent signals.
             </p>
           </RevealSection>
 
-          {/* Product screenshots / feature callouts */}
-          <RevealSection delay={0.2}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[
-                {
-                  title: "Command Center",
-                  desc: "Real-time dashboard showing all clients, ventures, velocity scores, and AI agent activity across the entire portfolio.",
-                  tag: "ADMIN",
-                },
-                {
-                  title: "AI Agent Console",
-                  desc: "Natural language interface to the AI. Ask questions, trigger workflows, generate reports — the agent executes across all ventures.",
-                  tag: "AI",
-                },
-                {
-                  title: "Client Portal",
-                  desc: "White-labeled portal for UHNWI/HNWI clients. They see their ventures, progress updates, and AI-generated intelligence — zero noise.",
-                  tag: "CLIENT",
-                },
-                {
-                  title: "SPV & Deal Tracker",
-                  desc: "Track every SPV from negotiation to close. Priority scoring, document intelligence, and automated compliance checks.",
-                  tag: "DEALS",
-                },
-                {
-                  title: "Velocity Feed",
-                  desc: "AI-curated feed of what matters. Actions needed, completed milestones, and items being monitored — updated in real-time via SSE.",
-                  tag: "FEED",
-                },
-                {
-                  title: "Team & Access Control",
-                  desc: "Role-based access for admins, partners, managers, and clients. Invite flows, audit trails, and security controls built in.",
-                  tag: "SECURITY",
-                },
-              ].map((item, i) => (
-                <motion.div
-                  key={item.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-40px" }}
-                  transition={{ delay: i * 0.08, duration: 0.5 }}
-                  className="border border-white/8 rounded-lg p-5 hover:border-emerald-500/20 transition-all group"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[9px] tracking-[0.2em] text-emerald-400/60 font-mono">{item.tag}</span>
-                    <div className="size-1.5 rounded-full bg-emerald-400/40" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-white mb-2 group-hover:text-emerald-300 transition-colors">
-                    {item.title}
-                  </h3>
-                  <p className="text-[11px] text-white/30 leading-relaxed">{item.desc}</p>
-                </motion.div>
-              ))}
-            </div>
-          </RevealSection>
+          {/* Product stats grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
+            {PRODUCT_STATS.map((s, i) => (
+              <RevealSection key={s.label} delay={0.15 + i * 0.05}>
+                <div className="border border-white/8 rounded-lg p-5 text-center">
+                  <div className="text-2xl font-bold text-cyan-400 font-mono mb-1">{s.value}</div>
+                  <div className="text-[11px] text-white/30">{s.label}</div>
+                </div>
+              </RevealSection>
+            ))}
+          </div>
 
-          {/* CTA to explore */}
-          <RevealSection delay={0.3}>
-            <div className="mt-10 text-center">
+          {/* Explore live product CTA */}
+          <RevealSection delay={0.4}>
+            <div className="text-center">
               <button
                 onClick={() => {
-                  // Set demo operator and navigate to dashboard
                   localStorage.setItem("atlas_operator", "DEMO_INVESTOR");
                   localStorage.setItem("atlas_demo_session", "true");
                   navigate("/dashboard");
                 }}
-                className="inline-flex items-center gap-2 px-8 py-3.5 border border-emerald-500/30 text-emerald-400 text-xs tracking-[0.15em] hover:bg-emerald-500/10 hover:border-emerald-500/50 transition-all"
+                className="inline-flex items-center gap-2 px-8 py-3.5 border border-cyan-500/30 text-cyan-400 text-xs tracking-[0.15em] hover:bg-cyan-500/10 transition-colors"
               >
-                EXPLORE THE LIVE DASHBOARD →
+                EXPLORE THE LIVE PRODUCT →
               </button>
-              <p className="text-[10px] text-white/20 mt-3 tracking-wide">Read-only access · No login required</p>
             </div>
           </RevealSection>
         </div>
       </section>
 
-      {/* ═══ SECTORS ═══ */}
-      <section className="py-24 md:py-32 px-6 border-t border-white/5 bg-gradient-to-b from-black via-[#0a0514] to-black">
-        <div className="max-w-5xl mx-auto">
-          <RevealSection>
-            <div className="text-[10px] tracking-[0.3em] text-violet-400/70 uppercase mb-4">Portfolio Coverage</div>
-            <h2
-              className="text-[clamp(24px,4vw,48px)] font-bold leading-[1.05] mb-12"
-              style={{ fontFamily: "'Bebas Neue', sans-serif" }}
-            >
-              6 SECTORS.
-              <br />
-              <span className="text-white/25">{stats.ventures} VENTURES.</span>
-              <br />
-              <span className="text-white/25">ONE PLATFORM.</span>
-            </h2>
-          </RevealSection>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {SECTORS.map((s, i) => (
-              <RevealSection key={s.name} delay={i * 0.08}>
-                <div className="border border-white/8 rounded-lg p-5 hover:border-white/15 transition-colors text-center">
-                  <div className="text-2xl mb-2">{s.icon}</div>
-                  <div className="text-xs font-semibold text-white tracking-wide">{s.name}</div>
-                  <div className="text-[10px] text-white/30 mt-1 font-mono">
-                    <span style={{ color: s.color }}>{s.count}</span> ventures
-                  </div>
-                </div>
-              </RevealSection>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ METRICS ═══ */}
+      {/* ═══ 5. MARKET SIZE ═══ */}
       <section className="py-24 md:py-32 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           <RevealSection>
-            <div className="text-[10px] tracking-[0.3em] text-amber-400/70 uppercase mb-4">Traction</div>
+            <div className="text-[10px] tracking-[0.3em] text-emerald-400/70 uppercase mb-4">Market Opportunity</div>
+            <div className="flex items-baseline gap-3 mb-4">
+              <h2
+                className="text-[clamp(60px,10vw,120px)] font-bold leading-[0.85]"
+                style={{ fontFamily: HEADLINE_FONT }}
+              >
+                $6T
+              </h2>
+              <span className="text-[clamp(18px,3vw,32px)] font-bold text-emerald-400" style={{ fontFamily: HEADLINE_FONT }}>
+                IN AUM
+              </span>
+            </div>
+          </RevealSection>
+
+          <RevealSection delay={0.15}>
+            <p className="text-sm text-white/50 max-w-2xl leading-relaxed mb-8">
+              10,000+ global family offices and UHNWI holding companies manage $6 trillion across 3 to 8
+              sectors simultaneously. Their operational stack is fragmented, vertical-specific, and entirely
+              absent of AI-driven autonomous execution.
+            </p>
+          </RevealSection>
+
+          <RevealSection delay={0.25}>
+            <div className="border border-emerald-500/20 rounded-lg p-6 bg-emerald-500/[0.03] max-w-2xl">
+              <p className="text-sm text-white/50 leading-relaxed">
+                ATLAS does not compete with Masttro, Addepar, Voly, or AppFolio. It sits above all of them.
+                <span className="text-emerald-400 font-medium"> No platform serves the autonomous execution layer today.</span>
+              </p>
+            </div>
+          </RevealSection>
+        </div>
+      </section>
+
+      {/* ═══ 6. GO-TO-MARKET ═══ */}
+      <section className="py-24 md:py-32 px-6 border-t border-white/5">
+        <div className="max-w-5xl mx-auto">
+          <RevealSection>
+            <div className="text-[10px] tracking-[0.3em] text-red-400/70 uppercase mb-4">Go-to-Market</div>
             <h2
-              className="text-[clamp(24px,4vw,48px)] font-bold leading-[1.05] mb-16"
-              style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+              className="text-[clamp(28px,5vw,56px)] font-bold leading-[0.95] mb-4"
+              style={{ fontFamily: HEADLINE_FONT }}
             >
-              ALREADY OPERATIONAL.
+              <span className="text-red-400">ZERO BUYER RISK</span>
               <br />
-              <span className="text-white/25">ALREADY DELIVERING.</span>
+              AT ENTRY.
             </h2>
           </RevealSection>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { value: stats.ventures, label: "Ventures Managed", suffix: "" },
-              { value: stats.clients, label: "Clients Served", suffix: "+" },
-              { value: stats.completed, label: "Tasks Completed", suffix: "+" },
-              { value: stats.hoursWeek, label: "Hours/Week Saved", suffix: "+" },
-            ].map((m, i) => (
-              <RevealSection key={m.label} delay={i * 0.1}>
-                <div className="text-center">
+          {/* GTM pipeline */}
+          <div className="mt-12 space-y-0">
+            {/* Progress bar */}
+            <RevealSection delay={0.1}>
+              <div className="flex h-3 rounded-full overflow-hidden mb-8">
+                {GTM_STAGES.map((s) => (
                   <div
-                    className="text-[clamp(32px,5vw,56px)] font-bold text-white"
-                    style={{ fontFamily: "'Bebas Neue', sans-serif" }}
-                  >
-                    <CountUpWhenVisible value={m.value} suffix={m.suffix} />
+                    key={s.stage}
+                    className="h-full flex-1"
+                    style={{ backgroundColor: s.color }}
+                  />
+                ))}
+              </div>
+            </RevealSection>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {GTM_STAGES.map((s, i) => (
+                <RevealSection key={s.stage} delay={0.15 + i * 0.1}>
+                  <div className="border border-white/8 rounded-lg p-6 h-full">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="size-2 rounded-full" style={{ backgroundColor: s.color }} />
+                      <span className="text-[10px] font-mono text-white/30">{s.duration}</span>
+                    </div>
+                    <div className="text-sm font-semibold text-white mb-2">{s.title}</div>
+                    <p className="text-[12px] text-white/40 leading-relaxed">{s.desc}</p>
                   </div>
-                  <div className="text-[11px] text-white/30 tracking-wide mt-1">{m.label}</div>
-                </div>
-              </RevealSection>
-            ))}
+                </RevealSection>
+              ))}
+            </div>
           </div>
+
+          <RevealSection delay={0.5} className="mt-10">
+            <p className="text-center text-[clamp(18px,3vw,32px)] font-bold text-emerald-400" style={{ fontFamily: HEADLINE_FONT }}>
+              HIGH MARGIN ARR AT EXIT.
+            </p>
+          </RevealSection>
         </div>
       </section>
 
-      {/* ═══ TEAM ═══ */}
-      <section className="py-24 md:py-32 px-6 border-t border-white/5 bg-gradient-to-b from-black via-[#050a0f] to-black">
+      {/* ═══ 7. TRACTION ═══ */}
+      <section className="py-24 md:py-32 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           <RevealSection>
-            <div className="text-[10px] tracking-[0.3em] text-blue-400/70 uppercase mb-4">Leadership</div>
+            <div className="text-[10px] tracking-[0.3em] text-cyan-400/70 uppercase mb-4">Traction</div>
             <h2
-              className="text-[clamp(24px,4vw,48px)] font-bold leading-[1.05] mb-12"
-              style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+              className="text-[clamp(24px,4vw,48px)] font-bold leading-[0.95] mb-2"
+              style={{ fontFamily: HEADLINE_FONT }}
             >
-              THE TEAM
+              PLATFORM LIVE.
+            </h2>
+            <h2
+              className="text-[clamp(24px,4vw,48px)] font-bold leading-[0.95] mb-2 text-white/40"
+              style={{ fontFamily: HEADLINE_FONT }}
+            >
+              FOUNDING CLIENT IDENTIFIED.
+            </h2>
+            <h2
+              className="text-[clamp(24px,4vw,48px)] font-bold leading-[0.95] mb-8 text-white/25"
+              style={{ fontFamily: HEADLINE_FONT }}
+            >
+              MOTION STARTING.
             </h2>
           </RevealSection>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {TEAM.map((t, i) => (
-              <RevealSection key={t.name} delay={i * 0.08}>
-                <div className="border border-white/8 rounded-lg p-5 hover:border-blue-500/20 transition-colors">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="size-10 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center text-sm font-bold text-blue-400">
-                      {t.name.split(" ").map(n => n[0]).join("")}
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-white">{t.name}</div>
-                      <div className="text-[10px] text-blue-400/60 tracking-wide">{t.role}</div>
-                    </div>
-                  </div>
-                  <p className="text-[11px] text-white/30 leading-relaxed">{t.focus}</p>
-                </div>
-              </RevealSection>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+            <RevealSection delay={0.1}>
+              <div className="border border-white/8 rounded-lg p-6">
+                <div className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-4">Origin</div>
+                <p className="text-sm text-white/50 leading-relaxed">
+                  ATLAS was built from firsthand observation of operational coordination failures inside a
+                  UHNWI multi-vertical holding company. The ICP is not hypothetical — it is the origin of
+                  the platform.
+                </p>
+              </div>
+            </RevealSection>
+
+            <RevealSection delay={0.2}>
+              <div className="border border-white/8 rounded-lg p-6">
+                <div className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-4">90-Day North Star</div>
+                <p className="text-sm text-white/50 leading-relaxed">
+                  The platform is fully functional and demo-ready. The first formal client engagement is
+                  being initiated. The 90-day north star is converting this relationship to a
+                  <span className="text-cyan-400 font-medium"> $180–220K annual license</span> and signing
+                  5 additional clients by Q4 2026.
+                </p>
+              </div>
+            </RevealSection>
           </div>
+
+          <RevealSection delay={0.3} className="mt-6">
+            <div className="border border-cyan-500/20 rounded-lg p-5 bg-cyan-500/[0.03] text-center">
+              <p className="text-sm text-white/50">
+                <span className="text-cyan-400 font-semibold">2 additional</span> warm prospect conversations currently in progress.
+              </p>
+            </div>
+          </RevealSection>
         </div>
       </section>
 
-      {/* ═══ THE ASK ═══ */}
+      {/* ═══ 8. THE ASK ═══ */}
       <section className="py-24 md:py-32 px-6 border-t border-white/5">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <RevealSection>
-            <div className="text-[10px] tracking-[0.3em] text-cyan-400/70 uppercase mb-4">The Opportunity</div>
+            <div className="text-[10px] tracking-[0.3em] text-cyan-400/70 uppercase mb-4">The Ask</div>
             <h2
-              className="text-[clamp(24px,4vw,56px)] font-bold leading-[1.05] mb-4"
-              style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+              className="text-[clamp(32px,6vw,80px)] font-bold leading-[0.85] mb-2"
+              style={{ fontFamily: HEADLINE_FONT }}
             >
-              $700K PRE-SEED
+              $700,000.
             </h2>
-            <p className="text-sm text-white/40 max-w-2xl leading-relaxed mb-12">
-              We're raising $700K to scale ATLAS from a single-client deployment to a
-              multi-tenant platform serving holding companies globally. The product is built.
-              The first client is live. We need capital to scale.
+            <h3
+              className="text-[clamp(20px,3vw,40px)] font-bold leading-[0.95] mb-2 text-white/40"
+              style={{ fontFamily: HEADLINE_FONT }}
+            >
+              THREE UNLOCKS.
+            </h3>
+            <h3
+              className="text-[clamp(20px,3vw,40px)] font-bold leading-[0.95] mb-8 text-emerald-400"
+              style={{ fontFamily: HEADLINE_FONT }}
+            >
+              SERIES A IN 12 MONTHS.
+            </h3>
+          </RevealSection>
+
+          <RevealSection delay={0.1}>
+            <p className="text-sm text-white/40 max-w-3xl leading-relaxed mb-12">
+              This raise gives ATLAS 25+ months of runway to close 5–6 enterprise contracts, hire 2–4
+              critical AI engineers, and reach a $4M ARR milestone — the threshold that unlocks our
+              Series A at a $15M+ valuation. Every dollar is allocated with precision to generate
+              maximum leverage.
             </p>
           </RevealSection>
 
@@ -535,7 +570,7 @@ export default function Demo() {
               <div className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-6">Use of Funds</div>
 
               {/* Visual bar */}
-              <div className="flex h-3 rounded-full overflow-hidden mb-6 bg-white/5">
+              <div className="flex h-4 rounded-full overflow-hidden mb-6 bg-white/5">
                 {USE_OF_FUNDS.map((f) => (
                   <div
                     key={f.label}
@@ -546,13 +581,13 @@ export default function Demo() {
               </div>
 
               {/* Legend */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {USE_OF_FUNDS.map((f) => (
                   <div key={f.label} className="flex items-start gap-2">
                     <div className="size-2 rounded-full mt-1 flex-shrink-0" style={{ backgroundColor: f.color }} />
                     <div>
                       <div className="text-[11px] text-white/70 font-medium">{f.label}</div>
-                      <div className="text-[10px] text-white/30 font-mono">{f.amount} · {f.pct}%</div>
+                      <div className="text-[10px] text-white/30 font-mono">{f.pct}%</div>
                     </div>
                   </div>
                 ))}
@@ -560,57 +595,110 @@ export default function Demo() {
             </div>
           </RevealSection>
 
-          {/* Key milestones */}
+          {/* SAFE terms */}
           <RevealSection delay={0.25}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-              {[
-                { milestone: "Q2 2026", title: "Multi-Tenant Launch", desc: "Onboard 5 additional holding companies" },
-                { milestone: "Q3 2026", title: "Agent Marketplace", desc: "Vertical-specific agent templates for rapid deployment" },
-                { milestone: "Q4 2026", title: "Series A Ready", desc: "20+ clients, $500K ARR target, proven unit economics" },
-              ].map((m, i) => (
-                <div key={m.milestone} className="border border-white/8 rounded-lg p-5">
-                  <div className="text-[10px] font-mono text-cyan-400/60 mb-2">{m.milestone}</div>
-                  <div className="text-sm font-semibold text-white mb-1">{m.title}</div>
-                  <p className="text-[11px] text-white/30">{m.desc}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="border border-white/8 rounded-lg p-5 text-center">
+                <div className="text-2xl font-bold text-white font-mono mb-1">$700K</div>
+                <div className="text-[11px] text-white/30">Round Size</div>
+              </div>
+              <div className="border border-white/8 rounded-lg p-5 text-center">
+                <div className="text-2xl font-bold text-white font-mono mb-1">$4M</div>
+                <div className="text-[11px] text-white/30">SAFE Cap</div>
+              </div>
+              <div className="border border-white/8 rounded-lg p-5 text-center">
+                <div className="text-2xl font-bold text-white font-mono mb-1">25+</div>
+                <div className="text-[11px] text-white/30">Months Runway</div>
+              </div>
+            </div>
+          </RevealSection>
+        </div>
+      </section>
+
+      {/* ═══ 9. TEAM ═══ */}
+      <section className="py-24 md:py-32 px-6 border-t border-white/5">
+        <div className="max-w-5xl mx-auto">
+          <RevealSection>
+            <div className="text-[10px] tracking-[0.3em] text-cyan-400/70 uppercase mb-4">The Team</div>
+            <h2
+              className="text-[clamp(28px,5vw,56px)] font-bold leading-[0.95] mb-12"
+              style={{ fontFamily: HEADLINE_FONT }}
+            >
+              MEET THE TEAM.
+            </h2>
+          </RevealSection>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {TEAM.map((t, i) => (
+              <RevealSection key={t.name} delay={i * 0.15}>
+                <div className="border border-white/8 rounded-lg overflow-hidden hover:border-white/15 transition-colors">
+                  {/* Photo */}
+                  <div className="aspect-[4/5] bg-white/5 overflow-hidden">
+                    <img
+                      src={t.photo}
+                      alt={t.name}
+                      className="w-full h-full object-cover object-top grayscale hover:grayscale-0 transition-all duration-500"
+                    />
+                  </div>
+                  {/* Info */}
+                  <div className="p-5">
+                    <div className="text-sm font-semibold text-white mb-0.5">{t.name}</div>
+                    <div className="text-[10px] text-cyan-400/60 tracking-wide mb-3">{t.role}</div>
+                    <p className="text-[11px] text-white/35 leading-relaxed">{t.bio}</p>
+                  </div>
                 </div>
-              ))}
+              </RevealSection>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ 10. CLOSING ═══ */}
+      <section className="py-24 md:py-40 px-6 border-t border-white/5">
+        <div className="max-w-4xl mx-auto text-center">
+          <RevealSection>
+            <h2
+              className="text-[clamp(48px,10vw,140px)] font-bold leading-[0.85] mb-8"
+              style={{ fontFamily: HEADLINE_FONT }}
+            >
+              THANK
+              <br />
+              YOU.
+            </h2>
+          </RevealSection>
+
+          <RevealSection delay={0.2}>
+            <p className="text-sm text-white/50 max-w-xl mx-auto leading-relaxed mb-12">
+              The market is uncontested. The platform is live. The round is $700K, SAFE Cap $4,000,000.
+              <span className="text-white font-medium"> The next call is yours to make.</span>
+            </p>
+          </RevealSection>
+
+          <RevealSection delay={0.3}>
+            <div className="flex items-center justify-center gap-4 flex-wrap">
+              <a
+                href="mailto:contact@aurovia.co?subject=ATLAS%20Investment%20Inquiry"
+                className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-black text-xs font-semibold tracking-[0.15em] hover:bg-white/90 transition-colors"
+              >
+                SCHEDULE A CALL →
+              </a>
+              <button
+                onClick={() => {
+                  localStorage.setItem("atlas_operator", "DEMO_INVESTOR");
+                  localStorage.setItem("atlas_demo_session", "true");
+                  navigate("/dashboard");
+                }}
+                className="inline-flex items-center gap-2 px-8 py-3.5 border border-white/20 text-white/70 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors"
+              >
+                EXPLORE LIVE PRODUCT →
+              </button>
             </div>
           </RevealSection>
 
-          {/* Final CTA */}
-          <RevealSection delay={0.3}>
-            <div className="text-center py-12 border border-white/8 rounded-lg bg-gradient-to-b from-cyan-500/[0.03] to-transparent">
-              <h3
-                className="text-[clamp(20px,3vw,36px)] font-bold mb-4"
-                style={{ fontFamily: "'Bebas Neue', sans-serif" }}
-              >
-                LET'S BUILD THE FUTURE
-                <br />
-                <span className="text-cyan-400">OF VENTURE OPERATIONS</span>
-              </h3>
-              <p className="text-[11px] text-white/30 mb-8 max-w-md mx-auto">
-                The product is live. The first client is operational. We're looking for
-                investors who understand that AI will reshape how holding companies operate.
-              </p>
-              <div className="flex items-center justify-center gap-4 flex-wrap">
-                <a
-                  href="mailto:contact@aurovia.co?subject=ATLAS%20Investment%20Inquiry"
-                  className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-black text-xs font-semibold tracking-[0.15em] hover:bg-white/90 transition-colors"
-                >
-                  SCHEDULE A CALL →
-                </a>
-                <button
-                  onClick={() => {
-                    localStorage.setItem("atlas_operator", "DEMO_INVESTOR");
-                    localStorage.setItem("atlas_demo_session", "true");
-                    navigate("/dashboard");
-                  }}
-                  className="inline-flex items-center gap-2 px-8 py-3.5 border border-white/20 text-white/70 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors"
-                >
-                  EXPLORE LIVE PRODUCT →
-                </button>
-              </div>
-            </div>
+          <RevealSection delay={0.4} className="mt-8">
+            <p className="text-[10px] text-white/15 tracking-wide">
+              Presented By: Shwan Joung Hyo Lee
+            </p>
           </RevealSection>
         </div>
       </section>
@@ -619,13 +707,15 @@ export default function Demo() {
       <footer className="py-12 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-bold tracking-[0.2em]" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+            <span className="text-sm font-bold tracking-[0.2em]" style={{ fontFamily: HEADLINE_FONT }}>
               ATLAS
             </span>
-            <span className="text-[10px] text-white/20">Powered by Aurovia</span>
+            <span className="text-[10px] text-white/20">Powered by Aurovia LLC</span>
           </div>
           <div className="flex items-center gap-6 text-[10px] text-white/20 tracking-wide">
+            <span>aurovia.co</span>
             <a href="mailto:contact@aurovia.co" className="hover:text-white/50 transition-colors">contact@aurovia.co</a>
+            <span>McLean, Virginia</span>
             <span>© 2026</span>
           </div>
         </div>
