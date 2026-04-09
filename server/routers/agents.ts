@@ -177,7 +177,7 @@ export async function runOverdueAgent(
         severity: existingOverdue.length > 5 ? "warning" : "info",
         organizationId: orgId,
         audience: "client",
-        requiresClientAction: true,
+        requiresClientAction: false, // summary signal, not actionable (no linked entity)
         actionType: "notify",
         actionLabel: "Review Overdue",
         entityType: "task",

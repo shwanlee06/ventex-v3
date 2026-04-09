@@ -101,7 +101,15 @@ export default function ClientSettings({ orgId, orgSlug }: ClientSettingsProps) 
       setContactName(org.primaryContactName || "");
       setContactEmail(org.primaryContactEmail || "");
       setAumRange(org.aumRange || "");
-      setSectors(org.sectors || []);
+      // Defensive: sectors may come as JSON string from DB
+      const rawSectors = org.sectors;
+      if (Array.isArray(rawSectors)) {
+        setSectors(rawSectors);
+      } else if (typeof rawSectors === "string") {
+        try { setSectors(JSON.parse(rawSectors)); } catch { setSectors([]); }
+      } else {
+        setSectors([]);
+      }
       setTier(org.subscriptionTier || "poc");
       setRenewalDate(org.renewalDate || "");
     }
@@ -115,7 +123,15 @@ export default function ClientSettings({ orgId, orgSlug }: ClientSettingsProps) 
       setDealFlowEnabled(agentConfig.dealFlowAgentEnabled ?? true);
       setOrchestratorEnabled(agentConfig.orchestratorEnabled ?? true);
       setAutoAdvanceEnabled(agentConfig.autoAdvanceEnabled ?? false);
-      setAutoAdvanceSectors(agentConfig.autoAdvanceSectors || []);
+      // Defensive: autoAdvanceSectors may come as JSON string from DB
+      const rawAAS = agentConfig.autoAdvanceSectors;
+      if (Array.isArray(rawAAS)) {
+        setAutoAdvanceSectors(rawAAS);
+      } else if (typeof rawAAS === "string") {
+        try { setAutoAdvanceSectors(JSON.parse(rawAAS)); } catch { setAutoAdvanceSectors([]); }
+      } else {
+        setAutoAdvanceSectors([]);
+      }
       setOverdueDays(agentConfig.overdueDaysThreshold ?? 7);
       setDistributionWarningDays(agentConfig.distributionWarningDays ?? 14);
       setHealthAlertThreshold(agentConfig.healthScoreAlertThreshold ?? 30);

@@ -19,6 +19,20 @@ import {
 } from "../../drizzle/schema";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
+/** Safely parse a JSON column that may be a string, array, or null */
+function parseJsonArray(val: unknown): string[] {
+  if (Array.isArray(val)) return val;
+  if (typeof val === "string") {
+    try { const parsed = JSON.parse(val); return Array.isArray(parsed) ? parsed : []; } catch { return []; }
+  }
+  return [];
+}
+
+/** Normalize JSON fields on an org record */
+function normalizeOrg<T extends { sectors: unknown }>(org: T): T & { sectors: string[] } {
+  return { ...org, sectors: parseJsonArray(org.sectors) };
+}
+
 export const organizationsRouter = router({
   // List all client organizations — basic list (all Atlas team members can see)
   list: protectedProcedure
@@ -30,7 +44,7 @@ export const organizationsRouter = router({
         const db = await getDb();
         if (!db || !ctx.user.organizationId) return [];
         const rows = await db.select().from(organizations).where(eq(organizations.id, ctx.user.organizationId));
-        return rows.map(org => ({ ...org, ventureCount: 0 }));
+        return rows.map(org => ({ ...normalizeOrg(org), ventureCount: 0 }));
       }
       const db = await getDb();
       if (!db) return [];
@@ -58,7 +72,7 @@ export const organizationsRouter = router({
       }
 
       return orgs.map(org => ({
-        ...org,
+        ...normalizeOrg(org),
         ventureCount: countMap.get(org.id) || 0,
       }));
     }),
@@ -256,7 +270,7 @@ export const organizationsRouter = router({
         .from(orgVentureAccess)
         .where(eq(orgVentureAccess.organizationId, org.id));
 
-      return { ...org, ventureCount: access.length };
+      return { ...normalizeOrg(org), ventureCount: access.length };
     }),
 
   // Get ventures for a specific organization
@@ -661,7 +675,8 @@ export const organizationsRouter = router({
       if (!db) return null;
       const [config] = await db.select().from(clientAgentConfig)
         .where(eq(clientAgentConfig.organizationId, input.organizationId)).limit(1);
-      return config || null;
+      if (!config) return null;
+      return { ...config, autoAdvanceSectors: parseJsonArray(config.autoAdvanceSectors) };
     }),
 
   // ── Update agent config for an organization ─────────────────

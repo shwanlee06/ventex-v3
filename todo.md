@@ -2107,3 +2107,17 @@
 - [x] Generate 4 AI observations via LLM — risks, patterns, opportunities with suggested tasks and assignees
 - [x] Generate 5 smart alerts for overdue tasks (2 critical, 3 warning)
 - [x] Verify Marina Bay Residences shows as Completed with 16/20 steps auto-completed
+
+## Bug: Settings button error in client venture view
+- [x] Root cause: org.sectors stored as JSON string not array — ClientSettings crashed calling .map() on a string
+- [x] Fix: Added parseJsonArray server-side normalization in organizations.list, bySlug, getAgentConfig
+- [x] Fix: Added defensive JSON parsing in ClientSettings useEffect for sectors and autoAdvanceSectors
+
+## Bug: Accepting AI observations/tasks doesn't show live data changes
+- [x] Root cause: Summary/signal events had requiresClientAction=true but no actionPayload or agentEntityId
+- [x] Fix: Added hasActionableEntity guard in VelocityFeed — only shows action buttons on events with linked entities
+- [x] Fix: Downgraded non-actionable events from "ACTION NEEDED" to "WATCHING" in card classifier
+- [x] Fix: Overdue Agent summary signal no longer sets requiresClientAction=true
+- [x] Fix: Cleaned up 105 bad events in DB
+- [x] Fix: Added broad cache invalidation after client actions (tasks, distributions, ventures, agents)
+- [x] All 655 tests pass

@@ -47,13 +47,21 @@ interface FeedEvent {
   createdAt: Date | string;
 }
 
+// ── Helpers ──────────────────────────────────────────────────────────────
+
+function hasActionableEntity(event: FeedEvent): boolean {
+  // Only show action buttons if the event links to a real entity
+  return !!(event.agentEntityId || (event as any).actionPayload);
+}
+
 // ── Card Type Classification ─────────────────────────────────────────────
 
 type CardType = "action_needed" | "completed" | "watching";
 
 function classifyEvent(event: FeedEvent): CardType {
   if (event.actionTaken) return "completed";
-  if (event.requiresClientAction) return "action_needed";
+  // Only show as action_needed if there's actually an actionable entity linked
+  if (event.requiresClientAction && hasActionableEntity(event)) return "action_needed";
   return "watching";
 }
 
@@ -106,6 +114,7 @@ function friendlyAgentName(agentName: string): string {
 // ── Action Button Text ──────────────────────────────────────────────────
 
 function getActionText(event: FeedEvent): string | null {
+  if (!hasActionableEntity(event)) return null;
   const msg = event.message.toLowerCase();
   if (msg.includes("follow") || msg.includes("draft")) return "Approve Follow-Up";
   if (msg.includes("distribution") || msg.includes("payment")) return "Confirm Distribution";
@@ -270,9 +279,21 @@ export default function VelocityFeed({ onNavigate }: VelocityFeedProps) {
     { enabled: !!activeOrg?.id, refetchInterval: 30000 }
   );
 
+  const utils = trpc.useUtils();
+
   const dismissMutation = trpc.agents.clientDismiss.useMutation({
     onSuccess: () => feedQ.refetch(),
   });
+
+  // Broad cache invalidation after any client action
+  const invalidateRelated = useCallback(() => {
+    feedQ.refetch();
+    // Invalidate all related data so dashboards, task lists, etc. refresh
+    utils.tasks.invalidate();
+    utils.distributions.invalidate();
+    utils.ventures.invalidate();
+    utils.agents.invalidate();
+  }, [feedQ, utils]);
 
   // clientFeed returns { actionNeeded, completed, watching } — flatten into a single array
   const feedData = feedQ.data as { actionNeeded: FeedEvent[]; completed: FeedEvent[]; watching: FeedEvent[] } | undefined;
@@ -391,7 +412,7 @@ export default function VelocityFeed({ onNavigate }: VelocityFeedProps) {
         onClose={() => setActionModal({ open: false, eventId: null, actionType: null })}
         eventId={actionModal.eventId}
         actionType={actionModal.actionType}
-        onSuccess={() => feedQ.refetch()}
+        onSuccess={invalidateRelated}
       />
     </div>
   );
