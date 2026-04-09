@@ -2295,3 +2295,7 @@
 
 ## Call Us — Add Phone Number (Apr 09)
 - [x] PHONE-1: Add phone number 571-480-3261 to all "Call Us" sections across the app (Demo pitch CTA, hero contact bar, footer, SpyOps footer)
+
+## Pitch Page — Fix Light Gray Text Visibility (Apr 09)
+- [x] VIS-1: Increase contrast on all low-opacity text elements on Demo.tsx pitch page
+- [x] VIS-2: Fix Sign In link on pitch page — now uses OAuth getLoginUrl() instead of linking to /

@@ -9,6 +9,7 @@ import { motion, useInView } from "framer-motion";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import AnimatedCounter from "@/components/AnimatedCounter";
+import { getLoginUrl } from "@/const";
 
 /* ─── Scroll-triggered section wrapper ─── */
 function RevealSection({
@@ -178,7 +179,7 @@ export default function Demo() {
       )}>
         <div className="flex items-center gap-3">
           <span className="text-sm font-bold tracking-[0.2em]" style={{ fontFamily: HEADLINE_FONT }}>ATLAS</span>
-          <span className="text-[9px] text-white/30 tracking-wider hidden sm:inline">INVESTOR DEMO</span>
+          <span className="text-[9px] text-white/50 tracking-wider hidden sm:inline">INVESTOR DEMO</span>
         </div>
         <div className="flex items-center gap-3">
           <Link
@@ -187,12 +188,12 @@ export default function Demo() {
           >
             VIEW PROTOTYPE
           </Link>
-          <Link
-            href="/"
+          <a
+            href={getLoginUrl()}
             className="text-[11px] tracking-[0.1em] px-3 py-1.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors"
           >
             SIGN IN →
-          </Link>
+          </a>
         </div>
       </nav>
 
@@ -239,10 +240,10 @@ export default function Demo() {
             ATLAS.
           </h1>
 
-          <p className="text-sm text-white/40 tracking-[0.15em] uppercase mb-8">Powered by Aurovia LLC</p>
+          <p className="text-sm text-white/60 tracking-[0.15em] uppercase mb-8">Powered by Aurovia LLC</p>
 
           {/* Tagline */}
-          <p className="text-sm md:text-base text-white/50 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-sm md:text-base text-white/70 max-w-2xl mx-auto leading-relaxed">
             ATLAS is an AI velocity platform that runs the operations of multi-vertical holding companies.
             Automating tasks, advancing deals, and compressing the time between venture stages so principals
             can run more with less.
@@ -258,7 +259,7 @@ export default function Demo() {
             </Link>
             <button
               onClick={() => document.getElementById("problem")?.scrollIntoView({ behavior: "smooth" })}
-              className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 text-white/70 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 text-white/80 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors"
             >
               SEE THE PITCH ↓
             </button>
@@ -272,15 +273,15 @@ export default function Demo() {
           transition={{ delay: 1.5 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
         >
-          <span className="text-[9px] tracking-[0.3em] text-white/20 uppercase">Scroll</span>
+          <span className="text-[9px] tracking-[0.3em] text-white/40 uppercase">Scroll</span>
           <div className="w-px h-8 bg-gradient-to-b from-white/20 to-transparent" />
         </motion.div>
 
         {/* Contact bar */}
-        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-8 py-4 text-[10px] text-white/15 tracking-wide">
+        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-8 py-4 text-[10px] text-white/40 tracking-wide">
           <span>aurovia.co</span>
           <span>contact@aurovia.co</span>
-          <a href="tel:+15714803261" className="hover:text-white/30 transition-colors">(571) 480-3261</a>
+          <a href="tel:+15714803261" className="hover:text-white/60 transition-colors">(571) 480-3261</a>
           <span>McLean, Virginia</span>
         </div>
       </section>
@@ -298,17 +299,17 @@ export default function Demo() {
               <br />
               $200M+ PORTFOLIOS
               <br />
-              <span className="text-white/25">ARE STILL DOING IT</span>
+              <span className="text-white/45">ARE STILL DOING IT</span>
               <br />
-              <span className="text-white/25">ON SPREADSHEETS.</span>
+              <span className="text-white/45">ON SPREADSHEETS.</span>
             </h2>
           </RevealSection>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
             <RevealSection delay={0.1}>
               <div className="border border-white/8 rounded-lg p-6">
-                <div className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-4">Market Reality</div>
-                <p className="text-sm text-white/50 leading-relaxed">
+                <div className="text-[10px] tracking-[0.2em] text-white/50 uppercase mb-4">Market Reality</div>
+                <p className="text-sm text-white/70 leading-relaxed">
                   10,000+ UHNWI holding companies manage multi-vertical portfolios across real estate, yachts,
                   energy, hospitality, oil & gas, and F&B — simultaneously.
                 </p>
@@ -321,7 +322,7 @@ export default function Demo() {
                   <span className="text-5xl font-bold text-red-400" style={{ fontFamily: HEADLINE_FONT }}>42%</span>
                   <span className="text-xs text-red-400/60">of them</span>
                 </div>
-                <p className="text-sm text-white/50 leading-relaxed">
+                <p className="text-sm text-white/70 leading-relaxed">
                   coordinate operations on email chains and disconnected spreadsheets. Tasks go untracked.
                   Stages stall. Distributions get delayed. The operational infrastructure does not match the
                   scale of the portfolio.
@@ -332,7 +333,7 @@ export default function Demo() {
 
           <RevealSection delay={0.3} className="mt-12">
             <div className="text-center">
-              <p className="text-sm text-white/30 mb-2">No platform has been built to fix this.</p>
+              <p className="text-sm text-white/50 mb-2">No platform has been built to fix this.</p>
               <h3 className="text-[clamp(24px,4vw,48px)] font-bold" style={{ fontFamily: HEADLINE_FONT }}>
                 UNTIL NOW.
               </h3>
@@ -352,7 +353,7 @@ export default function Demo() {
             >
               AGENTS EXECUTE.
               <br />
-              <span className="text-white/25">THEY DON'T ESCALATE.</span>
+              <span className="text-white/45">THEY DON'T ESCALATE.</span>
             </h2>
           </RevealSection>
 
@@ -364,14 +365,14 @@ export default function Demo() {
                     <div className="size-2 rounded-full flex-shrink-0" style={{ backgroundColor: agent.color }} />
                     <span className="text-sm font-semibold text-white">{agent.name}</span>
                   </div>
-                  <p className="text-[13px] text-white/40 leading-relaxed">{agent.desc}</p>
+                  <p className="text-[13px] text-white/60 leading-relaxed">{agent.desc}</p>
                 </div>
               </RevealSection>
             ))}
           </div>
 
           <RevealSection delay={0.5} className="mt-10">
-            <p className="text-center text-sm text-white/30 italic">Agents execute. They don't escalate.</p>
+            <p className="text-center text-sm text-white/50 italic">Agents execute. They don't escalate.</p>
           </RevealSection>
         </div>
       </section>
@@ -390,7 +391,7 @@ export default function Demo() {
           </RevealSection>
 
           <RevealSection delay={0.1}>
-            <p className="text-sm text-white/50 max-w-3xl leading-relaxed mb-12">
+            <p className="text-sm text-white/70 max-w-3xl leading-relaxed mb-12">
               Two completely separate interfaces: a private-banking-grade Client Portal in plain English
               with no internal jargon, and an Operator Command Center with full visibility across all
               clients, ventures, and agent signals.
@@ -403,7 +404,7 @@ export default function Demo() {
               <RevealSection key={s.label} delay={0.15 + i * 0.05}>
                 <div className="border border-white/8 rounded-lg p-5 text-center">
                   <div className="text-2xl font-bold text-cyan-400 font-mono mb-1">{s.value}</div>
-                  <div className="text-[11px] text-white/30">{s.label}</div>
+                  <div className="text-[11px] text-white/50">{s.label}</div>
                 </div>
               </RevealSection>
             ))}
@@ -414,7 +415,7 @@ export default function Demo() {
             <div className="text-center">
               <Link
                 href="/demo/dashboard"
-                className="inline-flex items-center gap-2 px-8 py-3.5 border border-white/20 text-white/70 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 px-8 py-3.5 border border-white/20 text-white/80 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors"
               >
                 VIEW LIVE PROTOTYPE →
               </Link>
@@ -442,7 +443,7 @@ export default function Demo() {
           </RevealSection>
 
           <RevealSection delay={0.15}>
-            <p className="text-sm text-white/50 max-w-2xl leading-relaxed mb-8">
+            <p className="text-sm text-white/70 max-w-2xl leading-relaxed mb-8">
               10,000+ global family offices and UHNWI holding companies manage $6 trillion across 3 to 8
               sectors simultaneously. Their operational stack is fragmented, vertical-specific, and entirely
               absent of AI-driven autonomous execution.
@@ -451,7 +452,7 @@ export default function Demo() {
 
           <RevealSection delay={0.25}>
             <div className="border border-emerald-500/20 rounded-lg p-6 bg-emerald-500/[0.03] max-w-2xl">
-              <p className="text-sm text-white/50 leading-relaxed">
+              <p className="text-sm text-white/70 leading-relaxed">
                 ATLAS does not compete with Masttro, Addepar, Voly, or AppFolio. It sits above all of them.
                 <span className="text-emerald-400 font-medium"> No platform serves the autonomous execution layer today.</span>
               </p>
@@ -496,10 +497,10 @@ export default function Demo() {
                   <div className="border border-white/8 rounded-lg p-6 h-full">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="size-2 rounded-full" style={{ backgroundColor: s.color }} />
-                      <span className="text-[10px] font-mono text-white/30">{s.duration}</span>
+                      <span className="text-[10px] font-mono text-white/50">{s.duration}</span>
                     </div>
                     <div className="text-sm font-semibold text-white mb-2">{s.title}</div>
-                    <p className="text-[12px] text-white/40 leading-relaxed">{s.desc}</p>
+                    <p className="text-[12px] text-white/60 leading-relaxed">{s.desc}</p>
                   </div>
                 </RevealSection>
               ))}
@@ -532,7 +533,7 @@ export default function Demo() {
               TO 77,580 LINES OF CODE.
             </h2>
             <h2
-              className="text-[clamp(24px,4vw,48px)] font-bold leading-[0.95] mb-8 text-white/25"
+              className="text-[clamp(24px,4vw,48px)] font-bold leading-[0.95] mb-8 text-white/45"
               style={{ fontFamily: HEADLINE_FONT }}
             >
               AND COUNTING.
@@ -568,22 +569,22 @@ export default function Demo() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                     <div className="text-center">
                       <div className="text-lg font-bold text-amber-400 font-mono">46</div>
-                      <div className="text-[10px] text-white/30">DB tables</div>
+                      <div className="text-[10px] text-white/50">DB tables</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-amber-400 font-mono">22</div>
-                      <div className="text-[10px] text-white/30">API routers</div>
+                      <div className="text-[10px] text-white/50">API routers</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-amber-400 font-mono">32</div>
-                      <div className="text-[10px] text-white/30">pages built</div>
+                      <div className="text-[10px] text-white/50">pages built</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-amber-400 font-mono">134</div>
-                      <div className="text-[10px] text-white/30">React components</div>
+                      <div className="text-[10px] text-white/50">React components</div>
                     </div>
                   </div>
-                  <p className="text-sm text-white/50 leading-relaxed">
+                  <p className="text-sm text-white/70 leading-relaxed">
                     Built the full-stack architecture from scratch: multi-tenant database, role-based access control,
                     real-time SSE events, S3 file storage, encrypted data layer, and the operator command center
                     with venture management, SPV tracking, task automation, and distribution workflows.
@@ -601,18 +602,18 @@ export default function Demo() {
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
                     <div className="text-center">
                       <div className="text-lg font-bold text-cyan-400 font-mono">5</div>
-                      <div className="text-[10px] text-white/30">AI engines</div>
+                      <div className="text-[10px] text-white/50">AI engines</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-cyan-400 font-mono">4</div>
-                      <div className="text-[10px] text-white/30">autonomous agents</div>
+                      <div className="text-[10px] text-white/50">autonomous agents</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-cyan-400 font-mono">2h</div>
-                      <div className="text-[10px] text-white/30">agent cycle</div>
+                      <div className="text-[10px] text-white/50">agent cycle</div>
                     </div>
                   </div>
-                  <p className="text-sm text-white/50 leading-relaxed">
+                  <p className="text-sm text-white/70 leading-relaxed">
                     Deployed 5 intelligence engines: Predictive Engine (venture forecasting), Market Intelligence
                     (sector signals), Continuous Learning (outcome tracking), Escalation Engine (automated nudges),
                     and Realtime Triggers. Agents run autonomously every 2 hours — advancing deals, flagging overdue tasks,
@@ -631,22 +632,22 @@ export default function Demo() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                     <div className="text-center">
                       <div className="text-lg font-bold text-violet-400 font-mono">15</div>
-                      <div className="text-[10px] text-white/30">security modules</div>
+                      <div className="text-[10px] text-white/50">security modules</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-violet-400 font-mono">AES-256</div>
-                      <div className="text-[10px] text-white/30">encryption</div>
+                      <div className="text-[10px] text-white/50">encryption</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-violet-400 font-mono">RBAC</div>
-                      <div className="text-[10px] text-white/30">access control</div>
+                      <div className="text-[10px] text-white/50">access control</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-violet-400 font-mono">MFA</div>
-                      <div className="text-[10px] text-white/30">ready</div>
+                      <div className="text-[10px] text-white/50">ready</div>
                     </div>
                   </div>
-                  <p className="text-sm text-white/50 leading-relaxed">
+                  <p className="text-sm text-white/70 leading-relaxed">
                     Enterprise-grade security layer: AES-256 encrypted storage, role-based access control,
                     cross-tenant isolation, rate limiting, audit middleware, data retention policies,
                     session management with idle timeouts, and full audit trails.
@@ -664,30 +665,30 @@ export default function Demo() {
                   <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-4">
                     <div className="text-center">
                       <div className="text-lg font-bold text-emerald-400 font-mono">77K+</div>
-                      <div className="text-[10px] text-white/30">lines of code</div>
+                      <div className="text-[10px] text-white/50">lines of code</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-emerald-400 font-mono">285</div>
-                      <div className="text-[10px] text-white/30">source files</div>
+                      <div className="text-[10px] text-white/50">source files</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-emerald-400 font-mono">692</div>
-                      <div className="text-[10px] text-white/30">tests passing</div>
+                      <div className="text-[10px] text-white/50">tests passing</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-emerald-400 font-mono">150</div>
-                      <div className="text-[10px] text-white/30">commits</div>
+                      <div className="text-[10px] text-white/50">commits</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-emerald-400 font-mono">45</div>
-                      <div className="text-[10px] text-white/30">test suites</div>
+                      <div className="text-[10px] text-white/50">test suites</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-emerald-400 font-mono">52+</div>
-                      <div className="text-[10px] text-white/30">API endpoints</div>
+                      <div className="text-[10px] text-white/50">API endpoints</div>
                     </div>
                   </div>
-                  <p className="text-sm text-white/50 leading-relaxed">
+                  <p className="text-sm text-white/70 leading-relaxed">
                     Platform is fully functional and demo-ready. Client portal live. Operator command center live.
                     AI agents running autonomously. <span className="text-emerald-400 font-medium">1 active pilot client (Royalton Venture Holding)</span> — validating the full workflow end-to-end.
                     <span className="text-cyan-400 font-medium"> 90-day north star: convert pilot to a paid annual license
@@ -700,7 +701,7 @@ export default function Demo() {
 
           <RevealSection delay={0.6} className="mt-10">
             <div className="border border-cyan-500/20 rounded-lg p-5 bg-cyan-500/[0.03] text-center">
-              <p className="text-sm text-white/50">
+              <p className="text-sm text-white/70">
                 <span className="text-cyan-400 font-semibold">1 active pilot client</span> (Royalton Venture Holding) — platform being validated in production. Warm prospect conversations in progress.
               </p>
             </div>
@@ -720,7 +721,7 @@ export default function Demo() {
               $700,000.
             </h2>
             <h3
-              className="text-[clamp(20px,3vw,40px)] font-bold leading-[0.95] mb-2 text-white/40"
+              className="text-[clamp(20px,3vw,40px)] font-bold leading-[0.95] mb-2 text-white/60"
               style={{ fontFamily: HEADLINE_FONT }}
             >
               THREE UNLOCKS.
@@ -734,7 +735,7 @@ export default function Demo() {
           </RevealSection>
 
           <RevealSection delay={0.1}>
-            <p className="text-sm text-white/40 max-w-3xl leading-relaxed mb-12">
+            <p className="text-sm text-white/70 max-w-3xl leading-relaxed mb-12">
               This raise gives ATLAS 25+ months of runway to close 5–6 enterprise contracts, hire 2–4
               critical AI engineers, and reach a $4M ARR milestone — the threshold that unlocks our
               Series A at a $15M+ valuation. Every dollar is allocated with precision to generate
@@ -745,7 +746,7 @@ export default function Demo() {
           {/* Use of Funds */}
           <RevealSection delay={0.15}>
             <div className="border border-white/8 rounded-lg p-6 mb-8">
-              <div className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-6">Use of Funds</div>
+              <div className="text-[10px] tracking-[0.2em] text-white/50 uppercase mb-6">Use of Funds</div>
 
               {/* Visual bar */}
               <div className="flex h-4 rounded-full overflow-hidden mb-6 bg-white/5">
@@ -764,8 +765,8 @@ export default function Demo() {
                   <div key={f.label} className="flex items-start gap-2">
                     <div className="size-2 rounded-full mt-1 flex-shrink-0" style={{ backgroundColor: f.color }} />
                     <div>
-                      <div className="text-[11px] text-white/70 font-medium">{f.label}</div>
-                      <div className="text-[10px] text-white/30 font-mono">{f.pct}%</div>
+                      <div className="text-[11px] text-white/80 font-medium">{f.label}</div>
+                      <div className="text-[10px] text-white/50 font-mono">{f.pct}%</div>
                     </div>
                   </div>
                 ))}
@@ -778,15 +779,15 @@ export default function Demo() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="border border-white/8 rounded-lg p-5 text-center">
                 <div className="text-2xl font-bold text-white font-mono mb-1">$700K</div>
-                <div className="text-[11px] text-white/30">Round Size</div>
+                <div className="text-[11px] text-white/50">Round Size</div>
               </div>
               <div className="border border-white/8 rounded-lg p-5 text-center">
                 <div className="text-2xl font-bold text-white font-mono mb-1">$4M</div>
-                <div className="text-[11px] text-white/30">SAFE Cap</div>
+                <div className="text-[11px] text-white/50">SAFE Cap</div>
               </div>
               <div className="border border-white/8 rounded-lg p-5 text-center">
                 <div className="text-2xl font-bold text-white font-mono mb-1">25+</div>
-                <div className="text-[11px] text-white/30">Months Runway</div>
+                <div className="text-[11px] text-white/50">Months Runway</div>
               </div>
             </div>
           </RevealSection>
@@ -804,7 +805,7 @@ export default function Demo() {
             >
               MEET THE TEAM.
             </h2>
-            <p className="text-sm text-white/40 max-w-2xl leading-relaxed mb-12">
+            <p className="text-sm text-white/70 max-w-2xl leading-relaxed mb-12">
               Three founders. Average age: 18. They didn't study the problem in a classroom —
               they watched it happen and built the solution.
             </p>
@@ -828,13 +829,13 @@ export default function Demo() {
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-semibold text-white">{t.name}</span>
                       {t.age && (
-                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border border-white/10 text-white/30">
+                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border border-white/15 text-white/50">
                           {t.age} yrs
                         </span>
                       )}
                     </div>
                     <div className="text-[10px] tracking-wide mb-3" style={{ color: `${t.color}99` }}>{t.role}</div>
-                    <p className="text-[11px] text-white/35 leading-relaxed">{t.bio}</p>
+                    <p className="text-[11px] text-white/60 leading-relaxed">{t.bio}</p>
                   </div>
                 </div>
               </RevealSection>
@@ -844,19 +845,19 @@ export default function Demo() {
           {/* Post-Raise Hires */}
           <RevealSection delay={0.5} className="mt-12">
             <div className="border border-white/8 rounded-lg p-6">
-              <div className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-6">Post-Raise Key Hires</div>
+              <div className="text-[10px] tracking-[0.2em] text-white/50 uppercase mb-6">Post-Raise Key Hires</div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {POST_RAISE_HIRES.map((h) => (
                   <div key={h.role} className="flex items-start gap-3 p-4 border border-white/5 rounded-lg">
                     <div className="size-2 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: h.color }} />
                     <div>
                       <div className="text-sm font-semibold text-white mb-1">{h.role}</div>
-                      <p className="text-[11px] text-white/35 leading-relaxed">{h.why}</p>
+                      <p className="text-[11px] text-white/60 leading-relaxed">{h.why}</p>
                     </div>
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-white/20 mt-4 text-center">
+              <p className="text-[10px] text-white/45 mt-4 text-center">
                 Funded by the $700K raise — 25.6% allocated to engineering talent
               </p>
             </div>
@@ -879,7 +880,7 @@ export default function Demo() {
           </RevealSection>
 
           <RevealSection delay={0.2}>
-            <p className="text-sm text-white/50 max-w-xl mx-auto leading-relaxed mb-12">
+            <p className="text-sm text-white/70 max-w-xl mx-auto leading-relaxed mb-12">
               The market is uncontested. The platform is live. The round is $700K, SAFE Cap $4,000,000.
               <span className="text-white font-medium"> The next call is yours to make.</span>
             </p>
@@ -895,7 +896,7 @@ export default function Demo() {
               </a>
               <Link
                 href="/demo/dashboard"
-                className="inline-flex items-center gap-2 px-8 py-3.5 border border-white/20 text-white/70 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 px-8 py-3.5 border border-white/20 text-white/80 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors"
               >
                 VIEW LIVE PROTOTYPE →
               </Link>
@@ -903,7 +904,7 @@ export default function Demo() {
           </RevealSection>
 
           <RevealSection delay={0.4} className="mt-8">
-            <p className="text-[10px] text-white/15 tracking-wide">
+            <p className="text-[10px] text-white/40 tracking-wide">
               Presented By: Shwan Joung Hyo Lee
             </p>
           </RevealSection>
@@ -917,12 +918,12 @@ export default function Demo() {
             <span className="text-sm font-bold tracking-[0.2em]" style={{ fontFamily: HEADLINE_FONT }}>
               ATLAS
             </span>
-            <span className="text-[10px] text-white/20">Powered by Aurovia LLC</span>
+            <span className="text-[10px] text-white/45">Powered by Aurovia LLC</span>
           </div>
-          <div className="flex items-center gap-6 text-[10px] text-white/20 tracking-wide">
+          <div className="flex items-center gap-6 text-[10px] text-white/45 tracking-wide">
             <span>aurovia.co</span>
-            <a href="mailto:contact@aurovia.co" className="hover:text-white/50 transition-colors">contact@aurovia.co</a>
-            <a href="tel:+15714803261" className="hover:text-white/50 transition-colors">(571) 480-3261</a>
+            <a href="mailto:contact@aurovia.co" className="hover:text-white/70 transition-colors">contact@aurovia.co</a>
+            <a href="tel:+15714803261" className="hover:text-white/70 transition-colors">(571) 480-3261</a>
             <span>McLean, Virginia</span>
             <span>© 2026</span>
           </div>
