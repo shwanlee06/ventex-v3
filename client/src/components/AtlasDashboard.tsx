@@ -6,6 +6,7 @@
 
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
+import AnimatedCounter from "@/components/AnimatedCounter";
 import {
   Building2,
   Search,
@@ -462,7 +463,11 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-2xl font-semibold tracking-tight text-foreground" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                {m.value}
+                {typeof m.value === 'number' ? (
+                  <AnimatedCounter value={m.value} duration={1000} />
+                ) : (
+                  m.value
+                )}
               </span>
               <span className={cn(
                 "text-[11px]",

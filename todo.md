@@ -2147,3 +2147,38 @@
 - [x] Partner navigation — created PartnerDashboard with assigned ventures, tasks, overdue alerts, and partner-specific sidebar nav
 - [x] Invitation acceptance flow — already fully wired (AcceptInvite → OAuth → acceptPendingInvitation → welcome)
 - [x] Real-time SSE updates — created SSE event bus, useSSE hooks, wired VelocityFeed + NotificationPanel + agent triggers for instant updates
+
+## Best-in-Class Elevation (Apr 2026)
+
+### Visual Elevation
+- [ ] ELITE-1: Login page — animated gradient background, entrance animation, tagline
+- [ ] ELITE-2: Card depth system — layered shadows, glassmorphism accents, hover micro-interactions
+- [x] ELITE-3: KPI animated counters — count-up effect on dashboard metrics
+- [ ] ELITE-4: SVG sparklines — animated inline charts on KPI cards
+- [ ] ELITE-5: Section header gradient accents — subtle brand color gradients
+
+### Data & Intelligence
+- [ ] ELITE-6: Data freshness indicator — "Updated 2m ago" on live panels
+- [ ] ELITE-7: Progress ring charts — venture/SPV completion donut charts
+- [ ] ELITE-8: Table row hover actions — slide-in quick actions on hover
+
+### Client Portal Premium
+- [ ] ELITE-9: Portfolio value animated counter — smooth count-up on hero stat
+- [ ] ELITE-10: Velocity summary typewriter — AI summary types out on load
+- [ ] ELITE-11: Card entrance staggering — smooth cascade animation on portal load
+
+### Navigation & System
+- [ ] ELITE-12: Command palette — Cmd+K global search with fuzzy matching
+- [ ] ELITE-13: Branded 404 page — ATLAS-themed not found page
+- [ ] ELITE-14: Error boundary — branded error page with retry
+- [ ] ELITE-15: Consistent loading skeletons — unified skeleton design across all pages
+- [ ] ELITE-16: Keyboard shortcuts — Esc to close modals, arrow keys in lists
+
+## Investor Demo Route + Final Elevation (Apr 2026)
+- [x] DEMO-1: /demo route — read-only investor access without login
+- [x] DEMO-2: Demo context provider — DemoProvider + useDemo hook
+- [x] DEMO-3: Demo banner — persistent amber INVESTOR DEMO bar with Request Access CTA
+- [x] DEMO-4: Disable mutations in demo mode — guardMutation() + toast in demo mode
+- [x] ELITE-3: KPI animated counters — count-up effect on dashboard metrics
+- [x] ELITE-13: Branded 404 page — ATLAS-themed not found page
+- [x] ELITE-6: Data freshness indicator — "Updated Xm ago" on VelocityFeed

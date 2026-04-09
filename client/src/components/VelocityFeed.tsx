@@ -22,6 +22,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useCallback } from "react";
 import { useSSEInvalidation } from "@/hooks/useSSE";
+import DataFreshness from "@/components/DataFreshness";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ClientActionModal, { inferActionFlow, type ActionFlowType } from "@/components/ClientActionModals";
@@ -369,12 +370,15 @@ export default function VelocityFeed({ onNavigate }: VelocityFeedProps) {
             </span>
           )}
         </div>
-        <button
-          onClick={() => onNavigate("/activity")}
-          className="text-[11px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-        >
-          See all activity <ArrowRight className="size-3" />
-        </button>
+        <div className="flex items-center gap-3">
+          <DataFreshness updatedAt={feedQ.dataUpdatedAt} />
+          <button
+            onClick={() => onNavigate("/activity")}
+            className="text-[11px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+          >
+            See all activity <ArrowRight className="size-3" />
+          </button>
+        </div>
       </div>
 
       <div className="space-y-3">

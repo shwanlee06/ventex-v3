@@ -825,13 +825,39 @@ export default function SpyOps() {
                 </div>
               )}
 
+              {/* Demo link */}
+              <div
+                style={{
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: 10,
+                  color: "#444",
+                  marginTop: 32,
+                  textAlign: "center",
+                }}
+              >
+                <span
+                  onClick={() => navigate("/demo")}
+                  style={{
+                    color: "rgba(34,211,238,0.5)",
+                    cursor: "none",
+                    borderBottom: "1px solid rgba(34,211,238,0.2)",
+                    paddingBottom: 1,
+                    transition: "color 0.2s",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(34,211,238,0.8)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(34,211,238,0.5)")}
+                >
+                  OR VIEW INVESTOR DEMO
+                </span>
+              </div>
+
               {/* Bottom hint */}
               <div
                 style={{
                   fontFamily: "'Share Tech Mono', monospace",
                   fontSize: 10,
                   color: "#333",
-                  marginTop: 48,
+                  marginTop: 32,
                   textAlign: "center",
                   lineHeight: 1.8,
                 }}
@@ -1122,6 +1148,23 @@ export default function SpyOps() {
                 }}
               >
                 {isAuthenticated ? "ENTER COMMAND CENTER ▶" : "SIGN IN ▶"}
+              </button>
+              {/* INVESTOR DEMO — no auth required */}
+              <button
+                onClick={() => navigate("/demo")}
+                className="spyops-btn-secondary"
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 11,
+                  letterSpacing: "0.15em",
+                  background: "transparent",
+                  color: "#22d3ee",
+                  border: "1px solid rgba(34,211,238,0.4)",
+                  padding: "12px 24px",
+                  cursor: "none",
+                }}
+              >
+                VIEW DEMO ◉
               </button>
               {/* FIX 15: REQUEST ACCESS scrolls to contact/coordinates */}
               <button

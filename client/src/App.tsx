@@ -39,6 +39,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import { AgentProvider } from "./contexts/AgentContext";
 import { useHeartbeat } from "./hooks/useHeartbeat";
+import { DemoProvider } from "./contexts/DemoContext";
+import Demo from "./pages/Demo";
 
 /* Auth guard — redirects to login if no operator in localStorage */
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -95,6 +97,9 @@ function Router() {
       <Route path="/portal">
         <Redirect to="/dashboard" />
       </Route>
+
+      {/* Investor demo — public, no auth, read-only */}
+      <Route path="/demo" component={Demo} />
 
       {/* Legal pages — public, no auth */}
       <Route path="/privacy" component={PrivacyPolicy} />
@@ -197,6 +202,7 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark" switchable>
+        <DemoProvider>
         <PreviewModeProvider>
           <WorkspaceProvider>
             <AgentProvider>
@@ -209,6 +215,7 @@ function App() {
             </AgentProvider>
           </WorkspaceProvider>
         </PreviewModeProvider>
+        </DemoProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
