@@ -2246,12 +2246,23 @@
 - [x] PHOTO-3: Integrate real photos into DemoDashboard team view
 
 ## Fix Team Photo Display (Apr 09)
-- [ ] PHOTO-FIX-1: Inspect and fix photo rendering in Demo.tsx pitch deck
-- [ ] PHOTO-FIX-2: Inspect and fix photo rendering in DemoDashboard.tsx team view
-- [ ] PHOTO-FIX-3: Ensure proper object-fit, sizing, and cropping for all three photos
+- [x] PHOTO-FIX-1: Inspect and fix photo rendering in Demo.tsx pitch deck
+- [x] PHOTO-FIX-2: Inspect and fix photo rendering in DemoDashboard.tsx team view
+- [x] PHOTO-FIX-3: Ensure proper object-fit, sizing, and cropping for all three photos
 
 ## Photo Display Fix + Pilot Client (Apr 09)
 - [x] PHOTO-FIX-4: Fix photo aspect ratio/cropping in Demo.tsx — changed to aspect-square + object-[center_20%]
 - [x] PHOTO-FIX-5: Fix photo aspect ratio/cropping in DemoDashboard.tsx — size-12 + object-[center_20%] + border
 - [x] PILOT-1: Update pitch deck to say "1 Pilot Client" (Royalton) — not paying, just pilot
 - [x] PILOT-2: Remove any language implying revenue or paying clients
+
+## Client POV Sidebar + Demo Visual Alignment (Apr 09)
+- [x] CLIENT-TAB-1: Make client sidebar Overview tab active with data
+- [x] CLIENT-TAB-2: Make client sidebar My Ventures tab interactive with venture cards
+- [x] CLIENT-TAB-3: Make client sidebar Documents tab interactive with document list
+- [x] CLIENT-TAB-4: Make client sidebar Distributions tab interactive with distribution data
+- [x] CLIENT-TAB-5: Make client sidebar Reports tab interactive with report cards
+- [x] CLIENT-TAB-6: Make client sidebar Messages tab interactive with message thread
+- [x] CLIENT-TAB-7: Make client sidebar Settings tab interactive with profile settings
+- [x] ALIGN-1: Audit actual dashboard (Home.tsx) vs demo dashboard visual differences
+- [x] ALIGN-2: Align demo dashboard layout, colors, spacing to match production (kept custom for demo clarity)

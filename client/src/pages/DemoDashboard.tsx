@@ -21,6 +21,7 @@ import { useState, useRef } from "react";
 import { Link, useLocation } from "wouter";
 
 type DemoView = "admin" | "client";
+type ClientTabId = "overview" | "ventures" | "documents" | "distributions" | "reports" | "messages" | "settings";
 
 /* ─── Static demo data ─── */
 const DEMO_CLIENTS = [
@@ -1448,6 +1449,402 @@ function ClientPortalDemoView() {
   );
 }
 
+/* ─── CLIENT TAB VIEWS ─── */
+
+function ClientVenturesView() {
+  const STAGES = ["Negotiation", "Due Diligence", "Active", "Closing"];
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">My Ventures</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">{CLIENT_DEMO_PORTFOLIO.length} active ventures across your portfolio</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Annotation id="portfolio" annotations={CLIENT_ANNOTATIONS} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        {CLIENT_DEMO_PORTFOLIO.map((v, i) => (
+          <FadeIn key={v.id} delay={i * 0.05}>
+            <div className="bg-card border border-border rounded-xl p-5 hover:border-primary/20 transition-colors">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-muted-foreground">{SECTOR_ICONS[v.sector] || <Package className="size-4" />}</span>
+                    <span className="text-[11px] text-muted-foreground">{v.sector}</span>
+                  </div>
+                  <h3 className="text-sm font-semibold text-foreground">{v.name}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{v.statusLine}</p>
+                </div>
+                <div className={cn("px-2.5 py-1 rounded-full text-[11px] font-medium",
+                  v.stage === "Closing" ? "bg-emerald-500/10 text-emerald-400" :
+                  v.stage === "Active" ? "bg-blue-500/10 text-blue-400" :
+                  v.stage === "Due Diligence" ? "bg-amber-500/10 text-amber-400" :
+                  "bg-secondary text-muted-foreground"
+                )}>{v.stage}</div>
+              </div>
+
+              {/* Stage progress */}
+              <div className="flex items-center gap-1 mb-3">
+                {STAGES.map((stage, si) => {
+                  const stageIdx = STAGES.indexOf(v.stage);
+                  const isPast = si < stageIdx;
+                  const isCurrent = si === stageIdx;
+                  return (
+                    <div key={stage} className="flex-1">
+                      <div className={cn("h-1.5 rounded-full", isPast ? "bg-primary" : isCurrent ? "bg-primary/60" : "bg-secondary")} />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Momentum */}
+              {v.momentum && (
+                <div className="pt-3 border-t border-border">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <span className="text-[10px] text-muted-foreground block">Projected</span>
+                      <span className="text-sm font-mono font-medium text-foreground">{v.momentum.projectedDays}d</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-muted-foreground block">Confidence</span>
+                      <span className="text-sm font-mono font-medium text-foreground">{v.momentum.confidence}%</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-muted-foreground block">vs Benchmark</span>
+                      <span className={cn("text-sm font-mono font-medium",
+                        v.momentum.velocityVsBenchmark === "faster" ? "text-emerald-400" :
+                        v.momentum.velocityVsBenchmark === "slower" ? "text-red-400" : "text-amber-400"
+                      )}>
+                        {v.momentum.velocityVsBenchmark === "faster" ? "↑ Ahead" : v.momentum.velocityVsBenchmark === "slower" ? "↓ Behind" : "→ On pace"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </FadeIn>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ClientDocumentsView() {
+  const DOCS = [
+    { name: "Marina Bay Tower — Purchase Agreement", type: "Legal", date: "Mar 28, 2026", status: "signed" as const, size: "2.4 MB" },
+    { name: "Q1 2026 Portfolio Report", type: "Report", date: "Mar 31, 2026", status: "ready" as const, size: "1.8 MB" },
+    { name: "Northstar Refinery — Environmental Assessment", type: "Compliance", date: "Mar 15, 2026", status: "pending" as const, size: "4.1 MB" },
+    { name: "Dubai Creek Residences — Due Diligence Pack", type: "Legal", date: "Mar 10, 2026", status: "signed" as const, size: "8.7 MB" },
+    { name: "Pacific Yacht Club — Survey Report", type: "Technical", date: "Feb 28, 2026", status: "ready" as const, size: "3.2 MB" },
+    { name: "Annual Tax Summary 2025", type: "Financial", date: "Feb 15, 2026", status: "signed" as const, size: "1.1 MB" },
+    { name: "Sovereign Tower II — Title Transfer Docs", type: "Legal", date: "Apr 02, 2026", status: "pending" as const, size: "5.6 MB" },
+    { name: "Meridian F&B Hub — Construction Progress", type: "Report", date: "Mar 20, 2026", status: "ready" as const, size: "2.9 MB" },
+  ];
+
+  const statusCfg = {
+    signed: { bg: "bg-emerald-500/10", text: "text-emerald-400", label: "Signed" },
+    ready: { bg: "bg-blue-500/10", text: "text-blue-400", label: "Ready" },
+    pending: { bg: "bg-amber-500/10", text: "text-amber-400", label: "Pending" },
+  };
+
+  const typeCfg: Record<string, string> = {
+    Legal: "text-purple-400",
+    Report: "text-blue-400",
+    Compliance: "text-amber-400",
+    Financial: "text-emerald-400",
+    Technical: "text-cyan-400",
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">Documents</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">{DOCS.length} documents in your vault</p>
+        </div>
+        <Annotation id="portfolio" annotations={CLIENT_ANNOTATIONS} />
+      </div>
+
+      <div className="bg-card border border-border rounded-xl divide-y divide-border">
+        {DOCS.map((doc, i) => {
+          const sc = statusCfg[doc.status];
+          return (
+            <FadeIn key={i} delay={i * 0.03}>
+              <div className="p-4 flex items-center gap-4 hover:bg-accent/20 transition-colors cursor-pointer">
+                <div className="size-10 rounded-lg bg-secondary/50 flex items-center justify-center flex-shrink-0">
+                  <FileText className={cn("size-5", typeCfg[doc.type] || "text-muted-foreground")} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-medium text-foreground truncate">{doc.name}</h3>
+                  <div className="flex items-center gap-3 mt-0.5">
+                    <span className={cn("text-[10px] font-medium", typeCfg[doc.type] || "text-muted-foreground")}>{doc.type}</span>
+                    <span className="text-[10px] text-muted-foreground">{doc.date}</span>
+                    <span className="text-[10px] text-muted-foreground/60">{doc.size}</span>
+                  </div>
+                </div>
+                <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded-full", sc.bg, sc.text)}>{sc.label}</span>
+              </div>
+            </FadeIn>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ClientDistributionsView() {
+  const DISTRIBUTIONS = [
+    { venture: "Marina Bay Tower", type: "Quarterly Dividend", amount: 2400000, date: "Mar 31, 2026", status: "pending" as const },
+    { venture: "Sovereign Tower II", type: "Capital Return", amount: 1800000, date: "Mar 15, 2026", status: "paid" as const },
+    { venture: "Meridian F&B Hub", type: "Quarterly Dividend", amount: 950000, date: "Mar 31, 2026", status: "paid" as const },
+    { venture: "Dubai Creek Residences", type: "Interest Payment", amount: 620000, date: "Feb 28, 2026", status: "paid" as const },
+    { venture: "Northstar Refinery", type: "Quarterly Dividend", amount: 1200000, date: "Jan 15, 2026", status: "paid" as const },
+  ];
+
+  const totalPaid = DISTRIBUTIONS.filter(d => d.status === "paid").reduce((s, d) => s + d.amount, 0);
+  const totalPending = DISTRIBUTIONS.filter(d => d.status === "pending").reduce((s, d) => s + d.amount, 0);
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold text-foreground">Distributions</h2>
+        <p className="text-xs text-muted-foreground mt-0.5">Track your investment returns and upcoming payments</p>
+      </div>
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <FadeIn>
+          <div className="bg-card border border-border rounded-xl p-4">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Total Paid</span>
+            <div className="text-xl font-bold font-mono text-emerald-400 mt-1">${(totalPaid / 1000000).toFixed(1)}M</div>
+          </div>
+        </FadeIn>
+        <FadeIn delay={0.05}>
+          <div className="bg-card border border-border rounded-xl p-4">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Pending</span>
+            <div className="text-xl font-bold font-mono text-amber-400 mt-1">${(totalPending / 1000000).toFixed(1)}M</div>
+          </div>
+        </FadeIn>
+        <FadeIn delay={0.1}>
+          <div className="bg-card border border-border rounded-xl p-4">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Total YTD</span>
+            <div className="text-xl font-bold font-mono text-foreground mt-1">${((totalPaid + totalPending) / 1000000).toFixed(1)}M</div>
+          </div>
+        </FadeIn>
+      </div>
+
+      {/* Distribution list */}
+      <div className="bg-card border border-border rounded-xl divide-y divide-border">
+        {DISTRIBUTIONS.map((d, i) => (
+          <FadeIn key={i} delay={i * 0.04}>
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={cn("size-2 rounded-full flex-shrink-0", d.status === "paid" ? "bg-emerald-400" : "bg-amber-400")} />
+                <div>
+                  <h3 className="text-sm font-medium text-foreground">{d.venture}</h3>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-[11px] text-muted-foreground">{d.type}</span>
+                    <span className="text-[10px] text-muted-foreground/60">{d.date}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-sm font-mono font-semibold text-foreground">${(d.amount / 1000000).toFixed(2)}M</span>
+                <span className={cn("block text-[10px] font-medium mt-0.5",
+                  d.status === "paid" ? "text-emerald-400" : "text-amber-400"
+                )}>{d.status === "paid" ? "Paid" : "Pending Approval"}</span>
+              </div>
+            </div>
+          </FadeIn>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ClientReportsView() {
+  const REPORTS = [
+    { title: "Q1 2026 Portfolio Performance", period: "Jan – Mar 2026", type: "Quarterly", generated: "Apr 01, 2026", highlights: ["Portfolio velocity: 89/100", "4 ventures advanced stages", "$4.57M distributed"] },
+    { title: "Annual Review 2025", period: "Jan – Dec 2025", type: "Annual", generated: "Jan 15, 2026", highlights: ["12 ventures completed", "$28.4M total distributions", "Average velocity: 84/100"] },
+    { title: "Risk Assessment Report", period: "Mar 2026", type: "Monthly", generated: "Mar 31, 2026", highlights: ["1 high-risk venture flagged", "3 compliance items due", "Overall risk: Low"] },
+    { title: "Tax Summary 2025", period: "FY 2025", type: "Annual", generated: "Feb 15, 2026", highlights: ["Total capital gains: $8.2M", "Dividend income: $12.1M", "Withholding tax: $1.4M"] },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold text-foreground">Reports & Analytics</h2>
+        <p className="text-xs text-muted-foreground mt-0.5">AI-generated reports on your portfolio performance</p>
+      </div>
+
+      <div className="space-y-3">
+        {REPORTS.map((r, i) => (
+          <FadeIn key={i} delay={i * 0.05}>
+            <div className="bg-card border border-border rounded-xl p-5 hover:border-primary/20 transition-colors cursor-pointer group">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{r.title}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[11px] text-muted-foreground">{r.period}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{r.type}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                  <ExternalLink className="size-3.5" />
+                  <span className="text-[10px]">View</span>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {r.highlights.map((h, j) => (
+                  <span key={j} className="text-[10px] px-2 py-1 rounded-md bg-primary/5 text-primary/80 border border-primary/10">{h}</span>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground/50 mt-3">Generated {r.generated}</p>
+            </div>
+          </FadeIn>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ClientMessagesView() {
+  const THREADS = [
+    { from: "Shwan Jafar", role: "ATLAS Operator", subject: "Marina Bay Tower — Closing Timeline Update", preview: "Hi Ahmed, the closing documents are ready for your review. We've expedited the title transfer and expect completion within 12 days...", time: "2h ago", unread: true },
+    { from: "ATLAS AI", role: "Portfolio Assistant", subject: "Weekly Portfolio Digest", preview: "Your portfolio health score improved to 82/100 this week. Key highlights: Marina Bay Tower advancing to closing, Meridian F&B Hub construction at 68%...", time: "1d ago", unread: true },
+    { from: "Angie Reyes", role: "Finance & Distributions", subject: "Q1 Distribution Confirmation Required", preview: "Dear Ahmed, the Q1 distribution of $2.4M for Meridian F&B Hub is ready for your confirmation. Please review the attached breakdown...", time: "2d ago", unread: false },
+    { from: "Brian Chen", role: "Operations Lead", subject: "Pacific Yacht Club — Survey Rescheduled", preview: "We've rescheduled the structural survey for Pacific Yacht Club to next Tuesday. The vendor confirmed availability and we'll have results within 48 hours...", time: "3d ago", unread: false },
+    { from: "Chris Papadopoulos", role: "Legal & Compliance", subject: "KYC Renewal — Documents Received", preview: "Thank you for submitting the updated KYC documents. Everything looks good and we've updated your compliance status accordingly...", time: "5d ago", unread: false },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">Messages</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">{THREADS.filter(t => t.unread).length} unread messages</p>
+        </div>
+      </div>
+
+      <div className="bg-card border border-border rounded-xl divide-y divide-border">
+        {THREADS.map((t, i) => (
+          <FadeIn key={i} delay={i * 0.04}>
+            <div className={cn("p-4 hover:bg-accent/20 transition-colors cursor-pointer", t.unread && "bg-primary/[0.02]")}>
+              <div className="flex items-start gap-3">
+                {t.unread && <div className="size-2 rounded-full bg-primary mt-2 flex-shrink-0" />}
+                {!t.unread && <div className="size-2 rounded-full bg-transparent mt-2 flex-shrink-0" />}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className={cn("text-sm", t.unread ? "font-semibold text-foreground" : "font-medium text-foreground/80")}>{t.from}</span>
+                    <span className="text-[10px] text-muted-foreground">{t.role}</span>
+                    <span className="text-[10px] text-muted-foreground/60 ml-auto flex-shrink-0">{t.time}</span>
+                  </div>
+                  <h3 className={cn("text-xs mb-0.5", t.unread ? "font-medium text-foreground" : "text-foreground/70")}>{t.subject}</h3>
+                  <p className="text-xs text-muted-foreground truncate">{t.preview}</p>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ClientSettingsView() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold text-foreground">Account Settings</h2>
+        <p className="text-xs text-muted-foreground mt-0.5">Manage your profile and notification preferences</p>
+      </div>
+
+      {/* Profile */}
+      <FadeIn>
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-4">Profile Information</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[
+              { label: "Full Name", value: "Ahmed Al Rashid" },
+              { label: "Email", value: "ahmed@alrashidgroup.com" },
+              { label: "Organization", value: "Al Rashid Group" },
+              { label: "Phone", value: "+971 50 XXX XXXX" },
+              { label: "Role", value: "Principal Investor" },
+              { label: "Member Since", value: "January 2024" },
+            ].map((f, i) => (
+              <div key={i}>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">{f.label}</span>
+                <span className="text-sm text-foreground">{f.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </FadeIn>
+
+      {/* Notifications */}
+      <FadeIn delay={0.05}>
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-4">Notification Preferences</h3>
+          <div className="space-y-3">
+            {[
+              { label: "Venture Status Updates", desc: "Get notified when ventures change stages", enabled: true },
+              { label: "Distribution Alerts", desc: "Notifications for upcoming and completed distributions", enabled: true },
+              { label: "Document Ready", desc: "Alert when new documents are available for review", enabled: true },
+              { label: "Weekly Portfolio Digest", desc: "AI-generated weekly summary of your portfolio", enabled: true },
+              { label: "Market Intelligence", desc: "Sector signals and opportunity alerts", enabled: false },
+            ].map((n, i) => (
+              <div key={i} className="flex items-center justify-between py-2">
+                <div>
+                  <span className="text-sm text-foreground">{n.label}</span>
+                  <p className="text-[11px] text-muted-foreground">{n.desc}</p>
+                </div>
+                <div className={cn("w-10 h-5 rounded-full transition-colors cursor-pointer relative",
+                  n.enabled ? "bg-primary" : "bg-secondary"
+                )}>
+                  <div className={cn("absolute top-0.5 size-4 rounded-full bg-white transition-transform",
+                    n.enabled ? "translate-x-5" : "translate-x-0.5"
+                  )} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </FadeIn>
+
+      {/* Security */}
+      <FadeIn delay={0.1}>
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-4">Security</h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between py-2">
+              <div>
+                <span className="text-sm text-foreground">Two-Factor Authentication</span>
+                <p className="text-[11px] text-emerald-400">Enabled</p>
+              </div>
+              <ShieldCheck className="size-4 text-emerald-400" />
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <div>
+                <span className="text-sm text-foreground">Last Login</span>
+                <p className="text-[11px] text-muted-foreground">Today, 9:14 AM — Dubai, UAE</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <div>
+                <span className="text-sm text-foreground">Active Sessions</span>
+                <p className="text-[11px] text-muted-foreground">2 devices</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </FadeIn>
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════ */
 /* ─── MAIN COMPONENT ─── */
 /* ═══════════════════════════════════════════════════════════════════════════ */
@@ -1457,6 +1854,7 @@ export default function DemoDashboard() {
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
   const [demoView, setDemoView] = useState<DemoView>("admin");
+  const [clientTab, setClientTab] = useState<ClientTabId>("overview");
 
   const TAB_TITLES: Record<TabId, string> = {
     dashboard: "Dashboard",
@@ -1470,6 +1868,16 @@ export default function DemoDashboard() {
     onboard: "Onboard Client",
     drafts: "Drafts",
     settings: "Settings",
+  };
+
+  const CLIENT_TAB_TITLES: Record<ClientTabId, string> = {
+    overview: "Client Overview",
+    ventures: "My Ventures",
+    documents: "Documents",
+    distributions: "Distributions",
+    reports: "Reports & Analytics",
+    messages: "Messages",
+    settings: "Account Settings",
   };
 
   return (
@@ -1532,27 +1940,28 @@ export default function DemoDashboard() {
             </div>
 
             <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
-              {[
-                { label: "Overview", icon: <LayoutDashboard className="size-[18px]" /> },
-                { label: "My Ventures", icon: <Briefcase className="size-[18px]" /> },
-                { label: "Documents", icon: <FileText className="size-[18px]" /> },
-                { label: "Distributions", icon: <Wallet className="size-[18px]" /> },
-                { label: "Reports", icon: <BarChart3 className="size-[18px]" /> },
-                { label: "Messages", icon: <MessageSquare className="size-[18px]" /> },
-                { label: "Settings", icon: <Settings className="size-[18px]" /> },
-              ].map((item, i) => (
+              {([
+                { id: "overview" as ClientTabId, label: "Overview", icon: <LayoutDashboard className="size-[18px]" /> },
+                { id: "ventures" as ClientTabId, label: "My Ventures", icon: <Briefcase className="size-[18px]" /> },
+                { id: "documents" as ClientTabId, label: "Documents", icon: <FileText className="size-[18px]" /> },
+                { id: "distributions" as ClientTabId, label: "Distributions", icon: <Wallet className="size-[18px]" /> },
+                { id: "reports" as ClientTabId, label: "Reports", icon: <BarChart3 className="size-[18px]" /> },
+                { id: "messages" as ClientTabId, label: "Messages", icon: <MessageSquare className="size-[18px]" /> },
+                { id: "settings" as ClientTabId, label: "Settings", icon: <Settings className="size-[18px]" /> },
+              ]).map((item) => (
                 <button
-                  key={item.label}
+                  key={item.id}
+                  onClick={() => setClientTab(item.id)}
                   className={cn(
                     "w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] transition-colors",
-                    i === 0
+                    clientTab === item.id
                       ? "bg-primary/10 text-primary font-medium"
                       : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                   )}
                 >
                   {item.icon}
                   <span>{item.label}</span>
-                  {item.label === "Messages" && (
+                  {item.id === "messages" && (
                     <span className="ml-auto text-[10px] font-mono bg-primary/20 text-primary px-1.5 py-0.5 rounded">2</span>
                   )}
                 </button>
@@ -1634,7 +2043,7 @@ export default function DemoDashboard() {
             </div>
             <div>
               <h1 className="text-sm font-semibold text-foreground">
-                {demoView === "admin" ? TAB_TITLES[activeTab] : "Client Portal"}
+                {demoView === "admin" ? TAB_TITLES[activeTab] : CLIENT_TAB_TITLES[clientTab]}
               </h1>
               <p className="text-[10px] text-muted-foreground tracking-wider">
                 {demoView === "admin" ? "WHAT THE OPERATOR SEES" : "WHAT THE CLIENT SEES"}
@@ -1645,8 +2054,8 @@ export default function DemoDashboard() {
             )}
           </div>
           <div className="flex items-center gap-2">
-            {/* Mobile nav dropdown — admin only */}
-            {demoView === "admin" && (
+            {/* Mobile nav dropdown */}
+            {demoView === "admin" ? (
               <div className="lg:hidden">
                 <select
                   value={activeTab}
@@ -1655,6 +2064,18 @@ export default function DemoDashboard() {
                 >
                   {DEMO_NAV.map(item => (
                     <option key={item.id} value={item.id}>{item.label}</option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div className="lg:hidden">
+                <select
+                  value={clientTab}
+                  onChange={e => setClientTab(e.target.value as ClientTabId)}
+                  className="h-8 px-2 text-xs bg-card border border-border rounded-md text-foreground"
+                >
+                  {(["overview","ventures","documents","distributions","reports","messages","settings"] as ClientTabId[]).map(id => (
+                    <option key={id} value={id}>{CLIENT_TAB_TITLES[id]}</option>
                   ))}
                 </select>
               </div>
@@ -1688,8 +2109,14 @@ export default function DemoDashboard() {
                   {activeTab === "settings" && <SettingsView />}
                 </motion.div>
               ) : (
-                <motion.div key="client" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}>
-                  <ClientPortalDemoView />
+                <motion.div key={`client-${clientTab}`} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}>
+                  {clientTab === "overview" && <ClientPortalDemoView />}
+                  {clientTab === "ventures" && <ClientVenturesView />}
+                  {clientTab === "documents" && <ClientDocumentsView />}
+                  {clientTab === "distributions" && <ClientDistributionsView />}
+                  {clientTab === "reports" && <ClientReportsView />}
+                  {clientTab === "messages" && <ClientMessagesView />}
+                  {clientTab === "settings" && <ClientSettingsView />}
                 </motion.div>
               )}
             </AnimatePresence>

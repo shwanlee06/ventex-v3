@@ -401,6 +401,88 @@ describe("Demo Dashboard", () => {
     });
   });
 
+  describe("Client Tab Views", () => {
+    const CLIENT_TAB_IDS = ["overview", "ventures", "documents", "distributions", "reports", "messages", "settings"];
+
+    it("defines ClientTabId type with all 7 tabs", () => {
+      expect(source).toContain('type ClientTabId = "overview" | "ventures" | "documents" | "distributions" | "reports" | "messages" | "settings"');
+    });
+
+    it("tracks clientTab state", () => {
+      expect(source).toContain('useState<ClientTabId>("overview")');
+    });
+
+    it("has CLIENT_TAB_TITLES mapping for all client tabs", () => {
+      expect(source).toContain("CLIENT_TAB_TITLES");
+      for (const id of CLIENT_TAB_IDS) {
+        expect(source).toContain(`${id}:`);
+      }
+    });
+
+    it("client sidebar buttons call setClientTab on click", () => {
+      expect(source).toContain("setClientTab(item.id)");
+    });
+
+    it("has conditional rendering for each client tab", () => {
+      for (const id of CLIENT_TAB_IDS) {
+        expect(source).toContain(`clientTab === "${id}"`);
+      }
+    });
+
+    it("has ClientVenturesView with stage progress and momentum", () => {
+      expect(source).toContain("function ClientVenturesView");
+      expect(source).toContain("My Ventures");
+      expect(source).toContain("Stage progress");
+      expect(source).toContain("Momentum");
+    });
+
+    it("has ClientDocumentsView with document list", () => {
+      expect(source).toContain("function ClientDocumentsView");
+      expect(source).toContain("Documents");
+      expect(source).toContain("Purchase Agreement");
+      expect(source).toContain("signed");
+      expect(source).toContain("pending");
+    });
+
+    it("has ClientDistributionsView with summary cards and payment list", () => {
+      expect(source).toContain("function ClientDistributionsView");
+      expect(source).toContain("Distributions");
+      expect(source).toContain("Total Paid");
+      expect(source).toContain("Pending");
+      expect(source).toContain("Quarterly Dividend");
+      expect(source).toContain("Capital Return");
+    });
+
+    it("has ClientReportsView with AI-generated reports", () => {
+      expect(source).toContain("function ClientReportsView");
+      expect(source).toContain("Reports & Analytics");
+      expect(source).toContain("Q1 2026 Portfolio Performance");
+      expect(source).toContain("Annual Review 2025");
+      expect(source).toContain("Risk Assessment Report");
+    });
+
+    it("has ClientMessagesView with message threads", () => {
+      expect(source).toContain("function ClientMessagesView");
+      expect(source).toContain("Messages");
+      expect(source).toContain("Shwan Jafar");
+      expect(source).toContain("ATLAS AI");
+      expect(source).toContain("unread");
+    });
+
+    it("has ClientSettingsView with profile, notifications, and security", () => {
+      expect(source).toContain("function ClientSettingsView");
+      expect(source).toContain("Account Settings");
+      expect(source).toContain("Profile Information");
+      expect(source).toContain("Notification Preferences");
+      expect(source).toContain("Two-Factor Authentication");
+      expect(source).toContain("Security");
+    });
+
+    it("has mobile dropdown for client tabs", () => {
+      expect(source).toContain('setClientTab(e.target.value as ClientTabId)');
+    });
+  });
+
   describe("No Manus References", () => {
     it("does not contain Manus branding in demo content", () => {
       // Check that the word "Manus" doesn't appear in user-visible text
