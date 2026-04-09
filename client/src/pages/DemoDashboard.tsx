@@ -2510,7 +2510,7 @@ export default function DemoDashboard() {
               <span className="hidden sm:inline">Back to Pitch</span>
             </Link>
             <Link href="/" className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
-              Sign In →
+              Authorized Access →
             </Link>
           </div>
         </div>

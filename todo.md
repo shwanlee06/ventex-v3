@@ -2305,3 +2305,6 @@
 
 ## Login to Dashboard — Broken (Apr 09)
 - [x] LOGIN-1: Diagnose and fix why user cannot log in to the actual dashboard — SpyOps now queries auth.me directly (bypassing isPublicRoute skip), RequireAuth now checks real OAuth session via useAuth hook
+
+## Demo Dashboard — Sign In Link (Apr 09)
+- [x] DEMO-SIGNIN-1: Fix Sign In link on demo dashboard top-right — renamed to "Authorized Access →" and links to / (SpyOps login page)
