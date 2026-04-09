@@ -2210,3 +2210,16 @@
 - [x] DEMO-LIVE-3: Added VIEW LIVE PROTOTYPE buttons on hero, product section, and closing CTA
 - [x] DEMO-LIVE-4: Demo dashboard shows full sidebar, KPI cards, client grid, agent feed, tasks, intelligence panel
 - [x] DEMO-LIVE-5: Sticky nav on /demo with SIGN IN button, demo banner on /demo/dashboard with Back to Pitch + Sign In
+
+## Demo Dashboard — All Tabs Interactive (Apr 09)
+- [x] DTAB-1: Make sidebar tabs clickable with active state switching
+- [x] DTAB-2: Activity tab — timeline feed with filters by entity type
+- [x] DTAB-3: Oversight tab — client health matrix, risk alerts, compliance status
+- [x] DTAB-4: AI Concierge tab — mock chat interface with pre-filled conversation
+- [x] DTAB-5: AI Agents tab — agent cards with status, action counts, recent actions
+- [x] DTAB-6: Blueprints tab — venture pipeline/kanban view across stages
+- [x] DTAB-7: ATLAS Team tab — team member cards with roles and assignments
+- [x] DTAB-8: Client Contacts tab — contact directory with org grouping
+- [x] DTAB-9: Onboard Client tab — onboarding wizard preview
+- [x] DTAB-10: Drafts tab — document drafts list
+- [x] DTAB-11: Settings tab — system configuration preview
