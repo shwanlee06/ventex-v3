@@ -7,6 +7,8 @@ import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { isAtlasTeam } from "@/lib/atlas";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ListChecks, Plus, CheckCircle2, Clock, AlertTriangle,
@@ -56,6 +58,8 @@ function formatDate(d: string | null): string {
 
 export default function TasksPage() {
   const utils = trpc.useUtils();
+  const { user } = useAuth();
+  const isAdmin = isAtlasTeam(user);
 
   const tasksQ = trpc.tasks.list.useQuery();
   const metricsQ = trpc.tasks.metrics.useQuery();
@@ -232,11 +236,14 @@ export default function TasksPage() {
               {task.title}
             </span>
           </div>
-          <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0",
-            task.priority === "High" ? "bg-red-500/10 text-red-400" :
-            task.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
-            "bg-secondary text-muted-foreground"
-          )}>{task.priority}</span>
+          {/* CL-FIX 9: Hide priority labels for client view */}
+          {isAdmin && (
+            <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded flex-shrink-0",
+              task.priority === "High" ? "bg-red-500/10 text-red-400" :
+              task.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
+              "bg-secondary text-muted-foreground"
+            )}>{task.priority}</span>
+          )}
         </div>
         <div className="flex items-center gap-2 mt-2 ml-6.5">
           <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />
@@ -362,13 +369,15 @@ export default function TasksPage() {
               <SelectItem value="complete">Complete</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-            <SelectTrigger className="h-9 min-h-[36px] text-xs w-[110px] sm:w-[120px] flex-shrink-0"><SelectValue placeholder="Priority" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Priority</SelectItem>
-              {PRIORITIES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          {isAdmin && (
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger className="h-9 min-h-[36px] text-xs w-[110px] sm:w-[120px] flex-shrink-0"><SelectValue placeholder="Priority" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Priority</SelectItem>
+                {PRIORITIES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          )}
           <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
             <SelectTrigger className="h-9 min-h-[36px] text-xs w-[120px] sm:w-[140px] flex-shrink-0"><SelectValue placeholder="Assignee" /></SelectTrigger>
             <SelectContent>
@@ -431,7 +440,7 @@ export default function TasksPage() {
                     <TableHead className="w-8"></TableHead>
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Task</TableHead>
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden md:table-cell">Due Date</TableHead>
-                    <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Priority</TableHead>
+                    {isAdmin && <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Priority</TableHead>}
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden lg:table-cell">Assignees</TableHead>
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden lg:table-cell">Venture</TableHead>
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Status</TableHead>
@@ -460,13 +469,15 @@ export default function TasksPage() {
                           </span>
                         </TableCell>
                         <TableCell className="text-xs font-mono text-muted-foreground hidden md:table-cell">{formatDate(task.dueDate)}</TableCell>
-                        <TableCell>
-                          <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded",
-                            task.priority === "High" ? "bg-red-500/10 text-red-400" :
-                            task.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
-                            "bg-secondary text-muted-foreground"
-                          )}>{task.priority}</span>
-                        </TableCell>
+                        {isAdmin && (
+                          <TableCell>
+                            <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded",
+                              task.priority === "High" ? "bg-red-500/10 text-red-400" :
+                              task.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
+                              "bg-secondary text-muted-foreground"
+                            )}>{task.priority}</span>
+                          </TableCell>
+                        )}
                         <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{(task.assigneeNames as string[] || []).join(", ") || "—"}</TableCell>
                         <TableCell className="text-xs text-primary/70 italic hidden lg:table-cell">{task.ventureLink || "—"}</TableCell>
                         <TableCell><StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} /></TableCell>
@@ -527,18 +538,20 @@ export default function TasksPage() {
               <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Task Title</Label>
               <Input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Task title" className="mt-1 h-9 min-h-[36px] text-xs" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className={cn("grid gap-3", isAdmin ? "grid-cols-2" : "grid-cols-1")}>
               <div>
                 <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Due Date</Label>
                 <Input type="date" value={newDue} onChange={e => setNewDue(e.target.value)} className="mt-1 h-9 min-h-[36px] text-xs" />
               </div>
-              <div>
-                <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Priority</Label>
-                <Select value={newPriority} onValueChange={setNewPriority}>
-                  <SelectTrigger className="mt-1 h-9 min-h-[36px] text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>{PRIORITIES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
+              {isAdmin && (
+                <div>
+                  <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Priority</Label>
+                  <Select value={newPriority} onValueChange={setNewPriority}>
+                    <SelectTrigger className="mt-1 h-9 min-h-[36px] text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>{PRIORITIES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
             <div>
               <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Assignee</Label>
@@ -576,7 +589,7 @@ export default function TasksPage() {
               <DialogHeader>
                 <DialogTitle className="text-sm">{editTask.title}</DialogTitle>
                 <DialogDescription className="text-[10px] font-mono">
-                  Due {formatDate(editTask.dueDate)} · {editTask.priority} priority
+                  Due {formatDate(editTask.dueDate)}{isAdmin ? ` · ${editTask.priority} priority` : ""}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-3 py-2">

@@ -612,7 +612,7 @@ describe("sidebar refresh: list excludes archived after archive", () => {
 
     const slug = "sidebar-restore-" + Date.now();
     const created = await caller.organizations.create({
-      name: "Sidebar Restore Test",
+      name: `Sidebar Restore Test ${Date.now()}`,
       slug,
     });
 

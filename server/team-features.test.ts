@@ -179,8 +179,8 @@ describe("Team — Partner Role-Based Access", () => {
     expect(ROLE_HIERARCHY.partner).toBeLessThan(ROLE_HIERARCHY.manager);
   });
 
-  it("partner is considered ATLAS team", () => {
-    expect(isAtlasTeam({ role: "partner" })).toBe(true);
+  it("partner is NOT considered ATLAS team (partners are external)", () => {
+    expect(isAtlasTeam({ role: "partner" })).toBe(false);
   });
 
   it("partner has read permission", () => {

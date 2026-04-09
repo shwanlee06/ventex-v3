@@ -7,6 +7,8 @@ import StatusBadge from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
 import { getThemeColor } from "@/lib/data";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { isAtlasTeam } from "@/lib/atlas";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Layers3, MapPin, ListChecks, AlertTriangle, Plus, X,
@@ -59,6 +61,8 @@ interface ClientGroup {
 export default function VerticalsPage() {
   const [, navigate] = useLocation();
   const utils = trpc.useUtils();
+  const { user } = useAuth();
+  const isAdmin = isAtlasTeam(user);
 
   // ── Live data ──────────────────────────────────────────────────────
   const venturesQ = trpc.ventures.listWithOrgs.useQuery();
@@ -168,6 +172,13 @@ export default function VerticalsPage() {
     const isActive = status === "In progress";
     const isCompleted = status === "Completed";
     const isOnHold = status === "On-Hold";
+    // CL-FIX 5: For clients, show all active statuses as green (no orange On-Hold)
+    if (!isAdmin) {
+      return {
+        bg: isActive ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : isCompleted ? "bg-blue-500/10 text-blue-400 border-blue-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+        dot: isActive ? "bg-emerald-400" : isCompleted ? "bg-blue-400" : "bg-emerald-400",
+      };
+    }
     return {
       bg: isActive ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : isCompleted ? "bg-blue-500/10 text-blue-400 border-blue-500/20" : isOnHold ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-secondary text-muted-foreground border-border",
       dot: isActive ? "bg-emerald-400" : isCompleted ? "bg-blue-400" : isOnHold ? "bg-amber-400" : "bg-muted-foreground",
@@ -279,7 +290,7 @@ export default function VerticalsPage() {
                 )}
               >
                 <div className="flex items-center gap-1 sm:gap-2 mb-1">
-                  {m.icon}
+                  {isAdmin && m.icon}
                   <span className="text-[8px] sm:text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium truncate">{m.label}</span>
                 </div>
                 <span className="text-base sm:text-2xl font-mono font-semibold text-foreground block">{m.value}</span>
@@ -500,7 +511,8 @@ export default function VerticalsPage() {
                               <StatusBadge label={venture.status} bg={sc.bg} dot={sc.dot} />
                             </div>
 
-                            {venture.currentStatus && (
+                            {/* CL-FIX 7: Hide descriptions for client view */}
+                            {isAdmin && venture.currentStatus && (
                               <p className="text-[11px] text-muted-foreground mb-2 line-clamp-1">{venture.currentStatus}</p>
                             )}
 

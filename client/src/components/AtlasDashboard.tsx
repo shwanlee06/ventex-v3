@@ -507,7 +507,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
-            placeholder={tabMode === "active" ? "Search clients or sectors..." : "Search archived clients..."}
+            placeholder={tabMode === "active" ? "Search clients, ventures, tasks..." : "Search archived clients..."}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-9 h-10 bg-card border-border"

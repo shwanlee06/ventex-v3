@@ -2,11 +2,10 @@ import { describe, expect, it } from "vitest";
 import { resolveOrgId } from "./orgScope";
 
 describe("resolveOrgId — cross-tenant isolation", () => {
-  // ── ATLAS team (owner/admin/partner) ────────────────────────────────
+  // ── ATLAS team (owner/admin) ────────────────────────────────────────
   describe("ATLAS team users", () => {
     const ownerUser = { role: "owner", organizationId: null };
     const adminUser = { role: "admin", organizationId: null };
-    const partnerUser = { role: "partner", organizationId: null };
 
     it("owner can access any org", () => {
       expect(resolveOrgId(ownerUser, 2)).toBe(2);
@@ -17,13 +16,23 @@ describe("resolveOrgId — cross-tenant isolation", () => {
       expect(resolveOrgId(adminUser, 2)).toBe(2);
     });
 
-    it("partner can access any org", () => {
-      expect(resolveOrgId(partnerUser, 2)).toBe(2);
-    });
-
     it("ATLAS team with no orgId returns null (view all)", () => {
       expect(resolveOrgId(ownerUser, null)).toBeNull();
       expect(resolveOrgId(ownerUser, undefined)).toBeNull();
+    });
+  });
+
+  // ── Partner users (external, not ATLAS team) ─────────────────────────
+  describe("Partner users", () => {
+    const partnerWithOrg = { role: "partner", organizationId: 3 };
+    const partnerNoOrg = { role: "partner", organizationId: null };
+
+    it("partner with org can access their own org", () => {
+      expect(resolveOrgId(partnerWithOrg, 3)).toBe(3);
+    });
+
+    it("partner without org throws FORBIDDEN", () => {
+      expect(() => resolveOrgId(partnerNoOrg, 2)).toThrow("Access denied");
     });
   });
 
