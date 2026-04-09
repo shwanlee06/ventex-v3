@@ -688,8 +688,8 @@ export default function Demo() {
                   </div>
                   <p className="text-sm text-white/50 leading-relaxed">
                     Platform is fully functional and demo-ready. Client portal live. Operator command center live.
-                    AI agents running autonomously. First formal client engagement being initiated.
-                    <span className="text-emerald-400 font-medium"> 90-day north star: convert to a $180–220K annual license
+                    AI agents running autonomously. <span className="text-emerald-400 font-medium">1 active pilot client (Royalton Venture Holding)</span> — validating the full workflow end-to-end.
+                    <span className="text-cyan-400 font-medium"> 90-day north star: convert pilot to a paid annual license
                     and sign 5 additional clients by Q4 2026.</span>
                   </p>
                 </div>
@@ -700,7 +700,7 @@ export default function Demo() {
           <RevealSection delay={0.6} className="mt-10">
             <div className="border border-cyan-500/20 rounded-lg p-5 bg-cyan-500/[0.03] text-center">
               <p className="text-sm text-white/50">
-                <span className="text-cyan-400 font-semibold">2 additional</span> warm prospect conversations currently in progress.
+                <span className="text-cyan-400 font-semibold">1 active pilot client</span> (Royalton Venture Holding) — platform being validated in production. Warm prospect conversations in progress.
               </p>
             </div>
           </RevealSection>
@@ -814,11 +814,11 @@ export default function Demo() {
               <RevealSection key={t.name} delay={i * 0.15}>
                 <div className="border border-white/8 rounded-lg overflow-hidden hover:border-white/15 transition-colors">
                   {/* Team photo */}
-                  <div className="aspect-[4/3] relative overflow-hidden" style={{ backgroundColor: `${t.color}08` }}>
+                  <div className="aspect-square relative overflow-hidden" style={{ backgroundColor: `${t.color}08` }}>
                     <img
                       src={t.photo}
                       alt={t.name}
-                      className="w-full h-full object-cover object-top"
+                      className="w-full h-full object-cover object-[center_20%]"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   </div>

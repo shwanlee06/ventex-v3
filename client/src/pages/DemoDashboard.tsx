@@ -895,9 +895,9 @@ function TeamView() {
               <div className="flex items-center gap-3 mb-3">
                 <div className="relative">
                   {(member as any).photo ? (
-                    <img src={(member as any).photo} alt={member.name} className="size-10 rounded-full object-cover" />
+                    <img src={(member as any).photo} alt={member.name} className="size-12 rounded-full object-cover object-[center_20%] border-2 border-primary/20" />
                   ) : (
-                    <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-semibold text-primary">{member.avatar}</div>
+                    <div className="size-12 rounded-full bg-primary/20 flex items-center justify-center text-sm font-semibold text-primary">{member.avatar}</div>
                   )}
                   <span className={cn("absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-card",
                     member.status === "online" ? "bg-emerald-400" : member.status === "away" ? "bg-amber-400" : "bg-muted-foreground/40"

@@ -2244,3 +2244,14 @@
 - [x] PHOTO-1: Upload Shwan, Brian, Chris photos to CDN
 - [x] PHOTO-2: Integrate real photos into Demo.tsx pitch deck team section
 - [x] PHOTO-3: Integrate real photos into DemoDashboard team view
+
+## Fix Team Photo Display (Apr 09)
+- [ ] PHOTO-FIX-1: Inspect and fix photo rendering in Demo.tsx pitch deck
+- [ ] PHOTO-FIX-2: Inspect and fix photo rendering in DemoDashboard.tsx team view
+- [ ] PHOTO-FIX-3: Ensure proper object-fit, sizing, and cropping for all three photos
+
+## Photo Display Fix + Pilot Client (Apr 09)
+- [x] PHOTO-FIX-4: Fix photo aspect ratio/cropping in Demo.tsx — changed to aspect-square + object-[center_20%]
+- [x] PHOTO-FIX-5: Fix photo aspect ratio/cropping in DemoDashboard.tsx — size-12 + object-[center_20%] + border
+- [x] PILOT-1: Update pitch deck to say "1 Pilot Client" (Royalton) — not paying, just pilot
+- [x] PILOT-2: Remove any language implying revenue or paying clients
