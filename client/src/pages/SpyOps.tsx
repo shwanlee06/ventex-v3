@@ -7,7 +7,6 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { startSession, logAction } from "@/lib/operatorSession";
-import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 
@@ -344,7 +343,16 @@ function Section({
    ═══════════════════════════════════════════════════════════════ */
 export default function SpyOps() {
   const [, navigate] = useLocation();
-  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  // useAuth() skips the auth query on public routes (/ is public).
+  // We need to query auth.me directly so we can detect when the user
+  // returns from OAuth with a valid session cookie.
+  const meQuery = trpc.auth.me.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+  const user = meQuery.data ?? null;
+  const isAuthenticated = Boolean(meQuery.data);
+  const authLoading = meQuery.isLoading;
 
   // Fetch real stats for the hero readouts (public queries)
   const venturesQ = trpc.ventures.list.useQuery(undefined, { retry: false, staleTime: 60000 });

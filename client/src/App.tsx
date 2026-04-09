@@ -44,24 +44,30 @@ import { DemoProvider } from "./contexts/DemoContext";
 import Demo from "./pages/Demo";
 import DemoDashboard from "./pages/DemoDashboard";
 
-/* Auth guard — redirects to login if no operator in localStorage */
+/* Auth guard - checks real OAuth session via useAuth hook.
+   Falls back to localStorage for the SpyOps cinematic flow. */
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const [, navigate] = useLocation();
-  const [checked, setChecked] = useState(false);
-  const [authed, setAuthed] = useState(false);
+  const { user, loading, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    const op = localStorage.getItem("atlas_operator");
-    if (op) {
-      setAuthed(true);
-    } else {
+    if (loading) return;
+    // Check real session first, then localStorage fallback
+    const hasLocalSession = Boolean(localStorage.getItem("atlas_operator"));
+    if (!isAuthenticated && !hasLocalSession) {
       navigate("/", { replace: true });
     }
-    setChecked(true);
-  }, [navigate]);
+    // If authenticated via OAuth but localStorage not set yet, set it
+    if (isAuthenticated && user && !localStorage.getItem("atlas_operator")) {
+      localStorage.setItem("atlas_operator", user.name || "OPERATOR");
+    }
+  }, [loading, isAuthenticated, user, navigate]);
 
-  if (!checked) return null;
-  if (!authed) return null;
+  if (loading) return null;
+
+  const hasLocalSession = Boolean(localStorage.getItem("atlas_operator"));
+  if (!isAuthenticated && !hasLocalSession) return null;
+
   return <>{children}</>;
 }
 
