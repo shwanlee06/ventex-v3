@@ -8,6 +8,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { PreviewModeProvider, usePreviewMode } from "./contexts/PreviewMode";
 import { WorkspaceProvider } from "./contexts/WorkspaceContext";
 import { useAuth } from "@/_core/hooks/useAuth";
+import CustomCursor from "./components/CustomCursor";
 import { isAtlasTeam } from "@/lib/atlas";
 import Home from "./pages/Home";
 import Agent from "./pages/Agent";
@@ -218,6 +219,7 @@ function App() {
             <AgentProvider>
             <TooltipProvider>
               <HeartbeatProvider>
+                <CustomCursor />
                 <Toaster />
                 <Router />
               </HeartbeatProvider>

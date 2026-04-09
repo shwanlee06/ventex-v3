@@ -172,6 +172,13 @@
     overscroll-behavior: none;
   }
 
+  /* Global custom cursor — hide default on pointer devices */
+  @media (pointer: fine) {
+    *, *::before, *::after {
+      cursor: none !important;
+    }
+  }
+
   /* Tabular nums for ALL financial figures */
   .tabular-nums,
   [data-financial],

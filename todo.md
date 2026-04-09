@@ -2308,3 +2308,6 @@
 
 ## Demo Dashboard — Sign In Link (Apr 09)
 - [x] DEMO-SIGNIN-1: Fix Sign In link on demo dashboard top-right — renamed to "Authorized Access →" and links to / (SpyOps login page)
+
+## Global Custom Cursor (Apr 09)
+- [x] CURSOR-1: Extract custom cursor from SpyOps and apply it globally — created CustomCursor component, added to App.tsx, added cursor:none to global CSS for pointer devices
