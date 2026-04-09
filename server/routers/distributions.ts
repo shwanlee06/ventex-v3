@@ -52,7 +52,7 @@ export const distributionsRouter = router({
     await db.insert(activityLog).values({
       entityType: "distribution", entityName: input.name, action: "Distribution Created",
       detail: `Distribution "${input.name}" — $${input.amount.toLocaleString()} ${input.status}`, userName: ctx.user.name || "System",
-      activitySource: "client_business",
+      activitySource: "client_business", organizationId: input.organizationId ?? null,
     });
 
     await createNotification({
@@ -102,6 +102,16 @@ export const distributionsRouter = router({
     if (!db) throw new Error("Database not available");
     const { id, ...data } = input;
     await db.update(distributions).set(data).where(eq(distributions.id, id));
+    const [updated] = await db.select().from(distributions).where(eq(distributions.id, id)).limit(1);
+    if (updated) {
+      await db.insert(activityLog).values({
+        entityType: "distribution", entityId: id, entityName: updated.name,
+        action: data.status === "Paid" ? "Distribution Paid" : "Distribution Updated",
+        detail: `Distribution "${updated.name}" ${data.status ? `status → ${data.status}` : "updated"}`,
+        userName: ctx.user.name || "System",
+        activitySource: "client_business", organizationId: updated.organizationId ?? null,
+      });
+    }
     return { success: true };
   }),
 

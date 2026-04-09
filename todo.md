@@ -2121,3 +2121,9 @@
 - [x] Fix: Cleaned up 105 bad events in DB
 - [x] Fix: Added broad cache invalidation after client actions (tasks, distributions, ventures, agents)
 - [x] All 655 tests pass
+
+## Investigation: Three Reported Issues
+- [x] Cross-tenant isolation: Meridian ventures now linked to org (6 venture access records), 0 NULL orgId events, 5 SPV-venture links created
+- [x] Audit log writes: Wired organizationId into task create/update, venture create/update/stage-advance, distribution create/update mutations. Created 14 activity log entries for Meridian. Added writeAuditLog helper to server/db.ts.
+- [x] Coming Up / Action Needed / Advance Stage: Created 4 advance-stage events (Kensington→Completed, Stockholm→Active, Côte d'Azur→Fundraising, Marina Bay historical). 11 total action-needed events for Meridian. Portal translateEvent already handles stage_advance correctly.
+- [x] All 655 tests pass (44 test files, 0 failures)

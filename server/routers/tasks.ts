@@ -90,10 +90,17 @@ export const tasksRouter = router({
       ...input,
       assigneeNames: input.assigneeNames,
     });
+    // Resolve org for audit trail
+    let taskOrgId: number | null = null;
+    if (input.ventureId) {
+      const [ova] = await db.select({ organizationId: orgVentureAccess.organizationId })
+        .from(orgVentureAccess).where(eq(orgVentureAccess.ventureId, input.ventureId)).limit(1);
+      taskOrgId = ova?.organizationId ?? null;
+    }
     await db.insert(activityLog).values({
       entityType: "task", entityName: input.title, action: "Task Created",
       detail: `New task "${input.title}" created`, userName: ctx.user.name || "System",
-      activitySource: "client_business",
+      activitySource: "client_business", organizationId: taskOrgId,
     });
 
     await createNotification({
@@ -125,13 +132,20 @@ export const tasksRouter = router({
     const { id, ...data } = input;
     await db.update(tasks).set(data).where(eq(tasks.id, id));
     const rows = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
+    // Resolve org for audit trail
+    let updOrgId: number | null = null;
+    if (rows[0]?.ventureId) {
+      const [ova] = await db.select({ organizationId: orgVentureAccess.organizationId })
+        .from(orgVentureAccess).where(eq(orgVentureAccess.ventureId, rows[0].ventureId)).limit(1);
+      updOrgId = ova?.organizationId ?? null;
+    }
     if (rows[0] && input.status) {
       await db.insert(activityLog).values({
         entityType: "task", entityId: id, entityName: rows[0].title,
         action: input.status === "complete" ? "Task Completed" : "Task Updated",
         detail: `Task "${rows[0].title}" ${input.status === "complete" ? "marked complete" : "updated"}`,
         userName: ctx.user.name || "System",
-        activitySource: "client_business",
+        activitySource: "client_business", organizationId: updOrgId,
       });
 
       if (input.status === "complete") {

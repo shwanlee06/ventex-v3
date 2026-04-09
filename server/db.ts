@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, activityLog } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -101,6 +101,41 @@ export async function getUserByOpenId(openId: string) {
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+// ── Audit Log Helper ─────────────────────────────────────────────────────
+export async function writeAuditLog(entry: {
+  entityType: string;
+  entityId?: number | null;
+  entityName?: string | null;
+  action: string;
+  detail?: string | null;
+  userName?: string | null;
+  sector?: string | null;
+  activitySource?: "atlas_ops" | "client_business" | "system";
+  organizationId?: number | null;
+}) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[AuditLog] Cannot write: database not available");
+    return;
+  }
+  try {
+    await db.insert(activityLog).values({
+      entityType: entry.entityType,
+      entityId: entry.entityId ?? null,
+      entityName: entry.entityName ?? null,
+      action: entry.action,
+      detail: entry.detail ?? null,
+      userName: entry.userName ?? "System",
+      sector: entry.sector ?? null,
+      activitySource: entry.activitySource ?? "atlas_ops",
+      organizationId: entry.organizationId ?? null,
+    });
+  } catch (error) {
+    console.error("[AuditLog] Failed to write:", error);
+    // Non-blocking — don't throw, just log
+  }
 }
 
 // TODO: add feature queries here as your schema grows.

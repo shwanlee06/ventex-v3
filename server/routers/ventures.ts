@@ -202,10 +202,17 @@ export const venturesRouter = router({
     await db.update(ventures).set(data).where(eq(ventures.id, id));
     const rows = await db.select().from(ventures).where(eq(ventures.id, id)).limit(1);
     if (rows[0]) {
+      // Resolve org for venture audit
+      const [ventureOrg] = await db.select({ organizationId: orgVentureAccess.organizationId })
+        .from(orgVentureAccess).where(eq(orgVentureAccess.ventureId, id)).limit(1);
       await db.insert(activityLog).values({
         entityType: "venture", entityId: id, entityName: rows[0].name,
-        action: "Venture Updated", detail: `Venture "${rows[0].name}" updated`, userName: ctx.user.name || "System", sector: rows[0].sector,
-        activitySource: "client_business",
+        action: data.stage && oldStage && oldStage !== data.stage ? "Stage Advanced" : "Venture Updated",
+        detail: data.stage && oldStage && oldStage !== data.stage
+          ? `"${rows[0].name}" advanced from ${oldStage} to ${data.stage}`
+          : `Venture "${rows[0].name}" updated`,
+        userName: ctx.user.name || "System", sector: rows[0].sector,
+        activitySource: "client_business", organizationId: ventureOrg?.organizationId ?? null,
       });
 
       // Notification for status changes
