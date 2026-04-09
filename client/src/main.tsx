@@ -18,6 +18,11 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
 
   if (!isUnauthorized) return;
 
+  // Don't redirect on public pages (demo, login, legal, invite)
+  const path = window.location.pathname;
+  const publicPaths = ["/demo", "/", "/privacy", "/terms", "/invite", "/accept-invite", "/portal"];
+  if (publicPaths.some(p => path === p || path.startsWith(p + "/"))) return;
+
   window.location.href = getLoginUrl();
 };
 

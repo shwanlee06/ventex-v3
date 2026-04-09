@@ -2182,3 +2182,14 @@
 - [x] ELITE-3: KPI animated counters — count-up effect on dashboard metrics
 - [x] ELITE-13: Branded 404 page — ATLAS-themed not found page
 - [x] ELITE-6: Data freshness indicator — "Updated Xm ago" on VelocityFeed
+
+## Investor Demo Rebuild — $700K Pre-Seed (Apr 2026)
+- [x] PITCH-1: Hero section — "ATLAS: Velocity AI for Venture Holdings" with cinematic entrance
+- [x] PITCH-2: Problem section — why managing 20+ ventures across 6 sectors needs AI
+- [x] PITCH-3: Solution section — what ATLAS does, with animated feature highlights
+- [x] PITCH-4: Live product embed — interactive dashboard walkthrough with guided annotations
+- [x] PITCH-5: Metrics section — ventures managed, tasks automated, sectors, time saved
+- [x] PITCH-6: Team section — who's behind ATLAS, pulled from real data
+- [x] PITCH-7: The Ask — $700K pre-seed, use of funds breakdown, CTA to schedule call
+- [x] PITCH-8: Polish — animations, scroll-triggered reveals, mobile responsive
+- [x] PITCH-9: "VIEW DEMO" button on login page points to new investor experience
