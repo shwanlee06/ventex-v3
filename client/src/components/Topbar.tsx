@@ -194,8 +194,8 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
           >
             <Bell className="size-4" />
             {totalBadge > 0 && (
-              <span className={cn(
-                "absolute top-2 right-2 size-2.5 rounded-full ring-2 ring-background",
+              <span key={totalBadge} className={cn(
+                "absolute top-2 right-2 size-2.5 rounded-full ring-2 ring-background badge-animate",
                 bellBadgeColor
               )} />
             )}

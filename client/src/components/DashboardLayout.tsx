@@ -6,6 +6,7 @@
 
 import AppSidebar from "@/components/AppSidebar";
 import Topbar from "@/components/Topbar";
+import PageTransition from "@/components/PageTransition";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -22,7 +23,7 @@ export default function DashboardLayout({ children, title, subtitle }: Dashboard
       <div className="flex-1 flex flex-col min-w-0">
         <Topbar title={title} subtitle={subtitle} />
         <main className="flex-1 overflow-y-auto overscroll-contain">
-          {children}
+          <PageTransition>{children}</PageTransition>
         </main>
       </div>
     </div>

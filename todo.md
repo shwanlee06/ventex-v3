@@ -1094,14 +1094,14 @@
 
 ### Operator Micro-Fixes
 - [ ] OP-FIX 1: Dashboard KPI cards — fill dead space with supporting detail
-- [ ] OP-FIX 2: Velocity Intelligence sparkline — full width, 32px height, 1.5px stroke
-- [ ] OP-FIX 3: Overdue panel typography — table headers 10px, row content 13px, notify button text-only
-- [ ] OP-FIX 4: Live presence bar avatar overlap — 24x24, 2px border, -6px margin
+- [x] OP-FIX 2: Velocity Intelligence sparkline — full width, 32px height, 1.5px stroke (already implemented)
+- [x] OP-FIX 3: Overdue panel typography — table headers 10px, row content 13px, notify button text-only (already implemented)
+- [x] OP-FIX 4: Live presence bar avatar overlap — 24x24, 2px border, -6px margin (already implemented)
 - [x] OP-FIX 5: Client list row alignment — vertical-align middle on all cells
 - [x] OP-FIX 6: "At Risk" health badge — amber text + amber border (not red)
 - [ ] OP-FIX 7: Sector Pulse panel — equal 44px row heights, 3px status bars
 - [x] OP-FIX 8: Activity page timestamp — capitalize all person names
-- [ ] OP-FIX 9: Search bar placeholder — "Search clients, ventures, tasks"
+- [x] OP-FIX 9: Search bar placeholder — "Search clients, ventures, tasks" (already implemented)
 - [x] OP-FIX 10: Page title subtitles — remove/update redundant subtitles
 
 ### Client Portal Micro-Fixes
@@ -1120,10 +1120,10 @@
 - [x] CL-FIX 13: Client preview banner — dark bg, amber bottom border, outlined exit button
 
 ### Motion & Interaction Polish
-- [ ] MOTION-1: Page transitions — fade 150ms on mount
+- [x] MOTION-1: Page transitions — fade 150ms on mount
 - [x] MOTION-2: Card hover states — border-color + bg brightening
 - [x] MOTION-3: Button interactions — active scale(0.98) + opacity 0.75
-- [ ] MOTION-4: Badge entrance — scale animation on count increment
+- [x] MOTION-4: Badge entrance — scale animation on count increment
 
 ### Empty State Polish
 - [x] Empty tasks — checkmark icon + "All clear" + subtext
@@ -1132,8 +1132,8 @@
 
 ### Content Accuracy
 - [x] CONTENT-1: Audit and hide all "TBD" from client portal + replace with "Unclassified"
-- [ ] CONTENT-2: Audit "Shady" venture names — hide in client portal
-- [ ] CONTENT-3: Berlin/Malaysia data inconsistency — warning icon on operator side
+- [x] CONTENT-2: Audit "Shady" venture names — no shady names remain in codebase
+- [x] CONTENT-3: Berlin/Malaysia data inconsistency — fixed (locations filled in)
 - [x] CONTENT-4: Clean up informal descriptions ("Figure out" → professional language)
 
 ### Bug Fixes
@@ -2058,11 +2058,11 @@
 
 ### OP-FIX — Dashboard Micro-Polish
 - [ ] OP-FIX 1: Dashboard KPI cards — fill dead space with supporting detail
-- [ ] OP-FIX 2: Velocity Intelligence sparkline — full width, 32px height, 1.5px stroke
-- [ ] OP-FIX 3: Overdue panel typography — table headers 10px, row content 13px, notify button text-only
-- [ ] OP-FIX 4: Live presence bar avatar overlap — 24x24, 2px border, -6px margin
+- [x] OP-FIX 2: Velocity Intelligence sparkline — full width, 32px height, 1.5px stroke (already implemented)
+- [x] OP-FIX 3: Overdue panel typography — table headers 10px, row content 13px, notify button text-only (already implemented)
+- [x] OP-FIX 4: Live presence bar avatar overlap — 24x24, 2px border, -6px margin (already implemented)
 - [ ] OP-FIX 7: Sector Pulse panel — equal 44px row heights, 3px status bars
-- [ ] OP-FIX 9: Search bar placeholder — "Search clients, ventures, tasks"
+- [x] OP-FIX 9: Search bar placeholder — "Search clients, ventures, tasks" (already implemented)
 
 ### CL-FIX — Client Portal Micro-Polish
 - [ ] CL-FIX 3: Stat row — hide 0 SPVs, show 2-card layout
@@ -2073,11 +2073,11 @@
 
 ### Other Fixes
 - [x] Fix Add Member button not visible on ATLAS Team page (confirmed present, session issue)
-- [ ] MOTION-1: Page transitions — fade 150ms on mount
-- [ ] MOTION-4: Badge entrance — scale animation on count increment
+- [x] MOTION-1: Page transitions — fade 150ms on mount
+- [x] MOTION-4: Badge entrance — scale animation on count increment
 - [ ] Empty SPVs state — hide in client, "Add one" link in operator
-- [ ] CONTENT-2: Hide "Shady" venture names in client portal
-- [ ] CONTENT-3: Berlin/Malaysia data inconsistency — warning icon on operator side
+- [x] CONTENT-2: Hide "Shady" venture names in client portal (already renamed)
+- [x] CONTENT-3: Berlin/Malaysia data inconsistency — fixed (locations filled in)
 - [ ] Executive summary — wire to show executive team members
 
 ## Session: CL-FIX 9 Completion + Test Fixes + DB Sync (Apr 2026)
@@ -2127,3 +2127,12 @@
 - [x] Audit log writes: Wired organizationId into task create/update, venture create/update/stage-advance, distribution create/update mutations. Created 14 activity log entries for Meridian. Added writeAuditLog helper to server/db.ts.
 - [x] Coming Up / Action Needed / Advance Stage: Created 4 advance-stage events (Kensington→Completed, Stockholm→Active, Côte d'Azur→Fundraising, Marina Bay historical). 11 total action-needed events for Meridian. Portal translateEvent already handles stage_advance correctly.
 - [x] All 655 tests pass (44 test files, 0 failures)
+
+## Final Polish Session (Apr 2026)
+- [x] MOTION-1: PageTransition component — 150ms fade-in animation wrapper, applied to DashboardLayout and standalone pages
+- [x] MOTION-4: Badge scale animation — CSS @keyframes badge-pop added to index.css, applied to Topbar notification bell badge
+- [x] Fix TeamMemberDetail TS error — activityQ.data is { items, total }, now uses .items
+- [x] TypeScript check passes cleanly (0 errors)
+- [x] All 655 tests pass across 44 test files
+- [x] Renamed "Velocity Compression" to "Agent Activity" across codebase (confirmed in prior session)
+- [x] Verified CONTENT-2 (no shady names) and CONTENT-3 (locations filled in) already done

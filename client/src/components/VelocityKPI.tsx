@@ -1,5 +1,5 @@
 // ============================================================================
-// VelocityKPI — 3-Tier Velocity Compression card for ATLAS dashboard
+// VelocityKPI — 3-Tier Agent Activity card for ATLAS dashboard
 // Tier 0: No advances → empty state with prompt
 // Tier 1: 1–2 advances → basic metrics + recent list
 // Tier 2: 3+ advances → full sparkline + compression trend + stage breakdown
@@ -196,7 +196,7 @@ export default function VelocityKPI() {
             <Zap className="size-4 text-blue-400" />
           </div>
           <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">
-            Velocity Compression
+            Agent Activity
           </span>
         </div>
         {tier >= 1 && (

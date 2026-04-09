@@ -130,7 +130,7 @@ export default function TeamMemberDetail() {
     if (!member || !activityQ.data) return [];
     const memberName = member.name.toLowerCase();
     const firstName = member.name.split(" ")[0].toLowerCase();
-    return activityQ.data
+    return (activityQ.data.items || activityQ.data)
       .filter((log: any) => {
         const detail = (log.detail || "").toLowerCase();
         const action = (log.action || "").toLowerCase();

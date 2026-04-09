@@ -27,7 +27,7 @@ export const AGENT_CONFIG = {
     bgColor: "bg-blue-500/10",
     textColor: "text-blue-400",
     icon: "Zap",
-    description: "Detects ventures ready to advance, auto-advances stages, tracks velocity compression",
+    description: "Detects ventures ready to advance, auto-advances stages, tracks agent activity",
   },
   distribution: {
     key: "distribution",

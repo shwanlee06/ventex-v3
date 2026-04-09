@@ -577,3 +577,23 @@ button:active, [role="button"]:active, a.inline-flex:active {
   opacity: 0.75;
   transform: scale(0.98);
 }
+
+
+/* ── MOTION-4: Badge Entrance Scale Animation ────────────── */
+@keyframes badge-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.badge-animate {
+  animation: badge-pop 250ms ease-out;
+}
+
+/* ── MOTION-5: Subtle Pulse for Live Indicators ──────────── */
+@keyframes subtle-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.live-pulse {
+  animation: subtle-pulse 2s ease-in-out infinite;
+}

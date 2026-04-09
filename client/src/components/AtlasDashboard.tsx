@@ -460,7 +460,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
       {/* ── Overdue Alert Banner ────────────────────────────────── */}
       <OverdueAlertBanner onNavigate={onNavigate} />
 
-      {/* ── Velocity Compression KPI ────────────────────────────── */}
+      {/* ── Agent Activity KPI ───────────────────────────────── */}
       <VelocityKPI />
       {/* ── Agent Execution Log ─────────────────────────────────── */}
       <AgentExecutionLog />
