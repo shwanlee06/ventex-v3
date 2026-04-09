@@ -2205,3 +2205,8 @@
 - [x] FIX: Rate exceeded error on /demo — skip auth queries on public routes, removed dashboard navigation from demo
 - [x] SEC-1: Auto session expiry — 30min idle timeout with 2min warning toast, auto-logout to login page
 - [x] SEC-2: Server-side session TTL — 24h max session cookie (was 1 year), enforced in OAuth callback
+- [x] DEMO-LIVE-1: Add /demo/dashboard route — self-contained static dashboard, no auth needed
+- [x] DEMO-LIVE-2: Used static demo data instead — no server procedures needed, fully self-contained
+- [x] DEMO-LIVE-3: Added VIEW LIVE PROTOTYPE buttons on hero, product section, and closing CTA
+- [x] DEMO-LIVE-4: Demo dashboard shows full sidebar, KPI cards, client grid, agent feed, tasks, intelligence panel
+- [x] DEMO-LIVE-5: Sticky nav on /demo with SIGN IN button, demo banner on /demo/dashboard with Back to Pitch + Sign In

@@ -42,6 +42,7 @@ import { useHeartbeat } from "./hooks/useHeartbeat";
 import { useIdleTimeout } from "./hooks/useIdleTimeout";
 import { DemoProvider } from "./contexts/DemoContext";
 import Demo from "./pages/Demo";
+import DemoDashboard from "./pages/DemoDashboard";
 
 /* Auth guard — redirects to login if no operator in localStorage */
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -100,6 +101,7 @@ function Router() {
       </Route>
 
       {/* Investor demo — public, no auth, read-only */}
+      <Route path="/demo/dashboard" component={DemoDashboard} />
       <Route path="/demo" component={Demo} />
 
       {/* Legal pages — public, no auth */}

@@ -6,6 +6,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
+import { Link } from "wouter";
+import { cn } from "@/lib/utils";
 import AnimatedCounter from "@/components/AnimatedCounter";
 
 /* ─── Scroll-triggered section wrapper ─── */
@@ -166,6 +168,31 @@ export default function Demo() {
   return (
     <div className="bg-black text-white min-h-screen" style={{ fontFamily: "'IBM Plex Mono', monospace" }}>
 
+      {/* ── Sticky nav bar ── */}
+      <nav className={cn(
+        "fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 transition-all duration-300",
+        scrollY > 100 ? "bg-black/80 backdrop-blur-md border-b border-white/5" : "bg-transparent"
+      )}>
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-bold tracking-[0.2em]" style={{ fontFamily: HEADLINE_FONT }}>ATLAS</span>
+          <span className="text-[9px] text-white/30 tracking-wider hidden sm:inline">INVESTOR DEMO</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/demo/dashboard"
+            className="text-[11px] tracking-[0.1em] text-white/60 hover:text-white transition-colors"
+          >
+            VIEW PROTOTYPE
+          </Link>
+          <Link
+            href="/"
+            className="text-[11px] tracking-[0.1em] px-3 py-1.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors"
+          >
+            SIGN IN →
+          </Link>
+        </div>
+      </nav>
+
       {/* ═══ 1. HERO — Title Slide ═══ */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
         {/* Parallax grid */}
@@ -220,12 +247,12 @@ export default function Demo() {
 
           {/* CTA row */}
           <div className="flex items-center justify-center gap-4 mt-10 flex-wrap">
-            <a
-              href="mailto:contact@aurovia.co?subject=ATLAS%20Investment%20Inquiry"
+            <Link
+              href="/demo/dashboard"
               className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black text-xs font-semibold tracking-[0.15em] hover:bg-white/90 transition-colors"
             >
-              SCHEDULE A CALL →
-            </a>
+              VIEW LIVE PROTOTYPE →
+            </Link>
             <button
               onClick={() => document.getElementById("problem")?.scrollIntoView({ behavior: "smooth" })}
               className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 text-white/70 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors"
@@ -381,12 +408,12 @@ export default function Demo() {
           {/* Explore live product CTA */}
           <RevealSection delay={0.4}>
             <div className="text-center">
-              <a
-                href="mailto:contact@aurovia.co?subject=ATLAS%20Live%20Product%20Access"
+              <Link
+                href="/demo/dashboard"
                 className="inline-flex items-center gap-2 px-8 py-3.5 border border-white/20 text-white/70 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors"
               >
-                REQUEST LIVE ACCESS →
-              </a>
+                VIEW LIVE PROTOTYPE →
+              </Link>
             </div>
           </RevealSection>
         </div>
@@ -728,12 +755,12 @@ export default function Demo() {
               >
                 SCHEDULE A CALL →
               </a>
-              <a
-                href="mailto:contact@aurovia.co?subject=ATLAS%20Demo%20Access%20Request"
+              <Link
+                href="/demo/dashboard"
                 className="inline-flex items-center gap-2 px-8 py-3.5 border border-white/20 text-white/70 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors"
               >
-                REQUEST LIVE ACCESS →
-              </a>
+                VIEW LIVE PROTOTYPE →
+              </Link>
             </div>
           </RevealSection>
 
