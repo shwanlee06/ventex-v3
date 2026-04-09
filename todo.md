@@ -2292,3 +2292,6 @@
 - [x] TOUR-8: Highlight active section with spotlight/border effect
 - [x] TOUR-9: Switch between Admin and Client tours
 - [x] TOUR-10: Verify and test guided tour — 762 tests passing (29 new tour tests)
+
+## Call Us — Add Phone Number (Apr 09)
+- [x] PHONE-1: Add phone number 571-480-3261 to all "Call Us" sections across the app (Demo pitch CTA, hero contact bar, footer, SpyOps footer)

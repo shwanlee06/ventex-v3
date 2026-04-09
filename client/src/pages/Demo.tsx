@@ -280,6 +280,7 @@ export default function Demo() {
         <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-8 py-4 text-[10px] text-white/15 tracking-wide">
           <span>aurovia.co</span>
           <span>contact@aurovia.co</span>
+          <a href="tel:+15714803261" className="hover:text-white/30 transition-colors">(571) 480-3261</a>
           <span>McLean, Virginia</span>
         </div>
       </section>
@@ -887,10 +888,10 @@ export default function Demo() {
           <RevealSection delay={0.3}>
             <div className="flex items-center justify-center gap-4 flex-wrap">
               <a
-                href="mailto:contact@aurovia.co?subject=ATLAS%20Investment%20Inquiry"
+                href="tel:+15714803261"
                 className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-black text-xs font-semibold tracking-[0.15em] hover:bg-white/90 transition-colors"
               >
-                SCHEDULE A CALL →
+                CALL US: (571) 480-3261 →
               </a>
               <Link
                 href="/demo/dashboard"
@@ -921,6 +922,7 @@ export default function Demo() {
           <div className="flex items-center gap-6 text-[10px] text-white/20 tracking-wide">
             <span>aurovia.co</span>
             <a href="mailto:contact@aurovia.co" className="hover:text-white/50 transition-colors">contact@aurovia.co</a>
+            <a href="tel:+15714803261" className="hover:text-white/50 transition-colors">(571) 480-3261</a>
             <span>McLean, Virginia</span>
             <span>© 2026</span>
           </div>
