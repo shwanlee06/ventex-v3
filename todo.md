@@ -2223,3 +2223,10 @@
 - [x] DTAB-9: Onboard Client tab — onboarding wizard preview
 - [x] DTAB-10: Drafts tab — document drafts list
 - [x] DTAB-11: Settings tab — system configuration preview
+
+## Pitch Deck Update — Day 0 → Now + Codebase Stats (Apr 09)
+- [x] PITCH-UPD-1: Audit codebase — count total lines of code, files, components, tests
+- [x] PITCH-UPD-2: Add "Day 0 → Now" journey section to /demo pitch deck
+- [x] PITCH-UPD-3: Add real codebase stats (LOC, features, tests, DB tables, AI agents)
+- [x] PITCH-UPD-4: Update metrics section with actual build stats
+- [x] PITCH-UPD-5: Verify and test updated pitch deck

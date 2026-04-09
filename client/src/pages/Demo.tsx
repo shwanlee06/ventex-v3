@@ -71,12 +71,12 @@ const AGENTS = [
 ];
 
 const PRODUCT_STATS = [
-  { value: "65,349+", label: "lines of production code" },
-  { value: "4", label: "live AI agent types" },
+  { value: "77,580+", label: "lines of production code" },
+  { value: "5", label: "AI intelligence engines" },
   { value: "46", label: "database tables" },
-  { value: "22", label: "tRPC routers" },
-  { value: "655+", label: "automated tests" },
-  { value: "8", label: "sector blueprint templates" },
+  { value: "22", label: "tRPC API routers" },
+  { value: "692+", label: "automated tests" },
+  { value: "150", label: "git commits shipped" },
 ];
 
 const GTM_STAGES = [
@@ -121,7 +121,7 @@ const TEAM = [
     role: "Founder & CEO",
     age: "19",
     color: "#22D3EE",
-    bio: "19 years old. Built ATLAS from the ground up — 65,349+ lines of production code, 4 live AI agents, an enterprise-grade platform targeting a $6 trillion market. He didn't study the problem. He watched it happen inside a UHNWI holding company and spent the next year building the solution. Most founders his age are still in class.",
+    bio: "19 years old. Built ATLAS from the ground up — 77,580+ lines of production code, 5 AI intelligence engines, an enterprise-grade platform targeting a $6 trillion market. He didn't study the problem. He watched it happen inside a UHNWI holding company and spent the next year building the solution. Most founders his age are still in class.",
   },
   {
     name: "Brian Chen",
@@ -510,57 +510,191 @@ export default function Demo() {
         </div>
       </section>
 
-      {/* ═══ 7. TRACTION ═══ */}
+      {/* ═══ 7. DAY 0 → NOW ═══ */}
       <section className="py-24 md:py-32 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           <RevealSection>
-            <div className="text-[10px] tracking-[0.3em] text-cyan-400/70 uppercase mb-4">Traction</div>
+            <div className="text-[10px] tracking-[0.3em] text-cyan-400/70 uppercase mb-4">Day 0 → Now</div>
             <h2
               className="text-[clamp(24px,4vw,48px)] font-bold leading-[0.95] mb-2"
               style={{ fontFamily: HEADLINE_FONT }}
             >
-              PLATFORM LIVE.
+              FROM ZERO
             </h2>
             <h2
-              className="text-[clamp(24px,4vw,48px)] font-bold leading-[0.95] mb-2 text-white/40"
+              className="text-[clamp(24px,4vw,48px)] font-bold leading-[0.95] mb-2 text-cyan-400"
               style={{ fontFamily: HEADLINE_FONT }}
             >
-              FOUNDING CLIENT IDENTIFIED.
+              TO 77,580 LINES OF CODE.
             </h2>
             <h2
               className="text-[clamp(24px,4vw,48px)] font-bold leading-[0.95] mb-8 text-white/25"
               style={{ fontFamily: HEADLINE_FONT }}
             >
-              MOTION STARTING.
+              AND COUNTING.
             </h2>
           </RevealSection>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+          {/* Timeline */}
+          <div className="relative mt-12">
+            {/* Vertical line */}
+            <div className="absolute left-4 md:left-8 top-0 bottom-0 w-px bg-gradient-to-b from-red-500/40 via-amber-500/40 via-cyan-500/40 to-emerald-500/40" />
+
+            {/* Day 0 */}
             <RevealSection delay={0.1}>
-              <div className="border border-white/8 rounded-lg p-6">
-                <div className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-4">Origin</div>
-                <p className="text-sm text-white/50 leading-relaxed">
-                  ATLAS was built from firsthand observation of operational coordination failures inside a
-                  UHNWI multi-vertical holding company. The ICP is not hypothetical — it is the origin of
-                  the platform.
-                </p>
+              <div className="relative pl-12 md:pl-20 pb-10">
+                <div className="absolute left-2.5 md:left-6.5 top-1 size-3 rounded-full bg-red-500 border-2 border-black" />
+                <div className="text-[10px] tracking-[0.2em] text-red-400/70 uppercase mb-2">Day 0 — The Problem</div>
+                <div className="border border-white/8 rounded-lg p-5">
+                  <p className="text-sm text-white/50 leading-relaxed">
+                    Watched a UHNWI holding company coordinate 20+ ventures across 6 sectors on spreadsheets and email chains.
+                    Tasks went untracked. Stages stalled for weeks. Distributions got delayed. No platform existed to fix it.
+                    <span className="text-red-400 font-medium"> So we started building one.</span>
+                  </p>
+                </div>
               </div>
             </RevealSection>
 
+            {/* Foundation */}
             <RevealSection delay={0.2}>
-              <div className="border border-white/8 rounded-lg p-6">
-                <div className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-4">90-Day North Star</div>
-                <p className="text-sm text-white/50 leading-relaxed">
-                  The platform is fully functional and demo-ready. The first formal client engagement is
-                  being initiated. The 90-day north star is converting this relationship to a
-                  <span className="text-cyan-400 font-medium"> $180–220K annual license</span> and signing
-                  5 additional clients by Q4 2026.
-                </p>
+              <div className="relative pl-12 md:pl-20 pb-10">
+                <div className="absolute left-2.5 md:left-6.5 top-1 size-3 rounded-full bg-amber-500 border-2 border-black" />
+                <div className="text-[10px] tracking-[0.2em] text-amber-400/70 uppercase mb-2">Phase 1 — Foundation</div>
+                <div className="border border-white/8 rounded-lg p-5">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-amber-400 font-mono">46</div>
+                      <div className="text-[10px] text-white/30">DB tables</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-amber-400 font-mono">22</div>
+                      <div className="text-[10px] text-white/30">API routers</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-amber-400 font-mono">32</div>
+                      <div className="text-[10px] text-white/30">pages built</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-amber-400 font-mono">134</div>
+                      <div className="text-[10px] text-white/30">React components</div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-white/50 leading-relaxed">
+                    Built the full-stack architecture from scratch: multi-tenant database, role-based access control,
+                    real-time SSE events, S3 file storage, encrypted data layer, and the operator command center
+                    with venture management, SPV tracking, task automation, and distribution workflows.
+                  </p>
+                </div>
+              </div>
+            </RevealSection>
+
+            {/* Intelligence Layer */}
+            <RevealSection delay={0.3}>
+              <div className="relative pl-12 md:pl-20 pb-10">
+                <div className="absolute left-2.5 md:left-6.5 top-1 size-3 rounded-full bg-cyan-500 border-2 border-black" />
+                <div className="text-[10px] tracking-[0.2em] text-cyan-400/70 uppercase mb-2">Phase 2 — Intelligence Layer</div>
+                <div className="border border-white/8 rounded-lg p-5">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-cyan-400 font-mono">5</div>
+                      <div className="text-[10px] text-white/30">AI engines</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-cyan-400 font-mono">4</div>
+                      <div className="text-[10px] text-white/30">autonomous agents</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-cyan-400 font-mono">2h</div>
+                      <div className="text-[10px] text-white/30">agent cycle</div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-white/50 leading-relaxed">
+                    Deployed 5 intelligence engines: Predictive Engine (venture forecasting), Market Intelligence
+                    (sector signals), Continuous Learning (outcome tracking), Escalation Engine (automated nudges),
+                    and Realtime Triggers. Agents run autonomously every 2 hours — advancing deals, flagging overdue tasks,
+                    drafting distribution notices, and detecting stalled ventures.
+                  </p>
+                </div>
+              </div>
+            </RevealSection>
+
+            {/* Security & Scale */}
+            <RevealSection delay={0.4}>
+              <div className="relative pl-12 md:pl-20 pb-10">
+                <div className="absolute left-2.5 md:left-6.5 top-1 size-3 rounded-full bg-violet-500 border-2 border-black" />
+                <div className="text-[10px] tracking-[0.2em] text-violet-400/70 uppercase mb-2">Phase 3 — Enterprise Security</div>
+                <div className="border border-white/8 rounded-lg p-5">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-violet-400 font-mono">15</div>
+                      <div className="text-[10px] text-white/30">security modules</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-violet-400 font-mono">AES-256</div>
+                      <div className="text-[10px] text-white/30">encryption</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-violet-400 font-mono">RBAC</div>
+                      <div className="text-[10px] text-white/30">access control</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-violet-400 font-mono">MFA</div>
+                      <div className="text-[10px] text-white/30">ready</div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-white/50 leading-relaxed">
+                    Enterprise-grade security layer: AES-256 encrypted storage, role-based access control,
+                    cross-tenant isolation, rate limiting, audit middleware, data retention policies,
+                    session management with idle timeouts, and full audit trails.
+                  </p>
+                </div>
+              </div>
+            </RevealSection>
+
+            {/* Now */}
+            <RevealSection delay={0.5}>
+              <div className="relative pl-12 md:pl-20">
+                <div className="absolute left-2.5 md:left-6.5 top-1 size-3 rounded-full bg-emerald-500 border-2 border-black animate-pulse" />
+                <div className="text-[10px] tracking-[0.2em] text-emerald-400/70 uppercase mb-2">Now — Live & Shipping</div>
+                <div className="border border-emerald-500/20 rounded-lg p-5 bg-emerald-500/[0.03]">
+                  <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-4">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-emerald-400 font-mono">77K+</div>
+                      <div className="text-[10px] text-white/30">lines of code</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-emerald-400 font-mono">285</div>
+                      <div className="text-[10px] text-white/30">source files</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-emerald-400 font-mono">692</div>
+                      <div className="text-[10px] text-white/30">tests passing</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-emerald-400 font-mono">150</div>
+                      <div className="text-[10px] text-white/30">commits</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-emerald-400 font-mono">45</div>
+                      <div className="text-[10px] text-white/30">test suites</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-emerald-400 font-mono">52+</div>
+                      <div className="text-[10px] text-white/30">API endpoints</div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-white/50 leading-relaxed">
+                    Platform is fully functional and demo-ready. Client portal live. Operator command center live.
+                    AI agents running autonomously. First formal client engagement being initiated.
+                    <span className="text-emerald-400 font-medium"> 90-day north star: convert to a $180–220K annual license
+                    and sign 5 additional clients by Q4 2026.</span>
+                  </p>
+                </div>
               </div>
             </RevealSection>
           </div>
 
-          <RevealSection delay={0.3} className="mt-6">
+          <RevealSection delay={0.6} className="mt-10">
             <div className="border border-cyan-500/20 rounded-lg p-5 bg-cyan-500/[0.03] text-center">
               <p className="text-sm text-white/50">
                 <span className="text-cyan-400 font-semibold">2 additional</span> warm prospect conversations currently in progress.
