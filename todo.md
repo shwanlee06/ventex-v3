@@ -2266,3 +2266,17 @@
 - [x] CLIENT-TAB-7: Make client sidebar Settings tab interactive with profile settings
 - [x] ALIGN-1: Audit actual dashboard (Home.tsx) vs demo dashboard visual differences
 - [x] ALIGN-2: Align demo dashboard layout, colors, spacing to match production (kept custom for demo clarity)
+
+## Velocity Interactions — Make Demo Feel Alive (Apr 09)
+- [x] VEL-1: Live agent feed — auto-append new actions every 8-12s with slide-in animation
+- [x] VEL-2: Pulsing velocity score ring — animated circular gauge that ticks up in real-time
+- [x] VEL-3: KPI counters — counting-up animation on load + periodic micro-increments
+- [x] VEL-4: Live "processing" indicators — agents show typing/thinking dots when active
+- [x] VEL-5: Hover interactions — cards lift with shadow, rows highlight with data preview
+- [x] VEL-6: Task completion animation — checkmark animation on toggle
+- [x] VEL-7: Real-time notification toast — periodic toast popups simulating live alerts
+- [x] VEL-8: Client view — portfolio value ticker with animated counter
+- [x] VEL-9: Client view — venture progress bars animate on tab switch
+- [x] VEL-10: Client view — AI chat typing simulation in Portfolio Assistant
+- [x] VEL-11: Sparkline micro-charts on KPI cards and client cards showing trend movement
+- [x] VEL-12: Staggered entrance animations on all card grids (FadeIn with delays)

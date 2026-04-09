@@ -17,7 +17,7 @@ import {
   Info, ArrowRight, Package, Wallet, Monitor,
 } from "lucide-react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 
 type DemoView = "admin" | "client";
@@ -120,6 +120,28 @@ const DEMO_DRAFTS = [
   { title: "Follow-up: Northstar KYC Renewal", to: "Viktor Petrov", status: "ready" as const, created: "2h ago", type: "email" },
   { title: "Q1 Distribution Report — Sovereign Wealth", to: "James Whitfield", status: "draft" as const, created: "1d ago", type: "report" },
   { title: "Board Meeting Agenda — Meridian Holdings", to: "Sarah Chen", status: "draft" as const, created: "2d ago", type: "document" },
+];
+
+/* ─── Live simulation data ─── */
+const LIVE_EVENTS = [
+  { action: "Velocity Agent", detail: "Detected momentum shift: Dubai Creek Residences velocity up 8% this week", color: "#22D3EE" },
+  { action: "Overdue Agent", detail: "Auto-escalated: Pacific Ventures permit review — now 5 days overdue", color: "#EF4444" },
+  { action: "Distribution Sentinel", detail: "Verified $1.8M distribution for Sovereign Wealth Partners — cleared", color: "#A855F7" },
+  { action: "Compliance Watcher", detail: "Titan Industries license renewal — 45 days remaining, auto-reminder queued", color: "#F59E0B" },
+  { action: "Velocity Agent", detail: "Palm Jumeirah Residences advanced from Negotiation → Due Diligence", color: "#22D3EE" },
+  { action: "Overdue Agent", detail: "Follow-up sent to Meridian Holdings — board meeting agenda 2 days overdue", color: "#EF4444" },
+  { action: "Distribution Sentinel", detail: "Q2 distribution forecast generated for Al Rashid Group — $3.1M projected", color: "#A855F7" },
+  { action: "Compliance Watcher", detail: "Environmental compliance check passed for Northstar Refinery", color: "#F59E0B" },
+  { action: "Velocity Agent", detail: "Benchmark analysis: Portfolio velocity 18% above industry average", color: "#22D3EE" },
+  { action: "Overdue Agent", detail: "Task auto-completed: Sovereign Tower II title transfer docs received", color: "#EF4444" },
+];
+
+const TYPING_MESSAGES = [
+  "Analyzing portfolio velocity trends across all clients...",
+  "Generating Q2 distribution forecast for Al Rashid Group...",
+  "Scanning regulatory updates for UAE energy sector...",
+  "Preparing weekly performance summary for 6 clients...",
+  "Cross-referencing market signals with venture timelines...",
 ];
 
 type TabId = "dashboard" | "activity" | "oversight" | "concierge" | "agents" | "blueprints" | "team" | "contacts" | "onboard" | "drafts" | "settings";
@@ -294,6 +316,95 @@ function FadeIn({ children, delay = 0, className = "" }: { children: React.React
   );
 }
 
+/* ─── Velocity Micro-Interactions ─── */
+function SparkLine({ data, color = "#22D3EE", height = 24 }: { data: number[]; color?: string; height?: number }) {
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  const w = 60;
+  const points = data.map((v, i) => `${(i / (data.length - 1)) * w},${height - ((v - min) / range) * (height - 4) - 2}`).join(" ");
+  return (
+    <svg width={w} height={height} className="inline-block">
+      <polyline fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" points={points} opacity={0.7} />
+      <circle cx={(data.length - 1) / (data.length - 1) * w} cy={height - ((data[data.length - 1] - min) / range) * (height - 4) - 2} r="2" fill={color} />
+    </svg>
+  );
+}
+
+const SPARK_DATA: Record<string, number[]> = {
+  "Active Clients": [4, 4, 5, 5, 5, 6, 6],
+  "Total Ventures": [28, 29, 30, 31, 32, 33, 33],
+  "Open Tasks": [18, 22, 19, 16, 14, 15, 12],
+  "Distributions": [1.2, 1.4, 1.8, 2.1, 2.4, 2.6, 2.8],
+};
+
+function LivePulse() {
+  return (
+    <span className="relative flex size-2">
+      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+      <span className="relative inline-flex rounded-full size-2 bg-emerald-400" />
+    </span>
+  );
+}
+
+function AgentThinkingDots() {
+  return (
+    <span className="inline-flex items-center gap-0.5 ml-1">
+      {[0, 1, 2].map(i => (
+        <motion.span
+          key={i}
+          className="size-1 rounded-full bg-primary"
+          animate={{ opacity: [0.3, 1, 0.3] }}
+          transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+        />
+      ))}
+    </span>
+  );
+}
+
+function LiveNotificationToast({ message, onDismiss }: { message: string; onDismiss: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -20, x: 20 }}
+      animate={{ opacity: 1, y: 0, x: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="fixed top-20 right-4 z-50 max-w-sm bg-card border border-primary/30 rounded-lg shadow-lg shadow-primary/5 p-3 flex items-start gap-3"
+    >
+      <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+        <Zap className="size-3 text-primary" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">ATLAS Agent</span>
+        <p className="text-xs text-foreground mt-0.5 leading-relaxed">{message}</p>
+      </div>
+      <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground transition-colors shrink-0">
+        <span className="text-xs">×</span>
+      </button>
+    </motion.div>
+  );
+}
+
+function VelocityRing({ score, size = 48 }: { score: number; size?: number }) {
+  const r = (size - 6) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (score / 100) * circ;
+  const color = score >= 85 ? "#22C55E" : score >= 70 ? "#22D3EE" : score >= 50 ? "#F59E0B" : "#EF4444";
+  return (
+    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth="3" className="text-secondary" />
+        <motion.circle
+          cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round"
+          strokeDasharray={circ} initial={{ strokeDashoffset: circ }} animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+        />
+      </svg>
+      <span className="absolute text-[10px] font-bold font-mono" style={{ color }}>{score}</span>
+    </div>
+  );
+}
+
 function SectionCard({ title, subtitle, icon, children }: { title: string; subtitle?: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="bg-card border border-border rounded-lg">
@@ -315,7 +426,7 @@ function SectionCard({ title, subtitle, icon, children }: { title: string; subti
 /* ─── TAB CONTENT VIEWS ─── */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-function DashboardView({ search, setSearch }: { search: string; setSearch: (s: string) => void }) {
+function DashboardView({ search, setSearch, liveFeed, agentThinking }: { search: string; setSearch: (s: string) => void; liveFeed: typeof DEMO_FEED; agentThinking: boolean }) {
   const filteredClients = search
     ? DEMO_CLIENTS.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
     : DEMO_CLIENTS;
@@ -339,7 +450,10 @@ function DashboardView({ search, setSearch }: { search: string; setSearch: (s: s
         {DEMO_KPI.map((kpi, i) => (
           <FadeIn key={kpi.label} delay={i * 0.05}>
             <div className="bg-card border border-border rounded-lg p-4 flex flex-col gap-2 hover:border-primary/30 transition-all">
-              <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">{kpi.label}</span>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] uppercase tracking-[0.06em] text-muted-foreground font-medium">{kpi.label}</span>
+                {SPARK_DATA[kpi.label] && <SparkLine data={SPARK_DATA[kpi.label]} color={kpi.trendUp ? "#22C55E" : "#F59E0B"} />}
+              </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-semibold tracking-tight text-foreground font-mono">
                   <AnimatedCounter value={kpi.value} duration={1200} />
@@ -386,8 +500,8 @@ function DashboardView({ search, setSearch }: { search: string; setSearch: (s: s
                       <span className="text-lg font-semibold font-mono text-foreground">{client.ventures}</span>
                       <span className="text-[10px] text-muted-foreground">ventures</span>
                     </div>
-                    <div className="flex flex-col">
-                      <VelocityBadge rate={client.velocity} />
+                    <div className="flex flex-col items-center">
+                      <VelocityRing score={client.velocity} size={36} />
                       <span className="text-[10px] text-muted-foreground mt-0.5">velocity</span>
                     </div>
                     <div className="flex flex-col items-end"><HealthBadge health={client.health} /></div>
@@ -400,6 +514,11 @@ function DashboardView({ search, setSearch }: { search: string; setSearch: (s: s
                     <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
                       <motion.div className="h-full rounded-full bg-primary" initial={{ width: 0 }} animate={{ width: `${client.completion}%` }} transition={{ duration: 1, delay: 0.3 + i * 0.1, ease: "easeOut" }} />
                     </div>
+                  </div>
+                  {/* Velocity trend sparkline */}
+                  <div className="mt-2 pt-2 border-t border-border flex items-center justify-between">
+                    <SparkLine data={[client.velocity - 12, client.velocity - 8, client.velocity - 5, client.velocity - 2, client.velocity]} color={client.health === "excellent" ? "#22C55E" : client.health === "good" ? "#3B82F6" : "#F59E0B"} />
+                    <span className="text-[9px] font-mono text-muted-foreground">30d trend</span>
                   </div>
                   {client.overdue > 0 && (
                     <div className="mt-2 flex items-center gap-1.5">
@@ -463,14 +582,22 @@ function DashboardView({ search, setSearch }: { search: string; setSearch: (s: s
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-foreground">Agent Activity</h2>
               <div className="flex items-center gap-1.5">
-                <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <LivePulse />
                 <span className="text-[10px] font-mono text-emerald-400">live</span>
+                {agentThinking && <AgentThinkingDots />}
               </div>
             </div>
-            <div className="bg-card border border-border rounded-lg divide-y divide-border">
-              {DEMO_FEED.slice(0, 6).map((item, i) => (
-                <FadeIn key={item.id} delay={0.4 + i * 0.06}>
-                  <div className="p-3 flex gap-3 cursor-default hover:bg-accent/30 transition-colors">
+            <div className="bg-card border border-border rounded-lg divide-y divide-border overflow-hidden">
+              <AnimatePresence initial={false}>
+                {liveFeed.slice(0, 6).map((item, i) => (
+                  <motion.div
+                    key={`${item.id}-${item.detail}`}
+                    initial={{ opacity: 0, height: 0, y: -10 }}
+                    animate={{ opacity: 1, height: "auto", y: 0 }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="p-3 flex gap-3 cursor-default hover:bg-accent/30 transition-colors"
+                  >
                     <div className="size-1.5 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: item.color }} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -479,9 +606,9 @@ function DashboardView({ search, setSearch }: { search: string; setSearch: (s: s
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.detail}</p>
                     </div>
-                  </div>
-                </FadeIn>
-              ))}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           </div>
 
@@ -583,7 +710,10 @@ function OversightView() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-foreground">Portfolio Oversight</h2>
-        <span className="text-[10px] font-mono text-muted-foreground">Last scan: 2m ago</span>
+        <div className="flex items-center gap-1.5">
+          <LivePulse />
+          <span className="text-[10px] font-mono text-emerald-400">scanning</span>
+        </div>
       </div>
 
       {/* Health Matrix */}
@@ -603,6 +733,7 @@ function OversightView() {
                 </div>
                 <VelocityBadge rate={client.velocity} />
                 <HealthBadge health={client.health} />
+                <SparkLine data={[client.velocity - 15, client.velocity - 10, client.velocity - 5, client.velocity - 2, client.velocity]} color={client.health === "excellent" ? "#22C55E" : client.health === "good" ? "#3B82F6" : "#F59E0B"} />
                 <span className="text-[10px] font-mono text-muted-foreground w-16 text-right">{client.overdue} overdue</span>
               </div>
             </FadeIn>
@@ -684,6 +815,20 @@ function ConciergeView() {
               </div>
             </FadeIn>
           ))}
+          {/* AI typing indicator */}
+          <FadeIn delay={DEMO_CHAT.length * 0.15 + 0.3}>
+            <div className="flex gap-3">
+              <div className="size-7 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
+                <Bot className="size-3.5 text-primary" />
+              </div>
+              <div className="bg-secondary/50 rounded-lg px-4 py-3">
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-muted-foreground mr-1">Analyzing portfolio data</span>
+                  <AgentThinkingDots />
+                </div>
+              </div>
+            </div>
+          </FadeIn>
         </div>
 
         {/* Input */}
@@ -726,7 +871,7 @@ function AgentsView() {
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-foreground">AI Agents</h2>
         <div className="flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <LivePulse />
           <span className="text-[10px] font-mono text-emerald-400">4 active</span>
         </div>
       </div>
@@ -762,8 +907,9 @@ function AgentsView() {
                   <div>
                     <span className="text-xs font-medium text-foreground">{agent.name}</span>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="size-1.5 rounded-full bg-emerald-400" />
+                      <LivePulse />
                       <span className="text-[10px] text-emerald-400 capitalize">{agent.status}</span>
+                      {agent.status === "active" && <AgentThinkingDots />}
                     </div>
                   </div>
                 </div>
@@ -1168,6 +1314,7 @@ function ClientPortalDemoView() {
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="size-4 text-primary" />
             <span className="text-[11px] font-semibold text-primary uppercase tracking-wider">AI Briefing</span>
+            <LivePulse />
             <Annotation id="velocitySummary" annotations={CLIENT_ANNOTATIONS} />
           </div>
           <p className="text-sm text-foreground leading-relaxed">
@@ -1323,15 +1470,19 @@ function ClientPortalDemoView() {
           </div>
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex items-center justify-between mb-4">
-              <div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold font-mono tracking-tight text-emerald-400">82</span>
-                  <span className="text-xs text-muted-foreground">/100</span>
+              <div className="flex items-center gap-4">
+                <VelocityRing score={82} size={64} />
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold font-mono tracking-tight text-emerald-400">82</span>
+                    <span className="text-xs text-muted-foreground">/100</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Overall portfolio health score</p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Overall portfolio health score</p>
               </div>
               <div className="text-right">
                 <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400">
+                  <LivePulse />
                   ↑ improving
                 </div>
                 <p className="text-[11px] text-amber-400 mt-1">1 venture at risk</p>
@@ -1339,6 +1490,16 @@ function ClientPortalDemoView() {
             </div>
             <div className="w-full bg-muted rounded-full h-2">
               <motion.div className="h-2 rounded-full bg-emerald-400" initial={{ width: 0 }} animate={{ width: "82%" }} transition={{ duration: 1, delay: 0.3 }} />
+            </div>
+            {/* Mini sparklines per venture */}
+            <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-border">
+              {[{ name: "Marina Bay", score: 92, data: [70, 75, 80, 85, 88, 90, 92] }, { name: "Meridian F&B", score: 78, data: [60, 65, 68, 72, 74, 76, 78] }, { name: "Pacific Yacht", score: 54, data: [72, 68, 65, 60, 58, 55, 54] }].map(v => (
+                <div key={v.name} className="text-center">
+                  <SparkLine data={v.data} color={v.score >= 70 ? "#22C55E" : v.score >= 50 ? "#F59E0B" : "#EF4444"} />
+                  <div className="text-[10px] text-muted-foreground mt-1">{v.name}</div>
+                  <div className="text-xs font-mono font-semibold" style={{ color: v.score >= 70 ? "#22C55E" : v.score >= 50 ? "#F59E0B" : "#EF4444" }}>{v.score}</div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -1423,6 +1584,7 @@ function ClientPortalDemoView() {
           <div className="flex items-center gap-2 mb-2">
             <MessageSquare className="size-4 text-primary" />
             <span className="text-[11px] font-semibold text-primary uppercase tracking-wider">Portfolio Assistant</span>
+            <LivePulse />
             <Annotation id="chat" annotations={CLIENT_ANNOTATIONS} />
           </div>
           <p className="text-xs text-muted-foreground mb-3">Clients have a personal AI assistant that can answer questions about their portfolio in real-time.</p>
@@ -1503,14 +1665,17 @@ function ClientVenturesView() {
               {/* Momentum */}
               {v.momentum && (
                 <div className="pt-3 border-t border-border">
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-4 gap-4">
+                    <div className="flex items-center gap-2">
+                      <VelocityRing score={v.momentum.confidence} size={36} />
+                      <div>
+                        <span className="text-[10px] text-muted-foreground block">Confidence</span>
+                        <span className="text-sm font-mono font-medium text-foreground">{v.momentum.confidence}%</span>
+                      </div>
+                    </div>
                     <div>
                       <span className="text-[10px] text-muted-foreground block">Projected</span>
                       <span className="text-sm font-mono font-medium text-foreground">{v.momentum.projectedDays}d</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-muted-foreground block">Confidence</span>
-                      <span className="text-sm font-mono font-medium text-foreground">{v.momentum.confidence}%</span>
                     </div>
                     <div>
                       <span className="text-[10px] text-muted-foreground block">vs Benchmark</span>
@@ -1520,6 +1685,10 @@ function ClientVenturesView() {
                       )}>
                         {v.momentum.velocityVsBenchmark === "faster" ? "↑ Ahead" : v.momentum.velocityVsBenchmark === "slower" ? "↓ Behind" : "→ On pace"}
                       </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-muted-foreground block">Trend</span>
+                      <SparkLine data={[v.momentum.confidence - 15, v.momentum.confidence - 10, v.momentum.confidence - 5, v.momentum.confidence - 2, v.momentum.confidence]} color={v.momentum.velocityVsBenchmark === "faster" ? "#22C55E" : v.momentum.velocityVsBenchmark === "slower" ? "#EF4444" : "#F59E0B"} />
                     </div>
                   </div>
                 </div>
@@ -1856,6 +2025,36 @@ export default function DemoDashboard() {
   const [demoView, setDemoView] = useState<DemoView>("admin");
   const [clientTab, setClientTab] = useState<ClientTabId>("overview");
 
+  // Live velocity simulation
+  const [liveFeed, setLiveFeed] = useState(DEMO_FEED);
+  const [agentThinking, setAgentThinking] = useState(false);
+  const [notification, setNotification] = useState<string | null>(null);
+  const liveEventIdx = useRef(0);
+
+  // Live feed: append new agent actions every 8-12 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const evt = LIVE_EVENTS[liveEventIdx.current % LIVE_EVENTS.length];
+      liveEventIdx.current++;
+
+      // Show thinking dots
+      setAgentThinking(true);
+      setTimeout(() => {
+        setAgentThinking(false);
+        // Prepend new event to feed
+        setLiveFeed(prev => [
+          { id: `live-${Date.now()}`, action: evt.action, detail: evt.detail, time: "just now", color: evt.color },
+          ...prev.slice(0, 9),
+        ]);
+        // Show notification toast
+        setNotification(evt.detail);
+        setTimeout(() => setNotification(null), 4000);
+      }, 1500 + Math.random() * 1000);
+    }, 8000 + Math.random() * 4000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const TAB_TITLES: Record<TabId, string> = {
     dashboard: "Dashboard",
     activity: "Activity Log",
@@ -1882,6 +2081,10 @@ export default function DemoDashboard() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground">
+      {/* Live notification toast */}
+      <AnimatePresence>
+        {notification && <LiveNotificationToast message={notification} onDismiss={() => setNotification(null)} />}
+      </AnimatePresence>
       {/* ── Sidebar ── */}
       <AnimatePresence mode="wait">
         {demoView === "admin" ? (
@@ -2096,7 +2299,7 @@ export default function DemoDashboard() {
             <AnimatePresence mode="wait">
               {demoView === "admin" ? (
                 <motion.div key="admin" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
-                  {activeTab === "dashboard" && <DashboardView search={search} setSearch={setSearch} />}
+                  {activeTab === "dashboard" && <DashboardView search={search} setSearch={setSearch} liveFeed={liveFeed} agentThinking={agentThinking} />}
                   {activeTab === "activity" && <ActivityView />}
                   {activeTab === "oversight" && <OversightView />}
                   {activeTab === "concierge" && <ConciergeView />}
