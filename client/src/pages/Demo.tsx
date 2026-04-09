@@ -9,7 +9,6 @@ import { motion, useInView } from "framer-motion";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import AnimatedCounter from "@/components/AnimatedCounter";
-import { getLoginUrl } from "@/const";
 
 /* ─── Scroll-triggered section wrapper ─── */
 function RevealSection({
@@ -188,12 +187,12 @@ export default function Demo() {
           >
             VIEW PROTOTYPE
           </Link>
-          <a
-            href={getLoginUrl()}
+          <Link
+            href="/"
             className="text-[11px] tracking-[0.1em] px-3 py-1.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors"
           >
             SIGN IN →
-          </a>
+          </Link>
         </div>
       </nav>
 
