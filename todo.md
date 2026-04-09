@@ -2091,3 +2091,19 @@
 - [x] Fix stale test: partner orgScope test (orgScope.test.ts) — partner is external user
 - [x] Fix flaky test: Sidebar Restore Test unique name (organizations.test.ts)
 - [x] All 655 tests passing across 44 test files
+
+## Demo Client: Real Estate Sector End-to-End Test
+- [x] Create demo client organization — Meridian Capital Group (id=480041)
+- [x] Seed 6 Real Estate ventures at various stages (2 Validation, 1 Fundraising, 2 Active, 1 Completed)
+- [x] Seed 35 tasks per venture (5 overdue, 10 in-progress, 19 open, 1 complete)
+- [x] Seed 5 SPVs linked to ventures with 12 team assignments
+- [x] Seed 7 distributions ($56M+ total, paid and pending)
+- [x] Seed 6 team members assigned to ventures (22 venture-team assignments)
+- [x] Seed 14 activity log entries
+- [x] Generate Real Estate blueprint via LLM — 20 steps across 4 stages (In Validation, In Fundraising, Active Ventures, Completed)
+- [x] Auto-apply blueprint to all 6 ventures — 120 process tracking records with smart pre-marking
+- [x] Run all AI agents: Overdue (5 signals, 3 auto-emails), Velocity (1 signal), Distribution Sentinel (3 signals, LP notices drafted), Orchestrator (1 cross-agent correlation)
+- [x] Generate daily brief via LLM — headline, 5 priority items, portfolio health, 5 recommended actions, 3 wins
+- [x] Generate 4 AI observations via LLM — risks, patterns, opportunities with suggested tasks and assignees
+- [x] Generate 5 smart alerts for overdue tasks (2 critical, 3 warning)
+- [x] Verify Marina Bay Residences shows as Completed with 16/20 steps auto-completed
