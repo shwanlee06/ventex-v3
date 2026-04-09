@@ -22,7 +22,7 @@ export default function DemoBanner() {
         You're viewing a read-only demo of the ATLAS Velocity AI platform
       </span>
       <a
-        href="mailto:jimmy@aurovia.co?subject=ATLAS%20Demo%20Access%20Request"
+        href="mailto:contact@aurovia.co?subject=ATLAS%20Demo%20Access%20Request"
         className="inline-flex items-center gap-1 px-2.5 py-1 bg-black/15 hover:bg-black/25 rounded text-[11px] font-semibold transition-colors whitespace-nowrap"
       >
         Request Access <ArrowRight className="size-3" />

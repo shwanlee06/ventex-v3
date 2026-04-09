@@ -186,7 +186,7 @@ export default function Demo() {
           {/* CTA row */}
           <div className="flex items-center justify-center gap-4 mt-10 flex-wrap">
             <a
-              href="mailto:jimmy@aurovia.co?subject=ATLAS%20Investment%20Inquiry"
+              href="mailto:contact@aurovia.co?subject=ATLAS%20Investment%20Inquiry"
               className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black text-xs font-semibold tracking-[0.15em] hover:bg-white/90 transition-colors"
             >
               SCHEDULE A CALL →
@@ -594,7 +594,7 @@ export default function Demo() {
               </p>
               <div className="flex items-center justify-center gap-4 flex-wrap">
                 <a
-                  href="mailto:jimmy@aurovia.co?subject=ATLAS%20Investment%20Inquiry"
+                  href="mailto:contact@aurovia.co?subject=ATLAS%20Investment%20Inquiry"
                   className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-black text-xs font-semibold tracking-[0.15em] hover:bg-white/90 transition-colors"
                 >
                   SCHEDULE A CALL →
@@ -625,7 +625,7 @@ export default function Demo() {
             <span className="text-[10px] text-white/20">Powered by Aurovia</span>
           </div>
           <div className="flex items-center gap-6 text-[10px] text-white/20 tracking-wide">
-            <a href="mailto:jimmy@aurovia.co" className="hover:text-white/50 transition-colors">jimmy@aurovia.co</a>
+            <a href="mailto:contact@aurovia.co" className="hover:text-white/50 transition-colors">contact@aurovia.co</a>
             <span>© 2026</span>
           </div>
         </div>

@@ -2193,3 +2193,4 @@
 - [x] PITCH-7: The Ask — $700K pre-seed, use of funds breakdown, CTA to schedule call
 - [x] PITCH-8: Polish — animations, scroll-triggered reveals, mobile responsive
 - [x] PITCH-9: "VIEW DEMO" button on login page points to new investor experience
+- [x] FIX: Change all jimmy@aurovia.co references to contact@aurovia.co
