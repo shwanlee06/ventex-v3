@@ -2280,3 +2280,15 @@
 - [x] VEL-10: Client view — AI chat typing simulation in Portfolio Assistant
 - [x] VEL-11: Sparkline micro-charts on KPI cards and client cards showing trend movement
 - [x] VEL-12: Staggered entrance animations on all card grids (FadeIn with delays)
+
+## Guided Tour — Auto-Play Demo Walkthrough (Apr 09)
+- [x] TOUR-1: Design tour step sequence for Admin view (Dashboard → Activity → Oversight → AI Concierge → AI Agents → Blueprints → Team → Contacts → Onboard → Drafts → Settings)
+- [x] TOUR-2: Design tour step sequence for Client view (Overview → My Ventures → Documents → Distributions → Reports → Messages → Settings)
+- [x] TOUR-3: Build tour engine — step state, auto-advance timer, progress bar
+- [x] TOUR-4: Build narration overlay — floating card with step title, description, step counter
+- [x] TOUR-5: "Start Tour" button in demo banner
+- [x] TOUR-6: Tour controls — pause/resume, next/prev, skip, close
+- [x] TOUR-7: Auto-switch tabs as tour progresses
+- [x] TOUR-8: Highlight active section with spotlight/border effect
+- [x] TOUR-9: Switch between Admin and Client tours
+- [x] TOUR-10: Verify and test guided tour — 762 tests passing (29 new tour tests)

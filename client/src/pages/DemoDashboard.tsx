@@ -144,6 +144,38 @@ const TYPING_MESSAGES = [
   "Cross-referencing market signals with venture timelines...",
 ];
 
+/* ─── Guided Tour Steps ─── */
+interface TourStep {
+  view: DemoView;
+  tab: TabId | ClientTabId;
+  title: string;
+  narration: string;
+  duration: number; // seconds to show before auto-advancing
+}
+
+const TOUR_STEPS: TourStep[] = [
+  // Admin tour
+  { view: "admin", tab: "dashboard", title: "Command Center", narration: "This is the operator's nerve center. Real-time KPIs, client health cards with velocity sparklines, and a live AI agent feed that updates every 8 seconds. Everything the team needs to manage 50+ ventures from one screen.", duration: 10 },
+  { view: "admin", tab: "activity", title: "Activity Log", narration: "A complete audit trail of every action — human and AI. Filter by type to see exactly what happened, when, and by whom. Full transparency for compliance and accountability.", duration: 8 },
+  { view: "admin", tab: "oversight", title: "Portfolio Oversight", narration: "AI-powered risk monitoring across all clients. Health matrices, risk alerts, and compliance tracking update in real-time. The system flags issues before they become problems.", duration: 8 },
+  { view: "admin", tab: "concierge", title: "AI Concierge", narration: "A conversational AI that understands the entire portfolio. Ask about any venture, client, or deadline — get instant answers. It can draft emails, generate reports, and brief the team.", duration: 8 },
+  { view: "admin", tab: "agents", title: "Autonomous AI Agents", narration: "Four AI agents run 24/7 — Velocity Agent tracks momentum, Overdue Agent escalates delays, Distribution Sentinel verifies payments, Compliance Watcher monitors deadlines. They never sleep.", duration: 9 },
+  { view: "admin", tab: "blueprints", title: "Venture Pipeline", narration: "A visual kanban showing every venture across stages — from Negotiation through Due Diligence to Active and Closing. Drag-and-drop simplicity with AI-projected timelines.", duration: 8 },
+  { view: "admin", tab: "team", title: "ATLAS Team", narration: "Team management with real-time status, venture assignments, and task loads. See who's available, how work is distributed, and reassign with one click.", duration: 7 },
+  { view: "admin", tab: "contacts", title: "Client Directory", narration: "A centralized contact directory organized by organization. One-click access to email and phone for every stakeholder across all client portfolios.", duration: 7 },
+  { view: "admin", tab: "onboard", title: "Client Onboarding", narration: "A structured 5-step wizard — KYC, compliance review, portal setup, venture linking, and access provisioning. Ensures nothing is missed when bringing on new clients.", duration: 7 },
+  { view: "admin", tab: "drafts", title: "AI-Generated Drafts", narration: "The AI Concierge auto-generates follow-up emails, reports, and documents based on portfolio activity. Operators review, edit, and send with one click.", duration: 7 },
+  { view: "admin", tab: "settings", title: "System Configuration", narration: "Platform-wide settings — notifications, AI agent thresholds, integrations, security, and team permissions. Full control over how ATLAS operates.", duration: 6 },
+  // Client tour
+  { view: "client", tab: "overview", title: "Client Dashboard", narration: "Now switching to the client's view. This is what your investors see — an AI-generated briefing, action cards requiring their attention, and a real-time velocity feed showing progress.", duration: 10 },
+  { view: "client", tab: "ventures", title: "My Ventures", narration: "Each venture card shows real-time stage progress, velocity momentum vs. benchmark, risk factors, and AI-projected timelines. Clients see exactly where their investments stand.", duration: 8 },
+  { view: "client", tab: "documents", title: "Document Vault", narration: "A secure document vault with all venture-related files — agreements, reports, compliance docs. Organized by type with status badges and one-click download.", duration: 7 },
+  { view: "client", tab: "distributions", title: "Distributions", narration: "Complete distribution history with summary cards showing total paid, pending, and projected amounts. Clients see every payment with full transparency.", duration: 7 },
+  { view: "client", tab: "reports", title: "AI Reports", narration: "AI-generated performance reports with key highlights and trend analysis. Clients get institutional-grade analytics without the operator lifting a finger.", duration: 7 },
+  { view: "client", tab: "messages", title: "Secure Messaging", narration: "Direct messaging with the ATLAS team. Clients can ask questions, request documents, or flag concerns — all in one secure channel.", duration: 7 },
+  { view: "client", tab: "settings", title: "Account Settings", narration: "Profile management, notification preferences, and security settings. Clients control their own experience.", duration: 6 },
+];
+
 type TabId = "dashboard" | "activity" | "oversight" | "concierge" | "agents" | "blueprints" | "team" | "contacts" | "onboard" | "drafts" | "settings";
 
 const DEMO_NAV: { label: string; icon: React.ReactNode; id: TabId }[] = [
@@ -225,6 +257,161 @@ function Annotation({ id, annotations, className = "" }: { id: string; annotatio
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+/* ─── Guided Tour Overlay ─── */
+function GuidedTourOverlay({
+  step,
+  totalSteps,
+  currentStep,
+  isPlaying,
+  progress,
+  onNext,
+  onPrev,
+  onTogglePlay,
+  onClose,
+}: {
+  step: TourStep;
+  totalSteps: number;
+  currentStep: number;
+  isPlaying: boolean;
+  progress: number;
+  onNext: () => void;
+  onPrev: () => void;
+  onTogglePlay: () => void;
+  onClose: () => void;
+}) {
+  const isAdmin = step.view === "admin";
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-[90vw] max-w-lg"
+    >
+      <div className="bg-card/95 backdrop-blur-xl border border-primary/30 rounded-2xl shadow-2xl shadow-primary/10 overflow-hidden">
+        {/* Progress bar */}
+        <div className="h-1 bg-border relative">
+          <motion.div
+            className="h-full bg-gradient-to-r from-primary to-cyan-400"
+            initial={{ width: 0 }}
+            animate={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          />
+          {/* Auto-advance timer bar */}
+          {isPlaying && (
+            <motion.div
+              className="absolute top-0 left-0 h-full bg-white/20"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          )}
+        </div>
+
+        <div className="p-5">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <div className={cn(
+                "size-8 rounded-lg flex items-center justify-center",
+                isAdmin ? "bg-primary/15" : "bg-emerald-500/15"
+              )}>
+                {isAdmin ? <Shield className="size-4 text-primary" /> : <Users className="size-4 text-emerald-400" />}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-foreground">{step.title}</span>
+                  <span className={cn(
+                    "text-[9px] font-semibold tracking-wider px-2 py-0.5 rounded-full",
+                    isAdmin ? "bg-primary/15 text-primary" : "bg-emerald-500/15 text-emerald-400"
+                  )}>
+                    {isAdmin ? "ADMIN" : "CLIENT"}
+                  </span>
+                </div>
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  Step {currentStep + 1} of {totalSteps}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+              aria-label="Close tour"
+            >
+              <span className="text-lg leading-none">&times;</span>
+            </button>
+          </div>
+
+          {/* Narration */}
+          <p className="text-[13px] text-muted-foreground leading-relaxed mb-4">
+            {step.narration}
+          </p>
+
+          {/* Controls */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={onPrev}
+                disabled={currentStep === 0}
+                className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                aria-label="Previous step"
+              >
+                <ArrowLeft className="size-4" />
+              </button>
+              <button
+                onClick={onTogglePlay}
+                className={cn(
+                  "size-8 rounded-lg flex items-center justify-center transition-colors",
+                  isPlaying
+                    ? "bg-primary/15 text-primary hover:bg-primary/25"
+                    : "bg-accent/50 text-foreground hover:bg-accent"
+                )}
+                aria-label={isPlaying ? "Pause tour" : "Play tour"}
+              >
+                {isPlaying ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
+              </button>
+              <button
+                onClick={onNext}
+                disabled={currentStep === totalSteps - 1}
+                className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                aria-label="Next step"
+              >
+                <ArrowRight className="size-4" />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Step dots */}
+              <div className="flex items-center gap-1">
+                {TOUR_STEPS.map((s, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      "rounded-full transition-all duration-300",
+                      i === currentStep
+                        ? "size-2 bg-primary"
+                        : i < currentStep
+                          ? "size-1.5 bg-primary/40"
+                          : "size-1.5 bg-border",
+                      s.view !== step.view && i === currentStep - 1 && "ml-1.5"
+                    )}
+                  />
+                ))}
+              </div>
+              <button
+                onClick={onClose}
+                className="text-[11px] text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
+              >
+                Skip Tour
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -909,7 +1096,7 @@ function AgentsView() {
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <LivePulse />
                       <span className="text-[10px] text-emerald-400 capitalize">{agent.status}</span>
-                      {agent.status === "active" && <AgentThinkingDots />}
+                      {agent.status === "running" && <AgentThinkingDots />}
                     </div>
                   </div>
                 </div>
@@ -2025,6 +2212,87 @@ export default function DemoDashboard() {
   const [demoView, setDemoView] = useState<DemoView>("admin");
   const [clientTab, setClientTab] = useState<ClientTabId>("overview");
 
+  // Guided tour state
+  const [tourActive, setTourActive] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
+  const [tourPlaying, setTourPlaying] = useState(true);
+  const [tourProgress, setTourProgress] = useState(0);
+  const tourTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Tour auto-advance
+  useEffect(() => {
+    if (!tourActive || !tourPlaying) {
+      if (tourTimerRef.current) clearInterval(tourTimerRef.current);
+      return;
+    }
+    const step = TOUR_STEPS[tourStep];
+    if (!step) return;
+    const totalMs = step.duration * 1000;
+    const tickMs = 100;
+    let elapsed = 0;
+    setTourProgress(0);
+    tourTimerRef.current = setInterval(() => {
+      elapsed += tickMs;
+      setTourProgress(Math.min((elapsed / totalMs) * 100, 100));
+      if (elapsed >= totalMs) {
+        if (tourStep < TOUR_STEPS.length - 1) {
+          setTourStep(prev => prev + 1);
+        } else {
+          setTourActive(false);
+          setTourPlaying(false);
+        }
+      }
+    }, tickMs);
+    return () => { if (tourTimerRef.current) clearInterval(tourTimerRef.current); };
+  }, [tourActive, tourPlaying, tourStep]);
+
+  // Sync tour step to view/tab
+  useEffect(() => {
+    if (!tourActive) return;
+    const step = TOUR_STEPS[tourStep];
+    if (!step) return;
+    setDemoView(step.view);
+    if (step.view === "admin") {
+      setActiveTab(step.tab as TabId);
+    } else {
+      setClientTab(step.tab as ClientTabId);
+    }
+  }, [tourStep, tourActive]);
+
+  const startTour = useCallback(() => {
+    setTourStep(0);
+    setTourActive(true);
+    setTourPlaying(true);
+    setTourProgress(0);
+    setDemoView("admin");
+    setActiveTab("dashboard");
+  }, []);
+
+  const tourNext = useCallback(() => {
+    if (tourStep < TOUR_STEPS.length - 1) {
+      setTourStep(prev => prev + 1);
+      setTourProgress(0);
+    }
+  }, [tourStep]);
+
+  const tourPrev = useCallback(() => {
+    if (tourStep > 0) {
+      setTourStep(prev => prev - 1);
+      setTourProgress(0);
+    }
+  }, [tourStep]);
+
+  const tourTogglePlay = useCallback(() => {
+    setTourPlaying(prev => !prev);
+    setTourProgress(0);
+  }, []);
+
+  const tourClose = useCallback(() => {
+    setTourActive(false);
+    setTourPlaying(false);
+    if (tourTimerRef.current) clearInterval(tourTimerRef.current);
+  }, []);
+
   // Live velocity simulation
   const [liveFeed, setLiveFeed] = useState(DEMO_FEED);
   const [agentThinking, setAgentThinking] = useState(false);
@@ -2043,7 +2311,7 @@ export default function DemoDashboard() {
         setAgentThinking(false);
         // Prepend new event to feed
         setLiveFeed(prev => [
-          { id: `live-${Date.now()}`, action: evt.action, detail: evt.detail, time: "just now", color: evt.color },
+          { id: Date.now(), action: evt.action, detail: evt.detail, time: "just now", color: evt.color },
           ...prev.slice(0, 9),
         ]);
         // Show notification toast
@@ -2228,6 +2496,15 @@ export default function DemoDashboard() {
           </div>
 
           <div className="flex items-center gap-3">
+            {!tourActive && (
+              <button
+                onClick={startTour}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/15 text-primary text-[11px] font-medium hover:bg-primary/25 transition-colors border border-primary/20"
+              >
+                <Play className="size-3" />
+                <span className="hidden sm:inline">Guided Tour</span>
+              </button>
+            )}
             <Link href="/demo" className="text-[11px] text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1">
               <ArrowLeft className="size-3" />
               <span className="hidden sm:inline">Back to Pitch</span>
@@ -2326,6 +2603,38 @@ export default function DemoDashboard() {
           </div>
         </main>
       </div>
+
+      {/* Tour spotlight overlay */}
+      <AnimatePresence>
+        {tourActive && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[90] pointer-events-none"
+          >
+            <div className="absolute inset-0 bg-black/20" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Tour narration overlay */}
+      <AnimatePresence>
+        {tourActive && TOUR_STEPS[tourStep] && (
+          <GuidedTourOverlay
+            step={TOUR_STEPS[tourStep]}
+            totalSteps={TOUR_STEPS.length}
+            currentStep={tourStep}
+            isPlaying={tourPlaying}
+            progress={tourProgress}
+            onNext={tourNext}
+            onPrev={tourPrev}
+            onTogglePlay={tourTogglePlay}
+            onClose={tourClose}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

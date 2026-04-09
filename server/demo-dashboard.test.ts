@@ -526,3 +526,172 @@ describe("Demo Route Configuration", () => {
     expect(context).not.toContain("RequireAuth");
   });
 });
+
+describe("Guided Tour Feature", () => {
+  const source = readFileSync(DEMO_DASHBOARD_PATH, "utf-8");
+
+  describe("Tour Steps Data", () => {
+    it("defines TourStep interface with required fields", () => {
+      expect(source).toContain("interface TourStep");
+      expect(source).toContain("view: DemoView");
+      expect(source).toContain("tab: TabId | ClientTabId");
+      expect(source).toContain("title: string");
+      expect(source).toContain("narration: string");
+      expect(source).toContain("duration: number");
+    });
+
+    it("defines TOUR_STEPS array with 18 steps (11 admin + 7 client)", () => {
+      expect(source).toContain("const TOUR_STEPS: TourStep[]");
+      // Count admin steps
+      const adminSteps = (source.match(/view: "admin"/g) || []).length;
+      const clientSteps = (source.match(/view: "client"/g) || []).length;
+      // At minimum 11 admin and 7 client tour steps (may also appear in other contexts)
+      expect(adminSteps).toBeGreaterThanOrEqual(11);
+      expect(clientSteps).toBeGreaterThanOrEqual(7);
+    });
+
+    it("covers all 11 admin tabs in tour steps", () => {
+      const adminTabs = ["dashboard", "activity", "oversight", "concierge", "agents", "blueprints", "team", "contacts", "onboard", "drafts", "settings"];
+      for (const tab of adminTabs) {
+        expect(source).toContain(`view: "admin", tab: "${tab}"`);
+      }
+    });
+
+    it("covers all 7 client tabs in tour steps", () => {
+      const clientTabs = ["overview", "ventures", "documents", "distributions", "reports", "messages", "settings"];
+      for (const tab of clientTabs) {
+        expect(source).toContain(`view: "client", tab: "${tab}"`);
+      }
+    });
+
+    it("each tour step has a narration description", () => {
+      // Extract narration strings - should have at least 18
+      const narrations = source.match(/narration: "/g) || [];
+      expect(narrations.length).toBeGreaterThanOrEqual(18);
+    });
+
+    it("each tour step has a duration in seconds", () => {
+      const durations = source.match(/duration: \d+/g) || [];
+      expect(durations.length).toBeGreaterThanOrEqual(18);
+    });
+  });
+
+  describe("Tour State Management", () => {
+    it("tracks tourActive boolean state", () => {
+      expect(source).toContain("tourActive");
+      expect(source).toContain("setTourActive");
+    });
+
+    it("tracks tourStep number state", () => {
+      expect(source).toContain("tourStep");
+      expect(source).toContain("setTourStep");
+    });
+
+    it("tracks tourPlaying boolean state for auto-advance", () => {
+      expect(source).toContain("tourPlaying");
+      expect(source).toContain("setTourPlaying");
+    });
+
+    it("tracks tourProgress for the progress bar", () => {
+      expect(source).toContain("tourProgress");
+      expect(source).toContain("setTourProgress");
+    });
+
+    it("has a startTour callback", () => {
+      expect(source).toContain("const startTour");
+    });
+
+    it("has tourNext and tourPrev callbacks", () => {
+      expect(source).toContain("const tourNext");
+      expect(source).toContain("const tourPrev");
+    });
+
+    it("has tourTogglePlay callback", () => {
+      expect(source).toContain("const tourTogglePlay");
+    });
+
+    it("has tourClose callback", () => {
+      expect(source).toContain("const tourClose");
+    });
+  });
+
+  describe("Tour UI Components", () => {
+    it("has GuidedTourOverlay component", () => {
+      expect(source).toContain("function GuidedTourOverlay");
+    });
+
+    it("GuidedTourOverlay shows step title and narration", () => {
+      expect(source).toContain("step.title");
+      expect(source).toContain("step.narration");
+    });
+
+    it("shows step counter (Step X of Y)", () => {
+      expect(source).toContain("Step {currentStep + 1} of {totalSteps}");
+    });
+
+    it("has play/pause toggle button", () => {
+      expect(source).toContain("onTogglePlay");
+      expect(source).toContain("Pause tour");
+      expect(source).toContain("Play tour");
+    });
+
+    it("has next/previous navigation buttons", () => {
+      expect(source).toContain("onNext");
+      expect(source).toContain("onPrev");
+      expect(source).toContain("Previous step");
+      expect(source).toContain("Next step");
+    });
+
+    it("has skip/close tour button", () => {
+      expect(source).toContain("Skip Tour");
+      expect(source).toContain("onClose");
+      expect(source).toContain("Close tour");
+    });
+
+    it("shows progress bar with gradient", () => {
+      expect(source).toContain("bg-gradient-to-r from-primary to-cyan-400");
+    });
+
+    it("shows ADMIN/CLIENT badge based on current step view", () => {
+      expect(source).toContain('"ADMIN"');
+      expect(source).toContain('"CLIENT"');
+    });
+
+    it("shows step dots for navigation", () => {
+      expect(source).toContain("TOUR_STEPS.map");
+    });
+  });
+
+  describe("Tour Integration", () => {
+    it("has Start Tour / Guided Tour button in demo banner", () => {
+      expect(source).toContain("Guided Tour");
+      expect(source).toContain("startTour");
+    });
+
+    it("hides Start Tour button when tour is active", () => {
+      expect(source).toContain("!tourActive");
+    });
+
+    it("renders GuidedTourOverlay when tour is active", () => {
+      expect(source).toContain("tourActive && TOUR_STEPS[tourStep]");
+      expect(source).toContain("<GuidedTourOverlay");
+    });
+
+    it("has spotlight overlay when tour is active", () => {
+      expect(source).toContain("Tour spotlight overlay");
+      expect(source).toContain("bg-black/20");
+    });
+
+    it("syncs tour step to view and tab", () => {
+      expect(source).toContain("Sync tour step to view/tab");
+      expect(source).toContain("setDemoView(step.view)");
+      expect(source).toContain("setActiveTab(step.tab as TabId)");
+      expect(source).toContain("setClientTab(step.tab as ClientTabId)");
+    });
+
+    it("auto-advances tour steps based on duration", () => {
+      expect(source).toContain("Tour auto-advance");
+      expect(source).toContain("tourTimerRef");
+    });
+  });
+});
