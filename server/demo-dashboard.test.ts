@@ -230,9 +230,8 @@ describe("Demo Dashboard", () => {
   });
 
   describe("Demo Banner and Navigation", () => {
-    it("shows INVESTOR DEMO — READ-ONLY VIEW banner", () => {
+    it("shows INVESTOR DEMO banner", () => {
       expect(source).toContain("INVESTOR DEMO");
-      expect(source).toContain("READ-ONLY VIEW");
     });
 
     it("has Back to Pitch link", () => {
@@ -248,6 +247,157 @@ describe("Demo Dashboard", () => {
     it("has mobile navigation dropdown", () => {
       expect(source).toContain("<select");
       expect(source).toContain("lg:hidden");
+    });
+  });
+
+  describe("Admin/Client View Toggle", () => {
+    it("has a DemoView type with admin and client options", () => {
+      expect(source).toContain('type DemoView = "admin" | "client"');
+    });
+
+    it("has Admin View and Client View toggle buttons", () => {
+      expect(source).toContain("Admin View");
+      expect(source).toContain("Client View");
+    });
+
+    it("tracks demoView state", () => {
+      expect(source).toContain('useState<DemoView>("admin")');
+    });
+
+    it("shows WHAT THE OPERATOR SEES for admin view", () => {
+      expect(source).toContain("WHAT THE OPERATOR SEES");
+    });
+
+    it("shows WHAT THE CLIENT SEES for client view", () => {
+      expect(source).toContain("WHAT THE CLIENT SEES");
+    });
+
+    it("renders admin sidebar with OPERATOR PANEL label", () => {
+      expect(source).toContain("OPERATOR PANEL");
+    });
+
+    it("renders client sidebar with CLIENT PORTAL label", () => {
+      expect(source).toContain("CLIENT PORTAL");
+    });
+
+    it("client sidebar has appropriate nav items", () => {
+      expect(source).toContain("My Ventures");
+      expect(source).toContain("Documents");
+      expect(source).toContain("Distributions");
+      expect(source).toContain("Reports");
+      expect(source).toContain("Messages");
+    });
+
+    it("client sidebar shows a sample client name", () => {
+      expect(source).toContain("Ahmed Al Rashid");
+      expect(source).toContain("Al Rashid Group");
+    });
+
+    it("conditionally renders ClientPortalDemoView for client mode", () => {
+      expect(source).toContain("ClientPortalDemoView");
+    });
+
+    it("uses AnimatePresence for smooth view transitions", () => {
+      expect(source).toContain('AnimatePresence mode="wait"');
+    });
+  });
+
+  describe("Annotation System", () => {
+    it("has ADMIN_ANNOTATIONS with descriptions for all admin tabs", () => {
+      expect(source).toContain("ADMIN_ANNOTATIONS");
+      const adminTabs = ["dashboard", "activity", "oversight", "concierge", "agents", "blueprints", "team", "contacts", "onboard", "drafts", "settings"];
+      for (const tab of adminTabs) {
+        expect(source).toContain(`${tab}: { title:`);
+      }
+    });
+
+    it("has CLIENT_ANNOTATIONS with descriptions for client portal sections", () => {
+      expect(source).toContain("CLIENT_ANNOTATIONS");
+      const clientSections = ["velocitySummary", "actionNeeded", "completed", "portfolio", "health", "forecasts", "market", "chat"];
+      for (const section of clientSections) {
+        expect(source).toContain(`${section}: { title:`);
+      }
+    });
+
+    it("has an Annotation tooltip component", () => {
+      expect(source).toContain("function Annotation");
+      expect(source).toContain("annotations");
+    });
+
+    it("renders annotation tooltips in admin header", () => {
+      expect(source).toContain('annotations={ADMIN_ANNOTATIONS}');
+    });
+
+    it("renders annotation tooltips in client portal sections", () => {
+      expect(source).toContain('annotations={CLIENT_ANNOTATIONS}');
+    });
+  });
+
+  describe("Client Portal Demo View", () => {
+    it("has ClientPortalDemoView function", () => {
+      expect(source).toContain("function ClientPortalDemoView");
+    });
+
+    it("shows AI Briefing section", () => {
+      expect(source).toContain("AI Briefing");
+    });
+
+    it("shows Action Needed section with action cards", () => {
+      expect(source).toContain("Action Needed");
+      expect(source).toContain("CLIENT_DEMO_FEED");
+    });
+
+    it("shows Completed section", () => {
+      expect(source).toContain("CLIENT_DEMO_COMPLETED");
+    });
+
+    it("shows Your Portfolio section with venture cards", () => {
+      expect(source).toContain("Your Portfolio");
+      expect(source).toContain("CLIENT_DEMO_PORTFOLIO");
+    });
+
+    it("shows Portfolio Health score", () => {
+      expect(source).toContain("Portfolio Health");
+    });
+
+    it("shows Venture Forecasts with AI projections", () => {
+      expect(source).toContain("Venture Forecasts");
+      expect(source).toContain("CLIENT_DEMO_FORECASTS");
+    });
+
+    it("shows Market Intelligence with sector signals", () => {
+      expect(source).toContain("Market Intelligence");
+      expect(source).toContain("CLIENT_DEMO_SIGNALS");
+    });
+
+    it("shows Portfolio Assistant chat preview", () => {
+      expect(source).toContain("Portfolio Assistant");
+    });
+
+    it("includes venture stage indicators", () => {
+      expect(source).toContain("Negotiation");
+      expect(source).toContain("Due Diligence");
+      expect(source).toContain("Active");
+      expect(source).toContain("Closing");
+    });
+
+    it("includes momentum/velocity data for ventures", () => {
+      expect(source).toContain("projectedDays");
+      expect(source).toContain("confidence");
+      expect(source).toContain("velocityVsBenchmark");
+    });
+  });
+
+  describe("Team Photos", () => {
+    it("includes photo URLs for team members", () => {
+      expect(source).toContain("photo:");
+      // Check CDN URLs are present
+      expect(source).toContain("cloudfront.net");
+    });
+
+    it("renders photos with img tags when available", () => {
+      expect(source).toContain("(member as any).photo");
+      expect(source).toContain('<img src={(member as any).photo}');
     });
   });
 

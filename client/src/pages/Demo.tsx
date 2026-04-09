@@ -121,6 +121,7 @@ const TEAM = [
     role: "Founder & CEO",
     age: "19",
     color: "#22D3EE",
+    photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee_26a656c5.webp",
     bio: "19 years old. Built ATLAS from the ground up — 77,580+ lines of production code, 5 AI intelligence engines, an enterprise-grade platform targeting a $6 trillion market. He didn't study the problem. He watched it happen inside a UHNWI holding company and spent the next year building the solution. Most founders his age are still in class.",
   },
   {
@@ -129,6 +130,7 @@ const TEAM = [
     role: "COO",
     age: "17",
     color: "#A78BFA",
+    photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/brian-chen_b535f902.jpeg",
     bio: "17 years old. Runs operations and contributed the intelligence behind ATLAS's AI agents, including the Mirofish prediction system. Still in high school — but already operating at a level most professionals never reach. Ambitious, relentless, and built different from anyone his age.",
   },
   {
@@ -137,6 +139,7 @@ const TEAM = [
     role: "CRO",
     age: null,
     color: "#22C55E",
+    photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/chris-phelps_c7e7c272.jpeg",
     bio: "Self-taught into the Chief Revenue Officer role. College grad who learned enterprise sales by doing it. Drives go-to-market execution and client acquisition strategy for ATLAS.",
   },
 ];
@@ -810,14 +813,14 @@ export default function Demo() {
             {TEAM.map((t, i) => (
               <RevealSection key={t.name} delay={i * 0.15}>
                 <div className="border border-white/8 rounded-lg overflow-hidden hover:border-white/15 transition-colors">
-                  {/* Initials avatar */}
-                  <div className="aspect-[4/3] flex items-center justify-center" style={{ backgroundColor: `${t.color}08` }}>
-                    <div
-                      className="flex items-center justify-center size-24 rounded-full text-3xl font-bold tracking-wider"
-                      style={{ backgroundColor: `${t.color}15`, color: t.color, fontFamily: HEADLINE_FONT }}
-                    >
-                      {t.initials}
-                    </div>
+                  {/* Team photo */}
+                  <div className="aspect-[4/3] relative overflow-hidden" style={{ backgroundColor: `${t.color}08` }}>
+                    <img
+                      src={t.photo}
+                      alt={t.name}
+                      className="w-full h-full object-cover object-top"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   </div>
                   {/* Info */}
                   <div className="p-5">

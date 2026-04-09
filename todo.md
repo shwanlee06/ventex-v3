@@ -2230,3 +2230,17 @@
 - [x] PITCH-UPD-3: Add real codebase stats (LOC, features, tests, DB tables, AI agents)
 - [x] PITCH-UPD-4: Update metrics section with actual build stats
 - [x] PITCH-UPD-5: Verify and test updated pitch deck
+
+## Guided Investor Demo — Admin & Client Views Explained (Apr 09)
+- [x] GUIDE-1: Add view switcher (Admin View / Client View) to demo dashboard header
+- [x] GUIDE-2: Admin View — annotated dashboard with component explanations (tooltips/overlays)
+- [x] GUIDE-3: Admin View — all sidebar tabs with "what this does" annotations
+- [x] GUIDE-4: Client Portal View — build demo version of client-facing portal
+- [x] GUIDE-5: Client Portal View — annotated with "what the client sees" explanations
+- [x] GUIDE-6: Component legend/guide panel — annotation tooltips on each section header
+- [x] GUIDE-7: Verify both views render correctly and test (66 demo tests + 721 total pass)
+
+## Team Photos (Apr 09)
+- [x] PHOTO-1: Upload Shwan, Brian, Chris photos to CDN
+- [x] PHOTO-2: Integrate real photos into Demo.tsx pitch deck team section
+- [x] PHOTO-3: Integrate real photos into DemoDashboard team view

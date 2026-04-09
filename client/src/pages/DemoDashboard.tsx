@@ -14,10 +14,13 @@ import {
   MessageSquare, Send, Paperclip, BarChart3, ShieldCheck, FileWarning,
   Mail, Phone, Globe, Plus, ChevronDown, Hash, Folder, PenLine, Calendar,
   CircleDot, Filter, MoreHorizontal, Play, Pause, RefreshCw, Sparkles,
+  Info, ArrowRight, Package, Wallet, Monitor,
 } from "lucide-react";
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useState, useRef } from "react";
 import { Link, useLocation } from "wouter";
+
+type DemoView = "admin" | "client";
 
 /* ─── Static demo data ─── */
 const DEMO_CLIENTS = [
@@ -75,9 +78,9 @@ const DEMO_AGENTS = [
 ];
 
 const DEMO_TEAM = [
-  { name: "Shwan Lee", role: "Founder & CEO", email: "shwan@aurovia.co", status: "online" as const, ventures: 12, tasks: 3, avatar: "SL" },
-  { name: "Brian Chen", role: "COO", email: "brian@aurovia.co", status: "online" as const, ventures: 8, tasks: 5, avatar: "BC" },
-  { name: "Chris Phelps", role: "CRO", email: "chris@aurovia.co", status: "online" as const, ventures: 10, tasks: 4, avatar: "CP" },
+  { name: "Shwan Lee", role: "Founder & CEO", email: "shwan@aurovia.co", status: "online" as const, ventures: 12, tasks: 3, avatar: "SL", photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee_26a656c5.webp" },
+  { name: "Brian Chen", role: "COO", email: "brian@aurovia.co", status: "online" as const, ventures: 8, tasks: 5, avatar: "BC", photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/brian-chen_b535f902.jpeg" },
+  { name: "Chris Phelps", role: "CRO", email: "chris@aurovia.co", status: "online" as const, ventures: 10, tasks: 4, avatar: "CP", photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/chris-phelps_c7e7c272.jpeg" },
   { name: "Anton Keller", role: "Head of Operations", email: "anton@atlas.co", status: "online" as const, ventures: 15, tasks: 6, avatar: "AK" },
   { name: "Maher Haddad", role: "Compliance Lead", email: "maher@atlas.co", status: "away" as const, ventures: 8, tasks: 3, avatar: "MH" },
   { name: "Jon Mercer", role: "Deal Structuring", email: "jon@atlas.co", status: "offline" as const, ventures: 6, tasks: 2, avatar: "JM" },
@@ -135,6 +138,114 @@ const DEMO_NAV: { label: string; icon: React.ReactNode; id: TabId }[] = [
 ];
 
 const ATLAS_LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/atlas-logo-G2SBqxAK64sZYAYmAZY9js.webp";
+
+/* ─── Annotation descriptions for investor understanding ─── */
+const ADMIN_ANNOTATIONS: Record<string, { title: string; desc: string }> = {
+  dashboard: { title: "Command Center", desc: "The operator's real-time overview of all client portfolios, AI agent activity, and priority tasks. This is where the ATLAS team manages everything from one screen." },
+  activity: { title: "Activity Log", desc: "A complete audit trail of every action — both human and AI. Operators can filter by type and see exactly what happened, when, and by whom." },
+  oversight: { title: "Portfolio Oversight", desc: "Risk monitoring and compliance tracking across all clients. Health scores, risk alerts, and regulatory status are updated in real-time by AI agents." },
+  concierge: { title: "AI Concierge", desc: "A conversational AI assistant that understands the entire portfolio. Operators can ask questions, draft communications, and get instant briefings." },
+  agents: { title: "AI Agents", desc: "Four autonomous AI agents that run 24/7 — monitoring overdue tasks, tracking velocity, flagging distributions, and watching compliance deadlines." },
+  blueprints: { title: "Venture Blueprints", desc: "A visual pipeline showing every venture across stages (Negotiation → Due Diligence → Active → Closing). Operators see progress at a glance." },
+  team: { title: "ATLAS Team", desc: "Team management with real-time status, venture assignments, and task loads. The operator sees who is available and how work is distributed." },
+  contacts: { title: "Client Contacts", desc: "A centralized directory of all client contacts organized by organization. One-click access to email and phone for every stakeholder." },
+  onboard: { title: "Client Onboarding", desc: "A structured 5-step wizard for onboarding new clients — from KYC to compliance review to portal access. Ensures nothing is missed." },
+  drafts: { title: "AI-Generated Drafts", desc: "The AI Concierge auto-generates follow-up emails, reports, and documents based on portfolio activity. Operators review and send with one click." },
+  settings: { title: "System Settings", desc: "Configuration for the entire platform — notifications, AI agent thresholds, integrations, and security settings." },
+};
+
+const CLIENT_ANNOTATIONS: Record<string, { title: string; desc: string }> = {
+  velocitySummary: { title: "AI Briefing", desc: "An AI-generated one-line summary of the client's portfolio status. Updated in real-time as ventures progress." },
+  actionNeeded: { title: "Action Needed", desc: "Smart cards that surface decisions requiring the client's attention — stage advances, approvals, and unblocked ventures. Each has a one-click action button." },
+  completed: { title: "Completed Updates", desc: "A feed of recently completed actions so clients see progress without having to ask. Builds trust through transparency." },
+  portfolio: { title: "Venture Portfolio", desc: "Each venture card shows real-time stage, velocity momentum, risk factors, and AI-projected timelines. Clients see exactly where their investments stand." },
+  health: { title: "Portfolio Health Score", desc: "An AI-calculated score (0-100) that aggregates velocity, task completion, risk factors, and compliance status across all ventures." },
+  forecasts: { title: "AI Forecasts", desc: "Machine learning projections for each venture — estimated days to next stage, confidence levels, and risk factors. Clients see the future, not just the present." },
+  market: { title: "Market Intelligence", desc: "AI-curated sector signals — opportunities, risks, and regulatory changes relevant to the client's portfolio. Proactive, not reactive." },
+  chat: { title: "Portfolio Assistant", desc: "A personal AI assistant that knows the client's entire portfolio. Ask about venture status, overdue tasks, distributions — instant answers." },
+};
+
+/* ─── Annotation tooltip component ─── */
+function Annotation({ id, annotations, className = "" }: { id: string; annotations: Record<string, { title: string; desc: string }>; className?: string }) {
+  const [open, setOpen] = useState(false);
+  const a = annotations[id];
+  if (!a) return null;
+  return (
+    <div className={cn("relative inline-flex", className)}>
+      <button
+        onClick={() => setOpen(!open)}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        className="size-5 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
+        aria-label={`Info: ${a.title}`}
+      >
+        <Info className="size-3 text-primary" />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 4, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 4, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute z-50 bottom-full mb-2 left-1/2 -translate-x-1/2 w-72 bg-card border border-primary/20 rounded-lg p-3 shadow-xl"
+          >
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="size-1.5 rounded-full bg-primary" />
+              <span className="text-[11px] font-semibold text-primary">{a.title}</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">{a.desc}</p>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
+              <div className="w-2 h-2 bg-card border-r border-b border-primary/20 rotate-45" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ─── Client Portal Demo Data ─── */
+const CLIENT_DEMO_FEED = [
+  { id: 1, type: "action" as const, summary: "Marina Bay Tower is ready to advance from Due Diligence to Closing", ventureName: "Marina Bay Tower", actionLabel: "Advance Status", date: "2 hours ago" },
+  { id: 2, type: "action" as const, summary: "Q1 distribution of $2.4M for Meridian F&B Hub requires your confirmation", ventureName: "Meridian F&B Hub", actionLabel: "Confirm Distribution", date: "4 hours ago" },
+  { id: 3, type: "action" as const, summary: "Legal review completed — approve follow-up letter for Northstar Refinery", ventureName: "Northstar Refinery", actionLabel: "Review & Approve", date: "6 hours ago" },
+];
+
+const CLIENT_DEMO_COMPLETED = [
+  { id: 4, summary: "KYC renewal documents submitted for Northstar Capital", ventureName: "Northstar Capital", date: "Yesterday" },
+  { id: 5, summary: "Annual audit report uploaded for Sovereign Tower II", ventureName: "Sovereign Tower II", date: "2 days ago" },
+  { id: 6, summary: "Board meeting minutes filed for Meridian Holdings", ventureName: "Meridian Holdings", date: "3 days ago" },
+];
+
+const CLIENT_DEMO_PORTFOLIO = [
+  { id: 1, name: "Marina Bay Tower", sector: "Real Estate", stage: "Closing", statusLine: "Final documents under review", momentum: { projectedDays: 12, confidence: 88, velocityVsBenchmark: "faster" as const, benchmarkDays: 21 } },
+  { id: 2, name: "Dubai Creek Residences", sector: "Real Estate", stage: "Due Diligence", statusLine: "Environmental assessment in progress", momentum: { projectedDays: 34, confidence: 72, velocityVsBenchmark: "on_pace" as const, benchmarkDays: 35 } },
+  { id: 3, name: "Meridian F&B Hub", sector: "F&B", stage: "Active", statusLine: "Construction phase — 68% complete", momentum: { projectedDays: 45, confidence: 81, velocityVsBenchmark: "faster" as const, benchmarkDays: 60 } },
+  { id: 4, name: "Northstar Refinery", sector: "Oil & Gas", stage: "Active", statusLine: "Regulatory permits approved", momentum: { projectedDays: 28, confidence: 65, velocityVsBenchmark: "slower" as const, benchmarkDays: 20, riskLevel: "medium" as const, riskFactors: ["Supply chain delays", "Permit renewal pending"] } },
+  { id: 5, name: "Pacific Yacht Club", sector: "Yacht", stage: "Due Diligence", statusLine: "Structural survey scheduled", momentum: { projectedDays: 42, confidence: 58, velocityVsBenchmark: "slower" as const, benchmarkDays: 30, riskLevel: "high" as const, riskFactors: ["3 overdue tasks", "Vendor unresponsive"] } },
+  { id: 6, name: "Sovereign Tower II", sector: "Real Estate", stage: "Closing", statusLine: "Title transfer in progress", momentum: { projectedDays: 8, confidence: 94, velocityVsBenchmark: "faster" as const, benchmarkDays: 15 } },
+];
+
+const CLIENT_DEMO_FORECASTS = [
+  { ventureName: "Marina Bay Tower", projectedDays: 12, confidence: 88, riskLevel: "low" },
+  { ventureName: "Dubai Creek Residences", projectedDays: 34, confidence: 72, riskLevel: "medium", riskFactors: ["Environmental review pending"] },
+  { ventureName: "Pacific Yacht Club", projectedDays: 42, confidence: 58, riskLevel: "high", riskFactors: ["3 overdue tasks", "Vendor delays", "Survey rescheduled"] },
+];
+
+const CLIENT_DEMO_SIGNALS = [
+  { sector: "Real Estate", signalType: "opportunity", headline: "Dubai Marina demand up 18% YoY", impact: "Favorable conditions for Marina Bay Tower closing timeline", relevance: 92 },
+  { sector: "Oil & Gas", signalType: "regulatory", headline: "New UAE energy efficiency standards", impact: "Northstar Refinery may need compliance updates by Q3", relevance: 78 },
+  { sector: "F&B", signalType: "opportunity", headline: "Tourism sector growth accelerating", impact: "Meridian F&B Hub positioned to benefit from 23% visitor increase", relevance: 85 },
+];
+
+const SECTOR_ICONS: Record<string, React.ReactNode> = {
+  "Real Estate": <Building2 className="size-4" />,
+  "F&B": <Package className="size-4" />,
+  "Oil & Gas": <Zap className="size-4" />,
+  "Yacht": <Briefcase className="size-4" />,
+  "Entertainment": <Monitor className="size-4" />,
+};
 
 /* ─── Helper components ─── */
 function HealthBadge({ health }: { health: "excellent" | "good" | "warning" | "critical" }) {
@@ -783,7 +894,11 @@ function TeamView() {
             <div className="bg-card border border-border rounded-lg p-4 hover:border-primary/30 transition-all cursor-default">
               <div className="flex items-center gap-3 mb-3">
                 <div className="relative">
-                  <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-semibold text-primary">{member.avatar}</div>
+                  {(member as any).photo ? (
+                    <img src={(member as any).photo} alt={member.name} className="size-10 rounded-full object-cover" />
+                  ) : (
+                    <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-semibold text-primary">{member.avatar}</div>
+                  )}
                   <span className={cn("absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-card",
                     member.status === "online" ? "bg-emerald-400" : member.status === "away" ? "bg-amber-400" : "bg-muted-foreground/40"
                   )} />
@@ -1029,6 +1144,310 @@ function SettingsView() {
   );
 }
 
+/* ─── Client Portal Demo View ─── */
+function ClientPortalDemoView() {
+  const STAGES = ["Negotiation", "Due Diligence", "Active", "Closing"];
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-semibold text-foreground">Welcome back, Ahmed</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">Al Rashid Group · Managed by ATLAS</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-muted-foreground">Last login: Today, 9:14 AM</span>
+        </div>
+      </div>
+
+      {/* AI Briefing */}
+      <FadeIn>
+        <div className="bg-primary/5 border border-primary/10 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="size-4 text-primary" />
+            <span className="text-[11px] font-semibold text-primary uppercase tracking-wider">AI Briefing</span>
+            <Annotation id="velocitySummary" annotations={CLIENT_ANNOTATIONS} />
+          </div>
+          <p className="text-sm text-foreground leading-relaxed">
+            Your portfolio is performing well. Marina Bay Tower is ready for closing, and Sovereign Tower II title transfer is ahead of schedule. One item needs your attention: Pacific Yacht Club has 3 overdue tasks.
+          </p>
+        </div>
+      </FadeIn>
+
+      {/* Action Needed */}
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <AlertTriangle className="size-4 text-amber-400" />
+          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Action Needed</h2>
+          <Annotation id="actionNeeded" annotations={CLIENT_ANNOTATIONS} />
+          <span className="text-[11px] text-amber-400 ml-auto font-medium">{CLIENT_DEMO_FEED.length} items</span>
+        </div>
+        <div className="space-y-2">
+          {CLIENT_DEMO_FEED.map((item, i) => (
+            <FadeIn key={item.id} delay={i * 0.05}>
+              <div className="bg-card border border-amber-500/20 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="size-2 rounded-full bg-amber-400 mt-2 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-medium text-foreground mb-1">{item.ventureName}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{item.summary}</p>
+                    <span className="text-[11px] text-muted-foreground/50 mt-1 block">{item.date}</span>
+                  </div>
+                  <button className="flex-shrink-0 px-3 py-1.5 text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-md hover:bg-amber-500/20 transition-colors">
+                    {item.actionLabel}
+                  </button>
+                </div>
+              </div>
+            </FadeIn>
+          ))}
+        </div>
+      </section>
+
+      {/* Completed */}
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <CheckCircle2 className="size-4 text-emerald-400" />
+          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Completed</h2>
+          <Annotation id="completed" annotations={CLIENT_ANNOTATIONS} />
+          <span className="text-[11px] text-muted-foreground ml-auto">{CLIENT_DEMO_COMPLETED.length} updates</span>
+        </div>
+        <div className="bg-card border border-emerald-500/15 rounded-xl divide-y divide-border">
+          {CLIENT_DEMO_COMPLETED.map((item, i) => (
+            <FadeIn key={item.id} delay={i * 0.03}>
+              <div className="p-4 flex items-start gap-3">
+                <div className="size-1.5 rounded-full mt-2 flex-shrink-0 bg-emerald-400" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-foreground leading-relaxed">{item.summary}</p>
+                  <div className="flex items-center gap-3 mt-1.5">
+                    <span className="text-[11px] text-muted-foreground">{item.ventureName}</span>
+                    <span className="text-[11px] text-muted-foreground/60">{item.date}</span>
+                  </div>
+                </div>
+              </div>
+            </FadeIn>
+          ))}
+        </div>
+      </section>
+
+      {/* Portfolio */}
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <Briefcase className="size-4 text-primary" />
+          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Your Portfolio</h2>
+          <Annotation id="portfolio" annotations={CLIENT_ANNOTATIONS} />
+          <span className="text-[11px] text-muted-foreground ml-auto">{CLIENT_DEMO_PORTFOLIO.length} ventures</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {CLIENT_DEMO_PORTFOLIO.map((v, i) => (
+            <FadeIn key={v.id} delay={0.05 + i * 0.04}>
+              <div className="bg-card border border-border rounded-xl p-4 hover:border-primary/20 transition-colors group">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">{SECTOR_ICONS[v.sector] || <Package className="size-4" />}</span>
+                    <span className="text-xs text-muted-foreground">{v.sector}</span>
+                  </div>
+                  <ChevronRight className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <h3 className="text-sm font-medium text-foreground mb-1">{v.name}</h3>
+                <p className="text-xs text-muted-foreground mb-2">{v.statusLine}</p>
+
+                {/* Stage indicator */}
+                <div className="space-y-1.5 mb-3">
+                  <div className="flex items-center gap-1">
+                    {STAGES.map((stage, si) => {
+                      const stageIdx = STAGES.indexOf(v.stage);
+                      const isCurrent = si === stageIdx;
+                      const isPast = si < stageIdx;
+                      return (
+                        <div key={stage} className="flex-1">
+                          <div className={cn("h-1.5 rounded-full", isPast ? "bg-primary" : isCurrent ? "bg-primary/60" : "bg-secondary")} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground/60">{v.stage}</span>
+                </div>
+
+                {/* Momentum */}
+                {v.momentum && (
+                  <div className="pt-3 border-t border-border">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <Zap className={cn("size-3",
+                          v.momentum.velocityVsBenchmark === "faster" ? "text-emerald-400" :
+                          v.momentum.velocityVsBenchmark === "slower" ? "text-red-400" : "text-amber-400"
+                        )} />
+                        <span className="text-[10px] font-medium text-foreground">{v.momentum.projectedDays}d projected</span>
+                      </div>
+                      <span className={cn("text-[9px] font-medium px-1.5 py-0.5 rounded-full",
+                        v.momentum.velocityVsBenchmark === "faster" ? "bg-emerald-500/10 text-emerald-400" :
+                        v.momentum.velocityVsBenchmark === "slower" ? "bg-red-500/10 text-red-400" :
+                        "bg-amber-500/10 text-amber-400"
+                      )}>
+                        {v.momentum.velocityVsBenchmark === "faster" ? "↑ Ahead" : v.momentum.velocityVsBenchmark === "slower" ? "↓ Behind" : "→ On pace"}
+                        {v.momentum.benchmarkDays ? ` vs ${v.momentum.benchmarkDays}d avg` : ""}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-muted rounded-full h-1">
+                        <div className={cn("h-1 rounded-full transition-all duration-500",
+                          v.momentum.confidence >= 70 ? "bg-emerald-400" : v.momentum.confidence >= 40 ? "bg-amber-400" : "bg-red-400"
+                        )} style={{ width: `${Math.min(v.momentum.confidence, 100)}%` }} />
+                      </div>
+                      <span className="text-[9px] font-mono text-muted-foreground">{v.momentum.confidence}%</span>
+                    </div>
+                    {(v.momentum as any).riskFactors && (v.momentum as any).riskFactors.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {(v.momentum as any).riskFactors.slice(0, 2).map((rf: string, j: number) => (
+                          <span key={j} className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/5 text-red-400/80">{rf}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </FadeIn>
+          ))}
+        </div>
+      </section>
+
+      {/* Portfolio Health */}
+      <FadeIn>
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <Zap className="size-4 text-primary" />
+            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Portfolio Health</h2>
+            <Annotation id="health" annotations={CLIENT_ANNOTATIONS} />
+          </div>
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold font-mono tracking-tight text-emerald-400">82</span>
+                  <span className="text-xs text-muted-foreground">/100</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Overall portfolio health score</p>
+              </div>
+              <div className="text-right">
+                <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400">
+                  ↑ improving
+                </div>
+                <p className="text-[11px] text-amber-400 mt-1">1 venture at risk</p>
+              </div>
+            </div>
+            <div className="w-full bg-muted rounded-full h-2">
+              <motion.div className="h-2 rounded-full bg-emerald-400" initial={{ width: 0 }} animate={{ width: "82%" }} transition={{ duration: 1, delay: 0.3 }} />
+            </div>
+          </div>
+        </section>
+      </FadeIn>
+
+      {/* Forecasts */}
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <Clock className="size-4 text-primary" />
+          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Venture Forecasts</h2>
+          <Annotation id="forecasts" annotations={CLIENT_ANNOTATIONS} />
+          <span className="text-[11px] text-muted-foreground ml-auto">AI-projected timelines</span>
+        </div>
+        <div className="space-y-2">
+          {CLIENT_DEMO_FORECASTS.map((f, i) => (
+            <FadeIn key={f.ventureName} delay={i * 0.04}>
+              <div className="bg-card border border-border rounded-xl p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <h3 className="text-sm font-medium text-foreground">{f.ventureName}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">Projected: <span className="font-mono">{f.projectedDays}</span> days to next status</p>
+                  </div>
+                  <div className={cn("px-2 py-0.5 rounded-full text-[10px] font-medium",
+                    f.riskLevel === "low" ? "bg-emerald-500/10 text-emerald-400" :
+                    f.riskLevel === "medium" ? "bg-amber-500/10 text-amber-400" : "bg-red-500/10 text-red-400"
+                  )}>{f.riskLevel} risk</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 bg-muted rounded-full h-1.5">
+                    <motion.div className="h-1.5 rounded-full bg-primary/60" initial={{ width: 0 }} animate={{ width: `${Math.min(f.confidence, 100)}%` }} transition={{ duration: 0.8, delay: 0.2 + i * 0.1 }} />
+                  </div>
+                  <span className="text-[10px] font-mono text-muted-foreground">{f.confidence}% confidence</span>
+                </div>
+                {f.riskFactors && f.riskFactors.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {f.riskFactors.map((rf, j) => (
+                      <span key={j} className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{rf}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </FadeIn>
+          ))}
+        </div>
+      </section>
+
+      {/* Market Intelligence */}
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <ArrowRight className="size-4 text-primary" />
+          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Market Intelligence</h2>
+          <Annotation id="market" annotations={CLIENT_ANNOTATIONS} />
+          <span className="text-[11px] text-muted-foreground ml-auto">Sector signals</span>
+        </div>
+        <div className="space-y-2">
+          {CLIENT_DEMO_SIGNALS.map((s, i) => (
+            <FadeIn key={i} delay={i * 0.04}>
+              <div className="bg-card border border-border rounded-xl p-4">
+                <div className="flex items-start justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">{SECTOR_ICONS[s.sector] || <Package className="size-4" />}</span>
+                    <span className="text-[11px] text-muted-foreground">{s.sector}</span>
+                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded",
+                      s.signalType === "opportunity" ? "bg-emerald-500/10 text-emerald-400" :
+                      s.signalType === "regulatory" ? "bg-amber-500/10 text-amber-400" :
+                      "bg-red-500/10 text-red-400"
+                    )}>{s.signalType}</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-muted-foreground">{s.relevance}% relevant</span>
+                </div>
+                <h3 className="text-sm font-medium text-foreground mb-1">{s.headline}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">{s.impact}</p>
+              </div>
+            </FadeIn>
+          ))}
+        </div>
+      </section>
+
+      {/* AI Chat hint */}
+      <FadeIn>
+        <div className="bg-card border border-primary/20 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <MessageSquare className="size-4 text-primary" />
+            <span className="text-[11px] font-semibold text-primary uppercase tracking-wider">Portfolio Assistant</span>
+            <Annotation id="chat" annotations={CLIENT_ANNOTATIONS} />
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">Clients have a personal AI assistant that can answer questions about their portfolio in real-time.</p>
+          <div className="bg-secondary/30 rounded-lg p-3 space-y-2">
+            <div className="flex justify-start">
+              <div className="bg-secondary/50 rounded-lg px-3 py-2 max-w-[85%]">
+                <p className="text-xs text-foreground">What's the status of Marina Bay Tower?</p>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <div className="bg-primary text-primary-foreground rounded-lg px-3 py-2 max-w-[85%]">
+                <p className="text-xs">Marina Bay Tower is in the Closing stage. Final documents are under review, and the projected completion is 12 days. The deal is ahead of the 21-day benchmark.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </FadeIn>
+
+      {/* Footer */}
+      <div className="pt-4 pb-8 text-center">
+        <p className="text-[11px] text-muted-foreground/40">Managed by ATLAS · Powered by Aurovia</p>
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════ */
 /* ─── MAIN COMPONENT ─── */
 /* ═══════════════════════════════════════════════════════════════════════════ */
@@ -1037,6 +1456,7 @@ export default function DemoDashboard() {
   const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
+  const [demoView, setDemoView] = useState<DemoView>("admin");
 
   const TAB_TITLES: Record<TabId, string> = {
     dashboard: "Dashboard",
@@ -1055,59 +1475,150 @@ export default function DemoDashboard() {
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground">
       {/* ── Sidebar ── */}
-      <aside className="hidden lg:flex flex-col w-[220px] border-r border-border bg-card/50 shrink-0">
-        <div className="h-14 flex items-center gap-2.5 px-4 border-b border-border">
-          <img src={ATLAS_LOGO_URL} alt="ATLAS" className="size-7 rounded-md" />
-          <div className="flex flex-col">
-            <span className="text-[11px] font-semibold tracking-[0.12em] text-foreground">ATLAS</span>
-            <span className="text-[9px] text-muted-foreground tracking-wider">VELOCITY AI</span>
-          </div>
-        </div>
-
-        <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
-          {DEMO_NAV.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={cn(
-                "w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] transition-colors",
-                activeTab === item.id
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-              )}
-            >
-              {item.icon}
-              <span>{item.label}</span>
-              {item.id === "drafts" && (
-                <span className="ml-auto text-[10px] font-mono bg-primary/20 text-primary px-1.5 py-0.5 rounded">{DEMO_DRAFTS.filter(d => d.status === "ready").length}</span>
-              )}
-            </button>
-          ))}
-        </nav>
-
-        <div className="border-t border-border p-3">
-          <div className="flex items-center gap-2.5">
-            <div className="size-8 rounded-full bg-primary/20 flex items-center justify-center text-[11px] font-semibold text-primary">IV</div>
-            <div className="flex flex-col">
-              <span className="text-xs font-medium text-foreground">Investor View</span>
-              <span className="text-[10px] text-muted-foreground">Read-only demo</span>
+      <AnimatePresence mode="wait">
+        {demoView === "admin" ? (
+          <motion.aside key="admin-sidebar" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}
+            className="hidden lg:flex flex-col w-[220px] border-r border-border bg-card/50 shrink-0">
+            <div className="h-14 flex items-center gap-2.5 px-4 border-b border-border">
+              <img src={ATLAS_LOGO_URL} alt="ATLAS" className="size-7 rounded-md" />
+              <div className="flex flex-col">
+                <span className="text-[11px] font-semibold tracking-[0.12em] text-foreground">ATLAS</span>
+                <span className="text-[9px] text-muted-foreground tracking-wider">OPERATOR PANEL</span>
+              </div>
             </div>
-          </div>
-        </div>
-      </aside>
+
+            <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
+              {DEMO_NAV.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={cn(
+                    "w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] transition-colors",
+                    activeTab === item.id
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                  )}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                  {item.id === "drafts" && (
+                    <span className="ml-auto text-[10px] font-mono bg-primary/20 text-primary px-1.5 py-0.5 rounded">{DEMO_DRAFTS.filter(d => d.status === "ready").length}</span>
+                  )}
+                </button>
+              ))}
+            </nav>
+
+            <div className="border-t border-border p-3">
+              <div className="flex items-center gap-2.5">
+                <div className="size-8 rounded-full bg-primary/20 flex items-center justify-center text-[11px] font-semibold text-primary">
+                  <Shield className="size-4" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-medium text-foreground">Admin View</span>
+                  <span className="text-[10px] text-muted-foreground">What the operator sees</span>
+                </div>
+              </div>
+            </div>
+          </motion.aside>
+        ) : (
+          <motion.aside key="client-sidebar" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}
+            className="hidden lg:flex flex-col w-[220px] border-r border-border bg-card/50 shrink-0">
+            <div className="h-14 flex items-center gap-2.5 px-4 border-b border-border">
+              <img src={ATLAS_LOGO_URL} alt="ATLAS" className="size-7 rounded-md" />
+              <div className="flex flex-col">
+                <span className="text-[11px] font-semibold tracking-[0.12em] text-foreground">ATLAS</span>
+                <span className="text-[9px] text-muted-foreground tracking-wider">CLIENT PORTAL</span>
+              </div>
+            </div>
+
+            <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
+              {[
+                { label: "Overview", icon: <LayoutDashboard className="size-[18px]" /> },
+                { label: "My Ventures", icon: <Briefcase className="size-[18px]" /> },
+                { label: "Documents", icon: <FileText className="size-[18px]" /> },
+                { label: "Distributions", icon: <Wallet className="size-[18px]" /> },
+                { label: "Reports", icon: <BarChart3 className="size-[18px]" /> },
+                { label: "Messages", icon: <MessageSquare className="size-[18px]" /> },
+                { label: "Settings", icon: <Settings className="size-[18px]" /> },
+              ].map((item, i) => (
+                <button
+                  key={item.label}
+                  className={cn(
+                    "w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] transition-colors",
+                    i === 0
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                  )}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                  {item.label === "Messages" && (
+                    <span className="ml-auto text-[10px] font-mono bg-primary/20 text-primary px-1.5 py-0.5 rounded">2</span>
+                  )}
+                </button>
+              ))}
+            </nav>
+
+            <div className="border-t border-border p-3">
+              <div className="flex items-center gap-2.5">
+                <div className="size-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-[11px] font-semibold text-emerald-400">
+                  AR
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-medium text-foreground">Ahmed Al Rashid</span>
+                  <span className="text-[10px] text-muted-foreground">Al Rashid Group</span>
+                </div>
+              </div>
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
 
       {/* ── Main content ── */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Demo banner */}
+        {/* Demo banner with view toggle */}
         <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Eye className="size-3.5 text-amber-400" />
-            <span className="text-[11px] font-medium text-amber-300 tracking-wide">INVESTOR DEMO — READ-ONLY VIEW</span>
+            <span className="text-[11px] font-medium text-amber-300 tracking-wide hidden sm:inline">INVESTOR DEMO</span>
           </div>
+
+          {/* View toggle */}
+          <div className="flex items-center gap-1 bg-background/50 rounded-full p-0.5 border border-border">
+            <button
+              onClick={() => setDemoView("admin")}
+              className={cn(
+                "px-3 py-1 rounded-full text-[11px] font-medium transition-all",
+                demoView === "admin"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <span className="flex items-center gap-1.5">
+                <Shield className="size-3" />
+                Admin View
+              </span>
+            </button>
+            <button
+              onClick={() => setDemoView("client")}
+              className={cn(
+                "px-3 py-1 rounded-full text-[11px] font-medium transition-all",
+                demoView === "client"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <span className="flex items-center gap-1.5">
+                <Users className="size-3" />
+                Client View
+              </span>
+            </button>
+          </div>
+
           <div className="flex items-center gap-3">
             <Link href="/demo" className="text-[11px] text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1">
               <ArrowLeft className="size-3" />
-              Back to Pitch
+              <span className="hidden sm:inline">Back to Pitch</span>
             </Link>
             <Link href="/" className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
               Sign In →
@@ -1122,23 +1633,32 @@ export default function DemoDashboard() {
               <img src={ATLAS_LOGO_URL} alt="ATLAS" className="size-6 rounded" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold text-foreground">{TAB_TITLES[activeTab]}</h1>
-              <p className="text-[10px] text-muted-foreground tracking-wider">ATLAS COMMAND CENTER</p>
+              <h1 className="text-sm font-semibold text-foreground">
+                {demoView === "admin" ? TAB_TITLES[activeTab] : "Client Portal"}
+              </h1>
+              <p className="text-[10px] text-muted-foreground tracking-wider">
+                {demoView === "admin" ? "WHAT THE OPERATOR SEES" : "WHAT THE CLIENT SEES"}
+              </p>
             </div>
+            {demoView === "admin" && (
+              <Annotation id={activeTab} annotations={ADMIN_ANNOTATIONS} className="ml-1" />
+            )}
           </div>
           <div className="flex items-center gap-2">
-            {/* Mobile nav dropdown */}
-            <div className="lg:hidden">
-              <select
-                value={activeTab}
-                onChange={e => setActiveTab(e.target.value as TabId)}
-                className="h-8 px-2 text-xs bg-card border border-border rounded-md text-foreground"
-              >
-                {DEMO_NAV.map(item => (
-                  <option key={item.id} value={item.id}>{item.label}</option>
-                ))}
-              </select>
-            </div>
+            {/* Mobile nav dropdown — admin only */}
+            {demoView === "admin" && (
+              <div className="lg:hidden">
+                <select
+                  value={activeTab}
+                  onChange={e => setActiveTab(e.target.value as TabId)}
+                  className="h-8 px-2 text-xs bg-card border border-border rounded-md text-foreground"
+                >
+                  {DEMO_NAV.map(item => (
+                    <option key={item.id} value={item.id}>{item.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <button className="size-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors">
               <Search className="size-4" />
             </button>
@@ -1152,17 +1672,27 @@ export default function DemoDashboard() {
         {/* Scrollable content */}
         <main className="flex-1 overflow-y-auto overscroll-contain">
           <div className="p-4 md:p-6">
-            {activeTab === "dashboard" && <DashboardView search={search} setSearch={setSearch} />}
-            {activeTab === "activity" && <ActivityView />}
-            {activeTab === "oversight" && <OversightView />}
-            {activeTab === "concierge" && <ConciergeView />}
-            {activeTab === "agents" && <AgentsView />}
-            {activeTab === "blueprints" && <BlueprintsView />}
-            {activeTab === "team" && <TeamView />}
-            {activeTab === "contacts" && <ContactsView />}
-            {activeTab === "onboard" && <OnboardView />}
-            {activeTab === "drafts" && <DraftsView />}
-            {activeTab === "settings" && <SettingsView />}
+            <AnimatePresence mode="wait">
+              {demoView === "admin" ? (
+                <motion.div key="admin" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
+                  {activeTab === "dashboard" && <DashboardView search={search} setSearch={setSearch} />}
+                  {activeTab === "activity" && <ActivityView />}
+                  {activeTab === "oversight" && <OversightView />}
+                  {activeTab === "concierge" && <ConciergeView />}
+                  {activeTab === "agents" && <AgentsView />}
+                  {activeTab === "blueprints" && <BlueprintsView />}
+                  {activeTab === "team" && <TeamView />}
+                  {activeTab === "contacts" && <ContactsView />}
+                  {activeTab === "onboard" && <OnboardView />}
+                  {activeTab === "drafts" && <DraftsView />}
+                  {activeTab === "settings" && <SettingsView />}
+                </motion.div>
+              ) : (
+                <motion.div key="client" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}>
+                  <ClientPortalDemoView />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </main>
       </div>
