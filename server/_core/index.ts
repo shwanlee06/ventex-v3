@@ -12,6 +12,7 @@ import { startAgentScheduler, getSchedulerStatus, triggerManualCycle } from "../
 import { runDataRetentionPurge, getRetentionStats } from "../security/dataRetention";
 import airtableSyncRouter from "../routes/airtableSync";
 import inviteValidationRouter from "../routes/inviteValidation";
+import { sseRouter } from "../routes/sseEvents";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -72,6 +73,8 @@ async function startServer() {
   app.use("/api/airtable", airtableSyncRouter);
   // Public invite validation (no auth)
   app.use(inviteValidationRouter);
+  // SSE real-time events
+  app.use(sseRouter);
   // tRPC API
   app.use(
     "/api/trpc",

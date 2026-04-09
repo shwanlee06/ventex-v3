@@ -8,6 +8,7 @@ import { getDb } from "../db";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { eventTriggerLog, agentEvents, ventures, tasks } from "../../drizzle/schema";
 import { invokeLLM } from "../_core/llm";
+import { broadcastSSE } from "../routes/sseEvents";
 
 // ── Trigger Types ───────────────────────────────────────────────────────
 type TriggerEvent = {
@@ -339,6 +340,15 @@ export async function dispatchTrigger(event: TriggerEvent): Promise<TriggerResul
       });
 
       results.push(result);
+
+      // Broadcast SSE feed_update for real-time client updates
+      if (result.triggered) {
+        broadcastSSE({
+          type: "feed_update",
+          data: { agentName: rule.agentName, action: result.action, triggerType: event.type },
+          organizationId: event.organizationId,
+        });
+      }
     } catch (e) {
       const errorMsg = e instanceof Error ? e.message : String(e);
       console.error(`[RealtimeTriggers] Rule "${rule.description}" failed:`, errorMsg);

@@ -5,7 +5,7 @@
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { isAtlasTeam } from "@/lib/atlas";
+import { isAtlasTeam, isPartner } from "@/lib/atlas";
 import { usePreviewMode } from "@/contexts/PreviewMode";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { trpc } from "@/lib/trpc";
@@ -47,6 +47,8 @@ interface NavItem {
   icon: React.ReactNode;
   atlasOnly?: boolean;
   clientOnly?: boolean;
+  partnerOnly?: boolean;
+  partnerVisible?: boolean; // visible to partners AND atlas
 }
 
 const ALL_NAV_ITEMS: NavItem[] = [
@@ -61,6 +63,11 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Onboard Client", href: "/onboarding", icon: <UserPlus className="size-[18px]" />, atlasOnly: true },
   { label: "Drafts", href: "/drafts", icon: <FileText className="size-[18px]" /> },
   { label: "Settings", href: "/settings", icon: <Settings className="size-[18px]" />, atlasOnly: true },
+  // Partner-only
+  { label: "My Portfolio", href: "/partner", icon: <Briefcase className="size-[18px]" />, partnerOnly: true },
+  { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-[18px]" />, partnerOnly: true },
+  { label: "Tasks", href: "/tasks", icon: <ListChecks className="size-[18px]" />, partnerOnly: true },
+  { label: "Distributions", href: "/distributions", icon: <DollarSign className="size-[18px]" />, partnerOnly: true },
   // Client-only
   { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-[18px]" />, clientOnly: true },
   { label: "SPVs & Deals", href: "/spvs", icon: <Briefcase className="size-[18px]" />, clientOnly: true },
@@ -102,14 +109,16 @@ export default function AppSidebar() {
   };
 
   const isAtlas = isPreviewMode ? false : isAtlasTeam(user);
+  const isPartnerUser = isPreviewMode ? false : isPartner(user);
 
   const navItems = useMemo(() => {
     return ALL_NAV_ITEMS.filter((item) => {
+      if (item.partnerOnly) return isPartnerUser;
       if (item.atlasOnly && !isAtlas) return false;
-      if (item.clientOnly && isAtlas) return false;
+      if (item.clientOnly && (isAtlas || isPartnerUser)) return false;
       return true;
     });
-  }, [isAtlas]);
+  }, [isAtlas, isPartnerUser]);
 
   const isActive = (href: string) => {
     if (href === "/dashboard") return location === "/dashboard" || location.startsWith("/clients/");

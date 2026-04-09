@@ -24,3 +24,15 @@ export function isAtlasTeam(user?: {
   // partner, client, viewer are NOT ATLAS team
   return false;
 }
+
+/**
+ * Partner Detection — partners have elevated access but are NOT ATLAS internal.
+ * Partners can see all clients they're assigned to, plus their own ventures.
+ */
+export function isPartner(user?: {
+  role: string;
+  organizationId?: number | null;
+} | null): boolean {
+  if (!user) return false;
+  return user.role === "partner";
+}

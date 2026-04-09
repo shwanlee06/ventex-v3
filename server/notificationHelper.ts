@@ -1,5 +1,6 @@
 import { getDb } from "./db";
 import { notifications } from "../drizzle/schema";
+import { broadcastSSE } from "./routes/sseEvents";
 
 export interface CreateNotificationParams {
   userId?: number;        // specific user target (null = broadcast to role)
@@ -37,6 +38,14 @@ export async function createNotification(params: CreateNotificationParams): Prom
       link: params.link ?? null,
       actorName: params.actorName ?? null,
     });
+
+    // Broadcast SSE event for real-time updates
+    broadcastSSE({
+      type: "notification",
+      data: { title: params.title, category: params.category ?? "info", notifType: params.type },
+      userId: params.userId,
+      organizationId: params.organizationId,
+    });
   } catch (err) {
     // Notifications should never crash the main operation
     console.error("[Notification] Failed to create notification:", err);
@@ -68,6 +77,16 @@ export async function createBulkNotifications(
         actorName: p.actorName ?? null,
       }))
     );
+
+    // Broadcast SSE for each notification
+    for (const p of paramsList) {
+      broadcastSSE({
+        type: "notification",
+        data: { title: p.title, category: p.category ?? "info", notifType: p.type },
+        userId: p.userId,
+        organizationId: p.organizationId,
+      });
+    }
   } catch (err) {
     console.error("[Notification] Failed to create bulk notifications:", err);
   }

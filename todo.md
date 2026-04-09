@@ -1093,13 +1093,13 @@
 - [x] FIX 10: Focus states — custom outline rgba(255,255,255,0.3)
 
 ### Operator Micro-Fixes
-- [ ] OP-FIX 1: Dashboard KPI cards — fill dead space with supporting detail
+- [x] OP-FIX 1: Dashboard KPI cards — added trend indicators, mini progress bars, and richer sub-labels
 - [x] OP-FIX 2: Velocity Intelligence sparkline — full width, 32px height, 1.5px stroke (already implemented)
 - [x] OP-FIX 3: Overdue panel typography — table headers 10px, row content 13px, notify button text-only (already implemented)
 - [x] OP-FIX 4: Live presence bar avatar overlap — 24x24, 2px border, -6px margin (already implemented)
 - [x] OP-FIX 5: Client list row alignment — vertical-align middle on all cells
 - [x] OP-FIX 6: "At Risk" health badge — amber text + amber border (not red)
-- [ ] OP-FIX 7: Sector Pulse panel — equal 44px row heights, 3px status bars
+- [x] OP-FIX 7: Sector Pulse panel — already has consistent 44px rows with 3px status bars (verified)
 - [x] OP-FIX 8: Activity page timestamp — capitalize all person names
 - [x] OP-FIX 9: Search bar placeholder — "Search clients, ventures, tasks" (already implemented)
 - [x] OP-FIX 10: Page title subtitles — remove/update redundant subtitles
@@ -1107,7 +1107,7 @@
 ### Client Portal Micro-Fixes
 - [x] CL-FIX 1: Welcome card — full name, European date format
 - [x] CL-FIX 2: Portfolio value — $3.52M hero + full number below
-- [ ] CL-FIX 3: Stat row — hide 0 SPVs, show 2-card layout
+- [x] CL-FIX 3: Stat row — conditionally shows SPV stat only when count > 0
 - [x] CL-FIX 4: Venture list — hide TBD locations, show sector only
 - [x] CL-FIX 5: In progress badge consistency — all green, no orange
 - [x] CL-FIX 6: Ventures page KPI icons — remove, labels only
@@ -2057,15 +2057,15 @@
 - [x] Verify blueprint generation returns HTTP 200 — code verified, needs republish
 
 ### OP-FIX — Dashboard Micro-Polish
-- [ ] OP-FIX 1: Dashboard KPI cards — fill dead space with supporting detail
+- [x] OP-FIX 1: Dashboard KPI cards — added trend indicators, mini progress bars, and richer sub-labels
 - [x] OP-FIX 2: Velocity Intelligence sparkline — full width, 32px height, 1.5px stroke (already implemented)
 - [x] OP-FIX 3: Overdue panel typography — table headers 10px, row content 13px, notify button text-only (already implemented)
 - [x] OP-FIX 4: Live presence bar avatar overlap — 24x24, 2px border, -6px margin (already implemented)
-- [ ] OP-FIX 7: Sector Pulse panel — equal 44px row heights, 3px status bars
+- [x] OP-FIX 7: Sector Pulse panel — already has consistent 44px rows with 3px status bars (verified)
 - [x] OP-FIX 9: Search bar placeholder — "Search clients, ventures, tasks" (already implemented)
 
 ### CL-FIX — Client Portal Micro-Polish
-- [ ] CL-FIX 3: Stat row — hide 0 SPVs, show 2-card layout
+- [x] CL-FIX 3: Stat row — conditionally shows SPV stat only when count > 0
 - [x] CL-FIX 5: In progress badge consistency — all green, no orange
 - [x] CL-FIX 6: Ventures page KPI icons — remove, labels only
 - [x] CL-FIX 7: Ventures page card content — hide descriptions in client portal
@@ -2136,3 +2136,14 @@
 - [x] All 655 tests pass across 44 test files
 - [x] Renamed "Velocity Compression" to "Agent Activity" across codebase (confirmed in prior session)
 - [x] Verified CONTENT-2 (no shady names) and CONTENT-3 (locations filled in) already done
+
+## Final 9 Polish Items (Apr 2026)
+- [x] OP-FIX 1: Dashboard KPI cards — added trend indicators, mini progress bars, and richer sub-labels
+- [x] Empty SPVs state — added proper empty state card for client portal SPVs page
+- [x] CL-FIX 3: Client stat row — conditionally shows SPV stat only when count > 0
+- [x] OP-FIX 7: Sector Pulse panel — already has consistent 44px rows with 3px status bars (verified)
+- [x] Executive Summary widget — created ExecutiveSummaryWidget pulling real team data from DB
+- [x] Resend email integration — added email test section in Settings for ATLAS admins
+- [x] Partner navigation — created PartnerDashboard with assigned ventures, tasks, overdue alerts, and partner-specific sidebar nav
+- [x] Invitation acceptance flow — already fully wired (AcceptInvite → OAuth → acceptPendingInvitation → welcome)
+- [x] Real-time SSE updates — created SSE event bus, useSSE hooks, wired VelocityFeed + NotificationPanel + agent triggers for instant updates

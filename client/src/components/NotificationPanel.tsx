@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useCallback, useState, useMemo } from "react";
+import { useSSEInvalidation } from "@/hooks/useSSE";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
@@ -109,6 +110,12 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
     },
     { refetchInterval: 30_000 }
   );
+
+  // SSE: instant refetch on notification events
+  useSSEInvalidation("notification", () => {
+    notifQ.refetch();
+    utils.notifications.unreadCount.invalidate();
+  });
 
   const markReadMut = trpc.notifications.markRead.useMutation({
     onSuccess: () => {

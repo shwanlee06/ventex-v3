@@ -134,6 +134,9 @@ function Router() {
       <Route path="/activity">
         <RequireAuth><ActivityLog /></RequireAuth>
       </Route>
+      <Route path="/partner">
+        <RequireAuth><Home /></RequireAuth>
+      </Route>
       <Route path="/profile">
         <RequireAuth><Profile /></RequireAuth>
       </Route>
@@ -147,6 +150,9 @@ function Router() {
       </Route>
       <Route path="/team">
         <RequireAuth><RequireAtlas><Onboard /></RequireAtlas></RequireAuth>
+      </Route>
+      <Route path="/atlas-team/:slug">
+        <RequireAuth><RequireAtlas><TeamMemberDetail /></RequireAtlas></RequireAuth>
       </Route>
       <Route path="/atlas-team">
         <RequireAuth><RequireAtlas><AtlasTeam /></RequireAtlas></RequireAuth>

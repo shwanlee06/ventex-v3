@@ -7,6 +7,7 @@
 import AppSidebar from "@/components/AppSidebar";
 import Topbar from "@/components/Topbar";
 import PageTransition from "@/components/PageTransition";
+import { useSSEConnection } from "@/hooks/useSSE";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -15,6 +16,9 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children, title, subtitle }: DashboardLayoutProps) {
+  // Establish SSE connection for real-time updates
+  useSSEConnection();
+
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <AppSidebar />

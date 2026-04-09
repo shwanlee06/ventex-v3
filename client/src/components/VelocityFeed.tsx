@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useCallback } from "react";
+import { useSSEInvalidation } from "@/hooks/useSSE";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ClientActionModal, { inferActionFlow, type ActionFlowType } from "@/components/ClientActionModals";
@@ -278,6 +279,9 @@ export default function VelocityFeed({ onNavigate }: VelocityFeedProps) {
     { organizationId: activeOrg?.id || 0, limit: 20 },
     { enabled: !!activeOrg?.id, refetchInterval: 30000 }
   );
+
+  // SSE: instant refetch on feed_update events
+  useSSEInvalidation("feed_update", () => feedQ.refetch());
 
   const utils = trpc.useUtils();
 

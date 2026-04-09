@@ -64,6 +64,7 @@ import LivePresenceWidget from "@/components/LivePresenceWidget";
 import VelocityIntelligenceCard from "@/components/VelocityIntelligenceCard";
 import VelocityKPI from "@/components/VelocityKPI";
 import AgentExecutionLog from "@/components/AgentExecutionLog";
+import ExecutiveSummaryWidget from "@/components/ExecutiveSummaryWidget";
 
 // ── Types ───────────────────────────────────────────────────────────────
 type SortField = "name" | "ventures" | "velocity" | "overdue" | "health" | "completion";
@@ -395,7 +396,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
           clients={clientsWithVelocity}
         />
 
-        {/* Remaining 4 standard KPI cards */}
+        {/* Remaining 4 standard KPI cards — enhanced with trend indicators */}
         {[
           {
             label: "Clients",
@@ -403,6 +404,12 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
             sub: kpis.clientsNeedingAttention > 0 ? `${kpis.clientsNeedingAttention} need attention` : "all on track",
             icon: <Building2 className="size-4" />,
             color: "#5B8DBE",
+            trendLabel: kpis.clientsNeedingAttention > 0
+              ? `${Math.round(((kpis.totalClients - kpis.clientsNeedingAttention) / kpis.totalClients) * 100)}% healthy`
+              : "100% healthy",
+            trendColor: kpis.clientsNeedingAttention === 0 ? "text-emerald-400" : "text-amber-400",
+            progressPct: kpis.totalClients > 0 ? Math.round(((kpis.totalClients - kpis.clientsNeedingAttention) / kpis.totalClients) * 100) : 100,
+            progressColor: "#5B8DBE",
           },
           {
             label: "Ventures",
@@ -410,6 +417,10 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
             sub: `across ${kpis.totalClients} clients`,
             icon: <Layers3 className="size-4" />,
             color: "#8B5CF6",
+            trendLabel: kpis.totalClients > 0 ? `~${Math.round(kpis.totalVentures / kpis.totalClients)} per client` : "—",
+            trendColor: "text-muted-foreground",
+            progressPct: null as number | null,
+            progressColor: "#8B5CF6",
           },
           {
             label: "Completion",
@@ -417,6 +428,10 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
             sub: `${kpis.totalCompleted}/${kpis.totalTasks} tasks`,
             icon: <Target className="size-4" />,
             color: kpis.overallCompletion >= 70 ? "#4ADE80" : kpis.overallCompletion >= 40 ? "#F59E0B" : "#EF4444",
+            trendLabel: kpis.totalOpenTasks > 0 ? `${kpis.totalOpenTasks} open` : "all done",
+            trendColor: kpis.overallCompletion >= 70 ? "text-emerald-400" : kpis.overallCompletion >= 40 ? "text-amber-400" : "text-red-400",
+            progressPct: kpis.overallCompletion,
+            progressColor: kpis.overallCompletion >= 70 ? "#4ADE80" : kpis.overallCompletion >= 40 ? "#F59E0B" : "#EF4444",
           },
           {
             label: "Overdue",
@@ -424,6 +439,12 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
             sub: kpis.totalOverdue > 0 ? "require action" : "none pending",
             icon: <AlertTriangle className="size-4" />,
             color: "#EF4444",
+            trendLabel: kpis.totalOverdue > 0
+              ? `${kpis.clientsNeedingAttention} client${kpis.clientsNeedingAttention !== 1 ? "s" : ""} affected`
+              : "all clear",
+            trendColor: kpis.totalOverdue === 0 ? "text-emerald-400" : "text-red-400",
+            progressPct: kpis.totalTasks > 0 ? Math.round((kpis.totalOverdue / kpis.totalTasks) * 100) : 0,
+            progressColor: "#EF4444",
           },
         ].map((m, i) => (
           <motion.div
@@ -439,7 +460,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
               </span>
               <span className="opacity-50" style={{ color: m.color }}>{m.icon}</span>
             </div>
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-1">
               <span className="text-2xl font-semibold tracking-tight text-foreground" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {m.value}
               </span>
@@ -449,6 +470,19 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
               )}>
                 {m.sub}
               </span>
+              {/* Trend indicator */}
+              <span className={cn("text-[10px] font-mono", m.trendColor)}>
+                {m.trendLabel}
+              </span>
+              {/* Mini progress bar */}
+              {m.progressPct !== null && (
+                <div className="w-full h-1 rounded-full bg-secondary/50 mt-0.5 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${Math.min(100, m.progressPct)}%`, backgroundColor: m.progressColor }}
+                  />
+                </div>
+              )}
             </div>
           </motion.div>
         ))}
@@ -462,6 +496,9 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
 
       {/* ── Agent Activity KPI ───────────────────────────────── */}
       <VelocityKPI />
+      {/* ── Executive Summary ───────────────────────────────────── */}
+      <ExecutiveSummaryWidget />
+
       {/* ── Agent Execution Log ─────────────────────────────────── */}
       <AgentExecutionLog />
 

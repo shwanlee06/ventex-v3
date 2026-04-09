@@ -440,6 +440,17 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
               {overdueTasks.length > 0 ? `${overdueTasks.length} overdue` : "on track"}
             </p>
           </div>
+          {allSpvs.length > 0 && (
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-light">SPVs</p>
+              <p className="text-2xl sm:text-3xl font-light text-foreground tabular-nums tracking-tight">
+                {allSpvs.length}
+              </p>
+              <p className="text-[11px] text-muted-foreground/50 mt-0.5">
+                {allSpvs.filter((s: any) => s.stage === "Active deal").length} active
+              </p>
+            </div>
+          )}
           <span className="text-[10px] text-muted-foreground/40 ml-auto group-hover:text-muted-foreground transition-colors hidden sm:block">Tap for breakdown</span>
         </button>
       </motion.div>

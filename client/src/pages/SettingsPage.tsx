@@ -31,6 +31,8 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { toast } from "sonner";
 import { logAction } from "@/lib/operatorSession";
+import { isAtlasTeam } from "@/lib/atlas";
+import { usePreviewMode } from "@/contexts/PreviewMode";
 
 const SOC2_ITEMS = [
   { id: "encryption", label: "AES-256 encryption at rest", done: true },
@@ -43,10 +45,75 @@ const SOC2_ITEMS = [
   { id: "gdpr", label: "GDPR compliance review", done: false },
 ];
 
+// ── Email Test Section ──────────────────────────────────────────────────
+function EmailTestSection() {
+  const [testEmail, setTestEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<{ success: boolean; error?: string; messageId?: string } | null>(null);
+  const sendTest = trpc.email.sendTest.useMutation();
+
+  const handleSendTest = async () => {
+    if (!testEmail) return;
+    setSending(true);
+    setResult(null);
+    try {
+      const res = await sendTest.mutateAsync({ to: testEmail });
+      setResult(res);
+      if (res.success) {
+        toast.success("Test email sent successfully");
+      } else {
+        toast.error(res.error || "Failed to send test email");
+      }
+    } catch (err: any) {
+      setResult({ success: false, error: err.message });
+      toast.error(err.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-2">
+        <Input
+          type="email"
+          placeholder="recipient@example.com"
+          value={testEmail}
+          onChange={(e) => setTestEmail(e.target.value)}
+          className="flex-1 h-9"
+        />
+        <Button
+          onClick={handleSendTest}
+          disabled={sending || !testEmail}
+          size="sm"
+          className="gap-1.5 h-9 min-h-[36px] touch-manipulation"
+        >
+          {sending ? <Loader2 className="size-3.5 animate-spin" /> : <Mail className="size-3.5" />}
+          {sending ? "Sending..." : "Send Test"}
+        </Button>
+      </div>
+      {result && (
+        <div className={cn(
+          "flex items-center gap-2 text-xs px-3 py-2 rounded-lg",
+          result.success ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"
+        )}>
+          {result.success ? (
+            <><CheckCircle2 className="size-3.5" /> Delivered (ID: {result.messageId?.slice(0, 12)}...)</>
+          ) : (
+            <><AlertCircle className="size-3.5" /> {result.error}</>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SettingsConfigPage() {
   const { theme, toggleTheme } = useTheme();
   const darkMode = theme === "dark";
   const { user: authUser } = useAuth();
+  const { isPreviewMode } = usePreviewMode();
+  const isAtlas = isAtlasTeam(authUser) && !isPreviewMode;
   const utils = trpc.useUtils();
 
   // ── Fetch profile data from DB ──────────────────────────────────────
@@ -902,6 +969,20 @@ export default function SettingsConfigPage() {
                   {notifSaving ? "Saving..." : hasNotifChanges ? "Save Notification Settings" : "Saved"}
                 </Button>
               </div>
+
+              {/* Email Integration Test */}
+              {isAtlas && (
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+                  <Card className="p-4 sm:p-6 bg-card border-border">
+                    <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-2">
+                      <Mail className="size-4 text-blue-400" />
+                      Email Delivery Test
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-4">Send a test email to verify Resend integration is working.</p>
+                    <EmailTestSection />
+                  </Card>
+                </motion.div>
+              )}
             </div>
           </TabsContent>
 

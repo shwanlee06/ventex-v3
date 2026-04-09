@@ -6,6 +6,9 @@ import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { isAtlasTeam } from "@/lib/atlas";
+import { usePreviewMode } from "@/contexts/PreviewMode";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -63,6 +66,9 @@ function formatDate(d: string | null | undefined): string {
 }
 
 export default function SettingsPage() {
+  const { user } = useAuth();
+  const { isPreviewMode } = usePreviewMode();
+  const isAtlas = isAtlasTeam(user) && !isPreviewMode;
   const utils = trpc.useUtils();
 
   const spvsQ = trpc.spvs.list.useQuery();
@@ -225,8 +231,24 @@ export default function SettingsPage() {
         {displaySpvs.length === 0 && !spvsQ.isLoading && (
           <div className="p-12 text-center bg-card border border-border rounded-lg">
             <Briefcase className="size-8 text-muted-foreground mx-auto mb-3 opacity-40" />
-            <p className="text-sm text-muted-foreground">No deals match the current filters.</p>
-            <Button variant="ghost" size="sm" className="text-xs mt-2 touch-manipulation" onClick={() => { setStageFilter("All"); setSectorFilter("All"); }}>Clear filters</Button>
+            {spvsList.length === 0 && !isAtlas ? (
+              <>
+                <p className="text-sm text-muted-foreground">No SPVs have been set up for your portfolio yet.</p>
+                <p className="text-[11px] text-muted-foreground/60 mt-1">Your ATLAS team will create SPVs as deals progress.</p>
+              </>
+            ) : spvsList.length === 0 && isAtlas ? (
+              <>
+                <p className="text-sm text-muted-foreground">No SPVs yet.</p>
+                <Button variant="ghost" size="sm" className="text-xs mt-2 touch-manipulation gap-1" onClick={() => setAddOpen(true)}>
+                  <Plus className="size-3" /> Add first SPV
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground">No deals match the current filters.</p>
+                <Button variant="ghost" size="sm" className="text-xs mt-2 touch-manipulation" onClick={() => { setStageFilter("All"); setSectorFilter("All"); }}>Clear filters</Button>
+              </>
+            )}
           </div>
         )}
 
