@@ -5,7 +5,6 @@
 // ============================================================================
 
 import { useEffect, useRef, useState } from "react";
-import { useLocation } from "wouter";
 import { motion, useInView } from "framer-motion";
 import AnimatedCounter from "@/components/AnimatedCounter";
 
@@ -156,7 +155,6 @@ const POST_RAISE_HIRES = [
 const HEADLINE_FONT = "'Bebas Neue', sans-serif";
 
 export default function Demo() {
-  const [, navigate] = useLocation();
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
@@ -383,16 +381,12 @@ export default function Demo() {
           {/* Explore live product CTA */}
           <RevealSection delay={0.4}>
             <div className="text-center">
-              <button
-                onClick={() => {
-                  localStorage.setItem("atlas_operator", "DEMO_INVESTOR");
-                  localStorage.setItem("atlas_demo_session", "true");
-                  navigate("/dashboard");
-                }}
-                className="inline-flex items-center gap-2 px-8 py-3.5 border border-cyan-500/30 text-cyan-400 text-xs tracking-[0.15em] hover:bg-cyan-500/10 transition-colors"
+              <a
+                href="mailto:contact@aurovia.co?subject=ATLAS%20Live%20Product%20Access"
+                className="inline-flex items-center gap-2 px-8 py-3.5 border border-white/20 text-white/70 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors"
               >
-                EXPLORE THE LIVE PRODUCT →
-              </button>
+                REQUEST LIVE ACCESS →
+              </a>
             </div>
           </RevealSection>
         </div>
@@ -734,16 +728,12 @@ export default function Demo() {
               >
                 SCHEDULE A CALL →
               </a>
-              <button
-                onClick={() => {
-                  localStorage.setItem("atlas_operator", "DEMO_INVESTOR");
-                  localStorage.setItem("atlas_demo_session", "true");
-                  navigate("/dashboard");
-                }}
+              <a
+                href="mailto:contact@aurovia.co?subject=ATLAS%20Demo%20Access%20Request"
                 className="inline-flex items-center gap-2 px-8 py-3.5 border border-white/20 text-white/70 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors"
               >
-                EXPLORE LIVE PRODUCT →
-              </button>
+                REQUEST LIVE ACCESS →
+              </a>
             </div>
           </RevealSection>
 

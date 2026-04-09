@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { isPublicRoute } from "@/lib/publicRoutes";
 
 const HEARTBEAT_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
 const ACTIVITY_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes — if no interaction for 5 min, stop heartbeats
@@ -12,6 +13,7 @@ const THROTTLE_MS = 30_000; // Only update lastActivity at most every 30s to avo
  *   1. Authenticated
  *   2. The tab/window is visible (not hidden/minimized)
  *   3. The user has interacted with the page within the last 5 minutes
+ *   4. NOT on a public route (demo, login, legal, invite)
  *
  * This ensures live status reflects genuine activity, not just an idle open tab.
  */
@@ -39,6 +41,9 @@ export function useHeartbeat() {
   }, []);
 
   useEffect(() => {
+    // Skip heartbeat entirely on public routes
+    if (isPublicRoute()) return;
+
     if (!isAuthenticated) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);

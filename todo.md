@@ -2202,3 +2202,6 @@
 - [x] TEAM-2: Add Post-Raise Hires section — Head of AI Engineering + Senior Full-Stack Engineer
 - [x] TEAM-3: Initials-based avatars with color-coded circles
 - [x] TEAM-4: "Three founders. Average age: 18. They didn't study the problem in a classroom."
+- [x] FIX: Rate exceeded error on /demo — skip auth queries on public routes, removed dashboard navigation from demo
+- [x] SEC-1: Auto session expiry — 30min idle timeout with 2min warning toast, auto-logout to login page
+- [x] SEC-2: Server-side session TTL — 24h max session cookie (was 1 year), enforced in OAuth callback

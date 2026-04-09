@@ -39,6 +39,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import { AgentProvider } from "./contexts/AgentContext";
 import { useHeartbeat } from "./hooks/useHeartbeat";
+import { useIdleTimeout } from "./hooks/useIdleTimeout";
 import { DemoProvider } from "./contexts/DemoContext";
 import Demo from "./pages/Demo";
 
@@ -195,6 +196,7 @@ function Router() {
 
 function HeartbeatProvider({ children }: { children: React.ReactNode }) {
   useHeartbeat();
+  useIdleTimeout();
   return <>{children}</>;
 }
 

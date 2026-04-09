@@ -391,6 +391,14 @@ export default function SpyOps() {
     const params = new URLSearchParams(window.location.search);
     const error = params.get("error");
     const welcome = params.get("welcome");
+    const expired = params.get("expired");
+    if (expired === "true") {
+      toast.info("SESSION EXPIRED — Please sign in again", {
+        description: "You were logged out due to inactivity. This is a security measure.",
+        duration: 8000,
+      });
+      window.history.replaceState({}, "", "/");
+    }
     if (error) {
       const errorMessages: Record<string, string> = {
         no_invitation: "ACCESS DENIED — NO INVITATION FOUND FOR THIS ACCOUNT",
