@@ -2321,3 +2321,11 @@
 
 ## Team Bios — Rewrite (Apr 10)
 - [x] BIO-1: Rewrite all 3 team bios (Shwan, Chris, Brian) — compelling, transparent, no age references, removed age badges from UI
+
+## Team Section — Premium Upgrades (Apr 10)
+- [x] TEAM-1: Add "Why This Team" headline + subtext above team cards
+- [x] TEAM-2: Add metric badges under each bio (77K+ lines, Mirofish Engine, UHNWI Pipeline, etc.)
+- [x] TEAM-3: Add hover stat reveal on photo cards (zoom + backdrop blur overlay with stats)
+- [x] TEAM-4: Add signature accent lines in each member's color (gradient fade)
+- [x] TEAM-5: Add LinkedIn icon links (SVG icons, open in new tab)
+- [x] TEAM-6: Add personal quotes under each bio (italic, left-border accent)

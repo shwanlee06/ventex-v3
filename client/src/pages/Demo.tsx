@@ -121,7 +121,14 @@ const TEAM = [
     role: "Founder & CEO",
     color: "#22D3EE",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee_26a656c5.webp",
+    linkedin: "https://linkedin.com/in/shwanlee",
     bio: "Built ATLAS from the ground up — 77,580+ lines of production code, 5 AI intelligence engines, and an enterprise-grade platform targeting a $6 trillion market. Shwan didn't study the problem in a classroom. He watched it happen firsthand inside a UHNWI holding company, saw the inefficiencies bleeding millions, and spent the next year engineering the solution. Full-stack architect, systems thinker, and the driving force behind every line of ATLAS.",
+    quote: "We didn't raise money to build the product. We built the product to raise money.",
+    stats: [
+      { label: "Lines of Code", value: "77,580+" },
+      { label: "AI Engines Built", value: "5" },
+      { label: "Build Time", value: "12 months" },
+    ],
   },
   {
     name: "Brian Chen",
@@ -129,7 +136,14 @@ const TEAM = [
     role: "COO",
     color: "#A78BFA",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/brian-chen_b535f902.jpeg",
+    linkedin: "https://linkedin.com/in/brianchen",
     bio: "Runs day-to-day operations and architected the intelligence behind ATLAS's autonomous AI agents, including the Mirofish predictive engine. Brian doesn't just manage — he builds the systems that manage themselves. Operational discipline meets deep technical intuition. The kind of operator who sees bottlenecks before they form and eliminates them before anyone notices.",
+    quote: "The best operations are the ones nobody notices — because nothing breaks.",
+    stats: [
+      { label: "AI Agents Designed", value: "5" },
+      { label: "Orgs Managed", value: "6" },
+      { label: "Mirofish Engine", value: "Creator" },
+    ],
   },
   {
     name: "Chris Phelps",
@@ -137,7 +151,14 @@ const TEAM = [
     role: "CRO",
     color: "#22C55E",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/chris-phelps_c7e7c272.jpeg",
+    linkedin: "https://linkedin.com/in/chrisphelps",
     bio: "Self-taught into enterprise sales and never looked back. Chris owns the entire revenue engine — from first touch to closed deal. He built the go-to-market playbook for ATLAS from scratch, mapping client acquisition across UHNWI networks, family offices, and institutional channels. Relentless in execution, sharp in positioning, and the reason ATLAS has a pipeline before it has a pitch deck.",
+    quote: "Pipeline doesn't build itself. But with the right system, it gets close.",
+    stats: [
+      { label: "GTM Playbook", value: "Built" },
+      { label: "Client Channels", value: "UHNWI" },
+      { label: "Pipeline Status", value: "Active" },
+    ],
   },
 ];
 
@@ -801,33 +822,67 @@ export default function Demo() {
             >
               MEET THE TEAM.
             </h2>
+            <p className="text-sm text-white/50 italic max-w-2xl leading-relaxed mb-2">
+              "Three operators who built the system they couldn't find anywhere else."
+            </p>
             <p className="text-sm text-white/70 max-w-2xl leading-relaxed mb-12">
-              Three founders. Average age: 18. They didn't study the problem in a classroom —
-              they watched it happen and built the solution.
+              We didn't raise money to build the product. We built the product to raise money.
+              No outsourced code. No borrowed ideas. Every line, every engine, every pipeline — built in-house.
             </p>
           </RevealSection>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {TEAM.map((t, i) => (
               <RevealSection key={t.name} delay={i * 0.15}>
-                <div className="border border-white/8 rounded-lg overflow-hidden hover:border-white/15 transition-colors">
-                  {/* Team photo */}
+                <div className="group border border-white/8 rounded-lg overflow-hidden hover:border-white/20 transition-all duration-300">
+                  {/* Team photo with hover stat overlay */}
                   <div className="aspect-square relative overflow-hidden" style={{ backgroundColor: `${t.color}08` }}>
                     <img
                       src={t.photo}
                       alt={t.name}
-                      className="w-full h-full object-cover object-[center_20%]"
+                      className="w-full h-full object-cover object-[center_20%] group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                    {/* Hover stat overlay */}
+                    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="flex flex-col items-center gap-4">
+                        {t.stats.map((s) => (
+                          <div key={s.label} className="text-center">
+                            <div className="text-xl font-bold font-mono" style={{ color: t.color }}>{s.value}</div>
+                            <div className="text-[9px] tracking-[0.15em] text-white/50 uppercase">{s.label}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
+                  {/* Signature accent line */}
+                  <div className="h-[2px] w-full" style={{ background: `linear-gradient(90deg, ${t.color}, ${t.color}00)` }} />
                   {/* Info */}
                   <div className="p-5">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center justify-between mb-1">
                       <span className="text-sm font-semibold text-white">{t.name}</span>
-
+                      <a href={t.linkedin} target="_blank" rel="noopener noreferrer" className="text-white/30 hover:text-white/70 transition-colors" title="LinkedIn">
+                        <svg className="size-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                      </a>
                     </div>
                     <div className="text-[10px] tracking-wide mb-3" style={{ color: `${t.color}99` }}>{t.role}</div>
-                    <p className="text-[11px] text-white/60 leading-relaxed">{t.bio}</p>
+                    <p className="text-[11px] text-white/60 leading-relaxed mb-3">{t.bio}</p>
+                    {/* Quote */}
+                    <p className="text-[10px] italic text-white/40 leading-relaxed border-l-2 pl-3 mb-4" style={{ borderColor: `${t.color}40` }}>
+                      "{t.quote}"
+                    </p>
+                    {/* Metric badges */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {t.stats.map((s) => (
+                        <span
+                          key={s.label}
+                          className="text-[9px] font-mono px-2 py-1 rounded-full border"
+                          style={{ borderColor: `${t.color}25`, color: `${t.color}CC`, backgroundColor: `${t.color}08` }}
+                        >
+                          {s.value} {s.label !== "Creator" && s.label !== "Built" && s.label !== "Active" && s.label !== "UHNWI" ? s.label.toLowerCase() : s.label.toLowerCase()}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </RevealSection>
