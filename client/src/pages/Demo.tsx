@@ -120,7 +120,7 @@ const TEAM = [
     initials: "SL",
     role: "Founder & CEO",
     color: "#22D3EE",
-    photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee_26a656c5.webp",
+    photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee-new_e321fa79.webp",
     linkedin: "https://linkedin.com/in/shwanlee",
     bio: "Built ATLAS from the ground up — 77,580+ lines of production code, 5 AI intelligence engines, and an enterprise-grade platform targeting a $6 trillion market. Shwan didn't study the problem in a classroom. He watched it happen firsthand inside a UHNWI holding company, saw the inefficiencies bleeding millions, and spent the next year engineering the solution. Full-stack architect, systems thinker, and the driving force behind every line of ATLAS.",
     quote: "We didn't raise money to build the product. We built the product to raise money.",

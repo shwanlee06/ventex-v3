@@ -2329,3 +2329,6 @@
 - [x] TEAM-4: Add signature accent lines in each member's color (gradient fade)
 - [x] TEAM-5: Add LinkedIn icon links (SVG icons, open in new tab)
 - [x] TEAM-6: Add personal quotes under each bio (italic, left-border accent)
+
+## Shwan Lee Photo Update (Apr 10)
+- [x] PHOTO-1: Replace Shwan Lee's photo with new uploaded image (converted HEIC to WebP, updated Demo.tsx + DemoDashboard.tsx)

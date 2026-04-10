@@ -79,7 +79,7 @@ const DEMO_AGENTS = [
 ];
 
 const DEMO_TEAM = [
-  { name: "Shwan Lee", role: "Founder & CEO", email: "shwan@aurovia.co", status: "online" as const, ventures: 12, tasks: 3, avatar: "SL", photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee_26a656c5.webp" },
+  { name: "Shwan Lee", role: "Founder & CEO", email: "shwan@aurovia.co", status: "online" as const, ventures: 12, tasks: 3, avatar: "SL", photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee-new_e321fa79.webp" },
   { name: "Brian Chen", role: "COO", email: "brian@aurovia.co", status: "online" as const, ventures: 8, tasks: 5, avatar: "BC", photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/brian-chen_b535f902.jpeg" },
   { name: "Chris Phelps", role: "CRO", email: "chris@aurovia.co", status: "online" as const, ventures: 10, tasks: 4, avatar: "CP", photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/chris-phelps_c7e7c272.jpeg" },
   { name: "Anton Keller", role: "Head of Operations", email: "anton@atlas.co", status: "online" as const, ventures: 15, tasks: 6, avatar: "AK" },
