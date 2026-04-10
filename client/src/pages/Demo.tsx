@@ -135,7 +135,7 @@ const TEAM = [
     color: "#A78BFA",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/brian-chen_b535f902.jpeg",
     linkedin: "https://linkedin.com/in/brianchen",
-    bio: "Runs day-to-day operations and architected the intelligence behind ATLAS's autonomous AI agents, including the Mirofish predictive engine. Brian doesn't just manage — he builds the systems that manage themselves. Operational discipline meets deep technical intuition. The kind of operator who sees bottlenecks before they form and eliminates them before anyone notices.",
+    bio: "Brian Chen is the operational backbone of Aurovia. As Co-Founder and COO, he architected the intelligence layer behind ATLAS’s autonomous AI agents — including the Mirofish predictive engine that forecasts venture outcomes before they happen. He runs day-to-day operations across all verticals and designed the systems that eliminate bottlenecks before anyone notices them. Equal parts operator and engineer, Brian turns complex multi-entity workflows into automated pipelines that scale.",
     quote: "The best operations are the ones nobody notices — because nothing breaks.",
     stats: [
       { label: "AI Agents Designed", value: "5" },
@@ -199,15 +199,15 @@ export default function Demo() {
         <div className="flex items-center gap-3">
           <Link
             href="/demo/dashboard"
-            className="text-[11px] tracking-[0.1em] text-white/60 hover:text-white transition-colors"
+            className="text-[11px] tracking-[0.1em] px-4 py-1.5 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/50 transition-colors"
           >
-            VIEW PROTOTYPE
+            LIVE DEMO →
           </Link>
           <Link
             href="/"
             className="text-[11px] tracking-[0.1em] px-3 py-1.5 border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors"
           >
-            SIGN IN →
+            SIGN IN
           </Link>
         </div>
       </nav>
@@ -265,18 +265,19 @@ export default function Demo() {
           </p>
 
           {/* CTA row */}
-          <div className="flex items-center justify-center gap-4 mt-10 flex-wrap">
+          <div className="flex flex-col items-center gap-4 mt-10">
             <Link
               href="/demo/dashboard"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black text-xs font-semibold tracking-[0.15em] hover:bg-white/90 transition-colors"
+              className="inline-flex items-center gap-3 px-10 py-4 bg-white text-black text-sm font-bold tracking-[0.2em] hover:bg-white/90 transition-colors"
             >
-              VIEW LIVE PROTOTYPE →
+              ENTER LIVE DEMO →
             </Link>
+            <span className="text-[10px] text-white/40 tracking-[0.15em]">INTERACTIVE PROTOTYPE — NO LOGIN REQUIRED</span>
             <button
               onClick={() => document.getElementById("problem")?.scrollIntoView({ behavior: "smooth" })}
-              className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 text-white/80 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 border border-white/20 text-white/60 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors mt-2"
             >
-              SEE THE PITCH ↓
+              OR READ THE FULL PITCH ↓
             </button>
           </div>
         </motion.div>
@@ -699,7 +700,7 @@ export default function Demo() {
                       <div className="text-[10px] text-white/50">person team</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-emerald-400 font-mono">&lt;3mo</div>
+                      <div className="text-lg font-bold text-emerald-400 font-mono">{"<3mo"}</div>
                       <div className="text-[10px] text-white/50">to deployment</div>
                     </div>
                   </div>
@@ -932,19 +933,27 @@ export default function Demo() {
           </RevealSection>
 
           <RevealSection delay={0.3}>
-            <div className="flex items-center justify-center gap-4 flex-wrap">
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex items-center justify-center gap-4 flex-wrap">
+                <a
+                  href="tel:+15714803261"
+                  className="inline-flex items-center gap-2 px-10 py-4 bg-white text-black text-sm font-bold tracking-[0.2em] hover:bg-white/90 transition-colors"
+                >
+                  CALL US: (571) 480-3261 →
+                </a>
+                <Link
+                  href="/demo/dashboard"
+                  className="inline-flex items-center gap-2 px-10 py-4 border border-cyan-500/40 text-cyan-400 text-sm font-bold tracking-[0.2em] hover:border-cyan-500/80 hover:bg-cyan-500/5 transition-colors"
+                >
+                  ENTER LIVE DEMO →
+                </Link>
+              </div>
               <a
-                href="tel:+15714803261"
-                className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-black text-xs font-semibold tracking-[0.15em] hover:bg-white/90 transition-colors"
+                href="mailto:contact@aurovia.co"
+                className="text-[11px] text-white/50 tracking-[0.15em] hover:text-white/70 transition-colors"
               >
-                CALL US: (571) 480-3261 →
+                OR EMAIL: contact@aurovia.co
               </a>
-              <Link
-                href="/demo/dashboard"
-                className="inline-flex items-center gap-2 px-8 py-3.5 border border-white/20 text-white/80 text-xs tracking-[0.15em] hover:border-white/40 hover:text-white transition-colors"
-              >
-                VIEW LIVE PROTOTYPE →
-              </Link>
             </div>
           </RevealSection>
 

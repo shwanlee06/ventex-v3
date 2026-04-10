@@ -747,14 +747,17 @@ export default function SpyOps() {
                 alignItems: "center",
                 gap: 0,
                 animation: "spyops-fadeIn 0.6s ease",
+                width: "100%",
+                maxWidth: 640,
+                padding: "0 24px",
               }}
             >
               {/* ATLAS */}
               <div
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
-                  fontSize: "clamp(28px, 5vw, 48px)",
-                  letterSpacing: "0.3em",
+                  fontSize: "clamp(36px, 6vw, 56px)",
+                  letterSpacing: "0.4em",
                   color: "#fff",
                   marginBottom: 8,
                   textAlign: "center",
@@ -763,79 +766,35 @@ export default function SpyOps() {
                 A T L A S
               </div>
 
-              {/* VENTURE INTELLIGENCE OPERATIONS */}
+              {/* Tagline */}
               <div
                 style={{
                   fontFamily: "'Share Tech Mono', monospace",
                   fontSize: 10,
                   letterSpacing: "0.3em",
                   color: "#555",
-                  marginBottom: 48,
+                  marginBottom: 56,
                   textAlign: "center",
                 }}
               >
-                ENGINEERED BY ATLAS
+                VENTURE INTELLIGENCE OPERATIONS
               </div>
 
-              {/* Status indicator */}
-              <div
-                style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: 10,
-                  letterSpacing: "0.2em",
-                  color: "#666",
-                  marginBottom: 12,
-                  textAlign: "center",
-                }}
-              >
-                {authLoading ? "VERIFYING CREDENTIALS..." : "SECURE AUTHENTICATION REQUIRED"}
-              </div>
-
-              {/* Divider line */}
-              <div
-                style={{
-                  width: "min(560px, 85vw)",
-                  height: 1,
-                  background: "#333",
-                  marginBottom: 48,
-                }}
-              />
-
-              {/* Sign-in button */}
-              <button
-                onClick={handleSignIn}
-                disabled={authLoading}
-                className="spyops-btn-primary"
-                style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 11,
-                  letterSpacing: "0.15em",
-                  background: authLoading ? "#333" : "#fff",
-                  color: authLoading ? "#666" : "#000",
-                  border: "none",
-                  padding: "14px 40px",
-                  cursor: authLoading ? "wait" : "none",
-                  transition: "background 0.3s, color 0.3s",
-                }}
-              >
-                {authLoading ? "VERIFYING..." : "SIGN IN ▶"}
-              </button>
-
-              {/* OAuth error message */}
+              {/* OAuth error message — shown above buttons */}
               {oauthError && (
                 <div
                   style={{
                     fontFamily: "'Share Tech Mono', monospace",
                     fontSize: 11,
                     color: "#ff3333",
-                    marginTop: 32,
+                    marginBottom: 32,
                     letterSpacing: "0.15em",
                     textAlign: "center",
                     lineHeight: 1.8,
                     padding: "12px 24px",
                     border: "1px solid rgba(255,51,51,0.3)",
                     background: "rgba(255,51,51,0.05)",
-                    maxWidth: "min(560px, 85vw)",
+                    width: "100%",
                     animation: "spyops-fadeIn 0.5s ease",
                   }}
                 >
@@ -846,44 +805,107 @@ export default function SpyOps() {
                 </div>
               )}
 
-              {/* Demo link */}
+              {/* Two clear action buttons side by side */}
               <div
                 style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: 10,
-                  color: "#444",
-                  marginTop: 32,
-                  textAlign: "center",
+                  display: "flex",
+                  flexDirection: "row",
+                  gap: 16,
+                  width: "100%",
+                  maxWidth: 520,
+                  marginBottom: 48,
                 }}
               >
-                <span
-                  onClick={() => navigate("/demo")}
+                {/* Authorized Access (Sign In) */}
+                <button
+                  onClick={handleSignIn}
+                  disabled={authLoading}
+                  className="spyops-btn-primary"
                   style={{
-                    color: "rgba(34,211,238,0.5)",
-                    cursor: "none",
-                    borderBottom: "1px solid rgba(34,211,238,0.2)",
-                    paddingBottom: 1,
-                    transition: "color 0.2s",
+                    flex: 1,
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 11,
+                    letterSpacing: "0.15em",
+                    background: authLoading ? "#333" : "#fff",
+                    color: authLoading ? "#666" : "#000",
+                    border: "none",
+                    padding: "18px 24px",
+                    cursor: authLoading ? "wait" : "none",
+                    transition: "background 0.3s, color 0.3s",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 6,
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(34,211,238,0.8)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(34,211,238,0.5)")}
                 >
-                  OR VIEW INVESTOR DEMO
-                </span>
+                  <span style={{ fontSize: 12, fontWeight: 600 }}>
+                    {authLoading ? "VERIFYING..." : "AUTHORIZED ACCESS"}
+                  </span>
+                  <span style={{ fontSize: 9, opacity: 0.6, letterSpacing: "0.1em" }}>
+                    {authLoading ? "" : "TEAM & CLIENT LOGIN"}
+                  </span>
+                </button>
+
+                {/* Investor Demo */}
+                <button
+                  onClick={() => navigate("/demo")}
+                  className="spyops-hover"
+                  style={{
+                    flex: 1,
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 11,
+                    letterSpacing: "0.15em",
+                    background: "transparent",
+                    color: "#22D3EE",
+                    border: "1px solid rgba(34,211,238,0.4)",
+                    padding: "18px 24px",
+                    cursor: "none",
+                    transition: "border-color 0.3s, background 0.3s",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(34,211,238,0.8)";
+                    e.currentTarget.style.background = "rgba(34,211,238,0.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(34,211,238,0.4)";
+                    e.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  <span style={{ fontSize: 12, fontWeight: 600 }}>
+                    INVESTOR DEMO
+                  </span>
+                  <span style={{ fontSize: 9, opacity: 0.6, letterSpacing: "0.1em" }}>
+                    VIEW PITCH DECK
+                  </span>
+                </button>
               </div>
 
-              {/* Bottom hint */}
+              {/* Divider */}
+              <div
+                style={{
+                  width: "100%",
+                  maxWidth: 520,
+                  height: 1,
+                  background: "linear-gradient(90deg, transparent, #333, transparent)",
+                  marginBottom: 24,
+                }}
+              />
+
+              {/* Status line */}
               <div
                 style={{
                   fontFamily: "'Share Tech Mono', monospace",
                   fontSize: 10,
                   color: "#333",
-                  marginTop: 32,
                   textAlign: "center",
-                  lineHeight: 1.8,
+                  letterSpacing: "0.2em",
                 }}
               >
-                CLASSIFICATION: CONFIDENTIAL // AUTHORIZED PERSONNEL ONLY
+                CLASSIFICATION: CONFIDENTIAL // INVITE-ONLY ACCESS
               </div>
             </div>
           )}

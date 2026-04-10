@@ -2349,3 +2349,8 @@
 - [x] PITCH-8: Change all build time references from 12 months to <3 months / <90 days
 - [x] PITCH-9: Run tests and verify visual rendering
 - [x] Update Christopher Phelps bio on pitch deck with new provided text
+## Pitch Deck & Auth Improvements (Apr 10)
+- [x] Update Brian Chen's bio with a stronger narrative
+- [x] Redesign login/authentication screen to be clearer and less confusing
+- [x] Make investor demo link more prominent and direct on pitch deck
+- [x] Overall pitch deck polish and improvements
