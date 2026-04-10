@@ -64,108 +64,175 @@ export function registerOAuthRoutes(app: Express) {
     const state = getQueryParam(req, "state");
 
     if (!code || !state) {
+      console.error("[OAuth] Missing code or state params");
       res.status(400).json({ error: "code and state are required" });
       return;
     }
 
     try {
-      const tokenResponse = await sdk.exchangeCodeForToken(code, state);
-      const userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
+      // ── Step 1: Exchange code for token ──────────────────────────────
+      console.log("[OAuth] Step 1: Exchanging code for token...");
+      let tokenResponse;
+      try {
+        tokenResponse = await sdk.exchangeCodeForToken(code, state);
+        console.log("[OAuth] Step 1: Token exchange successful");
+      } catch (tokenError) {
+        console.error("[OAuth] Step 1 FAILED: Token exchange error:", tokenError);
+        res.redirect(302, "/?error=token_exchange_failed");
+        return;
+      }
+
+      // ── Step 2: Get user info ────────────────────────────────────────
+      console.log("[OAuth] Step 2: Getting user info...");
+      let userInfo;
+      try {
+        userInfo = await sdk.getUserInfo(tokenResponse.accessToken);
+        console.log(`[OAuth] Step 2: Got user info — openId=${userInfo.openId}, name=${userInfo.name}, email=${userInfo.email}`);
+      } catch (userInfoError) {
+        console.error("[OAuth] Step 2 FAILED: getUserInfo error:", userInfoError);
+        res.redirect(302, "/?error=user_info_failed");
+        return;
+      }
 
       if (!userInfo.openId) {
+        console.error("[OAuth] Step 2 FAILED: openId missing from user info");
         res.status(400).json({ error: "openId missing from user info" });
         return;
       }
 
+      // ── Step 3: Get database connection ──────────────────────────────
+      console.log("[OAuth] Step 3: Getting database connection...");
       const database = await getDb();
 
-      // ── Check if this is the owner (always allowed) ──────────────────
+      // ── Step 4: Check if this is the owner ───────────────────────────
       const isOwner = userInfo.openId === ENV.ownerOpenId;
+      console.log(`[OAuth] Step 4: isOwner=${isOwner}`);
 
-      // ── Check if user already exists and is active ───────────────────
-      const existingUser = await db.getUserByOpenId(userInfo.openId);
+      // ── Step 5: Check if user already exists ─────────────────────────
+      console.log("[OAuth] Step 5: Looking up existing user...");
+      let existingUser;
+      try {
+        existingUser = await db.getUserByOpenId(userInfo.openId);
+        console.log(`[OAuth] Step 5: existingUser=${existingUser ? `id=${existingUser.id}, role=${existingUser.role}, status=${existingUser.status}` : "null"}`);
+      } catch (lookupError) {
+        console.error("[OAuth] Step 5 FAILED: User lookup error:", lookupError);
+        res.redirect(302, "/?error=db_lookup_failed");
+        return;
+      }
 
       if (existingUser) {
         // Existing user — check if they're blocked or suspended
         if (existingUser.status === "blocked") {
+          console.log(`[OAuth] User ${existingUser.name} is blocked`);
           res.redirect(302, "/?error=blocked");
           return;
         }
         if (existingUser.status === "suspended") {
+          console.log(`[OAuth] User ${existingUser.name} is suspended`);
           res.redirect(302, "/?error=suspended");
           return;
         }
 
         // Active or pending user — update basic info
-        await db.upsertUser({
-          openId: userInfo.openId,
-          name: userInfo.name || null,
-          email: userInfo.email ?? null,
-          loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-          lastSignedIn: new Date(),
-        });
+        console.log("[OAuth] Step 6: Upserting existing user...");
+        try {
+          await db.upsertUser({
+            openId: userInfo.openId,
+            name: userInfo.name || null,
+            email: userInfo.email ?? null,
+            loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
+            lastSignedIn: new Date(),
+          });
+          console.log("[OAuth] Step 6: Upsert successful");
+        } catch (upsertError) {
+          console.error("[OAuth] Step 6 FAILED: Upsert error:", upsertError);
+          res.redirect(302, "/?error=db_update_failed");
+          return;
+        }
 
         // ── Check if existing user has a pending invitation to accept ──
-        // This handles the case where a user logged in before their invitation
-        // was created, or the invitation wasn't matched on first login.
         if (!existingUser.organizationId && database) {
           const email = (userInfo.email ?? existingUser.email ?? "").toLowerCase();
           if (email) {
-            const [pendingInvite] = await database
-              .select()
-              .from(invitations)
-              .where(
-                and(
-                  eq(invitations.email, email),
-                  eq(invitations.status, "pending")
+            try {
+              const [pendingInvite] = await database
+                .select()
+                .from(invitations)
+                .where(
+                  and(
+                    eq(invitations.email, email),
+                    eq(invitations.status, "pending")
+                  )
                 )
-              )
-              .limit(1);
+                .limit(1);
 
-            if (pendingInvite && new Date() <= pendingInvite.expiresAt) {
-              await acceptPendingInvitation(database, existingUser.id, pendingInvite);
-              console.log(`[OAuth] Auto-accepted pending invitation for existing user ${existingUser.name} (${email})`);
+              if (pendingInvite && new Date() <= pendingInvite.expiresAt) {
+                await acceptPendingInvitation(database, existingUser.id, pendingInvite);
+                console.log(`[OAuth] Auto-accepted pending invitation for existing user ${existingUser.name} (${email})`);
+              }
+            } catch (inviteError) {
+              // Non-fatal — user can still log in, just won't auto-accept invitation
+              console.error("[OAuth] Non-fatal: Invitation check failed:", inviteError);
             }
           }
         }
       } else if (isOwner) {
         // Owner first login — auto-create with admin role
-        await db.upsertUser({
-          openId: userInfo.openId,
-          name: userInfo.name || null,
-          email: userInfo.email ?? null,
-          loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-          role: "admin",
-          lastSignedIn: new Date(),
-        });
+        console.log("[OAuth] Step 6: Creating owner user...");
+        try {
+          await db.upsertUser({
+            openId: userInfo.openId,
+            name: userInfo.name || null,
+            email: userInfo.email ?? null,
+            loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
+            role: "admin",
+            lastSignedIn: new Date(),
+          });
+          console.log("[OAuth] Step 6: Owner created successfully");
+        } catch (ownerError) {
+          console.error("[OAuth] Step 6 FAILED: Owner creation error:", ownerError);
+          res.redirect(302, "/?error=db_create_failed");
+          return;
+        }
       } else if (database) {
         // ── New user — check for pending invitation ────────────────────
         const email = (userInfo.email ?? "").toLowerCase();
+        console.log(`[OAuth] Step 6: New user, checking invitation for ${email}...`);
 
         if (!email) {
+          console.log("[OAuth] No email provided — denying access");
           res.redirect(302, "/?error=no_invitation");
           return;
         }
 
-        const [pendingInvite] = await database
-          .select()
-          .from(invitations)
-          .where(
-            and(
-              eq(invitations.email, email),
-              eq(invitations.status, "pending")
+        let pendingInvite;
+        try {
+          const [invite] = await database
+            .select()
+            .from(invitations)
+            .where(
+              and(
+                eq(invitations.email, email),
+                eq(invitations.status, "pending")
+              )
             )
-          )
-          .limit(1);
+            .limit(1);
+          pendingInvite = invite;
+        } catch (inviteQueryError) {
+          console.error("[OAuth] Step 6 FAILED: Invitation query error:", inviteQueryError);
+          res.redirect(302, "/?error=db_query_failed");
+          return;
+        }
 
         if (!pendingInvite) {
-          // No invitation found — deny access
+          console.log(`[OAuth] No pending invitation found for ${email}`);
           res.redirect(302, "/?error=no_invitation");
           return;
         }
 
         // Check if invitation has expired
         if (new Date() > pendingInvite.expiresAt) {
+          console.log(`[OAuth] Invitation expired for ${email}`);
           await database
             .update(invitations)
             .set({ status: "expired" })
@@ -175,45 +242,69 @@ export function registerOAuthRoutes(app: Express) {
         }
 
         // ── Valid invitation — create user ──────────────────────────────
-        await db.upsertUser({
-          openId: userInfo.openId,
-          name: userInfo.name || null,
-          email: userInfo.email ?? null,
-          loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-          role: pendingInvite.role,
-          lastSignedIn: new Date(),
-        });
+        console.log(`[OAuth] Step 6: Creating new user with role=${pendingInvite.role}...`);
+        try {
+          await db.upsertUser({
+            openId: userInfo.openId,
+            name: userInfo.name || null,
+            email: userInfo.email ?? null,
+            loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
+            role: pendingInvite.role,
+            lastSignedIn: new Date(),
+          });
+        } catch (createError) {
+          console.error("[OAuth] Step 6 FAILED: New user creation error:", createError);
+          res.redirect(302, "/?error=db_create_failed");
+          return;
+        }
 
         // Accept the invitation for the new user
-        const newUser = await db.getUserByOpenId(userInfo.openId);
-        if (newUser && database) {
-          await acceptPendingInvitation(database, newUser.id, pendingInvite);
+        try {
+          const newUser = await db.getUserByOpenId(userInfo.openId);
+          if (newUser && database) {
+            await acceptPendingInvitation(database, newUser.id, pendingInvite);
+            console.log(`[OAuth] Invitation accepted for new user ${newUser.name}`);
+          }
+        } catch (acceptError) {
+          console.error("[OAuth] Non-fatal: Invitation acceptance failed:", acceptError);
         }
       } else {
         // No database — can't verify invitation
+        console.error("[OAuth] No database available — denying access");
         res.redirect(302, "/?error=no_invitation");
         return;
       }
 
-      // ── Create session and set cookie ────────────────────────────────
-      const sessionToken = await sdk.createSessionToken(userInfo.openId, {
-        name: userInfo.name || "",
-        expiresInMs: SESSION_MAX_AGE_MS,
-      });
+      // ── Step 7: Create session and set cookie ────────────────────────
+      console.log("[OAuth] Step 7: Creating session token...");
+      let sessionToken;
+      try {
+        sessionToken = await sdk.createSessionToken(userInfo.openId, {
+          name: userInfo.name || "",
+          expiresInMs: SESSION_MAX_AGE_MS,
+        });
+        console.log("[OAuth] Step 7: Session token created successfully");
+      } catch (sessionError) {
+        console.error("[OAuth] Step 7 FAILED: Session token creation error:", sessionError);
+        res.redirect(302, "/?error=session_failed");
+        return;
+      }
 
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: SESSION_MAX_AGE_MS });
 
       // Redirect to dashboard for existing/owner users, or to onboarding for new invited users
       if (existingUser || isOwner) {
+        console.log(`[OAuth] ✓ Login complete for ${userInfo.name} — redirecting to /`);
         res.redirect(302, "/");
       } else {
-        // New invited user — redirect to accept page where they'll see their API key
+        console.log(`[OAuth] ✓ New user ${userInfo.name} onboarded — redirecting to /?welcome=true`);
         res.redirect(302, "/?welcome=true");
       }
     } catch (error) {
-      console.error("[OAuth] Callback failed", error);
-      res.status(500).json({ error: "OAuth callback failed" });
+      console.error("[OAuth] Unexpected callback error:", error);
+      // Redirect to home with error instead of showing raw 500 JSON
+      res.redirect(302, "/?error=unexpected");
     }
   });
 }

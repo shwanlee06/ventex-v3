@@ -413,6 +413,14 @@ export default function SpyOps() {
         blocked: "ACCESS DENIED — YOUR ACCOUNT HAS BEEN BLOCKED",
         suspended: "ACCESS DENIED — YOUR ACCOUNT HAS BEEN SUSPENDED",
         invitation_expired: "ACCESS DENIED — YOUR INVITATION HAS EXPIRED",
+        token_exchange_failed: "AUTHENTICATION FAILED — PLEASE TRY AGAIN",
+        user_info_failed: "AUTHENTICATION FAILED — COULD NOT VERIFY IDENTITY",
+        db_lookup_failed: "SERVICE ERROR — PLEASE TRY AGAIN IN A MOMENT",
+        db_update_failed: "SERVICE ERROR — PLEASE TRY AGAIN IN A MOMENT",
+        db_create_failed: "SERVICE ERROR — PLEASE TRY AGAIN IN A MOMENT",
+        db_query_failed: "SERVICE ERROR — PLEASE TRY AGAIN IN A MOMENT",
+        session_failed: "SESSION ERROR — PLEASE TRY AGAIN",
+        unexpected: "UNEXPECTED ERROR — PLEASE TRY AGAIN",
       };
       setOauthError(errorMessages[error] || "ACCESS DENIED — AUTHENTICATION FAILED");
       // Clean URL

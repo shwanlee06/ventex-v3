@@ -2311,3 +2311,10 @@
 
 ## Global Custom Cursor (Apr 09)
 - [x] CURSOR-1: Extract custom cursor from SpyOps and apply it globally — created CustomCursor component, added to App.tsx, added cursor:none to global CSS for pointer devices
+
+## Permission Denied for Atlas Members (Apr 09)
+- [x] PERM-1: Verified Chris's DB record is correct (admin, active, no org) — issue was likely unpublished code or transient OAuth error. Added detailed OAuth error handling.
+
+## OAuth Internal Server Error for Chris (Apr 09)
+- [x] OAUTH-1: Fix internal server error — OAuth callback now redirects with error params instead of showing raw 500 JSON
+- [x] OAUTH-2: Added step-by-step logging to OAuth callback (7 steps: token exchange, user info, DB lookup, upsert, invitation check, session creation, redirect)
