@@ -2354,3 +2354,4 @@
 - [x] Redesign login/authentication screen to be clearer and less confusing
 - [x] Make investor demo link more prominent and direct on pitch deck
 - [x] Overall pitch deck polish and improvements
+- [x] Fix overlap between "OR READ THE FULL PITCH" button and scroll indicator on Demo page
