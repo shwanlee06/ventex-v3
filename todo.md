@@ -2348,3 +2348,4 @@
 - [x] PITCH-7: Remove any remaining references to old line-count metrics
 - [x] PITCH-8: Change all build time references from 12 months to <3 months / <90 days
 - [x] PITCH-9: Run tests and verify visual rendering
+- [x] Update Christopher Phelps bio on pitch deck with new provided text

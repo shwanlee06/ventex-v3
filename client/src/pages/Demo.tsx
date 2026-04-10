@@ -150,7 +150,7 @@ const TEAM = [
     color: "#22C55E",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/chris-phelps_c7e7c272.jpeg",
     linkedin: "https://linkedin.com/in/chrisphelps",
-    bio: "Self-taught into enterprise sales and never looked back. Chris owns the entire revenue engine — from first touch to closed deal. He built the go-to-market playbook for ATLAS from scratch, mapping client acquisition across UHNWI networks, family offices, and institutional channels. Relentless in execution, sharp in positioning, and the reason ATLAS has a pipeline before it has a pitch deck.",
+    bio: "Christopher Phelps is a self-taught revenue operator who built his sales foundation through hands-on experience rather than a traditional background. As Co-Founder and CRO of Aurovia, he leads go-to-market strategy and client acquisition for ATLAS, focused on family offices, UHNWI networks, and institutional channels. He owns the full revenue cycle from first outreach to closed deal and built the commercial playbook from the ground up.",
     quote: "Pipeline doesn't build itself. But with the right system, it gets close.",
     stats: [
       { label: "GTM Playbook", value: "Built" },
