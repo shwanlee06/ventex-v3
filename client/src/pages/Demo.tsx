@@ -72,7 +72,7 @@ const PRODUCT_STATS = [
   { value: "5", label: "AI intelligence engines" },
   { value: "6", label: "sectors automated" },
   { value: "3", label: "continents, one platform" },
-  { value: "<12mo", label: "concept to deployment" },
+  { value: "<3mo", label: "concept to deployment" },
   { value: "750+", label: "automated test cases" },
   { value: "SOC 2", label: "compliant architecture" },
 ];
@@ -120,12 +120,12 @@ const TEAM = [
     color: "#22D3EE",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee-new_e321fa79.webp",
     linkedin: "https://linkedin.com/in/shwanlee",
-    bio: "Built ATLAS from the ground up — 5 AI intelligence engines, SOC 2-compliant architecture, and an enterprise-grade platform targeting a $6 trillion market. Shwan didn't study the problem in a classroom. He watched it happen firsthand inside a UHNWI holding company, saw the inefficiencies bleeding millions, and spent the next year engineering the solution. Full-stack architect, systems thinker, and the driving force behind every component of ATLAS.",
+    bio: "Built ATLAS from the ground up — 5 AI intelligence engines, SOC 2-compliant architecture, and an enterprise-grade platform targeting a $6 trillion market. Shwan didn't study the problem in a classroom. He watched it happen firsthand inside a UHNWI holding company, saw the inefficiencies bleeding millions, and spent the next 90 days engineering the solution. Full-stack architect, systems thinker, and the driving force behind every component of ATLAS.",
     quote: "We didn't raise money to build the product. We built the product to raise money.",
     stats: [
       { label: "AI Engines", value: "5" },
       { label: "Sectors Automated", value: "6" },
-      { label: "Build Time", value: "<12 months" },
+      { label: "Build Time", value: "<90 days" },
     ],
   },
   {
@@ -699,7 +699,7 @@ export default function Demo() {
                       <div className="text-[10px] text-white/50">person team</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-emerald-400 font-mono">&lt;12mo</div>
+                      <div className="text-lg font-bold text-emerald-400 font-mono">&lt;3mo</div>
                       <div className="text-[10px] text-white/50">to deployment</div>
                     </div>
                   </div>
@@ -745,7 +745,7 @@ export default function Demo() {
               className="text-[clamp(20px,3vw,40px)] font-bold leading-[0.95] mb-8 text-emerald-400"
               style={{ fontFamily: HEADLINE_FONT }}
             >
-              SERIES A IN 12 MONTHS.
+              SERIES A IN 18 MONTHS.
             </h3>
           </RevealSection>
 
@@ -825,7 +825,7 @@ export default function Demo() {
             </p>
             <p className="text-sm text-white/70 max-w-2xl leading-relaxed mb-12">
               We didn't raise money to build the product. We built the product to raise money.
-              No outsourced code. No borrowed ideas. Every line, every engine, every pipeline — built in-house.
+              No outsourced code. No borrowed ideas. Every engine, every pipeline — built in-house in under 90 days.
             </p>
           </RevealSection>
 
