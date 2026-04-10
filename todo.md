@@ -2318,3 +2318,6 @@
 ## OAuth Internal Server Error for Chris (Apr 09)
 - [x] OAUTH-1: Fix internal server error — OAuth callback now redirects with error params instead of showing raw 500 JSON
 - [x] OAUTH-2: Added step-by-step logging to OAuth callback (7 steps: token exchange, user info, DB lookup, upsert, invitation check, session creation, redirect)
+
+## Team Bios — Rewrite (Apr 10)
+- [x] BIO-1: Rewrite all 3 team bios (Shwan, Chris, Brian) — compelling, transparent, no age references, removed age badges from UI

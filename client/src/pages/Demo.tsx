@@ -119,28 +119,25 @@ const TEAM = [
     name: "Shwan Lee",
     initials: "SL",
     role: "Founder & CEO",
-    age: "19",
     color: "#22D3EE",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee_26a656c5.webp",
-    bio: "19 years old. Built ATLAS from the ground up — 77,580+ lines of production code, 5 AI intelligence engines, an enterprise-grade platform targeting a $6 trillion market. He didn't study the problem. He watched it happen inside a UHNWI holding company and spent the next year building the solution. Most founders his age are still in class.",
+    bio: "Built ATLAS from the ground up — 77,580+ lines of production code, 5 AI intelligence engines, and an enterprise-grade platform targeting a $6 trillion market. Shwan didn't study the problem in a classroom. He watched it happen firsthand inside a UHNWI holding company, saw the inefficiencies bleeding millions, and spent the next year engineering the solution. Full-stack architect, systems thinker, and the driving force behind every line of ATLAS.",
   },
   {
     name: "Brian Chen",
     initials: "BC",
     role: "COO",
-    age: "17",
     color: "#A78BFA",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/brian-chen_b535f902.jpeg",
-    bio: "17 years old. Runs operations and contributed the intelligence behind ATLAS's AI agents, including the Mirofish prediction system. Still in high school — but already operating at a level most professionals never reach. Ambitious, relentless, and built different from anyone his age.",
+    bio: "Runs day-to-day operations and architected the intelligence behind ATLAS's autonomous AI agents, including the Mirofish predictive engine. Brian doesn't just manage — he builds the systems that manage themselves. Operational discipline meets deep technical intuition. The kind of operator who sees bottlenecks before they form and eliminates them before anyone notices.",
   },
   {
     name: "Chris Phelps",
     initials: "CP",
     role: "CRO",
-    age: null,
     color: "#22C55E",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/chris-phelps_c7e7c272.jpeg",
-    bio: "Self-taught into the Chief Revenue Officer role. College grad who learned enterprise sales by doing it. Drives go-to-market execution and client acquisition strategy for ATLAS.",
+    bio: "Self-taught into enterprise sales and never looked back. Chris owns the entire revenue engine — from first touch to closed deal. He built the go-to-market playbook for ATLAS from scratch, mapping client acquisition across UHNWI networks, family offices, and institutional channels. Relentless in execution, sharp in positioning, and the reason ATLAS has a pipeline before it has a pitch deck.",
   },
 ];
 
@@ -827,11 +824,7 @@ export default function Demo() {
                   <div className="p-5">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-semibold text-white">{t.name}</span>
-                      {t.age && (
-                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border border-white/15 text-white/50">
-                          {t.age} yrs
-                        </span>
-                      )}
+
                     </div>
                     <div className="text-[10px] tracking-wide mb-3" style={{ color: `${t.color}99` }}>{t.role}</div>
                     <p className="text-[11px] text-white/60 leading-relaxed">{t.bio}</p>
