@@ -1,6 +1,4 @@
-// ============================================================================
 // AI Chat Router — Document-Aware Intelligence Agent
-// ============================================================================
 
 import { z } from "zod";
 import { protectedProcedure, adminProcedure, router } from "../_core/trpc";

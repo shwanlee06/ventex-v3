@@ -1,13 +1,9 @@
-// ============================================================================
 // SSE Event Bus — Server-Sent Events for real-time updates
 // Clients subscribe to /api/events and receive push notifications
-// for feed updates, notification changes, and agent activity.
-// ============================================================================
 
 import { Router, type Request, type Response } from "express";
 import { sdk } from "../_core/sdk";
 
-// ── Event types ─────────────────────────────────────────────────────────
 export type SSEEventType =
   | "feed_update"       // New velocity feed item
   | "notification"      // New notification
@@ -25,7 +21,6 @@ export interface SSEEvent {
   organizationId?: number;  // Target specific org
 }
 
-// ── Client registry ─────────────────────────────────────────────────────
 interface SSEClient {
   id: string;
   res: Response;
@@ -37,7 +32,6 @@ interface SSEClient {
 const clients = new Map<string, SSEClient>();
 let clientIdCounter = 0;
 
-// ── Broadcast to connected clients ──────────────────────────────────────
 export function broadcastSSE(event: SSEEvent) {
   const payload = `data: ${JSON.stringify({ type: event.type, ...event.data })}\n\n`;
 
@@ -57,7 +51,6 @@ export function broadcastSSE(event: SSEEvent) {
   });
 }
 
-// ── Heartbeat — keep connections alive ──────────────────────────────────
 setInterval(() => {
   const heartbeat = `data: ${JSON.stringify({ type: "heartbeat", ts: Date.now() })}\n\n`;
   Array.from(clients.entries()).forEach(([id, client]) => {
@@ -69,7 +62,6 @@ setInterval(() => {
   });
 }, 30_000); // Every 30 seconds
 
-// ── Express router ──────────────────────────────────────────────────────
 export const sseRouter = Router();
 
 sseRouter.get("/api/events", async (req: Request, res: Response) => {
@@ -113,7 +105,6 @@ sseRouter.get("/api/events", async (req: Request, res: Response) => {
   });
 });
 
-// ── Stats endpoint (admin only) ─────────────────────────────────────────
 sseRouter.get("/api/events/stats", async (req: Request, res: Response) => {
   let statsUser;
   try {
@@ -138,7 +129,6 @@ sseRouter.get("/api/events/stats", async (req: Request, res: Response) => {
   });
 });
 
-// ── Helper: get connected client count ──────────────────────────────────
 export function getConnectedClientCount(): number {
   return clients.size;
 }

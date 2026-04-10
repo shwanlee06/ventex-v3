@@ -8,9 +8,8 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { aiStreamRouter } from "../routes/aiStream";
-import { startAgentScheduler, getSchedulerStatus, triggerManualCycle } from "../agentScheduler";
-import { runDataRetentionPurge, getRetentionStats } from "../security/dataRetention";
-import airtableSyncRouter from "../routes/airtableSync";
+import { startAgentScheduler, getSchedulerStatus } from "../agentScheduler";
+import { runDataRetentionPurge } from "../security/dataRetention";
 import inviteValidationRouter from "../routes/inviteValidation";
 import { sseRouter } from "../routes/sseEvents";
 
@@ -41,7 +40,6 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-  // ── Security headers (SOC 2 compliance) ──────────────────────────────
   app.use((_req, res, next) => {
     // Prevent MIME-type sniffing
     res.setHeader("X-Content-Type-Options", "nosniff");
@@ -69,8 +67,6 @@ async function startServer() {
   registerOAuthRoutes(app);
   // AI streaming endpoint (SSE)
   app.use(aiStreamRouter);
-  // Airtable sync endpoint
-  app.use("/api/airtable", airtableSyncRouter);
   // Public invite validation (no auth)
   app.use(inviteValidationRouter);
   // SSE real-time events
@@ -83,7 +79,6 @@ async function startServer() {
       createContext,
     })
   );
-  // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
   } else {

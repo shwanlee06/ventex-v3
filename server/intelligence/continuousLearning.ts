@@ -1,8 +1,6 @@
-// ═══════════════════════════════════════════════════════════════════════════
 // ATLAS Continuous Learning Engine
 // Gap 3: Feedback loops, outcome tracking, recommendation calibration
 // Tracks whether agent recommendations were followed and what happened
-// ═══════════════════════════════════════════════════════════════════════════
 
 import { getDb } from "../db";
 import { eq, and, desc, sql, gte, isNotNull } from "drizzle-orm";
@@ -12,13 +10,11 @@ import {
 } from "../../drizzle/schema";
 import { invokeLLM } from "../_core/llm";
 
-// ── Track Recommendation Outcomes ───────────────────────────────────────
 // Matches agent recommendations to what actually happened
 export async function trackOutcomes(organizationId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  console.log(`[ContinuousLearning] Tracking outcomes for org ${organizationId}`);
 
   // Get agent events that had recommendations but no outcome tracked yet
   const untrackedEvents = await db
@@ -118,12 +114,10 @@ export async function trackOutcomes(organizationId: number) {
   return tracked;
 }
 
-// ── Compute Agent Performance Metrics ───────────────────────────────────
 export async function computeAgentPerformance(organizationId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  console.log(`[ContinuousLearning] Computing agent performance for org ${organizationId}`);
 
   const agentNames = ["overdue", "velocity", "distribution", "orchestrator"];
   const results: Array<typeof agentPerformance.$inferInsert> = [];
@@ -220,27 +214,19 @@ export async function computeAgentPerformance(organizationId: number) {
   return results;
 }
 
-// ── Master Run — called by agent scheduler ──────────────────────────────
 export async function runContinuousLearning(organizationId: number) {
-  console.log(`[ContinuousLearning] Running for org ${organizationId}`);
   const start = Date.now();
 
   const tracked = await trackOutcomes(organizationId);
   const performance = await computeAgentPerformance(organizationId);
 
-  const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-  console.log(
-    `[ContinuousLearning] Complete: ${tracked} outcomes tracked, ${performance.length} agent reports in ${elapsed}s`
-  );
-
   return {
     outcomesTracked: tracked,
     agentReports: performance.length,
-    elapsedSeconds: parseFloat(elapsed),
+    elapsedSeconds: parseFloat(((Date.now() - start) / 1000).toFixed(1)),
   };
 }
 
-// ── Get Agent Performance Summary for Display ───────────────────────────
 export async function getAgentPerformanceSummary(organizationId: number) {
   const db = await getDb();
   if (!db) return [];

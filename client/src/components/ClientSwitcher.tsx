@@ -1,8 +1,6 @@
-// ============================================================================
 // Client Switcher — Command-palette-style overlay for ATLAS operators
 // Shows client cards with health, overdue count, sectors, search/filter
 // Triggered from Topbar or keyboard shortcut (Ctrl+K)
-// ============================================================================
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { trpc } from "@/lib/trpc";

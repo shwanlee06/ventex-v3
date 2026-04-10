@@ -11,7 +11,6 @@ export async function getDb() {
     try {
       _db = drizzle(process.env.DATABASE_URL);
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
       _db = null;
     }
   }
@@ -25,7 +24,6 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
   const db = await getDb();
   if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
     return;
   }
 
@@ -35,7 +33,6 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     };
     const updateSet: Record<string, unknown> = {};
 
-    // name is set on INSERT but NOT overwritten on UPDATE (preserves manual corrections)
     const insertOnlyFields = ["name"] as const;
     const updateableFields = ["email", "loginMethod"] as const;
     type AnyTextField = "name" | "email" | "loginMethod";
@@ -94,7 +91,6 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 export async function getUserByOpenId(openId: string) {
   const db = await getDb();
   if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
     return undefined;
   }
 
@@ -103,7 +99,6 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// ── Audit Log Helper ─────────────────────────────────────────────────────
 export async function writeAuditLog(entry: {
   entityType: string;
   entityId?: number | null;
@@ -117,7 +112,6 @@ export async function writeAuditLog(entry: {
 }) {
   const db = await getDb();
   if (!db) {
-    console.warn("[AuditLog] Cannot write: database not available");
     return;
   }
   try {

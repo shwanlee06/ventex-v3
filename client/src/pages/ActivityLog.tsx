@@ -1,6 +1,4 @@
-// ============================================================================
 // Activity Log Page — /activity — Split View: ATLAS Ops vs Client Business
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
@@ -18,7 +16,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/_core/hooks/useAuth";
 
-// ── Icons & Colors ──────────────────────────────────────────────────────
 
 const ENTITY_ICONS: Record<string, React.ReactNode> = {
   venture: <Building2 className="size-3.5 text-blue-400" />,
@@ -73,7 +70,6 @@ const SOURCE_STYLES = {
 
 type SourceKey = "all" | "atlas_ops" | "client_business" | "system";
 
-// ── Helpers ─────────────────────────────────────────────────────────────
 
 function formatTimestamp(d: string | Date): string {
   const date = new Date(d);
@@ -93,7 +89,6 @@ function getSourceBadge(source: string | null) {
   return { label: "Other", className: "bg-secondary text-muted-foreground border-border" };
 }
 
-// ── Main Component ──────────────────────────────────────────────────────
 
 export default function ActivityLog() {
   const { user } = useAuth();
@@ -107,7 +102,6 @@ export default function ActivityLog() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showCount, setShowCount] = useState(50);
 
-  // ── Source counts ───────────────────────────────────────────────────
   const sourceCounts = useMemo(() => {
     const counts = { atlas_ops: 0, client_business: 0, system: 0, other: 0 };
     entries.forEach(e => {
@@ -120,7 +114,6 @@ export default function ActivityLog() {
     return counts;
   }, [entries]);
 
-  // ── Filtered entries ────────────────────────────────────────────────
   const filtered = useMemo(() => {
     let result = entries;
 
@@ -149,7 +142,6 @@ export default function ActivityLog() {
   const displayed = filtered.slice(0, showCount);
   const hasMore = filtered.length > showCount;
 
-  // ── Group by date ───────────────────────────────────────────────────
   const grouped = useMemo(() => {
     const groups: Record<string, typeof displayed> = {};
     displayed.forEach(entry => {
@@ -161,7 +153,6 @@ export default function ActivityLog() {
     return Object.entries(groups);
   }, [displayed]);
 
-  // ── Entity type counts (within current source filter) ──────────────
   const typeCounts = useMemo(() => {
     const base = sourceFilter !== "all"
       ? entries.filter(e => (e as any).activitySource === sourceFilter)

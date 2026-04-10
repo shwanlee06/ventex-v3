@@ -1,8 +1,6 @@
-// ============================================================================
 // Agent Execution Log — Timestamped action feed showing what agents DID
 // Format: [Agent Name] [Timestamp] Action description — outcome
 // The proof that ATLAS is executing, not just watching.
-// ============================================================================
 
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";

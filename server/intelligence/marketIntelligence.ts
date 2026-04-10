@@ -1,8 +1,6 @@
-// ═══════════════════════════════════════════════════════════════════════════
 // ATLAS Market Intelligence Service
 // Gap 2: External data ingestion — sector signals, regulatory changes, market trends
 // Uses LLM to synthesize sector-specific intelligence for each client's portfolio
-// ═══════════════════════════════════════════════════════════════════════════
 
 import { getDb } from "../db";
 import { eq, and, desc, sql, inArray } from "drizzle-orm";
@@ -21,7 +19,6 @@ const SECTOR_CONTEXT: Record<string, string> = {
   "Others": "General GCC business environment, economic diversification, free zone regulations, foreign ownership laws, VAT updates",
 };
 
-// ── Generate Market Signals for a Sector ────────────────────────────────
 async function generateSectorSignals(
   sector: string,
   ventureNames: string[],
@@ -102,12 +99,10 @@ Generate 3-5 realistic, specific market signals that would be relevant to these 
   }
 }
 
-// ── Run Market Intelligence for an Organization ─────────────────────────
 export async function runMarketIntelligence(organizationId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  console.log(`[MarketIntelligence] Running for org ${organizationId}`);
   const start = Date.now();
 
   // Get org info
@@ -118,7 +113,6 @@ export async function runMarketIntelligence(organizationId: number) {
     .limit(1);
 
   if (!org) {
-    console.warn(`[MarketIntelligence] Org ${organizationId} not found`);
     return { signals: 0 };
   }
 
@@ -130,7 +124,6 @@ export async function runMarketIntelligence(organizationId: number) {
 
   const ventureIds = accessRows.map((r) => r.ventureId);
   if (ventureIds.length === 0) {
-    console.log(`[MarketIntelligence] No ventures for org ${organizationId}`);
     return { signals: 0 };
   }
 
@@ -177,15 +170,10 @@ export async function runMarketIntelligence(organizationId: number) {
     }
   }
 
-  const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-  console.log(
-    `[MarketIntelligence] Complete: ${totalSignals} signals across ${Object.keys(bySector).length} sectors in ${elapsed}s`
-  );
-
-  return { signals: totalSignals, sectors: Object.keys(bySector).length, elapsedSeconds: parseFloat(elapsed) };
+  const elapsed = parseFloat(((Date.now() - start) / 1000).toFixed(1));
+  return { signals: totalSignals, sectors: Object.keys(bySector).length, elapsedSeconds: elapsed };
 }
 
-// ── Get Active Signals for an Organization ──────────────────────────────
 export async function getActiveSignals(organizationId: number, limit = 20) {
   const db = await getDb();
   if (!db) return [];
@@ -206,7 +194,6 @@ export async function getActiveSignals(organizationId: number, limit = 20) {
   return signals;
 }
 
-// ── Get Signals Affecting a Specific Venture ────────────────────────────
 export async function getVentureSignals(ventureId: number, limit = 10) {
   const db = await getDb();
   if (!db) return [];

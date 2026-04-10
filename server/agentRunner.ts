@@ -1,8 +1,6 @@
-// ============================================================================
 // Agent Runner — Shared execution logic for agents
 // Used by both the tRPC router (manual trigger) and the scheduler (auto trigger)
 // Now includes: Predictive Analytics, Market Intelligence, Continuous Learning
-// ============================================================================
 
 import {
   runOverdueAgent,
@@ -33,7 +31,6 @@ export async function runAgentsForOrg(
   organizationId: number,
   config: ClientAgentConfig | null
 ): Promise<{ signalCount: number; intelligence?: IntelligenceResult; escalation?: EscalationResult; proactive?: ProactiveAgentResult }> {
-  // ── Phase 1: Core Agents (existing) ──────────────────────────────────
   const [overdueSignals, velocitySignals, distSignals] = await Promise.all([
     runOverdueAgent(db, organizationId),
     runVelocityAgent(db, organizationId),
@@ -46,7 +43,6 @@ export async function runAgentsForOrg(
   const allSignals = [...allSubSignals, ...orchestratorSignals];
   await persistSignals(db, allSignals);
 
-  // ── Phase 2: Intelligence Engines (new) ──────────────────────────────
   let intelligence: IntelligenceResult | undefined;
   try {
     const intelligenceStart = Date.now();
@@ -76,15 +72,11 @@ export async function runAgentsForOrg(
       console.error(`[AgentRunner] Continuous learning failed for org ${organizationId}:`, learning.reason);
     }
 
-    console.log(
-      `[AgentRunner] Intelligence engines for org ${organizationId}: ` +
-      `predictive=${predictive.status}, market=${market.status}, learning=${learning.status} (${elapsed}s)`
-    );
+
   } catch (err: any) {
     console.error(`[AgentRunner] Intelligence phase failed for org ${organizationId}:`, err.message);
   }
 
-  // ── Phase 2.5: Proactive AI Agents (the engine) ─────────────────────
   let proactiveResult: ProactiveAgentResult | undefined;
   try {
     const proactiveStart = Date.now();
@@ -104,23 +96,14 @@ export async function runAgentsForOrg(
       elapsedSeconds: parseFloat(proactiveElapsed),
     };
 
-    console.log(
-      `[AgentRunner] Proactive agents for org ${organizationId}: ` +
-      `${executorResult.tasksCompleted} tasks completed, ${generatorResult.tasksCreated} tasks created (${proactiveElapsed}s)`
-    );
+
   } catch (err: any) {
     console.error(`[AgentRunner] Proactive agents failed for org ${organizationId}:`, err.message);
   }
 
-  // ── Phase 3: Escalation Sweep ────────────────────────────────────────
   let escalation: EscalationResult | undefined;
   try {
     escalation = await runEscalationSweep(organizationId);
-    console.log(
-      `[AgentRunner] Escalation sweep for org ${organizationId}: ` +
-      `${escalation.nudgesSent} nudges, ${escalation.escalationsCreated} escalations, ` +
-      `${escalation.overdueTaskAlerts} overdue alerts`
-    );
   } catch (err: any) {
     console.error(`[AgentRunner] Escalation sweep failed for org ${organizationId}:`, err.message);
   }

@@ -1,8 +1,6 @@
-// ============================================================================
 // Distribution Timeline — Upgrade 5
 // Vertical timeline with summary pills (Paid/Upcoming) + chronological entries
 // Each entry: left dot + connecting line + right content card
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 import { DollarSign, CheckCircle2, Clock } from "lucide-react";

@@ -555,7 +555,6 @@ export const organizationsRouter = router({
       return { success: true, name: org.name };
     }),
 
-  // ── Onboarding Step 2: Add ventures to an organization ──────────────
   addVentures: adminProcedure
     .input(z.object({
       organizationId: z.number(),
@@ -593,7 +592,6 @@ export const organizationsRouter = router({
       return { created: created.length };
     }),
 
-  // ── Onboarding Step 3: Send team invitations ──────────────────────
   sendInvitations: adminProcedure
     .input(z.object({
       organizationId: z.number(),
@@ -628,7 +626,6 @@ export const organizationsRouter = router({
       return { sent: sent.length, emails: sent };
     }),
 
-  // ── Onboarding Step 4: Configure agent settings ──────────────────
   configureAgents: adminProcedure
     .input(z.object({
       organizationId: z.number(),
@@ -667,7 +664,6 @@ export const organizationsRouter = router({
       return { success: true };
     }),
 
-  // ── Get agent config for an organization ──────────────────────────
   getAgentConfig: adminProcedure
     .input(z.object({ organizationId: z.number() }))
     .query(async ({ input }) => {
@@ -679,7 +675,6 @@ export const organizationsRouter = router({
       return { ...config, autoAdvanceSectors: parseJsonArray(config.autoAdvanceSectors) };
     }),
 
-  // ── Update agent config for an organization ─────────────────
   updateAgentConfig: adminProcedure
     .input(z.object({
       organizationId: z.number(),
@@ -715,7 +710,6 @@ export const organizationsRouter = router({
       return updated;
     }),
 
-  // ── Onboarding Complete — unified mutation ──────────────────────────
   // Creates org + ventures + invitations + agent config in one call
   onboardingComplete: adminProcedure
     .input(

@@ -1,7 +1,5 @@
-// ============================================================================
 // PDF Export Utility — ATLAS System
 // Generates professional distribution reports using jsPDF
-// ============================================================================
 
 import { jsPDF } from "jspdf";
 

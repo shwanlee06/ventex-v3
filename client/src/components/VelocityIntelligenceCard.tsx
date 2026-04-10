@@ -1,11 +1,9 @@
-// ============================================================================
 // Velocity Intelligence Card — Upgrade 1
 // Replaces static "Avg Velocity" KPI with live intelligence:
 // - Large velocity score with color coding
 // - SVG sparkline showing 6-week declining trend
 // - High/Low/Stalled velocity breakdown
 // - Sector warning line for worst-performing sector (from sectorMetrics query)
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";

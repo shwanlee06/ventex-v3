@@ -1,8 +1,6 @@
-// ============================================================================
 // Client Detail Page — Drill into a specific client's workspace
 // Shows ventures, tasks, SPVs, team, activity for the selected client
 // Accessible via /clients/:slug
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
@@ -72,7 +70,6 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 
-// ── Mini progress ring ──────────────────────────────────────────────────
 function ProgressRing({ percent, size = 32, strokeWidth = 3, color = "#4ADE80" }: { percent: number; size?: number; strokeWidth?: number; color?: string }) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -86,7 +83,6 @@ function ProgressRing({ percent, size = 32, strokeWidth = 3, color = "#4ADE80" }
   );
 }
 
-// ── Health indicator ────────────────────────────────────────────────────
 function HealthIndicator({ score }: { score: number }) {
   const color = score >= 70 ? "#4ADE80" : score >= 40 ? "#F59E0B" : "#EF4444";
   const label = score >= 70 ? "Healthy" : score >= 40 ? "At Risk" : "Critical";
@@ -106,12 +102,10 @@ export default function ClientDetail() {
   const [, navigate] = useLocation();
   const slug = params.slug || "";
 
-  // ── Load organization ──────────────────────────────────────────────
   const orgQ = trpc.organizations.bySlug.useQuery({ slug }, { enabled: !!slug });
   const org = orgQ.data;
   const orgId = org?.id;
 
-  // ── Load org-scoped data ───────────────────────────────────────────
   const orgFilter = orgId ? { organizationId: orgId } : undefined;
   const venturesQ = trpc.ventures.list.useQuery(orgFilter, { enabled: !!orgId });
   const tasksQ = trpc.tasks.list.useQuery(orgFilter, { enabled: !!orgId });
@@ -159,7 +153,6 @@ export default function ClientDetail() {
 
   const pageLoading = orgQ.isLoading || venturesQ.isLoading || tasksQ.isLoading;
 
-  // ── Derived data ───────────────────────────────────────────────────
   const allVentures = venturesQ.data || [];
   const allTasks = tasksQ.data || [];
   const allSpvs = spvsQ.data || [];
@@ -168,7 +161,6 @@ export default function ClientDetail() {
   const allTeam = teamQ.data || [];
   const ventureAssignments = ventureAssignmentsQ.data || [];
 
-  // ── UI state ───────────────────────────────────────────────────────
   const [searchTerm, setSearchTerm] = useState("");
   const [sectorFilter, setSectorFilter] = useState<string>("all");
   const [sortField, setSortField] = useState<SortField>("overdue");
@@ -179,7 +171,6 @@ export default function ClientDetail() {
 
   const now = useMemo(() => new Date(), []);
 
-  // ── Partnership analytics computation ─────────────────────────────
   const ventureAnalytics = useMemo(() => {
     return allVentures.map((v) => {
       const vTasks = allTasks.filter(t => t.ventureId === v.id);
@@ -200,7 +191,6 @@ export default function ClientDetail() {
     });
   }, [allVentures, allTasks, allSpvs, now]);
 
-  // ── Member-venture mapping ────────────────────────────────────────
   const membersByVenture = useMemo(() => {
     const map: Record<number, typeof ventureAssignments> = {};
     for (const a of ventureAssignments) {
@@ -915,7 +905,6 @@ export default function ClientDetail() {
 }
 
 
-// ── Blueprints Tab ──────────────────────────────────────────────────────
 function BlueprintsTab({ organizationId }: { organizationId: number }) {
   const templatesQ = trpc.blueprints.listTemplates.useQuery({ organizationId });
   const missingSectorsQ = trpc.blueprints.getMissingSectors.useQuery({ organizationId });

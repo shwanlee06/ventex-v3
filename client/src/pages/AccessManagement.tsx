@@ -1,7 +1,5 @@
-// ============================================================================
 // Access Management — Organizations, Invitations, API Keys
 // Closed-circle access control for Aurovia/ATLAS partnerships
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
@@ -77,7 +75,6 @@ const KEY_STATUS_CONFIG: Record<string, { color: string; icon: React.ReactNode }
 export default function AccessManagement() {
   const [tab, setTab] = useState<Tab>("organizations");
 
-  // ── Stats ──────────────────────────────────────────────────────────
   const stats = trpc.access.getStats.useQuery();
 
   const STAT_CARDS = [
@@ -137,9 +134,7 @@ export default function AccessManagement() {
   );
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // Organizations Tab
-// ════════════════════════════════════════════════════════════════════════
 
 function OrganizationsTab() {
   const [showCreate, setShowCreate] = useState(false);
@@ -325,9 +320,7 @@ function OrganizationsTab() {
   );
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // Invitations Tab
-// ════════════════════════════════════════════════════════════════════════
 
 function InvitationsTab() {
   const [showInvite, setShowInvite] = useState(false);
@@ -574,9 +567,7 @@ function InvitationsTab() {
   );
 }
 
-// ════════════════════════════════════════════════════════════════════════
 // API Keys Tab
-// ════════════════════════════════════════════════════════════════════════
 
 function ApiKeysTab() {
   const keys = trpc.access.listApiKeys.useQuery();

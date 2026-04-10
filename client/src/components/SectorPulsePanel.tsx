@@ -1,8 +1,6 @@
-// ============================================================================
 // Sector Pulse Panel — Upgrade 4
 // Collapsible section showing per-sector health metrics
 // Columns: Sector Name | Ventures | Avg Completion | Overdue | Status Bar
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp } from "lucide-react";

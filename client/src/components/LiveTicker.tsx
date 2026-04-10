@@ -1,10 +1,8 @@
-// ============================================================================
 // LiveTicker — Agent Action Strip
 // Shows what agents DID, not what humans should do.
 // Position: between KPI cards and Live presence bar on operator dashboard
 // Operator only — never visible in client portal
 // Uses AgentContext to avoid duplicate agents.list polling
-// ============================================================================
 
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";

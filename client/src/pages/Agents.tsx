@@ -1,8 +1,6 @@
-// ============================================================================
 // Agents Page — AI Agent Monitoring Dashboard (Velocity Build)
 // 2x2 agent cards with pause/resume, run now, severity bars, action buttons
 // Signal history with action indicators
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import {
@@ -24,7 +22,6 @@ import { toast } from "sonner";
 import { useState, useMemo, useCallback } from "react";
 import { useLocation } from "wouter";
 
-// ── Severity Helpers ────────────────────────────────────────────────────
 
 const SEVERITY_STYLES: Record<string, { icon: React.ReactNode; bg: string; text: string; border: string; color: string }> = {
   critical: {
@@ -69,7 +66,6 @@ function formatTimeAgo(date: Date): string {
   return `${diffDays}d ago`;
 }
 
-// ── Severity Distribution Bar ──────────────────────────────────────────
 
 function SeverityBar({ events }: { events: AgentEvent[] }) {
   const counts = useMemo(() => {
@@ -130,7 +126,6 @@ function SeverityBar({ events }: { events: AgentEvent[] }) {
   );
 }
 
-// ── Agent Card ──────────────────────────────────────────────────────────
 
 function AgentCard({
   agentKey,
@@ -266,7 +261,6 @@ function AgentCard({
   );
 }
 
-// ── Main Page ───────────────────────────────────────────────────────────
 
 export default function AgentsPage() {
   const {

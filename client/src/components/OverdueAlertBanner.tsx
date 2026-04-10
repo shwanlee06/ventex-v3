@@ -1,9 +1,7 @@
-// ============================================================================
 // Overdue Task Escalation Panel — Upgrade 2
 // Collapsible panel with table: Task | Venture | Sector | Days Overdue | Severity | Action
 // Per-row "Notify" buttons + "Notify All" top-right
 // Longest overdue row gets solid red left border
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";

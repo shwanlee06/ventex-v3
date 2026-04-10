@@ -400,7 +400,6 @@ export const teamRouter = router({
           .set({ userId, lastSeenAt: now, invitationStatus: "accepted" })
           .where(eq(teamMembers.id, unlinked.id));
         member = { ...unlinked, userId, lastSeenAt: now };
-        console.log(`[Heartbeat] Auto-linked team member "${unlinked.name}" (id ${unlinked.id}) to user ${userId} via email match`);
       }
     }
 

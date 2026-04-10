@@ -1,6 +1,4 @@
-// ============================================================================
 // DataFreshness — Shows "Updated Xm ago" with live pulse indicator
-// ============================================================================
 
 import { useEffect, useState } from "react";
 

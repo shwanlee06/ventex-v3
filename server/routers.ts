@@ -189,7 +189,6 @@ export const appRouter = router({
         const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
         // Store the token as a pending invitation (reuse invitation infrastructure)
-        // with a special role marker so we know it's a password reset
         await db.insert(invitations).values({
           email: input.email,
           organizationId: user.organizationId || 0,

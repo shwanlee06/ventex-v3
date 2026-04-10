@@ -24,7 +24,6 @@ function Textarea({
       const isComposing = (e.nativeEvent as any).isComposing || dialogComposition.justEndedComposing();
 
       // If Enter key is pressed while composing or just after composition ended,
-      // don't call the user's onKeyDown (this blocks the business logic)
       // Note: For textarea, Shift+Enter should still work for newlines
       if (e.key === "Enter" && !e.shiftKey && isComposing) {
         return;

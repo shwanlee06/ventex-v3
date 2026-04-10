@@ -1,8 +1,6 @@
-// ============================================================================
 // Demo Dashboard — Investor-facing read-only replica of the ATLAS admin dashboard
 // Self-contained: no tRPC, no auth, no external data. Pure static UI.
 // ALL sidebar tabs are interactive with data-rich views.
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 import AnimatedCounter from "@/components/AnimatedCounter";

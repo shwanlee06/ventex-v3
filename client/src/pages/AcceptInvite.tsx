@@ -1,9 +1,7 @@
-// ============================================================================
 // Accept Invite Page — Team Member Invitation Acceptance
 // URL: /accept-invite?token=abc123...
 // Validates token, shows invitation details, redirects to OAuth for sign-in
 // After OAuth callback, the invitation is automatically accepted
-// ============================================================================
 
 import { useState, useEffect, useRef } from "react";
 import { getLoginUrl } from "@/const";

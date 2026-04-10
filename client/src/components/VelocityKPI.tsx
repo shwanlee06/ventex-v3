@@ -1,9 +1,7 @@
-// ============================================================================
 // VelocityKPI — 3-Tier Agent Activity card for ATLAS dashboard
 // Tier 0: No advances → empty state with prompt
 // Tier 1: 1–2 advances → basic metrics + recent list
 // Tier 2: 3+ advances → full sparkline + compression trend + stage breakdown
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 import { useAgents } from "@/contexts/AgentContext";
@@ -37,7 +35,6 @@ function timeAgo(date: Date): string {
   return `${days}d ago`;
 }
 
-// ── Mini Sparkline ──────────────────────────────────────────────────────
 
 function Sparkline({ values, className }: { values: number[]; className?: string }) {
   if (values.length < 2) return null;
@@ -104,7 +101,6 @@ function Sparkline({ values, className }: { values: number[]; className?: string
   );
 }
 
-// ── Stage Breakdown Bar ─────────────────────────────────────────────────
 
 function StageBreakdown({ advances }: { advances: any[] }) {
   const stageStats = useMemo(() => {
@@ -143,7 +139,6 @@ function StageBreakdown({ advances }: { advances: any[] }) {
   );
 }
 
-// ── Main Component ──────────────────────────────────────────────────────
 
 export default function VelocityKPI() {
   const { velocityMetrics } = useAgents();

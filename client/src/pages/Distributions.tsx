@@ -1,7 +1,5 @@
-// ============================================================================
 // Distributions Page — Per-Client Scoped via Workspace Context
 // Card/table view, detail modals, new distribution form
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
@@ -55,13 +53,11 @@ export default function DistributionsPage() {
   const distributions = distQ.data || [];
   const loading = distQ.isLoading;
 
-  // ── Detail modal state ──────────────────────────────────────────────
   const [distModal, setDistModal] = useState<typeof distributions[number] | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"card" | "table" | "timeline">("card");
   const [activeMetric, setActiveMetric] = useState<string | null>(null);
 
-  // ── New distribution form state ─────────────────────────────────────
   const [newName, setNewName] = useState("");
   const [newFund, setNewFund] = useState("");
   const [newAmount, setNewAmount] = useState("");
@@ -76,7 +72,6 @@ export default function DistributionsPage() {
     setNewType("Profit Share"); setNewMethod("Wire Transfer"); setNewStatus("Scheduled");
   };
 
-  // ── Computed metrics ────────────────────────────────────────────────
   const totalDistributed = distributions.reduce((sum, d) => sum + (d.amount || 0), 0);
   const paidAmount = distributions.filter(d => d.status === "Paid").reduce((sum, d) => sum + (d.amount || 0), 0);
   const scheduledAmount = distributions.filter(d => d.status === "Scheduled").reduce((sum, d) => sum + (d.amount || 0), 0);

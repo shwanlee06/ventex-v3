@@ -153,7 +153,6 @@ export function createAutoAuditMiddleware() {
   };
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────────
 
 function extractEntityType(path: string): string {
   const parts = path.split(".");

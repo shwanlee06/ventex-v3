@@ -22,7 +22,6 @@ import { Resend } from "resend";
 const FROM_ADDRESS = "ATLAS <contact@aurovia.co>";
 const REPLY_TO = "slee72106@gmail.com";
 
-// ── Shared Styles for invitation email ──────────────────────────────────
 const BODY_STYLE = `font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; background: #fafafa; color: #1a1a1a; padding: 40px 20px; margin: 0; line-height: 1.6;`;
 const CONTAINER_STYLE = `max-width: 560px; margin: 0 auto;`;
 const HEADER_STYLE = `border-bottom: 1px solid #e5e5e5; padding-bottom: 12px; margin-bottom: 28px;`;

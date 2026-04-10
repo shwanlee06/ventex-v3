@@ -239,8 +239,8 @@ describe("Demo Dashboard", () => {
       expect(source).toContain('href="/demo"');
     });
 
-    it("has Sign In link", () => {
-      expect(source).toContain("Sign In");
+    it("has Authorized Access link", () => {
+      expect(source).toContain("Authorized Access");
       expect(source).toContain('href="/"');
     });
 

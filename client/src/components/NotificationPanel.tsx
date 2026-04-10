@@ -24,7 +24,6 @@ import {
   Send, XCircle, Zap, Eye, RotateCcw,
 } from "lucide-react";
 
-// ── Category config ──────────────────────────────────────────────────
 const CATEGORY_CONFIG: Record<string, { dot: string; bg: string; icon: React.ReactNode; label: string }> = {
   critical: { dot: "bg-red-500", bg: "bg-red-500/10", icon: <AlertCircle className="size-3.5 text-red-400" />, label: "Critical" },
   warning: { dot: "bg-amber-500", bg: "bg-amber-500/10", icon: <AlertTriangle className="size-3.5 text-amber-400" />, label: "Warning" },
@@ -32,7 +31,6 @@ const CATEGORY_CONFIG: Record<string, { dot: string; bg: string; icon: React.Rea
   info: { dot: "bg-blue-500", bg: "bg-blue-500/10", icon: <Info className="size-3.5 text-blue-400" />, label: "Info" },
 };
 
-// ── Type icons ───────────────────────────────────────────────────────
 const TYPE_ICONS: Record<string, React.ReactNode> = {
   task_created: <ListChecks className="size-3.5" />,
   task_completed: <CheckCircle2 className="size-3.5" />,
@@ -66,7 +64,6 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
   deadline: <AlertTriangle className="size-3.5" />,
 };
 
-// ── Action button config ─────────────────────────────────────────────
 const ACTION_BUTTONS: Record<string, { label: string; icon: React.ReactNode; variant: "default" | "outline" | "destructive" }> = {
   review_draft: { label: "Review Draft", icon: <Eye className="size-3" />, variant: "default" },
   send_draft: { label: "Send", icon: <Send className="size-3" />, variant: "default" },

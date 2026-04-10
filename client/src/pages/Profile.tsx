@@ -1,7 +1,5 @@
-// ============================================================================
 // Profile Page — Swiss Instrument design — FULLY PERSISTENT
 // Loads user data from DB, saves changes via tRPC
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/_core/hooks/useAuth";

@@ -2332,3 +2332,9 @@
 
 ## Shwan Lee Photo Update (Apr 10)
 - [x] PHOTO-1: Replace Shwan Lee's photo with new uploaded image (converted HEIC to WebP, updated Demo.tsx + DemoDashboard.tsx)
+
+## Codebase Cleanup & Metric Update
+- [x] Audit codebase for dead code, unused imports, redundant logic, verbose comments
+- [x] Remove unnecessary code to reduce line count without breaking functionality
+- [x] Replace "77K+ lines of code" metric on pitch page with investor-friendly stats
+- [x] Run all tests to verify nothing is broken after cleanup

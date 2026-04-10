@@ -1,7 +1,5 @@
-// ============================================================================
 // DemoContext — Provides demo mode state across the app
 // When isDemo=true, all mutations show a toast instead of executing
-// ============================================================================
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 import { toast } from "sonner";

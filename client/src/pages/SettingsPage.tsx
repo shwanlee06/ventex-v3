@@ -1,7 +1,5 @@
-// ============================================================================
 // Settings Page — Swiss Instrument design — FULLY PERSISTENT
 // All settings load from DB and save via tRPC
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
@@ -45,7 +43,6 @@ const SOC2_ITEMS = [
   { id: "gdpr", label: "GDPR compliance review", done: false },
 ];
 
-// ── Email Test Section ──────────────────────────────────────────────────
 function EmailTestSection() {
   const [testEmail, setTestEmail] = useState("");
   const [sending, setSending] = useState(false);
@@ -116,7 +113,6 @@ export default function SettingsConfigPage() {
   const isAtlas = isAtlasTeam(authUser) && !isPreviewMode;
   const utils = trpc.useUtils();
 
-  // ── Fetch profile data from DB ──────────────────────────────────────
   const { data: profile, isLoading } = trpc.settings.getProfile.useQuery(undefined, {
     enabled: !!authUser,
   });
@@ -128,7 +124,6 @@ export default function SettingsConfigPage() {
     enabled: !!authUser,
   });
 
-  // ── Local state initialized from DB ─────────────────────────────────
   const [compactView, setCompactView] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [emailNotifs, setEmailNotifs] = useState(true);
@@ -160,7 +155,6 @@ export default function SettingsConfigPage() {
     }
   }, [profile]);
 
-  // ── Mutations ───────────────────────────────────────────────────────
   const updateDisplay = trpc.settings.updateDisplay.useMutation({
     onSuccess: () => utils.settings.getProfile.invalidate(),
   });
@@ -177,7 +171,6 @@ export default function SettingsConfigPage() {
     },
   });
 
-  // ── MFA state & mutations ──────────────────────────────────────────
   const { data: mfaStatus, refetch: refetchMfa } = trpc.settings.getMfaStatus.useQuery(undefined, { enabled: !!authUser });
   const mfaSetup = trpc.settings.mfaSetup.useMutation();
   const mfaVerify = trpc.settings.mfaVerify.useMutation({
@@ -250,7 +243,6 @@ export default function SettingsConfigPage() {
     toast.success("Backup codes copied to clipboard");
   }, [mfaBackupCodes]);
 
-  // ── Handlers ────────────────────────────────────────────────────────
   const handleDisplayToggle = useCallback(async (field: "compactView" | "autoRefresh", value: boolean) => {
     if (field === "compactView") setCompactView(value);
     else setAutoRefresh(value);

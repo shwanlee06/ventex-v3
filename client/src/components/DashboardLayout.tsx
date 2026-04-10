@@ -1,8 +1,6 @@
-// ============================================================================
 // DashboardLayout — Swiss Instrument design — Mobile-first responsive
 // Mobile: full-width content + hamburger drawer nav
 // Desktop: sidebar rail + topbar + scrollable content
-// ============================================================================
 
 import AppSidebar from "@/components/AppSidebar";
 import Topbar from "@/components/Topbar";

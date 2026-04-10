@@ -1,8 +1,6 @@
-// ============================================================================
 // AdvanceBanner — Client portal banner for Mode B one-click stage advance
 // Shows when a venture has completed all tasks and is ready to advance.
 // Green gradient banner with venture name, stage info, and advance button.
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";

@@ -1,8 +1,6 @@
-// ============================================================================
 // BlueprintExtractor — Document upload + Conversation extraction UI
 // Two modes: (1) Upload document → LLM extracts blueprint → inline editor
 //            (2) Chat with Concierge AI → builds blueprint through conversation
-// ============================================================================
 import { useState, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -68,7 +66,6 @@ export default function BlueprintExtractor({ organizationId, onComplete, initial
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ── Document upload handler ──────────────────────────────────────────
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -116,7 +113,6 @@ export default function BlueprintExtractor({ organizationId, onComplete, initial
     }
   }, [organizationId, uploadMutation, extractMutation]);
 
-  // ── Text paste extraction ────────────────────────────────────────────
   const handleTextExtract = useCallback(async () => {
     if (!extractedText.trim() || extractedText.length < 50) {
       toast.error("Please paste at least 50 characters of document text");
@@ -139,7 +135,6 @@ export default function BlueprintExtractor({ organizationId, onComplete, initial
     }
   }, [extractedText, organizationId, extractMutation]);
 
-  // ── Chat handler ─────────────────────────────────────────────────────
   const handleChatSend = useCallback(async () => {
     if (!chatInput.trim()) return;
     const newMsg: ChatMessage = { role: "user", content: chatInput.trim() };
@@ -179,7 +174,6 @@ export default function BlueprintExtractor({ organizationId, onComplete, initial
     });
   };
 
-  // ── Mode chooser ─────────────────────────────────────────────────────
   if (mode === "choose") {
     return (
       <div className="space-y-4">
@@ -218,7 +212,6 @@ export default function BlueprintExtractor({ organizationId, onComplete, initial
     );
   }
 
-  // ── Document mode ────────────────────────────────────────────────────
   if (mode === "document" && !blueprint) {
     return (
       <div className="space-y-4">
@@ -277,7 +270,6 @@ export default function BlueprintExtractor({ organizationId, onComplete, initial
     );
   }
 
-  // ── Conversation mode ────────────────────────────────────────────────
   if (mode === "conversation" && !blueprint) {
     return (
       <div className="space-y-4">
@@ -338,7 +330,6 @@ export default function BlueprintExtractor({ organizationId, onComplete, initial
     );
   }
 
-  // ── Blueprint editor (shown after extraction) ────────────────────────
   if (blueprint) {
     return (
       <div className="space-y-4">

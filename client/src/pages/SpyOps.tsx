@@ -343,9 +343,7 @@ function Section({
    ═══════════════════════════════════════════════════════════════ */
 export default function SpyOps() {
   const [, navigate] = useLocation();
-  // useAuth() skips the auth query on public routes (/ is public).
   // We need to query auth.me directly so we can detect when the user
-  // returns from OAuth with a valid session cookie.
   const meQuery = trpc.auth.me.useQuery(undefined, {
     retry: false,
     refetchOnWindowFocus: false,
@@ -558,7 +556,6 @@ export default function SpyOps() {
 
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove);
-    // ring follows with lag
     const iv = setInterval(() => {
       setRingPos((prev) => ({
         x: prev.x + (ringRef.current.x - prev.x) * 0.15,

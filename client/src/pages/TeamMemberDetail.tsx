@@ -1,8 +1,6 @@
-// ============================================================================
 // Team Member Profile Page — Swiss Instrument design
 // Shows: profile header, assigned ventures, tasks, activity log
 // Uses LIVE DB data via tRPC queries
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";

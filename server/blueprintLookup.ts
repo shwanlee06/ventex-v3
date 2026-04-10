@@ -1,8 +1,6 @@
-// ============================================================================
 // Shared Blueprint Lookup — 3-Layer Resolution
 // Used by agents and tRPC procedures alike.
 // Layer 3 (venture override) > Layer 2 (client blueprint) > Layer 1 (system default)
-// ============================================================================
 
 import { getDb } from "./db";
 import {

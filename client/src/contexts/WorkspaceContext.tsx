@@ -31,7 +31,6 @@ const WorkspaceContext = createContext<WorkspaceContextValue>({
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   // NOTE: Do NOT set refetchOnWindowFocus: false — we need invalidation from
-  // the dashboard (utils.organizations.list.invalidate()) to trigger a refetch
   // so the sidebar client list updates after archive/delete.
   const { data: orgs, isLoading, refetch } = trpc.organizations.list.useQuery(undefined, {
     retry: false,

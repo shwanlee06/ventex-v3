@@ -474,7 +474,6 @@ export const venturesRouter = router({
       };
     }),
 
-  // ── getWithMilestones — venture + blueprint tracking + completion % ──
   getWithMilestones: protectedProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ input }) => {
@@ -507,7 +506,6 @@ export const venturesRouter = router({
       };
     }),
 
-  // ── updateMilestone — update a tracking step, check if all blocking complete ──
   updateMilestone: protectedProcedure
     .input(z.object({
       ventureId: z.number(),
@@ -571,7 +569,6 @@ export const venturesRouter = router({
       return { success: true, readyToAdvance, nextStageName, blockingComplete, blockingTotal: blocking.length };
     }),
 
-  // ── populateIntelligence — LLM-fill null fields on all ventures ──
   populateIntelligence: protectedProcedure
     .input(z.object({ organizationId: z.number().optional() }))
     .mutation(async ({ ctx }) => {
@@ -638,7 +635,6 @@ export const venturesRouter = router({
       return { updated, total: needsUpdate.length };
     }),
 
-  // ── recalculateHealth — exact formula from spec ──
   recalculateHealth: protectedProcedure
     .input(z.object({ organizationId: z.number().optional() }))
     .mutation(async ({ ctx }) => {
@@ -657,7 +653,6 @@ export const venturesRouter = router({
 
       let updated = 0;
       for (const v of allVentures) {
-        // dataScore (25pts)
         let dataScore = 0;
         if (v.description) dataScore += 5;
         if (v.currentStatus) dataScore += 5;
@@ -665,12 +660,10 @@ export const venturesRouter = router({
         if (v.nextMilestone) dataScore += 5;
         if (v.location && v.location !== "TBD") dataScore += 5;
 
-        // taskScore (25pts)
         const vTasks = allTasks.filter(t => t.ventureId === v.id);
         const overdueTasks = vTasks.filter(t => t.status === "overdue");
         const taskScore = overdueTasks.length === 0 ? 25 : overdueTasks.length === 1 ? 15 : 0;
 
-        // milestoneScore (25pts)
         const vTracking = allTracking.filter(t => t.ventureId === v.id);
         let milestoneScore = 12; // neutral if no template
         if (vTracking.length > 0) {
@@ -684,7 +677,6 @@ export const venturesRouter = router({
           }
         }
 
-        // momentumScore (25pts)
         const vActivity = allActivity.filter(a => a.entityType === "venture" && a.entityId === v.id);
         let momentumScore = 5; // default: no activity in 30+ days
         if (v.status === "On hold") {

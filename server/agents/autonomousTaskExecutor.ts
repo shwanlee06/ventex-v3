@@ -1,9 +1,6 @@
-// ============================================================================
 // Autonomous Task Executor — AI completes tasks and logs what it did
 // This is the engine that makes ATLAS actually DO the work.
 // It identifies tasks that can be completed autonomously (research, drafts,
-// reviews, assessments) and uses LLM to produce the deliverable.
-// ============================================================================
 
 import { getDb } from "../db";
 import {
@@ -140,7 +137,6 @@ export async function runAutonomousTaskExecutor(
     if (!venture) continue;
 
     try {
-      // ── LLM: Execute the task ──────────────────────────────────────
       const result = await invokeLLM({
         messages: [
           {
@@ -221,16 +217,11 @@ Execute this task and provide the deliverable.`,
         activitySource: "system",
         organizationId: orgId,
       });
-
-      console.log(
-        `[TaskExecutor] Completed "${task.title}" for ${venture.name} (${classification.type})`
-      );
     } catch (err: any) {
       console.error(`[TaskExecutor] Error executing task ${task.id}:`, err.message);
     }
   }
 
-  // ── Check if any ventures now have all tasks complete → trigger velocity ──
   const ventureTaskCounts = new Map<number, { total: number; complete: number }>();
   for (const task of openTasks) {
     if (!task.ventureId) continue;
@@ -256,10 +247,6 @@ Execute this task and provide the deliverable.`,
     const health = Math.max(10, Math.min(95, Math.round(completionRate * 70 + 30)));
     await db.update(ventures).set({ healthScore: health }).where(eq(ventures.id, ventureId));
   }
-
-  console.log(
-    `[TaskExecutor] Org ${orgId}: ${tasksCompleted} tasks completed, ${eventsLogged} events logged`
-  );
 
   // SOC 2 audit trail
   if (tasksCompleted > 0) {

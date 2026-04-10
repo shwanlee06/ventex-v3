@@ -1,7 +1,5 @@
-// ============================================================================
 // Draft Center — Client-facing: review, edit, send, or dismiss AI-generated comms
 // Grouped by venture, searchable, with bulk actions
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";

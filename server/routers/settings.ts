@@ -14,7 +14,6 @@ import { enforceRateLimit } from "../security/rateLimit";
 import { runDataRetentionPurge, getRetentionStats, RETENTION_DAYS } from "../security/dataRetention";
 
 export const settingsRouter = router({
-  // ── Get user profile (from users table + preferences) ──────────────
   getProfile: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
@@ -69,7 +68,6 @@ export const settingsRouter = router({
     };
   }),
 
-  // ── Update personal info (name, email, timezone) ───────────────────
   updateProfile: protectedProcedure
     .input(z.object({
       displayName: z.string().min(1).max(255).optional(),
@@ -119,7 +117,6 @@ export const settingsRouter = router({
       return { success: true };
     }),
 
-  // ── Update notification preferences ────────────────────────────────
   updateNotifications: protectedProcedure
     .input(z.object({
       emailNotifications: z.boolean().optional(),
@@ -162,7 +159,6 @@ export const settingsRouter = router({
       return { success: true };
     }),
 
-  // ── Update display preferences ─────────────────────────────────────
   updateDisplay: protectedProcedure
     .input(z.object({
       compactView: z.boolean().optional(),
@@ -187,7 +183,6 @@ export const settingsRouter = router({
       return { success: true };
     }),
 
-  // ── Update security settings ───────────────────────────────────────
   updateSecurity: protectedProcedure
     .input(z.object({
       twoFactorEnabled: z.boolean().optional(),
@@ -223,11 +218,8 @@ export const settingsRouter = router({
       return { success: true };
     }),
 
-  // ═══════════════════════════════════════════════════════════════════
   // MFA / TOTP Procedures
-  // ═══════════════════════════════════════════════════════════════════
 
-  // ── Get MFA status for current user ────────────────────────────────
   getMfaStatus: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
@@ -243,7 +235,6 @@ export const settingsRouter = router({
     };
   }),
 
-  // ── Begin MFA setup — generate secret + QR code ────────────────────
   mfaSetup: protectedProcedure.mutation(async ({ ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
@@ -282,7 +273,6 @@ export const settingsRouter = router({
     };
   }),
 
-  // ── Verify MFA setup — confirm the code works ─────────────────────
   mfaVerify: protectedProcedure
     .input(z.object({ code: z.string().length(6) }))
     .mutation(async ({ ctx, input }) => {
@@ -345,7 +335,6 @@ export const settingsRouter = router({
       };
     }),
 
-  // ── Validate MFA code (for login flow) ─────────────────────────────
   mfaValidate: protectedProcedure
     .input(z.object({
       code: z.string().min(6).max(9), // 6-digit TOTP or 9-char backup code
@@ -419,7 +408,6 @@ export const settingsRouter = router({
       throw new Error("Invalid MFA code. Please try again.");
     }),
 
-  // ── Disable MFA ────────────────────────────────────────────────────
   mfaDisable: protectedProcedure
     .input(z.object({ code: z.string().length(6) }))
     .mutation(async ({ ctx, input }) => {
@@ -467,7 +455,6 @@ export const settingsRouter = router({
       return { success: true };
     }),
 
-  // ── Regenerate backup codes ────────────────────────────────────────
   mfaRegenerateBackupCodes: protectedProcedure
     .input(z.object({ code: z.string().length(6) }))
     .mutation(async ({ ctx, input }) => {
@@ -508,7 +495,6 @@ export const settingsRouter = router({
       return { backupCodes: plainCodes };
     }),
 
-  // ── Get recent audit log for current user ──────────────────────────
   getAuditLog: protectedProcedure
     .input(z.object({ limit: z.number().min(1).max(100).default(50) }).optional())
     .query(async ({ ctx, input }) => {
@@ -527,7 +513,6 @@ export const settingsRouter = router({
       return logs;
     }),
 
-  // ── Get active sessions for current user ───────────────────────────
   getActiveSessions: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
@@ -542,7 +527,6 @@ export const settingsRouter = router({
     return activeSessions;
   }),
 
-  // ── Terminate a session ────────────────────────────────────────────
   terminateSession: protectedProcedure
     .input(z.object({ sessionId: z.number() }))
     .mutation(async ({ ctx, input }) => {
@@ -556,7 +540,6 @@ export const settingsRouter = router({
       return { success: true };
     }),
 
-  // ── Data Retention ──────────────────────────────────────────────────
   getRetentionStats: protectedProcedure.query(async ({ ctx }) => {
     if (ctx.user!.role !== "admin") throw new Error("Admin only");
     const stats = await getRetentionStats();

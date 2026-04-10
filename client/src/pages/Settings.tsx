@@ -1,6 +1,4 @@
-// ============================================================================
 // SPVs & Deals Page — LIVE DB — Mobile-First
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";

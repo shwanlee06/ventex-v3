@@ -1,8 +1,6 @@
-// ============================================================================
 // People — Condensed view for managing contacts across 30+ clients
 // ATLAS section = just you (the operator)
 // Client Contacts = unified searchable table with client filter
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";

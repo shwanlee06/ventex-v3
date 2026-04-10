@@ -31,7 +31,6 @@ import { isEncryptionConfigured } from "../security/encryption";
 import { resolveOrgId } from "../security/orgScope";
 
 export const securityRouter = router({
-  // ── Role Management ────────────────────────────────────────────────
 
   /** List all users with their roles */
   listUsers: adminProcedure.query(async ({ ctx }) => {
@@ -176,7 +175,6 @@ export const securityRouter = router({
       return { success: true };
     }),
 
-  // ── Venture Access Management ──────────────────────────────────────
 
   /** List all access grants for a venture */
   listVentureAccess: protectedProcedure
@@ -278,7 +276,6 @@ export const securityRouter = router({
       return { success: true };
     }),
 
-  // ── Audit Log ──────────────────────────────────────────────────────
 
   /** Query audit log with filters */
   getAuditLog: protectedProcedure
@@ -359,7 +356,6 @@ export const securityRouter = router({
     };
   }),
 
-  // ── Security Status ────────────────────────────────────────────────
 
   /** Get overall security status */
   getSecurityStatus: protectedProcedure.query(async ({ ctx }) => {
@@ -409,7 +405,6 @@ export const securityRouter = router({
     };
   }),
 
-  // ── Permission Check ───────────────────────────────────────────────
 
   /** Check current user's permissions */
   getMyPermissions: protectedProcedure.query(async ({ ctx }) => {

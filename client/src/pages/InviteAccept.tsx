@@ -1,8 +1,6 @@
-// ============================================================================
 // Invite Accept Page — Partner-branded onboarding
 // URL: /invite/:orgSlug/:token
 // Shows org name, validates invitation, then redirects to OAuth
-// ============================================================================
 
 import { useParams } from "wouter";
 import { useState, useEffect, useRef } from "react";

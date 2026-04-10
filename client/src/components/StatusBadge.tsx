@@ -1,7 +1,5 @@
-// ============================================================================
 // StatusBadge — Swiss Instrument design
 // Flexible status badge that works with multiple status config maps
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 

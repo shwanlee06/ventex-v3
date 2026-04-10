@@ -1,7 +1,6 @@
 // Schema — ATLAS System
 import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, bigint, json, boolean } from "drizzle-orm/mysql-core";
 
-// ── Users (existing) ────────────────────────────────────────────────────
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
   openId: varchar("openId", { length: 64 }).notNull().unique(),
@@ -25,7 +24,6 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// ── Organizations (Partner entities: Aurovia, ATLAS, etc.) ─────────────
 export const organizations = mysqlTable("organizations", {
   id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 255 }).notNull().unique(),
@@ -47,7 +45,6 @@ export const organizations = mysqlTable("organizations", {
 export type Organization = typeof organizations.$inferSelect;
 export type InsertOrganization = typeof organizations.$inferInsert;
 
-// ── Invitations ────────────────────────────────────────────────────────
 export const invitations = mysqlTable("invitations", {
   id: int("id").autoincrement().primaryKey(),
   email: varchar("email", { length: 320 }).notNull(),
@@ -67,7 +64,6 @@ export const invitations = mysqlTable("invitations", {
 export type Invitation = typeof invitations.$inferSelect;
 export type InsertInvitation = typeof invitations.$inferInsert;
 
-// ── API Keys (48-char, venture-scoped) ─────────────────────────────────
 export const apiKeys = mysqlTable("api_keys", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
@@ -85,7 +81,6 @@ export const apiKeys = mysqlTable("api_keys", {
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type InsertApiKey = typeof apiKeys.$inferInsert;
 
-// ── Organization Venture Access (which org can see which ventures) ─────
 export const orgVentureAccess = mysqlTable("org_venture_access", {
   id: int("id").autoincrement().primaryKey(),
   organizationId: int("organizationId").notNull(),
@@ -97,7 +92,6 @@ export const orgVentureAccess = mysqlTable("org_venture_access", {
 
 export type OrgVentureAccess = typeof orgVentureAccess.$inferSelect;
 
-// ── Ventures ────────────────────────────────────────────────────────────
 export const ventures = mysqlTable("ventures", {
   id: int("id").autoincrement().primaryKey(),
   legacyId: varchar("legacyId", { length: 64 }),
@@ -120,7 +114,6 @@ export const ventures = mysqlTable("ventures", {
 export type Venture = typeof ventures.$inferSelect;
 export type InsertVenture = typeof ventures.$inferInsert;
 
-// ── Team Members ────────────────────────────────────────────────────────
 export const teamMembers = mysqlTable("team_members", {
   id: int("id").autoincrement().primaryKey(),
   legacyId: varchar("legacyId", { length: 64 }),
@@ -154,7 +147,6 @@ export const teamMembers = mysqlTable("team_members", {
 export type TeamMember = typeof teamMembers.$inferSelect;
 export type InsertTeamMember = typeof teamMembers.$inferInsert;
 
-// ── Venture Team (join table) ───────────────────────────────────────────
 export const ventureTeam = mysqlTable("venture_team", {
   id: int("id").autoincrement().primaryKey(),
   ventureId: int("ventureId").notNull(),
@@ -166,7 +158,6 @@ export const ventureTeam = mysqlTable("venture_team", {
 export type VentureTeamRow = typeof ventureTeam.$inferSelect;
 export type InsertVentureTeam = typeof ventureTeam.$inferInsert;
 
-// ── Tasks ───────────────────────────────────────────────────────────────
 export const tasks = mysqlTable("tasks", {
   id: int("id").autoincrement().primaryKey(),
   legacyId: varchar("legacyId", { length: 64 }),
@@ -189,7 +180,6 @@ export const tasks = mysqlTable("tasks", {
 export type Task = typeof tasks.$inferSelect;
 export type InsertTask = typeof tasks.$inferInsert;
 
-// ── SPVs ────────────────────────────────────────────────────────────────
 export const spvs = mysqlTable("spvs", {
   id: int("id").autoincrement().primaryKey(),
   legacyId: varchar("legacyId", { length: 64 }),
@@ -209,7 +199,6 @@ export const spvs = mysqlTable("spvs", {
 export type SPV = typeof spvs.$inferSelect;
 export type InsertSPV = typeof spvs.$inferInsert;
 
-// ── SPV Ventures (join table) ───────────────────────────────────────────
 export const spvVentures = mysqlTable("spv_ventures", {
   id: int("id").autoincrement().primaryKey(),
   spvId: int("spvId").notNull(),
@@ -217,7 +206,6 @@ export const spvVentures = mysqlTable("spv_ventures", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
-// ── SPV Team (join table) ───────────────────────────────────────────────
 export const spvTeam = mysqlTable("spv_team", {
   id: int("id").autoincrement().primaryKey(),
   spvId: int("spvId").notNull(),
@@ -226,7 +214,6 @@ export const spvTeam = mysqlTable("spv_team", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
-// ── Distributions ───────────────────────────────────────────────────────
 export const distributions = mysqlTable("distributions", {
   id: int("id").autoincrement().primaryKey(),
   legacyId: varchar("legacyId", { length: 64 }),
@@ -247,7 +234,6 @@ export const distributions = mysqlTable("distributions", {
 export type Distribution = typeof distributions.$inferSelect;
 export type InsertDistribution = typeof distributions.$inferInsert;
 
-// ── Activity Log ────────────────────────────────────────────────────────
 export const activityLog = mysqlTable("activity_log", {
   id: int("id").autoincrement().primaryKey(),
   entityType: varchar("entityType", { length: 64 }).notNull(),
@@ -265,7 +251,6 @@ export const activityLog = mysqlTable("activity_log", {
 export type ActivityLogEntry = typeof activityLog.$inferSelect;
 export type InsertActivityLog = typeof activityLog.$inferInsert;
 
-// ── Venture Files ───────────────────────────────────────────────────────
 export const ventureFiles = mysqlTable("venture_files", {
   id: int("id").autoincrement().primaryKey(),
   ventureId: int("ventureId").notNull(),
@@ -282,7 +267,6 @@ export const ventureFiles = mysqlTable("venture_files", {
 export type VentureFile = typeof ventureFiles.$inferSelect;
 export type InsertVentureFile = typeof ventureFiles.$inferInsert;
 
-// ── Venture Folders ─────────────────────────────────────────────────────
 export const ventureFolders = mysqlTable("venture_folders", {
   id: int("id").autoincrement().primaryKey(),
   ventureId: int("ventureId").notNull(),
@@ -308,7 +292,6 @@ export const notifications = mysqlTable("notifications", {
 });export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
 
-// ── Contacts ────────────────────────────────────────────────────────────
 export const contacts = mysqlTable("contacts", {
   id: int("id").autoincrement().primaryKey(),
   legacyId: varchar("legacyId", { length: 64 }),
@@ -325,7 +308,6 @@ export const contacts = mysqlTable("contacts", {
 export type Contact = typeof contacts.$inferSelect;
 export type InsertContact = typeof contacts.$inferInsert;
 
-// ── SPV Files ──────────────────────────────────────────────────────────
 export const spvFiles = mysqlTable("spv_files", {
   id: int("id").autoincrement().primaryKey(),
   spvId: int("spvId").notNull(),
@@ -342,7 +324,6 @@ export const spvFiles = mysqlTable("spv_files", {
 export type SpvFile = typeof spvFiles.$inferSelect;
 export type InsertSpvFile = typeof spvFiles.$inferInsert;
 
-// ── SPV Folders ────────────────────────────────────────────────────────
 export const spvFolders = mysqlTable("spv_folders", {
   id: int("id").autoincrement().primaryKey(),
   spvId: int("spvId").notNull(),
@@ -351,7 +332,6 @@ export const spvFolders = mysqlTable("spv_folders", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
-// ── Document Intelligence ──────────────────────────────────────────────
 export const documentIntelligence = mysqlTable("document_intelligence", {
   id: int("id").autoincrement().primaryKey(),
   fileId: int("fileId").notNull(),
@@ -374,7 +354,6 @@ export const documentIntelligence = mysqlTable("document_intelligence", {
 export type DocumentIntel = typeof documentIntelligence.$inferSelect;
 export type InsertDocumentIntel = typeof documentIntelligence.$inferInsert;
 
-// ── Venture Risks ──────────────────────────────────────────────────────
 export const ventureRisks = mysqlTable("venture_risks", {
   id: int("id").autoincrement().primaryKey(),
   ventureId: int("ventureId").notNull(),
@@ -387,7 +366,6 @@ export const ventureRisks = mysqlTable("venture_risks", {
 export type VentureRisk = typeof ventureRisks.$inferSelect;
 export type InsertVentureRisk = typeof ventureRisks.$inferInsert;
 
-// ── Meeting Briefs ─────────────────────────────────────────────────────
 export const meetingBriefs = mysqlTable("meeting_briefs", {
   id: int("id").autoincrement().primaryKey(),
   fileId: int("fileId").notNull(),
@@ -405,7 +383,6 @@ export const meetingBriefs = mysqlTable("meeting_briefs", {
 export type MeetingBrief = typeof meetingBriefs.$inferSelect;
 export type InsertMeetingBrief = typeof meetingBriefs.$inferInsert;
 
-// ── AI Observations ────────────────────────────────────────────────────
 export const aiObservations = mysqlTable("ai_observations", {
   id: int("id").autoincrement().primaryKey(),
   organizationId: int("organizationId"),
@@ -424,7 +401,6 @@ export const aiObservations = mysqlTable("ai_observations", {
 export type AiObservation = typeof aiObservations.$inferSelect;
 export type InsertAiObservation = typeof aiObservations.$inferInsert;
 
-// ── Daily Briefs ───────────────────────────────────────────────────────
 export const dailyBriefs = mysqlTable("daily_briefs", {
   id: int("id").autoincrement().primaryKey(),
   organizationId: int("organizationId"),
@@ -440,7 +416,6 @@ export const dailyBriefs = mysqlTable("daily_briefs", {
 export type DailyBrief = typeof dailyBriefs.$inferSelect;
 export type InsertDailyBrief = typeof dailyBriefs.$inferInsert;
 
-// ── Smart Alerts ───────────────────────────────────────────────────────
 export const smartAlerts = mysqlTable("smart_alerts", {
   id: int("id").autoincrement().primaryKey(),
   organizationId: int("organizationId"),
@@ -458,7 +433,6 @@ export const smartAlerts = mysqlTable("smart_alerts", {
 export type SmartAlert = typeof smartAlerts.$inferSelect;
 export type InsertSmartAlert = typeof smartAlerts.$inferInsert;
 
-// ── RBAC: User-Venture Access ──────────────────────────────────────────
 // Row-level security: maps users to ventures/SPVs they can access
 export const userVentureAccess = mysqlTable("user_venture_access", {
   id: int("id").autoincrement().primaryKey(),
@@ -473,7 +447,6 @@ export const userVentureAccess = mysqlTable("user_venture_access", {
 
 export type UserVentureAccess = typeof userVentureAccess.$inferSelect;
 
-// ── Audit Log ──────────────────────────────────────────────────────────
 // SOC 2 compliant audit trail of all access and mutations
 export const auditLog = mysqlTable("audit_log", {
   id: int("id").autoincrement().primaryKey(),
@@ -493,7 +466,6 @@ export const auditLog = mysqlTable("audit_log", {
 
 export type AuditLog = typeof auditLog.$inferSelect;
 
-// ── Sessions ───────────────────────────────────────────────────────────
 // Track active sessions for zero-trust session management
 export const sessions = mysqlTable("sessions", {
   id: int("id").autoincrement().primaryKey(),
@@ -510,7 +482,6 @@ export const sessions = mysqlTable("sessions", {
 
 export type Session = typeof sessions.$inferSelect;
 
-// ── User Preferences ──────────────────────────────────────────────────
 // Persisted per-user settings for profile, notifications, display, and security
 export const userPreferences = mysqlTable("user_preferences", {
   id: int("id").autoincrement().primaryKey(),
@@ -540,7 +511,6 @@ export const userPreferences = mysqlTable("user_preferences", {
 export type UserPreference = typeof userPreferences.$inferSelect;
 export type InsertUserPreference = typeof userPreferences.$inferInsert;
 
-// ── Agent Events (AI Agent System — Velocity Build) ─────────────────────
 export const agentEvents = mysqlTable("agent_events", {
   id: int("id").autoincrement().primaryKey(),
   organizationId: int("organizationId"),
@@ -573,7 +543,6 @@ export const agentEvents = mysqlTable("agent_events", {
 export type AgentEvent = typeof agentEvents.$inferSelect;
 export type InsertAgentEvent = typeof agentEvents.$inferInsert;
 
-// ── Venture Velocity (stage advance tracking) ────────────────────────────
 export const ventureVelocity = mysqlTable("venture_velocity", {
   id: int("id").autoincrement().primaryKey(),
   organizationId: int("organizationId"),
@@ -594,7 +563,6 @@ export const ventureVelocity = mysqlTable("venture_velocity", {
 export type VentureVelocity = typeof ventureVelocity.$inferSelect;
 export type InsertVentureVelocity = typeof ventureVelocity.$inferInsert;
 
-// ── Agent Drafts (AI-generated communications) ───────────────────────────
 export const agentDrafts = mysqlTable("agent_drafts", {
   id: int("id").autoincrement().primaryKey(),
   organizationId: int("organizationId"),
@@ -615,7 +583,6 @@ export const agentDrafts = mysqlTable("agent_drafts", {
 export type AgentDraft = typeof agentDrafts.$inferSelect;
 export type InsertAgentDraft = typeof agentDrafts.$inferInsert;
 
-// ── Client Agent Configuration (per-client agent settings) ────────────────
 export const clientAgentConfig = mysqlTable("client_agent_config", {
   id: int("id").autoincrement().primaryKey(),
   organizationId: int("organizationId").notNull(),
@@ -640,7 +607,6 @@ export const clientAgentConfig = mysqlTable("client_agent_config", {
 export type ClientAgentConfig = typeof clientAgentConfig.$inferSelect;
 export type InsertClientAgentConfig = typeof clientAgentConfig.$inferInsert;
 
-// ── Process Templates (Blueprint definitions per sector/org) ─────────────
 // Three-layer architecture:
 //   Layer 1: source='system', status='confirmed', confidence='0.5' — sector defaults
 //   Layer 2: source='document'|'conversation'|'manual', status='draft'|'confirmed' — client-specific
@@ -671,7 +637,6 @@ export const processTemplates = mysqlTable("process_templates", {
 export type ProcessTemplate = typeof processTemplates.$inferSelect;
 export type InsertProcessTemplate = typeof processTemplates.$inferInsert;
 
-// ── Process Steps (individual steps within a blueprint) ──────────────────
 export const processSteps = mysqlTable("process_steps", {
   id: int("id").autoincrement().primaryKey(),
   templateId: int("templateId").notNull(),
@@ -696,7 +661,6 @@ export const processSteps = mysqlTable("process_steps", {
 export type ProcessStep = typeof processSteps.$inferSelect;
 export type InsertProcessStep = typeof processSteps.$inferInsert;
 
-// ── Venture Process Tracking (per-venture step completion) ───────────────
 export const ventureProcessTracking = mysqlTable("venture_process_tracking", {
   id: int("id").autoincrement().primaryKey(),
   ventureId: int("ventureId").notNull(),
@@ -720,7 +684,6 @@ export const ventureProcessTracking = mysqlTable("venture_process_tracking", {
 export type VentureProcessTracking = typeof ventureProcessTracking.$inferSelect;
 export type InsertVentureProcessTracking = typeof ventureProcessTracking.$inferInsert;
 
-// ── Client Velocity Benchmarks ──────────────────────────────────────────
 export const clientVelocityBenchmarks = mysqlTable("client_velocity_benchmarks", {
   id: int("id").primaryKey().autoincrement(),
   organizationId: int("organizationId").notNull(),
@@ -737,7 +700,6 @@ export const clientVelocityBenchmarks = mysqlTable("client_velocity_benchmarks",
 export type ClientVelocityBenchmark = typeof clientVelocityBenchmarks.$inferSelect;
 export type InsertClientVelocityBenchmark = typeof clientVelocityBenchmarks.$inferInsert;
 
-// ── Venture Process Overrides (Layer 3 — per-venture step overrides) ────────
 export const ventureProcessOverrides = mysqlTable("venture_process_overrides", {
   id: int("id").autoincrement().primaryKey(),
   ventureId: int("ventureId").notNull(),
@@ -755,11 +717,8 @@ export type VentureProcessOverride = typeof ventureProcessOverrides.$inferSelect
 export type InsertVentureProcessOverride = typeof ventureProcessOverrides.$inferInsert;
 
 
-// ═══════════════════════════════════════════════════════════════════════════
 // ATLAS INTELLIGENCE PLATFORM — 4 Gaps
-// ═══════════════════════════════════════════════════════════════════════════
 
-// ── Gap 1: Predictive Analytics — Venture Forecasts ─────────────────────
 export const ventureForecast = mysqlTable("venture_forecast", {
   id: int("id").autoincrement().primaryKey(),
   organizationId: int("organizationId").notNull(),
@@ -794,7 +753,6 @@ export const ventureForecast = mysqlTable("venture_forecast", {
 export type VentureForecast = typeof ventureForecast.$inferSelect;
 export type InsertVentureForecast = typeof ventureForecast.$inferInsert;
 
-// ── Gap 1: Predictive Analytics — Portfolio Health Trajectory ────────────
 export const portfolioHealthTrajectory = mysqlTable("portfolio_health_trajectory", {
   id: int("id").autoincrement().primaryKey(),
   organizationId: int("organizationId").notNull(),
@@ -819,7 +777,6 @@ export const portfolioHealthTrajectory = mysqlTable("portfolio_health_trajectory
 export type PortfolioHealthTrajectory = typeof portfolioHealthTrajectory.$inferSelect;
 export type InsertPortfolioHealthTrajectory = typeof portfolioHealthTrajectory.$inferInsert;
 
-// ── Gap 1: Predictive Analytics — Resource Contention Alerts ────────────
 export const resourceContentionAlert = mysqlTable("resource_contention_alert", {
   id: int("id").autoincrement().primaryKey(),
   organizationId: int("organizationId").notNull(),
@@ -835,7 +792,6 @@ export const resourceContentionAlert = mysqlTable("resource_contention_alert", {
 });
 export type ResourceContentionAlert = typeof resourceContentionAlert.$inferSelect;
 
-// ── Gap 2: External Data Ingestion — Market Signals ─────────────────────
 export const marketSignal = mysqlTable("market_signal", {
   id: int("id").autoincrement().primaryKey(),
   sector: varchar("sector", { length: 64 }).notNull(),
@@ -861,7 +817,6 @@ export const marketSignal = mysqlTable("market_signal", {
 export type MarketSignal = typeof marketSignal.$inferSelect;
 export type InsertMarketSignal = typeof marketSignal.$inferInsert;
 
-// ── Gap 3: Continuous Learning — Recommendation Outcomes ────────────────
 export const recommendationOutcome = mysqlTable("recommendation_outcome", {
   id: int("id").autoincrement().primaryKey(),
   organizationId: int("organizationId"),
@@ -890,7 +845,6 @@ export const recommendationOutcome = mysqlTable("recommendation_outcome", {
 export type RecommendationOutcome = typeof recommendationOutcome.$inferSelect;
 export type InsertRecommendationOutcome = typeof recommendationOutcome.$inferInsert;
 
-// ── Gap 3: Continuous Learning — Agent Performance ──────────────────────
 export const agentPerformance = mysqlTable("agent_performance", {
   id: int("id").autoincrement().primaryKey(),
   organizationId: int("organizationId"),
@@ -919,7 +873,6 @@ export const agentPerformance = mysqlTable("agent_performance", {
 export type AgentPerformance = typeof agentPerformance.$inferSelect;
 export type InsertAgentPerformance = typeof agentPerformance.$inferInsert;
 
-// ── Gap 4: Real-time Triggers — Event Trigger Log ───────────────────────
 export const eventTriggerLog = mysqlTable("event_trigger_log", {
   id: int("id").autoincrement().primaryKey(),
   organizationId: int("organizationId"),

@@ -1,7 +1,5 @@
-// ============================================================================
 // Security Page — SOC 2 Compliance Dashboard
 // Tabs: Overview · Users & Roles · Audit Log · Access Control
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
@@ -107,7 +105,6 @@ export default function SecurityPage() {
   );
 }
 
-// ── Overview Tab ─────────────────────────────────────────────────────────
 
 function OverviewTab() {
   const { data: status } = trpc.security.getSecurityStatus.useQuery();
@@ -257,7 +254,6 @@ function OverviewTab() {
   );
 }
 
-// ── Users & Roles Tab ────────────────────────────────────────────────────
 
 function UsersTab() {
   const { data: users, refetch } = trpc.security.listUsers.useQuery();
@@ -397,7 +393,6 @@ function UsersTab() {
   );
 }
 
-// ── Audit Log Tab ────────────────────────────────────────────────────────
 
 function AuditLogTab() {
   const [filter, setFilter] = useState<{ action?: string; result?: string; entityType?: string }>({});
@@ -560,7 +555,6 @@ function AuditLogTab() {
   );
 }
 
-// ── Access Control Tab ───────────────────────────────────────────────────
 
 function AccessControlTab() {
   const { data: permissions } = trpc.security.getMyPermissions.useQuery();

@@ -1,7 +1,5 @@
-// ============================================================================
 // SPV Detail Page — /spvs/:slug — LIVE DB DATA
 // Shows SPV info, linked ventures, team, files with folders, notes
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
@@ -32,7 +30,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// ── Constants ────────────────────────────────────────────────────────────
 const ALL_STAGES = ["Active deal", "In negotiation", "Closed deal", "Dropped deal"];
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const FOLDER_COLORS = [
@@ -51,7 +48,6 @@ const THEME_COLORS: Record<string, string> = {
   "Entertainment": "#a855f7", "Oil & Gas": "#ef4444", "Others": "#6b7280", "TBD": "#6b7280",
 };
 
-// ── Helpers ──────────────────────────────────────────────────────────────
 function getFileIcon(name: string) {
   const ext = name.split(".").pop()?.toLowerCase();
   if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext || "")) return <Image className="size-4 text-blue-400" />;
@@ -81,14 +77,12 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-// ── Component ────────────────────────────────────────────────────────────
 export default function SpvDetail() {
   const [, params] = useRoute("/spvs/:slug");
   const [, navigate] = useLocation();
   const slug = params?.slug || "";
   const utils = trpc.useUtils();
 
-  // ── Live data ──────────────────────────────────────────────────────
   const spvQ = trpc.spvs.getBySlug.useQuery({ slug }, { enabled: !!slug });
   const spv = spvQ.data;
   const spvId = spv?.id;
@@ -119,7 +113,6 @@ export default function SpvDetail() {
   const allFiles = filesQ.data || [];
   const allFolders = foldersQ.data || [];
 
-  // ── Mutations ──────────────────────────────────────────────────────
   const updateSpv = trpc.spvs.update.useMutation({
     onSuccess: () => { utils.spvs.getBySlug.invalidate({ slug }); utils.activity.recent.invalidate(); },
   });
@@ -154,7 +147,6 @@ export default function SpvDetail() {
     onSuccess: () => { utils.spvs.getFolders.invalidate({ spvId: spvId || 0 }); },
   });
 
-  // ── State ──────────────────────────────────────────────────────────
   const [editing, setEditing] = useState(false);
   const [editNotes, setEditNotes] = useState("");
   const [editNextStep, setEditNextStep] = useState("");
@@ -175,7 +167,6 @@ export default function SpvDetail() {
   const [lightboxName, setLightboxName] = useState("");
   const [lightboxZoom, setLightboxZoom] = useState(1);
 
-  // ── Handlers ───────────────────────────────────────────────────────
   const startEdit = useCallback(() => {
     if (!spv) return;
     setEditNotes(spv.currentStatus || "");
@@ -208,7 +199,6 @@ export default function SpvDetail() {
     toast.info(`Priority changed to ${next}`);
   }, [spv, updateSpv]);
 
-  // ── File handlers ──────────────────────────────────────────────────
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
     if (!fileList || !spvId) return;
@@ -268,7 +258,6 @@ export default function SpvDetail() {
     document.body.removeChild(link);
   }, []);
 
-  // ── Folder handlers ────────────────────────────────────────────────
   const handleCreateFolder = useCallback(() => {
     const trimmed = newFolderName.trim();
     if (!trimmed || !spvId) { toast.error("Enter a folder name"); return; }
@@ -293,7 +282,6 @@ export default function SpvDetail() {
     setRenameFolderName("");
   }, [renameFolderIdState, renameFolderName, renameFolderMut]);
 
-  // ── Computed ───────────────────────────────────────────────────────
   const currentFiles = allFiles.filter(f => currentFolderId ? f.folderId === currentFolderId : !f.folderId);
   const currentFolder = allFolders.find(f => f.id === currentFolderId);
 
@@ -305,7 +293,6 @@ export default function SpvDetail() {
   const assignedMemberIds = new Set(spvTeam.map(t => t.memberId));
   const availableTeam = allTeam.filter(m => !assignedMemberIds.has(m.id));
 
-  // ── Loading / Not Found ────────────────────────────────────────────
   if (spvQ.isLoading) {
     return (
       <DashboardLayout title="SPV Detail" subtitle="LOADING...">

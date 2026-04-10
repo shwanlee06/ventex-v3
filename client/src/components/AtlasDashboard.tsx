@@ -1,8 +1,6 @@
-// ============================================================================
 // ATLAS Admin Dashboard — Velocity AI Venture System
 // Premium CRM command center for managing 30+ UHNWI/HNWI clients
 // Velocity metrics, completion %, task velocity, progress trends per client
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
@@ -67,7 +65,6 @@ import VelocityKPI from "@/components/VelocityKPI";
 import AgentExecutionLog from "@/components/AgentExecutionLog";
 import ExecutiveSummaryWidget from "@/components/ExecutiveSummaryWidget";
 
-// ── Types ───────────────────────────────────────────────────────────────
 type SortField = "name" | "ventures" | "velocity" | "overdue" | "health" | "completion";
 type ViewMode = "grid" | "table";
 type TabMode = "active" | "archived";
@@ -76,7 +73,6 @@ interface AtlasDashboardProps {
   onNavigate: (path: string) => void;
 }
 
-// ── Velocity indicator ──────────────────────────────────────────────────
 function VelocityBadge({ rate }: { rate: number }) {
   if (rate >= 70) {
     return (
@@ -108,7 +104,6 @@ function VelocityBadge({ rate }: { rate: number }) {
   );
 }
 
-// ── Progress ring (mini) ────────────────────────────────────────────────
 function ProgressRing({ value, size = 32 }: { value: number; size?: number }) {
   const r = (size - 4) / 2;
   const circ = 2 * Math.PI * r;
@@ -122,7 +117,6 @@ function ProgressRing({ value, size = 32 }: { value: number; size?: number }) {
   );
 }
 
-// ── Overdue badge ───────────────────────────────────────────────────────
 function OverdueBadge({ count }: { count: number }) {
   if (count === 0) return <span className="text-[11px] font-mono text-muted-foreground">0</span>;
   return (
@@ -133,7 +127,6 @@ function OverdueBadge({ count }: { count: number }) {
   );
 }
 
-// ── Time ago helper ─────────────────────────────────────────────────────
 function timeAgo(date: Date | string | null): string {
   if (!date) return "";
   const d = typeof date === "string" ? new Date(date) : date;
@@ -149,7 +142,6 @@ function timeAgo(date: Date | string | null): string {
   return `${Math.floor(diffDay / 7)}w ago`;
 }
 
-// ── Agent action indicator ──────────────────────────────────────────────
 function AgentIndicator({ action, agentName, actionAt }: {
   action: string | null;
   agentName: string | null;
@@ -173,7 +165,6 @@ function AgentIndicator({ action, agentName, actionAt }: {
   );
 }
 
-// ── Format currency ─────────────────────────────────────────────────────
 function fmtCurrency(amount: number): string {
   if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
   if (amount >= 1_000) return `$${(amount / 1_000).toFixed(0)}K`;
@@ -237,7 +228,6 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
 
   const isLoading = activeClientsQ.isLoading;
 
-  // ── UI state ───────────────────────────────────────────────────────
   const [tabMode, setTabMode] = useState<TabMode>("active");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>("velocity");
@@ -254,7 +244,6 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
   // Current tab's clients
   const clients = tabMode === "active" ? activeClients : archivedClients;
 
-  // ── Velocity calculation per client ───────────────────────────────
   // Velocity = agent-completed tasks / (overdue + open) * 100
   // Same formula used in both the table and the KPI aggregation
   const clientsWithVelocity = useMemo(() => {
@@ -268,7 +257,6 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
     });
   }, [clients]);
 
-  // ── Aggregate KPIs across ACTIVE clients only ─────────────────────
   const kpis = useMemo(() => {
     const activeWithVelocity = activeClients.map(c => {
       // Velocity = (agent-completed tasks) / (total overdue + open) * 100
@@ -301,7 +289,6 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
     };
   }, [activeClients]);
 
-  // ── Filtered + sorted clients ─────────────────────────────────────
   const filteredClients = useMemo(() => {
     let list = [...clientsWithVelocity];
 
@@ -342,7 +329,6 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
     return list;
   }, [clientsWithVelocity, searchTerm, sortField, sortDir, statusFilter, tabMode]);
 
-  // ── Sort toggle ────────────────────────────────────────────────────
   const toggleSort = useCallback((field: SortField) => {
     if (sortField === field) {
       setSortDir(d => d === "asc" ? "desc" : "asc");
@@ -369,7 +355,6 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
     deleteOrg.mutate({ id: deleteTarget.id });
   };
 
-  // ── Loading state ──────────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="p-4 sm:p-5 md:p-6 space-y-5">

@@ -1,9 +1,7 @@
-// ============================================================================
 // Venture Health Matrix — Upgrade 3
 // Scatter plot: X = Completion %, Y = Days since last activity (inverted)
 // Dot color: green = Healthy, amber = At Risk, red = Critical/Overdue
 // Dot size: proportional to overdue task count
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";

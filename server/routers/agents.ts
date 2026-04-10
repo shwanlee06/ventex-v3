@@ -1,9 +1,7 @@
-// ============================================================================
 // ATLAS Agent System — Velocity Build: Action-Based Intelligence Agents
 // Four agents: Overdue, Velocity, Distribution Sentinel, Orchestrator
 // Every event carries an ACTION — not just awareness, but execution.
 // Multi-tenant: all queries scoped by organizationId
-// ============================================================================
 
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
@@ -37,7 +35,6 @@ import { resolveOrgId } from "../security/orgScope";
 import { lookupBlueprintForVenture, buildBlueprintContext } from "../blueprintLookup";
 import type { User } from "../../drizzle/schema";
 
-// ── Types ──────────────────────────────────────────────────────────────
 
 type AgentName = "Overdue Agent" | "Velocity Agent" | "Distribution Sentinel" | "Orchestrator";
 type EventType = "signal" | "alert" | "recommendation" | "status_change" | "summary";
@@ -64,7 +61,6 @@ interface AgentSignal {
   newStatus?: string;
 }
 
-// ── Stage Pipeline ─────────────────────────────────────────────────────
 
 const STAGE_PIPELINE = [
   "In Validation",
@@ -86,7 +82,6 @@ function isCapitalStage(stage: string): boolean {
   return CAPITAL_STAGES.includes(stage);
 }
 
-// ── LLM Helper ─────────────────────────────────────────────────────────
 
 async function callAgentLLM(systemPrompt: string, userPrompt: string): Promise<string> {
   try {
@@ -109,7 +104,6 @@ async function callAgentLLM(systemPrompt: string, userPrompt: string): Promise<s
   }
 }
 
-// ── Org-scoped venture IDs helper ─────────────────────────────────────
 
 async function getVentureIdsForOrg(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
@@ -122,7 +116,6 @@ async function getVentureIdsForOrg(
   return rows.map((r) => r.ventureId);
 }
 
-// ── AGENT 1: OVERDUE AGENT ─────────────────────────────────────────────
 // Finds tasks past due, moves them to overdue, drafts follow-up comms
 
 export async function runOverdueAgent(
@@ -301,7 +294,6 @@ export async function runOverdueAgent(
       newStatus: "overdue",
     });
 
-    // ── TRIGGER 1: Auto-email when task is >3 days overdue ──────────
     // 7-day cooldown to prevent spam
     if (daysOverdue > 3) {
       const lastSent = task.lastEmailSentAt ? new Date(task.lastEmailSentAt).getTime() : 0;
@@ -352,7 +344,6 @@ export async function runOverdueAgent(
                 emailSentCount: (task.emailSentCount || 0) + 1,
               } as any).where(eq(tasks.id, task.id));
 
-              console.log(`[Overdue Agent] Auto-email sent to ${recipientEmail} for task "${task.title}"`);
             }
           } catch (emailErr) {
             console.error(`[Overdue Agent] Auto-email failed for task ${task.id}:`, emailErr);
@@ -365,7 +356,6 @@ export async function runOverdueAgent(
   return signals;
 }
 
-// ── AGENT 2: VELOCITY AGENT ────────────────────────────────────────────
 
 export async function runVelocityAgent(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
@@ -413,7 +403,6 @@ export async function runVelocityAgent(
     const totalTasks = ventureTasks.length;
     const completedTasks = ventureTasks.filter(t => t.status === "complete").length;
 
-    // ── 3-Layer Blueprint context for velocity analysis ──
     let blueprintSteps: any[] = [];
     let blueprintContext = "";
     let bpSourceLabel = "";
@@ -434,7 +423,6 @@ export async function runVelocityAgent(
           (now.getTime() - new Date(venture.updatedAt).getTime()) / (1000 * 60 * 60)
         );
 
-        // ── Check auto-advance config for this org ──────────────────
         let autoAdvanceEnabled = false;
         let autoAdvanceSectors: string[] = [];
         if (orgId) {
@@ -476,7 +464,6 @@ export async function runVelocityAgent(
         const stepNames = completedTaskTitles.map(t => t.title);
 
         if (canAutoAdvance) {
-          // ── MODE A: Fully automatic advance ──────────────────────
           await db.update(ventures).set({ stage: nextStage }).where(eq(ventures.id, venture.id));
 
           await db.insert(ventureVelocity).values({
@@ -512,7 +499,7 @@ export async function runVelocityAgent(
             newStatus: nextStage,
           });
 
-          // ── Blueprint refinement: auto-mark current stage steps as complete ──
+          // Blueprint refinement: auto-mark current stage steps as complete
           if (blueprintSteps.length > 0) {
             const stageSteps = blueprintSteps.filter(s => s.stageName === venture.stage && s.status !== "complete");
             for (const step of stageSteps) {
@@ -527,7 +514,6 @@ export async function runVelocityAgent(
             }
           }
 
-          // ── TRIGGER 3: Stage advanced confirmation email ────────────
           if (clientEmail) {
             // Get avg days for benchmark
             const [avgResult] = await db.select({
@@ -548,13 +534,11 @@ export async function runVelocityAgent(
                 clientAvgDays,
                 nextBlockingSteps: [],  // No steps defined yet for new stage
               });
-              console.log(`[Velocity Agent] Stage-advanced email sent to ${clientEmail} for ${venture.name}`);
             } catch (emailErr) {
               console.error(`[Velocity Agent] Stage-advanced email failed:`, emailErr);
             }
           }
         } else {
-          // ── MODE B: Ready to advance — requires client approval ──
           // Dedup: skip if we already have an unactioned ready-to-advance signal for this venture in the last 24h
           const dedupConditions: any[] = [
             eq(agentEvents.agentName, "Velocity Agent"),
@@ -597,7 +581,6 @@ export async function runVelocityAgent(
             newStatus: `ready:${nextStage}`,
           });
 
-          // ── TRIGGER 2: Ready-to-advance email ──────────────────────
           if (clientEmail) {
             try {
               await sendReadyToAdvanceEmail({
@@ -608,7 +591,6 @@ export async function runVelocityAgent(
                 nextStage,
                 completedSteps: stepNames,
               });
-              console.log(`[Velocity Agent] Ready-to-advance email sent to ${clientEmail} for ${venture.name}`);
             } catch (emailErr) {
               console.error(`[Velocity Agent] Ready-to-advance email failed:`, emailErr);
             }
@@ -691,7 +673,6 @@ export async function runVelocityAgent(
   return signals;
 }
 
-// ── AGENT 3: DISTRIBUTION SENTINEL ─────────────────────────────────────
 
 export async function runDistributionSentinel(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
@@ -859,7 +840,6 @@ export async function runDistributionSentinel(
   return signals;
 }
 
-// ── AGENT 4: ORCHESTRATOR ──────────────────────────────────────────────
 
 export async function runOrchestrator(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
@@ -957,7 +937,6 @@ export async function runOrchestrator(
   return signals;
 }
 
-// ── Persist Signals ────────────────────────────────────────────────────
 
 export async function persistSignals(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
@@ -1003,7 +982,6 @@ export async function persistSignals(
   }
 }
 
-// ── Router ─────────────────────────────────────────────────────────────
 
 export const agentsRouter = router({
   /**
@@ -1262,7 +1240,6 @@ export const agentsRouter = router({
       return { success: true };
     }),
 
-  // ── Draft Management ──────────────────────────────────────────────────
 
   /**
    * List drafts with optional status filter — org-scoped
@@ -1475,7 +1452,6 @@ export const agentsRouter = router({
       return { success: true, deleted: drafts.length };
     }),
 
-  // ── Velocity Tracking ─────────────────────────────────────────────────
 
   /**
    * Get velocity metrics — avg days per stage advance — org-scoped
@@ -1625,7 +1601,6 @@ export const agentsRouter = router({
 
       let result: Record<string, unknown> = { success: true };
 
-      // ── Flow 1: Approve Follow-Up ──────────────────────────────────
       if (input.actionType === "approve_followup") {
         const payload = input.payload || {};
         const draftId = payload.draftId as number | undefined;
@@ -1676,7 +1651,6 @@ export const agentsRouter = router({
         result.flow = "approve_followup";
       }
 
-      // ── Flow 2: Reassign Task ──────────────────────────────────────
       if (input.actionType === "reassign_task") {
         const payload = input.payload || {};
         const taskId = (payload.taskId as number) || (event.actionPayload as any)?.taskId;
@@ -1722,7 +1696,6 @@ export const agentsRouter = router({
         result.taskId = taskId;
       }
 
-      // ── Flow 3: Confirm Distribution ───────────────────────────────
       if (input.actionType === "confirm_distribution") {
         const payload = input.payload || {};
         const distributionId = (payload.distributionId as number) || Number(event.agentEntityId);
@@ -1784,7 +1757,6 @@ export const agentsRouter = router({
         result.distributionId = distributionId;
       }
 
-      // ── Flow 4: Unblock Venture ────────────────────────────────────
       if (input.actionType === "unblock_venture") {
         const payload = input.payload || {};
         const ventureId = (payload.ventureId as number) || Number(event.agentEntityId);
@@ -1860,7 +1832,6 @@ export const agentsRouter = router({
         result.ventureId = ventureId;
       }
 
-      // ── Mark the original event as actioned ────────────────────────
       await db
         .update(agentEvents)
         .set({
@@ -2079,7 +2050,6 @@ export const agentsRouter = router({
         } as any).where(eq(agentEvents.id, input.eventId));
       }
 
-      // ── TRIGGER 3: Stage advanced confirmation email ──────────────
       if (orgId) {
         const [org] = await db.select({
           primaryContactEmail: organizations.primaryContactEmail,
@@ -2120,7 +2090,6 @@ export const agentsRouter = router({
       };
     }),
 
-  // ── agents.listEvents — alias for agents.list filtered by organizationId ──
   listEvents: protectedProcedure
     .input(
       z.object({

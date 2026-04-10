@@ -20,7 +20,6 @@ import {
 } from "../../drizzle/schema";
 import { eq, inArray, desc, and } from "drizzle-orm";
 
-// ── Types ──────────────────────────────────────────────────────────────
 interface SuggestedTask {
   title: string;
   description: string;
@@ -32,7 +31,6 @@ interface SuggestedTask {
   reasoning: string;
 }
 
-// ── Helper: Export all venture data for a client org ────────────────────
 async function exportClientVentureData(organizationId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -156,7 +154,6 @@ async function exportClientVentureData(organizationId: number) {
   };
 }
 
-// ── Helper: Build the LLM prompt ───────────────────────────────────────
 function buildAnalysisPrompt(data: Awaited<ReturnType<typeof exportClientVentureData>>) {
   const now = new Date();
   const existingTaskTitles = data.tasks.map((t) => t.title.toLowerCase());
@@ -241,7 +238,6 @@ Return ONLY a JSON array of task objects. Each object must have exactly these fi
 - reasoning (string, brief explanation of why this task is needed based on the data)`;
 }
 
-// ── Router ─────────────────────────────────────────────────────────────
 export const aiTasksRouter = router({
   // Generate AI task suggestions for a client organization
   generateSuggestions: adminProcedure

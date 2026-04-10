@@ -70,7 +70,6 @@ export function useHeartbeat() {
         heartbeat.mutate();
       }
       // If not active, skip the heartbeat — lastSeenAt will go stale
-      // and calculateLiveStatus will transition to "away" then "offline"
     }, HEARTBEAT_INTERVAL_MS);
 
     // Also send heartbeat when tab becomes visible again (if user was recently active)

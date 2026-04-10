@@ -1,7 +1,5 @@
-// ═══════════════════════════════════════════════════════════════════════════
 // ATLAS Predictive Analytics Engine
 // Gap 1: Stage forecasting, bottleneck detection, risk scoring, portfolio health
-// ═══════════════════════════════════════════════════════════════════════════
 
 import { getDb } from "../db";
 import { eq, and, desc, sql, isNotNull, gte } from "drizzle-orm";
@@ -13,7 +11,6 @@ import {
 } from "../../drizzle/schema";
 import { invokeLLM } from "../_core/llm";
 
-// ── Benchmark Calculator ────────────────────────────────────────────────
 // Computes sector/stage averages from historical venture_velocity data
 export async function computeBenchmarks(organizationId: number) {
   const db = await getDb();
@@ -99,7 +96,6 @@ export async function computeBenchmarks(organizationId: number) {
   return benchmarks;
 }
 
-// ── Stage Duration Forecaster ───────────────────────────────────────────
 // For each active venture, project when the current stage will complete
 export async function forecastVentures(organizationId: number) {
   const db = await getDb();
@@ -389,7 +385,6 @@ export async function forecastVentures(organizationId: number) {
   return forecasts;
 }
 
-// ── Portfolio Health Trajectory ─────────────────────────────────────────
 export async function computePortfolioHealth(organizationId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -587,24 +582,17 @@ export async function computePortfolioHealth(organizationId: number) {
   return { ...record, overloadedMembers: overloaded };
 }
 
-// ── Master Run — called by agent scheduler ──────────────────────────────
 export async function runPredictiveEngine(organizationId: number) {
-  console.log(`[PredictiveEngine] Running for org ${organizationId}`);
   const start = Date.now();
 
   const benchmarks = await computeBenchmarks(organizationId);
   const forecasts = await forecastVentures(organizationId);
   const health = await computePortfolioHealth(organizationId);
 
-  const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-  console.log(
-    `[PredictiveEngine] Complete: ${forecasts.length} forecasts, ${benchmarks.length} benchmarks in ${elapsed}s`
-  );
-
   return {
     benchmarks: benchmarks.length,
     forecasts: forecasts.length,
     health,
-    elapsedSeconds: parseFloat(elapsed),
+    elapsedSeconds: parseFloat(((Date.now() - start) / 1000).toFixed(1)),
   };
 }

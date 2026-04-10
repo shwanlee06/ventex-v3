@@ -1,7 +1,5 @@
-// ============================================================================
 // PageTransition — Fade-in wrapper for page-level components (MOTION-1)
 // 150ms fade on mount, no exit animation to keep navigation snappy
-// ============================================================================
 
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";

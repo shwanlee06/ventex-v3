@@ -1,6 +1,4 @@
-// ============================================================================
 // Shared Pipeline Stages — used by both portal and agents routers
-// ============================================================================
 
 export const STAGE_PIPELINE = [
   "In Validation",

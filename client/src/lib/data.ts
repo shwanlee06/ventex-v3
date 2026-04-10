@@ -1,10 +1,7 @@
-// ============================================================================
 // ATLAS System — Real Airtable Data
 // Swiss Instrument design: DM Sans + DM Mono, near-black surfaces, gold accent
 // Source: Venture Holding Tracker (appw7nayCfrZBRDg6)
-// ============================================================================
 
-// ── Types ──────────────────────────────────────────────────────────────────
 
 export type TaskStatus = "open" | "complete" | "overdue";
 export type VentureTheme = "Real Estate" | "F&B" | "Yacht" | "Entertainment" | "Others" | "Oil & Gas";
@@ -110,7 +107,6 @@ export interface LPInvestor {
   linkedVentures: string[];
 }
 
-// ── Theme Colors ───────────────────────────────────────────────────────────
 
 export const THEME_COLORS: Record<string, { label: string; color: string; bg: string; dot: string; text: string }> = {
   "Real Estate": { label: "Real Estate", color: "#5B8DBE", bg: "bg-[#5B8DBE]/10", dot: "bg-[#5B8DBE]", text: "text-[#5B8DBE]" },
@@ -140,7 +136,6 @@ export const DIST_STATUS_CONFIG: Record<string, { label: string; color: string; 
   "Cancelled": { label: "Cancelled", color: "text-red-400", bg: "bg-red-500/10 text-red-400 border-red-500/20", dot: "bg-red-400" },
 };
 
-// ── Real Airtable Data ─────────────────────────────────────────────────────
 
 // People map for resolving assignees
 const PEOPLE_MAP: Record<string, string> = {
@@ -342,7 +337,6 @@ export const LP_INVESTORS: LPInvestor[] = [
   { id: "recBsYGNuNjofF8yt", name: "Mike Haddad", type: "High Net Worth", status: "Potential", linkedVentures: ["Nammos Watson Island"] },
 ];
 
-// ── Derived Metrics ────────────────────────────────────────────────────────
 
 export const METRICS = {
   totalVentures: VENTURES.length,
@@ -401,7 +395,6 @@ LP: Mike Haddad (HNW, Potential) — linked to Nammos Watson Island.
 
 You are professional, concise, and action-oriented. Always provide specific, actionable recommendations.`;
 
-// ── Utility Functions ──────────────────────────────────────────────────────
 
 export function formatTimestamp(iso: string): string {
   const d = new Date(iso);

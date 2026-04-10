@@ -1,8 +1,6 @@
-// ============================================================================
 // Dashboard Page — Role-based routing
 // ATLAS team: Multi-client command center (all clients overview)
 // Client users / Preview mode: Luxury UHNWI portal
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import LiveTicker from "@/components/LiveTicker";

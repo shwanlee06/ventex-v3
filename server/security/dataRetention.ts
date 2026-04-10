@@ -24,7 +24,6 @@ import {
 } from "../../drizzle/schema";
 import { lt, and, eq, sql } from "drizzle-orm";
 
-// ── Retention periods (in days) ──────────────────────────────────────────
 export const RETENTION_DAYS = {
   auditLog: 365,
   activityLog: 180,
@@ -228,7 +227,6 @@ export async function runDataRetentionPurge(): Promise<PurgeSummary> {
     // Non-critical — the purge itself succeeded
   }
 
-  console.log(`[DataRetention] Purge complete: ${totalDeleted} records deleted across ${results.length} tables`);
   return summary;
 }
 

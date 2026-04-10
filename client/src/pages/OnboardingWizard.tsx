@@ -1,11 +1,9 @@
-// ============================================================================
 // Client Onboarding Wizard — 5-step admin-only flow
 // Step 1: Client details (name, contact, AUM, sectors, tier)
 // Step 2: Initial ventures (add form + skip)
 // Step 3: Team invitations (name, email, role + skip)
 // Step 4: Agent configuration (toggles + thresholds)
 // Step 5: Confirmation summary + "Launch Client" button
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
@@ -31,7 +29,6 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 
-// ── Constants ───────────────────────────────────────────────────────────
 const SECTORS = [
   "Real Estate", "Yacht", "F&B", "Entertainment", "Oil & Gas",
   "Technology", "Healthcare", "Finance", "Energy", "Others",
@@ -51,7 +48,6 @@ const STEPS = [
   { id: 5, label: "Launch", icon: Rocket },
 ];
 
-// ── Types ───────────────────────────────────────────────────────────────
 interface VentureEntry {
   name: string;
   sector: string;
@@ -75,7 +71,6 @@ interface AgentConfig {
   pollingIntervalMinutes: number;
 }
 
-// ── Component ───────────────────────────────────────────────────────────
 export default function OnboardingWizard() {
   const [, navigate] = useLocation();
   const [step, setStep] = useState(1);
@@ -121,7 +116,6 @@ export default function OnboardingWizard() {
   const generateBlueprints = trpc.blueprints.generateStarterBlueprints.useMutation();
   const recalcHealth = trpc.blueprints.recalculateHealthScores.useMutation();
 
-  // ── Step navigation ─────────────────────────────────────────────────
   const canProceed = useCallback(() => {
     if (step === 1) return clientName.trim().length > 0;
     return true; // Steps 2-4 are optional (skip allowed)
@@ -235,7 +229,6 @@ export default function OnboardingWizard() {
     navigate("/dashboard");
   }, [clientName, createdOrgId, navigate, recalcHealth]);
 
-  // ── Venture helpers ─────────────────────────────────────────────────
   const addVentureEntry = () => {
     if (!newVenture.name.trim()) return;
     setVentures(prev => [...prev, { ...newVenture }]);
@@ -246,7 +239,6 @@ export default function OnboardingWizard() {
     setVentures(prev => prev.filter((_, i) => i !== idx));
   };
 
-  // ── Invite helpers ──────────────────────────────────────────────────
   const addInviteEntry = () => {
     if (!newInvite.name.trim() || !newInvite.email.trim()) return;
     setInvites(prev => [...prev, { ...newInvite }]);
@@ -257,14 +249,12 @@ export default function OnboardingWizard() {
     setInvites(prev => prev.filter((_, i) => i !== idx));
   };
 
-  // ── Sector toggle ───────────────────────────────────────────────────
   const toggleSector = (s: string) => {
     setSelectedSectors(prev =>
       prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]
     );
   };
 
-  // ── Render ──────────────────────────────────────────────────────────
   return (
     <DashboardLayout title="Client Onboarding">
       <div className="p-4 md:p-6 max-w-4xl mx-auto">

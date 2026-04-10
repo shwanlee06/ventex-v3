@@ -1,6 +1,4 @@
-// ============================================================================
 // Ventures Page — Organized by Client Sub-Sections for 30+ Clients
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
@@ -64,7 +62,6 @@ export default function VerticalsPage() {
   const { user } = useAuth();
   const isAdmin = isAtlasTeam(user);
 
-  // ── Live data ──────────────────────────────────────────────────────
   const venturesQ = trpc.ventures.listWithOrgs.useQuery();
   const tasksQ = trpc.tasks.list.useQuery();
   const orgsQ = trpc.organizations.list.useQuery({ includeArchived: false });
@@ -73,7 +70,6 @@ export default function VerticalsPage() {
   const activeOrgs = (orgsQ.data || []).filter((o: any) => o.status === "active");
   const loading = venturesQ.isLoading;
 
-  // ── Mutations ──────────────────────────────────────────────────────
   const createVenture = trpc.ventures.create.useMutation({
     onSuccess: () => {
       utils.ventures.listWithOrgs.invalidate();
@@ -84,7 +80,6 @@ export default function VerticalsPage() {
     },
   });
 
-  // ── State ──────────────────────────────────────────────────────────
   const [search, setSearch] = useState("");
   const [themeFilter, setThemeFilter] = useState("All");
   const [stageFilter, setStageFilter] = useState("All");
@@ -102,7 +97,6 @@ export default function VerticalsPage() {
   const [newDescription, setNewDescription] = useState("");
   const [newOrgId, setNewOrgId] = useState<string>("");
 
-  // ── Derived data ───────────────────────────────────────────────────
   const now = useMemo(() => new Date(), []);
 
   // Get unique client names for filter
@@ -150,7 +144,6 @@ export default function VerticalsPage() {
   const openTasks = allTasks.filter(t => t.status !== "complete").length;
   const overdueTasks = allTasks.filter(t => t.status !== "complete" && t.dueDate && new Date(t.dueDate) < now).length;
 
-  // ── Handlers (toggleClient/toggleAll moved after clientGroups) ─────
 
   const handleAddVenture = () => {
     if (!newName.trim()) { toast.error("Name is required"); return; }

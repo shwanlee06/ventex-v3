@@ -20,7 +20,6 @@ const resend = new Resend(process.env.RESEND_API_KEY || "");
 const FROM_ADDRESS = "ATLAS <contact@aurovia.co>";
 const REPLY_TO = "slee72106@gmail.com"; // Operator: Shwan Lee
 
-// ── Types ────────────────────────────────────────────────────────────────
 
 interface EmailResult {
   success: boolean;
@@ -58,7 +57,6 @@ interface ClientNudgeParams {
   actionUrl?: string;
 }
 
-// ── Auto-Trigger Types ──────────────────────────────────────────────────
 
 interface OverdueAutoEmailParams {
   to: string;
@@ -93,7 +91,6 @@ interface StageAdvancedEmailParams {
   actionUrl?: string;
 }
 
-// ── Shared Styles ───────────────────────────────────────────────────────
 
 const BODY_STYLE = `font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; background: #fafafa; color: #1a1a1a; padding: 40px 20px; margin: 0; line-height: 1.6;`;
 const CONTAINER_STYLE = `max-width: 560px; margin: 0 auto;`;
@@ -108,7 +105,6 @@ const FOOTER_STYLE = `border-top: 1px solid #e5e5e5; margin-top: 32px; padding-t
 const FOOTER_TEXT = `font-size: 12px; color: #999; margin: 0;`;
 const SIGNATURE = `ATLAS · Powered by Aurovia`;
 
-// ── Original Email Templates ────────────────────────────────────────────
 
 function taskFollowUpHtml(params: TaskFollowUpParams): string {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
@@ -167,7 +163,6 @@ function clientNudgeHtml(params: ClientNudgeParams): string {
 </div></body></html>`;
 }
 
-// ── Auto-Trigger Email Templates ────────────────────────────────────────
 
 /**
  * TRIGGER 1: Task overdue > 3 days — direct email to assignee
@@ -238,11 +233,9 @@ function stageAdvancedEmailHtml(params: StageAdvancedEmailParams): string {
 </div></body></html>`;
 }
 
-// ── Send Functions — Original ───────────────────────────────────────────
 
 export async function sendTaskFollowUp(params: TaskFollowUpParams): Promise<EmailResult> {
   if (!process.env.RESEND_API_KEY) {
-    console.warn("[EmailService] RESEND_API_KEY not configured — skipping email");
     return { success: false, error: "RESEND_API_KEY not configured" };
   }
   try {
@@ -257,7 +250,6 @@ export async function sendTaskFollowUp(params: TaskFollowUpParams): Promise<Emai
       console.error("[EmailService] Task follow-up failed:", error);
       return { success: false, error: error.message };
     }
-    console.log(`[EmailService] Task follow-up sent to ${params.to}: ${data?.id}`);
     return { success: true, messageId: data?.id };
   } catch (err: any) {
     console.error("[EmailService] Task follow-up error:", err);
@@ -267,7 +259,6 @@ export async function sendTaskFollowUp(params: TaskFollowUpParams): Promise<Emai
 
 export async function sendDistributionNotice(params: DistributionNoticeParams): Promise<EmailResult> {
   if (!process.env.RESEND_API_KEY) {
-    console.warn("[EmailService] RESEND_API_KEY not configured — skipping email");
     return { success: false, error: "RESEND_API_KEY not configured" };
   }
   try {
@@ -282,7 +273,6 @@ export async function sendDistributionNotice(params: DistributionNoticeParams): 
       console.error("[EmailService] Distribution notice failed:", error);
       return { success: false, error: error.message };
     }
-    console.log(`[EmailService] Distribution notice sent: ${data?.id}`);
     return { success: true, messageId: data?.id };
   } catch (err: any) {
     console.error("[EmailService] Distribution notice error:", err);
@@ -292,7 +282,6 @@ export async function sendDistributionNotice(params: DistributionNoticeParams): 
 
 export async function sendClientNudge(params: ClientNudgeParams): Promise<EmailResult> {
   if (!process.env.RESEND_API_KEY) {
-    console.warn("[EmailService] RESEND_API_KEY not configured — skipping email");
     return { success: false, error: "RESEND_API_KEY not configured" };
   }
   try {
@@ -307,7 +296,6 @@ export async function sendClientNudge(params: ClientNudgeParams): Promise<EmailR
       console.error("[EmailService] Client nudge failed:", error);
       return { success: false, error: error.message };
     }
-    console.log(`[EmailService] Client nudge sent to ${params.to}: ${data?.id}`);
     return { success: true, messageId: data?.id };
   } catch (err: any) {
     console.error("[EmailService] Client nudge error:", err);
@@ -315,7 +303,6 @@ export async function sendClientNudge(params: ClientNudgeParams): Promise<EmailR
   }
 }
 
-// ── Send Functions — Auto-Triggers ──────────────────────────────────────
 
 /**
  * TRIGGER 1: Send overdue task email directly to assignee
@@ -323,7 +310,6 @@ export async function sendClientNudge(params: ClientNudgeParams): Promise<EmailR
  */
 export async function sendOverdueAutoEmail(params: OverdueAutoEmailParams): Promise<EmailResult> {
   if (!process.env.RESEND_API_KEY) {
-    console.warn("[EmailService] RESEND_API_KEY not configured — skipping auto email");
     return { success: false, error: "RESEND_API_KEY not configured" };
   }
   try {
@@ -338,7 +324,6 @@ export async function sendOverdueAutoEmail(params: OverdueAutoEmailParams): Prom
       console.error("[EmailService] Overdue auto-email failed:", error);
       return { success: false, error: error.message };
     }
-    console.log(`[EmailService] Overdue auto-email sent to ${params.to}: ${data?.id}`);
     return { success: true, messageId: data?.id };
   } catch (err: any) {
     console.error("[EmailService] Overdue auto-email error:", err);
@@ -352,7 +337,6 @@ export async function sendOverdueAutoEmail(params: OverdueAutoEmailParams): Prom
  */
 export async function sendReadyToAdvanceEmail(params: ReadyToAdvanceEmailParams): Promise<EmailResult> {
   if (!process.env.RESEND_API_KEY) {
-    console.warn("[EmailService] RESEND_API_KEY not configured — skipping auto email");
     return { success: false, error: "RESEND_API_KEY not configured" };
   }
   try {
@@ -367,7 +351,6 @@ export async function sendReadyToAdvanceEmail(params: ReadyToAdvanceEmailParams)
       console.error("[EmailService] Ready-to-advance email failed:", error);
       return { success: false, error: error.message };
     }
-    console.log(`[EmailService] Ready-to-advance email sent to ${params.to}: ${data?.id}`);
     return { success: true, messageId: data?.id };
   } catch (err: any) {
     console.error("[EmailService] Ready-to-advance email error:", err);
@@ -381,7 +364,6 @@ export async function sendReadyToAdvanceEmail(params: ReadyToAdvanceEmailParams)
  */
 export async function sendStageAdvancedEmail(params: StageAdvancedEmailParams): Promise<EmailResult> {
   if (!process.env.RESEND_API_KEY) {
-    console.warn("[EmailService] RESEND_API_KEY not configured — skipping auto email");
     return { success: false, error: "RESEND_API_KEY not configured" };
   }
   try {
@@ -396,7 +378,6 @@ export async function sendStageAdvancedEmail(params: StageAdvancedEmailParams): 
       console.error("[EmailService] Stage-advanced email failed:", error);
       return { success: false, error: error.message };
     }
-    console.log(`[EmailService] Stage-advanced email sent to ${params.to}: ${data?.id}`);
     return { success: true, messageId: data?.id };
   } catch (err: any) {
     console.error("[EmailService] Stage-advanced email error:", err);

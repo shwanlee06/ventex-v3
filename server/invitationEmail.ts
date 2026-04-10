@@ -10,7 +10,6 @@ import { notifyOwner } from "./_core/notification";
 const FROM_ADDRESS = "ATLAS <contact@aurovia.co>";
 const REPLY_TO = "slee72106@gmail.com";
 
-// ── Shared Styles ──────────────────────────────────────────────────────
 const BODY_STYLE = `font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; background: #0a0a0a; color: #fafafa; padding: 40px 20px; margin: 0; line-height: 1.6;`;
 const CONTAINER_STYLE = `max-width: 560px; margin: 0 auto;`;
 const HEADER_STYLE = `border-bottom: 1px solid #333; padding-bottom: 12px; margin-bottom: 28px;`;
@@ -106,13 +105,11 @@ export async function sendInvitationEmail(params: SendInvitationEmailParams): Pr
         console.error(`[InvitationEmail] Resend error for ${recipientEmail}:`, error.message);
       } else {
         emailSent = true;
-        console.log(`[InvitationEmail] Email sent to ${recipientEmail} (id: ${data?.id})`);
       }
     } catch (err) {
       console.error(`[InvitationEmail] Failed to send email to ${recipientEmail}:`, err);
     }
   } else {
-    console.warn(`[InvitationEmail] RESEND_API_KEY not configured — cannot send email to ${recipientEmail}`);
   }
 
   // 2. Also notify the project owner as a secondary alert

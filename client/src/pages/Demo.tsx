@@ -1,8 +1,6 @@
-// ============================================================================
 // INVESTOR DEMO — Cinematic pitch experience matching the Atlas pitch deck
 // 10 sections mirroring the 10-slide deck: Title → Problem → Agents →
 // Built Not Mocked → Market → GTM → Traction → The Ask → Team → Close
-// ============================================================================
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
@@ -71,12 +69,12 @@ const AGENTS = [
 ];
 
 const PRODUCT_STATS = [
-  { value: "77,580+", label: "lines of production code" },
   { value: "5", label: "AI intelligence engines" },
-  { value: "46", label: "database tables" },
-  { value: "22", label: "tRPC API routers" },
-  { value: "692+", label: "automated tests" },
-  { value: "150", label: "git commits shipped" },
+  { value: "6", label: "sectors automated" },
+  { value: "3", label: "continents, one platform" },
+  { value: "<12mo", label: "concept to deployment" },
+  { value: "750+", label: "automated test cases" },
+  { value: "SOC 2", label: "compliant architecture" },
 ];
 
 const GTM_STAGES = [
@@ -122,12 +120,12 @@ const TEAM = [
     color: "#22D3EE",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee-new_e321fa79.webp",
     linkedin: "https://linkedin.com/in/shwanlee",
-    bio: "Built ATLAS from the ground up — 77,580+ lines of production code, 5 AI intelligence engines, and an enterprise-grade platform targeting a $6 trillion market. Shwan didn't study the problem in a classroom. He watched it happen firsthand inside a UHNWI holding company, saw the inefficiencies bleeding millions, and spent the next year engineering the solution. Full-stack architect, systems thinker, and the driving force behind every line of ATLAS.",
+    bio: "Built ATLAS from the ground up — 5 AI intelligence engines, SOC 2-compliant architecture, and an enterprise-grade platform targeting a $6 trillion market. Shwan didn't study the problem in a classroom. He watched it happen firsthand inside a UHNWI holding company, saw the inefficiencies bleeding millions, and spent the next year engineering the solution. Full-stack architect, systems thinker, and the driving force behind every component of ATLAS.",
     quote: "We didn't raise money to build the product. We built the product to raise money.",
     stats: [
-      { label: "Lines of Code", value: "77,580+" },
-      { label: "AI Engines Built", value: "5" },
-      { label: "Build Time", value: "12 months" },
+      { label: "AI Engines", value: "5" },
+      { label: "Sectors Automated", value: "6" },
+      { label: "Build Time", value: "<12 months" },
     ],
   },
   {
@@ -547,13 +545,13 @@ export default function Demo() {
               className="text-[clamp(24px,4vw,48px)] font-bold leading-[0.95] mb-2 text-cyan-400"
               style={{ fontFamily: HEADLINE_FONT }}
             >
-              TO 77,580 LINES OF CODE.
+              TO A FULL ENTERPRISE PLATFORM.
             </h2>
             <h2
               className="text-[clamp(24px,4vw,48px)] font-bold leading-[0.95] mb-8 text-white/45"
               style={{ fontFamily: HEADLINE_FONT }}
             >
-              AND COUNTING.
+              BUILT BY THREE PEOPLE.
             </h2>
           </RevealSection>
 
@@ -681,28 +679,28 @@ export default function Demo() {
                 <div className="border border-emerald-500/20 rounded-lg p-5 bg-emerald-500/[0.03]">
                   <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-4">
                     <div className="text-center">
-                      <div className="text-lg font-bold text-emerald-400 font-mono">77K+</div>
-                      <div className="text-[10px] text-white/50">lines of code</div>
+                      <div className="text-lg font-bold text-emerald-400 font-mono">5</div>
+                      <div className="text-[10px] text-white/50">AI engines</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-emerald-400 font-mono">285</div>
-                      <div className="text-[10px] text-white/50">source files</div>
+                      <div className="text-lg font-bold text-emerald-400 font-mono">6</div>
+                      <div className="text-[10px] text-white/50">sectors</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-emerald-400 font-mono">692</div>
+                      <div className="text-lg font-bold text-emerald-400 font-mono">750+</div>
                       <div className="text-[10px] text-white/50">tests passing</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-emerald-400 font-mono">150</div>
-                      <div className="text-[10px] text-white/50">commits</div>
+                      <div className="text-lg font-bold text-emerald-400 font-mono">SOC 2</div>
+                      <div className="text-[10px] text-white/50">compliant</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-emerald-400 font-mono">45</div>
-                      <div className="text-[10px] text-white/50">test suites</div>
+                      <div className="text-lg font-bold text-emerald-400 font-mono">3</div>
+                      <div className="text-[10px] text-white/50">person team</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-emerald-400 font-mono">52+</div>
-                      <div className="text-[10px] text-white/50">API endpoints</div>
+                      <div className="text-lg font-bold text-emerald-400 font-mono">&lt;12mo</div>
+                      <div className="text-[10px] text-white/50">to deployment</div>
                     </div>
                   </div>
                   <p className="text-sm text-white/70 leading-relaxed">

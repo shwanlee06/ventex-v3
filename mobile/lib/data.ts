@@ -1,6 +1,4 @@
-// ============================================================================
 // Shared data for ATLAS mobile app — mirrors web app data.ts
-// ============================================================================
 
 export interface Venture {
   id: string;
@@ -58,7 +56,6 @@ export interface ActivityLog {
   timestamp: string;
 }
 
-// ── Ventures ──────────────────────────────────────────────────────────────
 export const VENTURES: Venture[] = [
   { id: "v1", name: "Nammos – Barcelona", theme: "Real Estate", stage: "Active ventures", status: "In progress", location: "Barcelona, Spain", currentStatus: "Site acquisition in progress" },
   { id: "v2", name: "Nammos – Watson Island", theme: "Real Estate", stage: "Active ventures", status: "In progress", location: "Miami, FL", currentStatus: "Draft the deck" },
@@ -82,7 +79,6 @@ export const VENTURES: Venture[] = [
   { id: "v20", name: "Entertainment IP Licensing", theme: "Entertainment", stage: "In Validation", status: "In progress", location: "Global", currentStatus: "IP portfolio review" },
 ];
 
-// ── SPVs ──────────────────────────────────────────────────────────────────
 export const SPVS: SPV[] = [
   { id: "s1", name: "Nammos Barcelona SPV", theme: "Real Estate", stage: "Active deal", priority: "High", currentStatus: "Final documentation", nextStep: "Board approval" },
   { id: "s2", name: "Watson Island Holdings", theme: "Real Estate", stage: "Active deal", priority: "High", currentStatus: "Investor commitments at 80%", nextStep: "Close round" },
@@ -96,7 +92,6 @@ export const SPVS: SPV[] = [
   { id: "s10", name: "Mediterranean Charter Co", theme: "Yacht", stage: "Active deal", priority: "Low", currentStatus: "Fleet procurement" },
 ];
 
-// ── Tasks ──────────────────────────────────────────────────────────────────
 export const TASKS: Task[] = [
   { id: "t1", title: "Draft the deck for Watson Island", status: "open", dueDate: "2025-03-20", priority: "High", assignees: ["Anton Maghami"], ventureLink: "Nammos – Watson Island" },
   { id: "t2", title: "Zarka City master plan review", status: "open", dueDate: "2025-03-18", priority: "High", assignees: ["Jimmy Frangi"], ventureLink: "Zarka City" },
@@ -106,7 +101,6 @@ export const TASKS: Task[] = [
   { id: "t6", title: "Venezuela mining operations plan", status: "complete", dueDate: "2025-03-10", priority: "High", assignees: ["Anton Maghami"], ventureLink: "Venezuela Mining Rights" },
 ];
 
-// ── Team ──────────────────────────────────────────────────────────────────
 export const TEAM: TeamMember[] = [
   { id: "tm1", name: "Jimmy Frangi", role: "Founder & CEO", initials: "JF" },
   { id: "tm2", name: "Anton Maghami", role: "Managing Partner", initials: "AM" },
@@ -120,7 +114,6 @@ export const TEAM: TeamMember[] = [
   { id: "tm10", name: "Dina Aoun", role: "Executive Assistant", initials: "DA" },
 ];
 
-// ── Distributions ─────────────────────────────────────────────────────────
 export const DISTRIBUTIONS: Distribution[] = [
   { id: "d1", name: "Q4 2024 Distribution", fund: "Nammos Barcelona SPV", amount: 2500000, status: "Paid", type: "Quarterly", date: "2024-12-15" },
   { id: "d2", name: "Watson Island Interim", fund: "Watson Island Holdings", amount: 1800000, status: "Paid", type: "Interim", date: "2025-01-20" },
@@ -129,7 +122,6 @@ export const DISTRIBUTIONS: Distribution[] = [
   { id: "d5", name: "NYC F&B Buildout", fund: "NYC F&B Ventures", amount: 350000, status: "Cancelled", type: "One-time", date: "2025-02-15" },
 ];
 
-// ── Activity Logs ─────────────────────────────────────────────────────────
 export const ACTIVITY_LOGS: ActivityLog[] = [
   { id: "a1", action: "Status Update", detail: "Nammos Barcelona moved to Active Deal", theme: "Real Estate", timestamp: "2025-03-14T10:30:00Z" },
   { id: "a2", action: "Task Completed", detail: "Venezuela mining operations plan finalized", theme: "Oil & Gas", timestamp: "2025-03-14T09:15:00Z" },
@@ -138,7 +130,6 @@ export const ACTIVITY_LOGS: ActivityLog[] = [
   { id: "a5", action: "Team Assignment", detail: "Karim Baz assigned to Presentation Master Deck", theme: "Others", timestamp: "2025-03-13T11:30:00Z" },
 ];
 
-// ── Metrics ───────────────────────────────────────────────────────────────
 export const METRICS = {
   totalVentures: 20,
   activeVentures: 14,
@@ -150,7 +141,6 @@ export const METRICS = {
   totalTeam: 10,
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────
 export function formatCurrency(amount: number): string {
   if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
   if (amount >= 1_000) return `$${(amount / 1_000).toFixed(0)}K`;

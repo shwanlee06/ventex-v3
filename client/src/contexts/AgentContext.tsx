@@ -1,12 +1,9 @@
-// ============================================================================
 // Agent Context — Velocity Build: Full agent state management
 // Events, drafts, velocity metrics, agent statuses, action execution
-// ============================================================================
 
 import { createContext, useContext, useMemo, useCallback, type ReactNode } from "react";
 import { trpc } from "@/lib/trpc";
 
-// ── Agent Config ────────────────────────────────────────────────────────
 
 export const AGENT_CONFIG = {
   overdue: {
@@ -72,7 +69,6 @@ export function getAgentConfig(agentName: string) {
   return AGENT_CONFIG[key] ?? AGENT_CONFIG.orchestrator;
 }
 
-// ── Types ──────────────────────────────────────────────────────────────
 
 export interface AgentEvent {
   id: number;
@@ -186,12 +182,10 @@ interface AgentContextValue {
 
 const AgentContext = createContext<AgentContextValue | null>(null);
 
-// ── Provider ────────────────────────────────────────────────────────────
 
 export function AgentProvider({ children }: { children: ReactNode }) {
   const utils = trpc.useUtils();
 
-  // ── Queries ──────────────────────────────────────────────────────────
 
   const { data: events = [], isLoading: eventsLoading } = trpc.agents.list.useQuery(
     { limit: 100 },
@@ -213,7 +207,6 @@ export function AgentProvider({ children }: { children: ReactNode }) {
     { refetchInterval: 60000 }
   );
 
-  // ── Invalidation helper ──────────────────────────────────────────────
 
   const invalidateAll = useCallback(() => {
     utils.agents.list.invalidate();
@@ -222,7 +215,6 @@ export function AgentProvider({ children }: { children: ReactNode }) {
     utils.agents.velocityMetrics.invalidate();
   }, [utils]);
 
-  // ── Mutations ────────────────────────────────────────────────────────
 
   const runAll = trpc.agents.runAll.useMutation({ onSuccess: invalidateAll });
   const runSingle = trpc.agents.runSingle.useMutation({ onSuccess: invalidateAll });
@@ -235,7 +227,6 @@ export function AgentProvider({ children }: { children: ReactNode }) {
   const deleteDraftMut = trpc.agents.deleteDraft.useMutation({ onSuccess: invalidateAll });
   const bulkDeleteDraftsMut = trpc.agents.bulkDeleteDrafts.useMutation({ onSuccess: invalidateAll });
 
-  // ── Computed values ──────────────────────────────────────────────────
 
   const pendingDraftCount = useMemo(
     () => (drafts as AgentDraft[]).filter(d => d.status === "pending").length,
@@ -293,7 +284,6 @@ export function AgentProvider({ children }: { children: ReactNode }) {
     });
   }, [events, drafts]);
 
-  // ── Context value ────────────────────────────────────────────────────
 
   const value = useMemo<AgentContextValue>(
     () => ({
@@ -340,7 +330,6 @@ export function AgentProvider({ children }: { children: ReactNode }) {
   return <AgentContext.Provider value={value}>{children}</AgentContext.Provider>;
 }
 
-// ── Hook ────────────────────────────────────────────────────────────────
 
 export function useAgents() {
   const ctx = useContext(AgentContext);

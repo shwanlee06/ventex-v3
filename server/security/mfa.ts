@@ -94,7 +94,6 @@ export function verifyTotpCode(
     secret: Secret.fromBase32(rawSecret),
   });
 
-  // validate returns the time step difference (null if invalid)
   const delta = totp.validate({ token: code, window: 1 });
   return delta !== null;
 }

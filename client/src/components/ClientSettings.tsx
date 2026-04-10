@@ -1,7 +1,5 @@
-// ============================================================================
 // Client Settings Panel — Inline settings for /clients/:slug
 // Editable fields: name, contact, AUM, sectors, tier, status, agent config
-// ============================================================================
 
 import { useState, useEffect, useMemo } from "react";
 import { trpc } from "@/lib/trpc";

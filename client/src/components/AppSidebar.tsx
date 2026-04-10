@@ -1,7 +1,5 @@
-// ============================================================================
 // AppSidebar — Clean, minimal navigation
 // Desktop: slim collapsible rail | Mobile: clean slide-out from topbar
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/_core/hooks/useAuth";

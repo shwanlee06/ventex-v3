@@ -1,7 +1,5 @@
-// ============================================================================
 // AI Concierge — Premium, minimal interface for UHNWI/HNWI clients
 // Clean, understated, private-banking aesthetic
-// ============================================================================
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -31,7 +29,6 @@ import { Streamdown } from "streamdown";
 import { logAction } from "@/lib/operatorSession";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-// ── Types ────────────────────────────────────────────────────────────────
 
 interface Attachment {
   id: string;
@@ -61,13 +58,11 @@ interface StoredMessage {
   attachments?: Attachment[];
 }
 
-// ── Constants ────────────────────────────────────────────────────────────
 
 const CHATS_INDEX_KEY = "atlas_chat_index";
 const CHAT_PREFIX = "atlas_chat_";
 const MAX_MESSAGES = 50;
 
-// ── Storage helpers ─────────────────────────────────────────────────────
 
 function loadChatIndex(): { id: string; title: string; createdAt: string; updatedAt: string }[] {
   try {
@@ -137,7 +132,6 @@ function generateTitle(firstMessage: string): string {
   return (lastSpace > 20 ? truncated.slice(0, lastSpace) : truncated) + "...";
 }
 
-// ── Formatting ──────────────────────────────────────────────────────────
 
 function formatTime(date: Date): string {
   return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
@@ -171,7 +165,6 @@ function getFileIcon(type: string) {
   return <FileText className="size-3.5 text-muted-foreground" />;
 }
 
-// ── Suggestions (understated) ───────────────────────────────────────────
 
 const SUGGESTIONS = [
   "Portfolio overview",
@@ -189,7 +182,6 @@ const WELCOME_MSG: ChatMessage = {
 
 // Portfolio context is now built server-side from live DB data in aiStream.ts
 
-// ── Stream AI response via SSE ──────────────────────────────────────────
 
 async function streamChat(
   messages: { role: string; content: string | Array<unknown> }[],
@@ -230,7 +222,6 @@ async function streamChat(
   }
 }
 
-// ── Component ───────────────────────────────────────────────────────────
 
 export default function Agent() {
   const [chatIndex, setChatIndex] = useState<{ id: string; title: string; createdAt: string; updatedAt: string }[]>(() => {
@@ -271,7 +262,6 @@ export default function Agent() {
   const activeChat = chatIndex.find(c => c.id === activeChatId);
   const hasMessages = messages.filter(m => m.role === "user").length > 0;
 
-  // ── Persist ──────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (!isStreaming && activeChatId) {
@@ -286,7 +276,6 @@ export default function Agent() {
     }
   }, [messages, isStreaming, activeChatId]);
 
-  // ── Chat management ───────────────────────────────────────────────────
 
   const createNewChat = useCallback(() => {
     if (isStreaming) return;
@@ -370,7 +359,6 @@ export default function Agent() {
     setRenameValue("");
   }, []);
 
-  // ── Scroll ────────────────────────────────────────────────────────────
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -378,7 +366,6 @@ export default function Agent() {
 
   useEffect(() => { scrollToBottom(); }, [messages, isStreaming, scrollToBottom]);
 
-  // ── File handling ─────────────────────────────────────────────────────
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -406,7 +393,6 @@ export default function Agent() {
     setAttachments(prev => prev.filter(a => a.id !== id));
   }, []);
 
-  // ── Send message ──────────────────────────────────────────────────────
 
   const sendMessage = useCallback(async (text: string) => {
     if ((!text.trim() && attachments.length === 0) || isStreaming) return;

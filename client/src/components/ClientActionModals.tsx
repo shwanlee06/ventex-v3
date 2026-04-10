@@ -1,10 +1,8 @@
-// ============================================================================
 // Client Action Modals — 4 Action Flows from Velocity Feed
 // 1. Approve Follow-Up   — review/edit draft, send via email
 // 2. Reassign Task        — pick new assignee + due date
 // 3. Confirm Distribution — confirm notice, optionally send LP email
 // 4. Unblock Venture      — 3 options: assign task / schedule review / mark hold
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
@@ -49,7 +47,6 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-// ── Types ────────────────────────────────────────────────────────────────
 
 interface ActionModalProps {
   open: boolean;
@@ -65,7 +62,6 @@ export type ActionFlowType =
   | "confirm_distribution"
   | "unblock_venture";
 
-// ── Determine action flow from event message ────────────────────────────
 
 export function inferActionFlow(message: string): ActionFlowType {
   const msg = message.toLowerCase();
@@ -76,7 +72,6 @@ export function inferActionFlow(message: string): ActionFlowType {
   return "approve_followup"; // default
 }
 
-// ── Main Modal Container ─────────────────────────────────────────────────
 
 export default function ClientActionModal({ open, onClose, eventId, actionType, onSuccess }: ActionModalProps) {
   const detailQ = trpc.agents.getEventDetail.useQuery(
@@ -168,7 +163,6 @@ export default function ClientActionModal({ open, onClose, eventId, actionType, 
   );
 }
 
-// ── Shared Types ─────────────────────────────────────────────────────────
 
 type EventDetail = {
   event: any;
@@ -185,7 +179,6 @@ interface FlowProps {
   isSubmitting: boolean;
 }
 
-// ── Flow 1: Approve Follow-Up ────────────────────────────────────────────
 
 function ApproveFollowUpFlow({ detail, onSubmit, isSubmitting }: FlowProps) {
   const { event, draft } = detail;
@@ -276,7 +269,6 @@ function ApproveFollowUpFlow({ detail, onSubmit, isSubmitting }: FlowProps) {
   );
 }
 
-// ── Flow 2: Reassign Task ────────────────────────────────────────────────
 
 function ReassignTaskFlow({ detail, onSubmit, isSubmitting }: FlowProps) {
   const { event, task, availableTeam } = detail;
@@ -396,7 +388,6 @@ function ReassignTaskFlow({ detail, onSubmit, isSubmitting }: FlowProps) {
   );
 }
 
-// ── Flow 3: Confirm Distribution ─────────────────────────────────────────
 
 function ConfirmDistributionFlow({ detail, onSubmit, isSubmitting }: FlowProps) {
   const { event, draft, distribution } = detail;
@@ -514,7 +505,6 @@ function ConfirmDistributionFlow({ detail, onSubmit, isSubmitting }: FlowProps) 
   );
 }
 
-// ── Flow 4: Unblock Venture ──────────────────────────────────────────────
 
 type UnblockOption = "assign_task" | "schedule_review" | "mark_hold";
 

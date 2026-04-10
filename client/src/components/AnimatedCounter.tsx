@@ -1,7 +1,5 @@
-// ============================================================================
 // AnimatedCounter — Smooth count-up animation for KPI metrics
 // Animates from 0 to target value with easing, supports prefix/suffix
-// ============================================================================
 
 import { useEffect, useRef, useState } from "react";
 

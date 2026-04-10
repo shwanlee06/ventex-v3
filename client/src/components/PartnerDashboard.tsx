@@ -1,7 +1,5 @@
-// ============================================================================
 // Partner Dashboard — Dedicated view for partners
 // Shows assigned ventures, tasks, and key metrics
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";

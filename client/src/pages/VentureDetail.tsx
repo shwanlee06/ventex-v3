@@ -1,7 +1,5 @@
-// ============================================================================
 // Venture Detail Page — /ventures/:slug — LIVE DB DATA
 // Sections: Key Details, Team, Files (with folders), Activity Log
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
@@ -36,7 +34,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import BlueprintJourneyTracker from "@/components/BlueprintJourneyTracker";
 import VentureOverrides from "@/components/VentureOverrides";
 
-// ── Constants ────────────────────────────────────────────────────────────
 const STAGES = ["In Validation", "Active ventures", "In Fundraising", "On Hold"];
 const STATUSES = ["In progress", "On-Hold", "Completed", "Closed"];
 const SECTORS = ["Real Estate", "F&B", "Yacht", "Entertainment", "Oil & Gas", "Others"];
@@ -45,7 +42,6 @@ const FOLDER_COLORS = [
   "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#f97316",
 ];
 
-// ── Helpers ──────────────────────────────────────────────────────────────
 function getFileIcon(name: string) {
   const ext = name.split(".").pop()?.toLowerCase();
   if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext || "")) return <Image className="size-4 text-blue-400" />;
@@ -79,14 +75,12 @@ function getInitials(name: string): string {
   return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
-// ── Component ────────────────────────────────────────────────────────────
 export default function VentureDetail() {
   const [, navigate] = useLocation();
   const [, params] = useRoute("/ventures/:slug");
   const slug = params?.slug || "";
   const utils = trpc.useUtils();
 
-  // ── Live data queries ──────────────────────────────────────────────
   const ventureQ = trpc.ventures.getBySlug.useQuery({ slug }, { enabled: !!slug });
   const venture = ventureQ.data;
   const ventureId = venture?.id;
@@ -98,7 +92,6 @@ export default function VentureDetail() {
   const allTeamQ = trpc.team.list.useQuery();
   const activityQ = trpc.activity.recent.useQuery({ limit: 20 });
 
-  // ── Intelligence queries ──────────────────────────────────────────
   const healthQ = trpc.intelligence.getVentureHealth.useQuery({ ventureId: ventureId! }, { enabled: !!ventureId });
   const risksQ = trpc.docIntel.getVentureRisks.useQuery({ ventureId: ventureId! }, { enabled: !!ventureId });
   const observationsQ = trpc.intelligence.getObservations.useQuery({ ventureId: ventureId!, limit: 5 }, { enabled: !!ventureId });
@@ -136,7 +129,6 @@ export default function VentureDetail() {
   const allTeamMembers = allTeamQ.data || [];
   const activityLogs = (activityQ.data || []).filter(a => a.entityType === "venture" && a.entityId === ventureId);
 
-  // ── Mutations ──────────────────────────────────────────────────────
   const updateVenture = trpc.ventures.update.useMutation({
     onSuccess: () => { utils.ventures.getBySlug.invalidate({ slug }); utils.ventures.list.invalidate(); utils.activity.recent.invalidate(); },
   });
@@ -165,7 +157,6 @@ export default function VentureDetail() {
     onSuccess: () => { utils.ventures.getFolders.invalidate({ ventureId: ventureId! }); },
   });
 
-  // ── State ──────────────────────────────────────────────────────────
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     name: "", sector: "", location: "", stage: "", status: "", notes: "",
@@ -190,7 +181,6 @@ export default function VentureDetail() {
   const [lightboxName, setLightboxName] = useState("");
   const [lightboxZoom, setLightboxZoom] = useState(1);
 
-  // ── Start editing ──────────────────────────────────────────────────
   const startEditing = useCallback(() => {
     if (!venture) return;
     setEditForm({
@@ -239,7 +229,6 @@ export default function VentureDetail() {
     toast.info("Team member removed");
   }, [ventureId, removeTeam]);
 
-  // ── File handlers ──────────────────────────────────────────────────
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
     if (!fileList || !ventureId) return;
@@ -299,7 +288,6 @@ export default function VentureDetail() {
     document.body.removeChild(link);
   }, []);
 
-  // ── Folder handlers ────────────────────────────────────────────────
   const handleCreateFolder = useCallback(() => {
     const trimmed = newFolderName.trim();
     if (!trimmed || !ventureId) { toast.error("Enter a folder name"); return; }
@@ -324,11 +312,9 @@ export default function VentureDetail() {
     setRenameFolderName("");
   }, [renameFolderIdState, renameFolderName, renameFolderMut]);
 
-  // ── Computed ───────────────────────────────────────────────────────
   const currentFiles = allFiles.filter(f => currentFolderId ? f.folderId === currentFolderId : !f.folderId);
   const currentFolder = allFolders.find(f => f.id === currentFolderId);
 
-  // ── Loading ────────────────────────────────────────────────────────
   if (ventureQ.isLoading) {
     return (
       <DashboardLayout title="Loading..." subtitle="">
@@ -340,7 +326,6 @@ export default function VentureDetail() {
     );
   }
 
-  // ── 404 ────────────────────────────────────────────────────────────
   if (!venture) {
     return (
       <DashboardLayout title="Venture Not Found" subtitle="">

@@ -11,7 +11,6 @@ import { invokeLLM } from "../_core/llm";
 import { isAtlasTeam, resolveVentureScope } from "../security/rbac";
 import { resolveOrgId } from "../security/orgScope";
 
-// ── Org-scoped venture IDs helper ─────────────────────────────────────
 
 async function getVentureIdsForOrg(db: any, organizationId: number): Promise<number[]> {
   const rows = await db
@@ -21,7 +20,6 @@ async function getVentureIdsForOrg(db: any, organizationId: number): Promise<num
   return rows.map((r: any) => r.ventureId);
 }
 
-// ── Daily Brief Generator ──────────────────────────────────────────────
 
 async function generateDailyBriefContent(db: any, orgId?: number | null): Promise<{
   headline: string;
@@ -146,7 +144,6 @@ Return ONLY valid JSON.`,
   }
 }
 
-// ── Venture Health Score Calculator ────────────────────────────────────
 
 async function calculateVentureHealthScore(db: any, ventureId: number): Promise<number> {
   const ventureTasks = await db.select().from(tasks).where(eq(tasks.ventureId, ventureId));
@@ -173,7 +170,6 @@ async function calculateVentureHealthScore(db: any, ventureId: number): Promise<
   return Math.max(0, Math.min(100, score));
 }
 
-// ── Smart Alerts Generator ─────────────────────────────────────────────
 
 async function generateSmartAlerts(db: any, orgId?: number | null): Promise<void> {
   const taskWhere = orgId ? eq(tasks.organizationId, orgId) : undefined;
@@ -242,7 +238,6 @@ async function generateSmartAlerts(db: any, orgId?: number | null): Promise<void
   }
 }
 
-// ── Router ─────────────────────────────────────────────────────────────
 
 export const intelligenceRouter = router({
   // Get today's daily brief — org-scoped

@@ -1,8 +1,5 @@
-// ============================================================================
-// useSSE — React hook for Server-Sent Events
 // Connects to /api/events and dispatches real-time updates to subscribers.
 // Falls back gracefully if SSE is unavailable.
-// ============================================================================
 
 import { useEffect, useRef, useCallback, useState } from "react";
 
@@ -19,7 +16,6 @@ export type SSEEventType =
 
 type SSEHandler = (data: Record<string, unknown>) => void;
 
-// ── Global event bus (singleton) ────────────────────────────────────────
 const handlers = new Map<SSEEventType, Set<SSEHandler>>();
 let globalEventSource: EventSource | null = null;
 let refCount = 0;
@@ -72,7 +68,6 @@ function connect() {
     };
   } catch {
     // SSE not supported or blocked
-    console.warn("[SSE] EventSource not available");
   }
 }
 
@@ -100,7 +95,6 @@ function unsubscribe(type: SSEEventType, handler: SSEHandler) {
   }
 }
 
-// ── Hook: manage SSE lifecycle ──────────────────────────────────────────
 export function useSSEConnection() {
   const [connected, setConnected] = useState(false);
 
@@ -126,7 +120,6 @@ export function useSSEConnection() {
   return { connected };
 }
 
-// ── Hook: subscribe to specific event types ─────────────────────────────
 export function useSSEEvent(
   type: SSEEventType,
   handler: SSEHandler,
@@ -142,7 +135,6 @@ export function useSSEEvent(
   }, [type, ...deps]);
 }
 
-// ── Hook: auto-invalidate tRPC queries on SSE events ────────────────────
 export function useSSEInvalidation(
   type: SSEEventType,
   invalidateFn: () => void,

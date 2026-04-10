@@ -1,7 +1,5 @@
-// ============================================================================
 // 404 — ATLAS Branded Not Found Page
 // Military-ops aesthetic matching the SpyOps login
-// ============================================================================
 
 import { useLocation } from "wouter";
 import { useEffect, useState } from "react";

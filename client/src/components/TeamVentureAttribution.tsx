@@ -1,8 +1,6 @@
-// ============================================================================
 // Team Venture Attribution — Upgrade 6
 // Mini-table: Member Name | Ventures Assigned | Role Badge
 // Replaces flat member list in ClientDetail bottom section
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 import { Users, ChevronRight } from "lucide-react";

@@ -1,9 +1,6 @@
-// ============================================================================
 // Proactive Task Generator — AI creates next-step tasks for ventures
 // This is the engine that makes ATLAS actually MOVE ventures forward.
 // It scans each venture, identifies what needs to happen next, and creates
-// concrete tasks with due dates and assignees.
-// ============================================================================
 
 import { getDb } from "../db";
 import {
@@ -130,7 +127,6 @@ export async function runProactiveTaskGenerator(
     const teamNames = team.map((t) => t.name);
     const assignee = teamNames.length > 0 ? teamNames[0] : "ATLAS Operations";
 
-    // ── LLM: Generate next-step tasks ──────────────────────────────────
     const numToGenerate = Math.min(3, 3 - openTasks); // Generate up to 3 tasks
 
     try {
@@ -255,10 +251,6 @@ Generate ${numToGenerate} next-step tasks to move this venture forward.`,
       console.error(`[ProactiveTaskGen] Error for venture ${venture.name}:`, err.message);
     }
   }
-
-  console.log(
-    `[ProactiveTaskGen] Org ${orgId}: ${venturesProcessed} ventures processed, ${tasksCreated} tasks created`
-  );
 
   // SOC 2 audit trail
   if (tasksCreated > 0) {

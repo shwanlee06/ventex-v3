@@ -1,8 +1,6 @@
-// ============================================================================
 // Client Dashboard — Premium, Outcome-Focused, Action-Oriented
 // Action cards replace static stats · Stage bars · Sector pills
 // No agent internals visible · Clean, confident English
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -47,7 +45,6 @@ import VelocityFeed from "@/components/VelocityFeed";
 import AdvanceBanner from "@/components/AdvanceBanner";
 import AtlasActivitySection from "@/components/AtlasActivitySection";
 
-// ── Sector colors for pie chart ──────────────────────────────────────────
 const SECTOR_COLORS: Record<string, string> = {
   "Real Estate": "#3B82F6",
   "Yacht": "#06B6D4",
@@ -61,7 +58,6 @@ function getSectorColor(sector: string): string {
   return SECTOR_COLORS[sector] || SECTOR_COLORS["Others"];
 }
 
-// ── SVG Pie Chart ────────────────────────────────────────────────────────
 function PieChart({ slices }: { slices: { label: string; value: number; color: string }[] }) {
   const total = slices.reduce((s, sl) => s + sl.value, 0);
   if (total === 0) return null;

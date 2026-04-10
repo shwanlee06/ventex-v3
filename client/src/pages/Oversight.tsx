@@ -1,7 +1,5 @@
-// ============================================================================
 // Oversight Page — Operator Oversight Feed with 48h Auto-Escalation
 // Cross-client view of what agents did, what clients acted on, what's stuck
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
@@ -308,7 +306,6 @@ export default function OversightPage() {
   );
 }
 
-// ── Event Row Component ────────────────────────────────────────────────
 function EventRow({
   item,
   index,

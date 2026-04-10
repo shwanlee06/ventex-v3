@@ -19,7 +19,6 @@ import { logAudit } from "../security/rbac";
 import { enforceRateLimit } from "../security/rateLimit";
 import crypto from "crypto";
 
-// ── Helpers ──────────────────────────────────────────────────────────────
 
 /** Generate an org-branded API key: ATLAS-<ORG>-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX */
 function generateApiKey(orgSlug?: string): string {
@@ -52,10 +51,8 @@ function getKeyPrefix(key: string): string {
   return key.substring(0, 10);
 }
 
-// ── Router ───────────────────────────────────────────────────────────────
 
 export const accessRouter = router({
-  // ── Organizations ─────────────────────────────────────────────────────
 
   /** List all organizations */
   listOrganizations: adminProcedure.query(async ({ ctx }) => {
@@ -230,7 +227,6 @@ export const accessRouter = router({
         .orderBy(desc(orgVentureAccess.createdAt));
     }),
 
-  // ── Invitations ───────────────────────────────────────────────────────
 
   /** Send an invitation */
   sendInvitation: adminProcedure
@@ -361,7 +357,6 @@ export const accessRouter = router({
       return { success: true };
     }),
 
-  // ── Invitation Validation (public — used during OAuth) ────────────────
 
   /** Validate an invitation token (public procedure for OAuth flow) */
   validateInvitation: protectedProcedure
@@ -503,7 +498,6 @@ export const accessRouter = router({
       };
     }),
 
-  // ── API Keys ──────────────────────────────────────────────────────────
 
   /** List all API keys (admin sees all, user sees own) */
   listApiKeys: protectedProcedure.query(async ({ ctx }) => {
@@ -614,7 +608,6 @@ export const accessRouter = router({
       return { success: true };
     }),
 
-  // ── Access Check (used by OAuth gating) ───────────────────────────────
 
   /** Check if a user (by email) is authorized to access the system */
   checkAccess: protectedProcedure.query(async ({ ctx }) => {
@@ -656,7 +649,6 @@ export const accessRouter = router({
     };
   }),
 
-  // ── Public Org Lookup (for invite pages) ──────────────────────────────
 
   /** Look up an organization by slug — public, no auth needed */
   lookupOrgBySlug: protectedProcedure
@@ -680,7 +672,6 @@ export const accessRouter = router({
       return org ?? null;
     }),
 
-  // ── Stats ─────────────────────────────────────────────────────────────
 
   /** Get access control stats */
   getStats: adminProcedure.query(async ({ ctx }) => {

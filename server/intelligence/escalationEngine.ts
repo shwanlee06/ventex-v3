@@ -1,8 +1,5 @@
-// ============================================================================
 // Escalation Engine — 48-hour auto-escalation with nudge emails
 // Scans for unactioned client events, sends nudge emails, creates escalation
-// notifications, and logs everything for the operator oversight feed.
-// ============================================================================
 
 import { getDb } from "../db";
 import { agentEvents, organizations, tasks, ventures } from "../../drizzle/schema";
@@ -10,7 +7,6 @@ import { eq, and, lte, desc, sql } from "drizzle-orm";
 import { sendClientNudge, sendOverdueAutoEmail } from "../emailService";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
-// ── Configuration ────────────────────────────────────────────────────────
 const ESCALATION_THRESHOLD_HOURS = 48;
 const NUDGE_THRESHOLD_HOURS = 24;
 const MAX_NUDGES_PER_SWEEP = 10;
@@ -38,7 +34,6 @@ export async function runEscalationSweep(organizationId: number): Promise<Escala
   if (!db) return result;
 
   try {
-    // ── 1. Find unactioned client events older than 24h (nudge) ──────────
     const nudgeCutoff = new Date(Date.now() - NUDGE_THRESHOLD_HOURS * 60 * 60 * 1000);
     const escalationCutoff = new Date(Date.now() - ESCALATION_THRESHOLD_HOURS * 60 * 60 * 1000);
 
@@ -57,7 +52,6 @@ export async function runEscalationSweep(organizationId: number): Promise<Escala
       .orderBy(desc(agentEvents.createdAt))
       .limit(50);
 
-    // ── 2. Get org contact info for emails ───────────────────────────────
     const [org] = await db
       .select({
         id: organizations.id,
@@ -74,7 +68,6 @@ export async function runEscalationSweep(organizationId: number): Promise<Escala
       return result;
     }
 
-    // ── 3. Send nudge email for 24h+ unactioned items ────────────────────
     const nudgeItems = unactionedEvents.filter(
       (e) => new Date(e.createdAt) >= escalationCutoff
     );
@@ -95,7 +88,6 @@ export async function runEscalationSweep(organizationId: number): Promise<Escala
       }
     }
 
-    // ── 4. Escalate 48h+ unactioned items ────────────────────────────────
     const escalationItems = unactionedEvents.filter(
       (e) => new Date(e.createdAt) < escalationCutoff
     );
@@ -143,7 +135,6 @@ export async function runEscalationSweep(organizationId: number): Promise<Escala
       }
     }
 
-    // ── 5. Check for overdue tasks and send alerts ───────────────────────
     const now = new Date();
     const overdueTasks = await db
       .select({
@@ -208,12 +199,6 @@ export async function runEscalationSweep(organizationId: number): Promise<Escala
         }
       }
     }
-
-    console.log(
-      `[EscalationEngine] Org ${organizationId} (${org.name}): ` +
-        `${result.nudgesSent} nudges, ${result.escalationsCreated} escalations, ` +
-        `${result.overdueTaskAlerts} overdue alerts`
-    );
   } catch (err: any) {
     result.errors.push(`Sweep failed: ${err.message}`);
     console.error(`[EscalationEngine] Sweep failed for org ${organizationId}:`, err.message);

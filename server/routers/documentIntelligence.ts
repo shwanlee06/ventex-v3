@@ -12,7 +12,6 @@ import { eq, desc, and, sql, like, or } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
-// ── Text extraction helpers ────────────────────────────────────────────
 
 async function extractPdfText(buffer: Buffer): Promise<string> {
   try {
@@ -75,7 +74,6 @@ async function describeImageWithVision(fileUrl: string): Promise<string> {
   }
 }
 
-// ── Claude classification ──────────────────────────────────────────────
 
 async function classifyDocument(rawText: string, filename: string): Promise<{
   document_type: string;
@@ -181,7 +179,6 @@ Return ONLY valid JSON, no markdown fences.`,
   }
 }
 
-// ── Meeting brief generator ────────────────────────────────────────────
 
 async function generateMeetingBrief(rawText: string, filename: string, teamNames: string[]): Promise<{
   meetingDate: string;
@@ -268,7 +265,6 @@ Return ONLY valid JSON.`,
   }
 }
 
-// ── Router ─────────────────────────────────────────────────────────────
 
 export const documentIntelligenceRouter = router({
   // Process a file (called after upload)
@@ -438,7 +434,6 @@ export const documentIntelligenceRouter = router({
     }),
 });
 
-// ── Async processing function ──────────────────────────────────────────
 
 async function processDocumentAsync(db: any, docIntelId: number, input: {
   fileId: number;
@@ -512,7 +507,6 @@ async function processDocumentAsync(db: any, docIntelId: number, input: {
     processedAt: new Date(),
   }).where(eq(documentIntelligence.id, docIntelId));
 
-  // ── Auto-create tasks from action items ──────────────────────────────
   let tasksCreated = 0;
   if (classification.action_items.length > 0 && input.ventureId) {
     for (const item of classification.action_items) {
@@ -542,7 +536,6 @@ async function processDocumentAsync(db: any, docIntelId: number, input: {
     }
   }
 
-  // ── Auto-create notifications from deadlines ─────────────────────────
   if (classification.deadlines.length > 0) {
     for (const deadline of classification.deadlines) {
       const deadlineDate = new Date(deadline.date);
@@ -559,7 +552,6 @@ async function processDocumentAsync(db: any, docIntelId: number, input: {
     }
   }
 
-  // ── Auto-create venture risks ────────────────────────────────────────
   if (classification.risks_mentioned.length > 0 && input.ventureId) {
     for (const risk of classification.risks_mentioned) {
       await db.insert(ventureRisks).values({
@@ -571,7 +563,6 @@ async function processDocumentAsync(db: any, docIntelId: number, input: {
     }
   }
 
-  // ── Meeting minutes special processing ───────────────────────────────
   if (classification.document_type === "meeting_minutes" && input.ventureId) {
     const allTeam = await db.select({ name: teamMembers.name }).from(teamMembers);
     const teamNames = allTeam.map((t: any) => t.name);
@@ -600,7 +591,6 @@ async function processDocumentAsync(db: any, docIntelId: number, input: {
     });
   }
 
-  // ── Urgent document banner ───────────────────────────────────────────
   if (classification.sentiment === "urgent" && input.ventureId) {
     await db.insert(notifications).values({
       type: "urgent",
@@ -611,7 +601,6 @@ async function processDocumentAsync(db: any, docIntelId: number, input: {
     });
   }
 
-  // ── Activity log ─────────────────────────────────────────────────────
   if (input.ventureId) {
     const [v] = await db.select().from(ventures).where(eq(ventures.id, input.ventureId)).limit(1);
     await db.insert(activityLog).values({

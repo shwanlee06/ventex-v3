@@ -52,7 +52,6 @@ function startCleanup() {
 
 startCleanup();
 
-// ── Predefined rate limit configs ────────────────────────────────────
 
 export const RATE_LIMITS = {
   login: { maxRequests: 10, windowMs: 15 * 60 * 1000 } as RateLimitConfig,

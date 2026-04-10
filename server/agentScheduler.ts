@@ -1,8 +1,5 @@
-// ============================================================================
 // Agent Scheduler — Automatic agent execution on configurable intervals
 // Runs all four agents (Overdue, Velocity, Distribution, Orchestrator)
-// for each active organization on a recurring schedule.
-// ============================================================================
 
 import { getDb } from "./db";
 import {
@@ -36,7 +33,6 @@ async function executeAgentCycle(): Promise<{
   errors: string[];
 }> {
   if (isRunning) {
-    console.log("[AgentScheduler] Skipping — previous cycle still running");
     return { success: false, orgsProcessed: 0, totalSignals: 0, errors: ["Previous cycle still running"] };
   }
 
@@ -59,7 +55,6 @@ async function executeAgentCycle(): Promise<{
       .from(organizations)
       .where(eq(organizations.status, "active"));
 
-    console.log(`[AgentScheduler] Starting cycle for ${activeOrgs.length} organizations`);
 
     // Dynamically import agent functions to avoid circular dependencies
     const { runAgentsForOrg } = await import("./agentRunner");
@@ -77,7 +72,6 @@ async function executeAgentCycle(): Promise<{
         totalSignals += result.signalCount;
         orgsProcessed++;
 
-        console.log(`[AgentScheduler] Org "${org.name}" (${org.id}): ${result.signalCount} signals`);
       } catch (err: any) {
         const errMsg = `Org ${org.id} (${org.name}): ${err.message}`;
         errors.push(errMsg);
@@ -98,7 +92,6 @@ async function executeAgentCycle(): Promise<{
         );
       const deletedCount = (deleted as any)[0]?.affectedRows || 0;
       if (deletedCount > 0) {
-        console.log(`[AgentScheduler] Auto-cleanup: removed ${deletedCount} old sent/dismissed drafts`);
       }
     } catch (cleanupErr: any) {
       console.error("[AgentScheduler] Draft cleanup error:", cleanupErr.message);
@@ -109,7 +102,6 @@ async function executeAgentCycle(): Promise<{
     nextRunAt = new Date(Date.now() + DEFAULT_INTERVAL_MS);
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log(`[AgentScheduler] Cycle complete: ${orgsProcessed} orgs, ${totalSignals} signals, ${elapsed}s`);
 
     // SOC 2 audit trail — log every agent cycle
     try {
@@ -146,11 +138,9 @@ async function executeAgentCycle(): Promise<{
  */
 export function startAgentScheduler(): void {
   if (schedulerInterval) {
-    console.log("[AgentScheduler] Already running, skipping start");
     return;
   }
 
-  console.log(`[AgentScheduler] Starting with ${DEFAULT_INTERVAL_MS / 1000 / 60 / 60}h interval`);
   nextRunAt = new Date(Date.now() + DEFAULT_INTERVAL_MS);
 
   schedulerInterval = setInterval(() => {
@@ -161,7 +151,6 @@ export function startAgentScheduler(): void {
 
   // Also run once 30 seconds after server start to populate fresh data
   setTimeout(() => {
-    console.log("[AgentScheduler] Running initial cycle (30s after startup)");
     executeAgentCycle().catch(err => {
       console.error("[AgentScheduler] Initial cycle error:", err);
     });
@@ -176,7 +165,6 @@ export function stopAgentScheduler(): void {
     clearInterval(schedulerInterval);
     schedulerInterval = null;
     nextRunAt = null;
-    console.log("[AgentScheduler] Stopped");
   }
 }
 

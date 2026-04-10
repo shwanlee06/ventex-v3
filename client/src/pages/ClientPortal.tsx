@@ -1,8 +1,6 @@
-// ============================================================================
 // Client Portal — /portal/:orgSlug
 // Premium, outcome-focused. Zero operator language.
 // Velocity Feed: 3 card types — amber (action), teal (completed), gray (watching)
-// ============================================================================
 
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
@@ -60,7 +58,6 @@ import { MessageSquare, X as XIcon, Sparkles } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Streamdown } from "streamdown";
 
-// ── Sector icons ──────────────────────────────────────────────────────
 const SECTOR_ICONS: Record<string, React.ReactNode> = {
   "Real Estate": <Building2 className="size-4" />,
   Yacht: <Ship className="size-4" />,
@@ -70,7 +67,6 @@ const SECTOR_ICONS: Record<string, React.ReactNode> = {
   Others: <Package className="size-4" />,
 };
 
-// ── Action flow icons ─────────────────────────────────────────────────
 const ACTION_FLOW_ICONS: Record<string, React.ReactNode> = {
   advance_stage: <ArrowUpRight className="size-3 mr-1.5" />,
   approve_followup: <Send className="size-3 mr-1.5" />,
@@ -79,7 +75,6 @@ const ACTION_FLOW_ICONS: Record<string, React.ReactNode> = {
   view_task: <Eye className="size-3 mr-1.5" />,
 };
 
-// ── Stage progress ────────────────────────────────────────────────────
 const STAGES = ["Initial Review", "Under Review", "Fundraising", "Active", "Completed"];
 
 function StageIndicator({ stage }: { stage: string }) {
@@ -105,7 +100,6 @@ function StageIndicator({ stage }: { stage: string }) {
   );
 }
 
-// ── Format date for display ───────────────────────────────────────────
 function friendlyDate(d: Date | string | undefined): string {
   if (!d) return "";
   const date = typeof d === "string" ? new Date(d) : d;
@@ -113,7 +107,6 @@ function friendlyDate(d: Date | string | undefined): string {
   return formatDistanceToNow(date, { addSuffix: true });
 }
 
-// ── Main Component ────────────────────────────────────────────────────
 export default function ClientPortal() {
   const [, params] = useRoute("/portal/:orgSlug");
   const orgSlug = params?.orgSlug || "";
@@ -132,7 +125,6 @@ export default function ClientPortal() {
   const [taskDrawer, setTaskDrawer] = useState<{ ventureId: number; ventureName: string } | null>(null);
   const [completingTaskIds, setCompletingTaskIds] = useState<Set<number>>(new Set());
 
-  // ── AI Chat state ──────────────────────────────────────────────────
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
   const [chatInput, setChatInput] = useState("");
@@ -263,7 +255,6 @@ export default function ClientPortal() {
     [resolveActionMutation]
   );
 
-  // ── Auth check ──────────────────────────────────────────────────────
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

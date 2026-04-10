@@ -21,7 +21,6 @@ import { getDb } from "../db";
 import { userVentureAccess, auditLog, orgVentureAccess } from "../../drizzle/schema";
 import type { User } from "../../drizzle/schema";
 
-// ── Role Hierarchy ─────────────────────────────────────────────────────
 // Higher number = more permissions
 export const ROLE_HIERARCHY: Record<string, number> = {
   viewer: 10,
@@ -33,7 +32,6 @@ export const ROLE_HIERARCHY: Record<string, number> = {
   owner: 60,
 };
 
-// ── Permission Actions ─────────────────────────────────────────────────
 export type Action =
   | "read"
   | "create"
@@ -49,7 +47,6 @@ export type Action =
   | "manage_spvs"
   | "manage_distributions";
 
-// ── Permission Matrix ──────────────────────────────────────────────────
 // Maps each role to the actions they can perform
 const PERMISSION_MATRIX: Record<string, Set<Action>> = {
   viewer: new Set<Action>(["read"]),
@@ -78,7 +75,6 @@ const PERMISSION_MATRIX: Record<string, Set<Action>> = {
   ]),
 };
 
-// ── Two-Tier Helpers ──────────────────────────────────────────────────
 
 /**
  * Check if a user is part of the ATLAS internal team.
@@ -90,13 +86,10 @@ const PERMISSION_MATRIX: Record<string, Set<Action>> = {
  * client/viewer = never ATLAS team
  */
 export function isAtlasTeam(user: { role: string; organizationId?: number | null }): boolean {
-  // owner/admin are always ATLAS team — they see the full Command Center
   if (user.role === "owner" || user.role === "admin") return true;
-  // manager/user are ATLAS team if they have no client org (orgId null or 1 = ATLAS)
   if (user.role === "manager" || user.role === "user") {
     return !user.organizationId || user.organizationId === 1;
   }
-  // partner, client, viewer are NOT ATLAS team
   return false;
 }
 

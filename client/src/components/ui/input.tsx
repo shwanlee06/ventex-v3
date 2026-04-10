@@ -25,7 +25,6 @@ function Input({
       const isComposing = (e.nativeEvent as any).isComposing || dialogComposition.justEndedComposing();
 
       // If Enter key is pressed while composing or just after composition ended,
-      // don't call the user's onKeyDown (this blocks the business logic)
       if (e.key === "Enter" && isComposing) {
         return;
       }

@@ -1,8 +1,5 @@
-// ============================================================================
 // ATLAS Team — Dedicated page for internal ATLAS/Aurovia team members
 // Shows all internal operators, their roles, functions, venture assignments,
-// contact info, and status — separate from client contacts
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";

@@ -1,6 +1,4 @@
-// ============================================================================
 // CSV Export Utility — client-side data export for ventures, tasks, distributions
-// ============================================================================
 
 /**
  * Convert an array of objects to CSV string
@@ -50,7 +48,6 @@ export function exportCSV(
   downloadFile(csv, filename.endsWith(".csv") ? filename : `${filename}.csv`);
 }
 
-// ── Column definitions for common exports ────────────────────────────────
 
 export const VENTURE_COLUMNS = [
   { key: "name", label: "Venture Name" },

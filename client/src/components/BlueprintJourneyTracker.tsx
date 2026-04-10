@@ -1,8 +1,5 @@
-// ============================================================================
 // BlueprintJourneyTracker — Client portal journey tracker
 // Shows the venture's progress through its process blueprint as a visual
-// stage-by-stage timeline with step completion status
-// ============================================================================
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import { Check, Circle, Clock, Shield, Loader2 } from "lucide-react";

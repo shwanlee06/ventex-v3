@@ -1,8 +1,6 @@
-// ============================================================================
 // ATLAS Activity Section — Client Portal
 // Weekly summary of what ATLAS agents have done for this client.
 // Shows recent agent actions in plain English, no internal jargon.
-// ============================================================================
 
 import { trpc } from "@/lib/trpc";
 import { formatTimestamp } from "@/lib/data";

@@ -1,6 +1,4 @@
-// ============================================================================
 // AI Task Generator — Analyzes venture data and suggests intelligent tasks
-// ============================================================================
 
 import { useState, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
@@ -37,7 +35,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// ── Types ──────────────────────────────────────────────────────────────
 interface SuggestedTask {
   title: string;
   description: string;
@@ -58,7 +55,6 @@ interface AITaskGeneratorProps {
   onTasksCreated?: () => void;
 }
 
-// ── Category icons ─────────────────────────────────────────────────────
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   "follow-up": <Clock className="size-3.5" />,
   "risk-mitigation": <Shield className="size-3.5" />,
@@ -105,7 +101,6 @@ export default function AITaskGenerator({
   const generateMutation = trpc.aiTasks.generateSuggestions.useMutation();
   const approveMutation = trpc.aiTasks.approveAndCreate.useMutation();
 
-  // ── Generate suggestions ──────────────────────────────────────────
   const handleGenerate = useCallback(async () => {
     setPhase("analyzing");
     setSuggestions([]);
@@ -136,7 +131,6 @@ export default function AITaskGenerator({
     }
   }, [organizationId, generateMutation]);
 
-  // ── Approve selected tasks ────────────────────────────────────────
   const handleApprove = useCallback(async () => {
     const selected = Array.from(selectedIds).map(i => suggestions[i]).filter(Boolean);
     if (selected.length === 0) {
@@ -166,7 +160,6 @@ export default function AITaskGenerator({
     }
   }, [selectedIds, suggestions, organizationId, approveMutation, onTasksCreated]);
 
-  // ── Toggle selection ──────────────────────────────────────────────
   const toggleSelect = (idx: number) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
@@ -195,7 +188,6 @@ export default function AITaskGenerator({
 
   const selectedCount = selectedIds.size;
 
-  // ── Reset on close ────────────────────────────────────────────────
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       setPhase("idle");
@@ -206,7 +198,6 @@ export default function AITaskGenerator({
     onOpenChange(open);
   };
 
-  // ── Category summary ──────────────────────────────────────────────
   const categorySummary = suggestions.reduce((acc, s) => {
     acc[s.category] = (acc[s.category] || 0) + 1;
     return acc;

@@ -1,7 +1,5 @@
-// ============================================================================
 // Blueprints Page — Blueprint Intelligence Engine
 // Three-layer architecture: System defaults → Client blueprints → Venture overrides
-// ============================================================================
 import DashboardLayout from "@/components/DashboardLayout";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { trpc } from "@/lib/trpc";

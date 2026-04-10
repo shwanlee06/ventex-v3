@@ -1,7 +1,5 @@
-// ============================================================================
 // VentureOverrides — Layer 3 per-venture process step overrides
 // Compact panel for the VentureDetail page
-// ============================================================================
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import { useState, useCallback } from "react";

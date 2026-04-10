@@ -1,8 +1,6 @@
-// ============================================================================
 // Portal Router — Client-facing portal data
 // Zero operator language. Only outcomes, plain English, clean status.
 // Velocity Feed: 3 card types (amber/teal/gray), 4 action flows.
-// ============================================================================
 
 import { z } from "zod";
 import { eq, and, desc, gte, inArray, sql } from "drizzle-orm";
@@ -28,7 +26,6 @@ import { getActiveSignals as getLatestMarketSignals } from "../intelligence/mark
 import { invokeLLM, type Message as LLMMessage } from "../_core/llm";
 import { enforceRateLimit } from "../security/rateLimit";
 
-// ── Stage name mapping: internal → client-friendly ──────────────────────
 const STAGE_DISPLAY: Record<string, string> = {
   "Pre-Validation": "Initial Review",
   "In Validation": "Under Review",
@@ -49,7 +46,6 @@ function clientFriendlyStage(stage: string): string {
   return STAGE_DISPLAY[stage] || stage;
 }
 
-// ── Translation layer: agent events → client language ────────────────────
 
 interface RawEvent {
   id: number;
@@ -96,9 +92,7 @@ function translateEvent(e: RawEvent): TranslatedEvent {
   const fromStage = e.oldStatus ? clientFriendlyStage(e.oldStatus) : null;
   const toStage = e.newStatus ? clientFriendlyStage(e.newStatus) : null;
 
-  // ── Velocity Agent ──────────────────────────────────────────────
   if (e.agentName === "Velocity Agent") {
-    // requiresClientAction + not acted on → Action Needed (amber)
     if (e.requiresClientAction && !e.actionTaken && !e.clientDismissed) {
       // Determine which action flow based on event context
       let actionFlow: ActionFlow = "advance_stage";
@@ -192,7 +186,6 @@ function translateEvent(e: RawEvent): TranslatedEvent {
     };
   }
 
-  // ── Overdue Agent ───────────────────────────────────────────────
   if (e.agentName === "Overdue Agent") {
     // No overdue items → hide
     if (
@@ -242,7 +235,6 @@ function translateEvent(e: RawEvent): TranslatedEvent {
     };
   }
 
-  // ── Distribution Sentinel ───────────────────────────────────────
   if (e.agentName === "Distribution Sentinel") {
     // "No distributions scheduled" → hide
     if (
@@ -286,12 +278,10 @@ function translateEvent(e: RawEvent): TranslatedEvent {
     };
   }
 
-  // ── Orchestrator → hide from clients ────────────────────────────
   if (e.agentName === "Orchestrator") {
     return mkHidden(e);
   }
 
-  // ── Fallback ───────────────────────────────────────────────────
   // Check for follow-up approval requests
   if (e.requiresClientAction && !e.actionTaken && !e.clientDismissed) {
     if (e.eventType === "followup" || e.message.toLowerCase().includes("follow-up") || e.message.toLowerCase().includes("followup")) {
@@ -419,7 +409,6 @@ export const portalRouter = {
         throw new TRPCError({ code: "FORBIDDEN", message: "You do not have access to this portal" });
       }
 
-      // ── Fetch all client-audience events from last 7 days ──────────
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -436,10 +425,8 @@ export const portalRouter = {
         .orderBy(desc(agentEvents.createdAt))
         .limit(200);
 
-      // ── Translate all events ───────────────────────────────────────
       const translated = recentEvents.map(translateEvent);
 
-      // ── Categorize into 3 card types ──────────────────────────────
       const actionSeen = new Map<string, TranslatedEvent>();
       const completedSeen = new Map<string, TranslatedEvent>();
       const watchingSeen = new Map<string, TranslatedEvent>();
@@ -471,7 +458,6 @@ export const portalRouter = {
         }
       }
 
-      // ── Velocity Summary ───────────────────────────────────────────
       const advancedCount = recentEvents.filter(
         (e) =>
           e.agentName === "Velocity Agent" &&
@@ -509,7 +495,6 @@ export const portalRouter = {
         velocitySummary = `This week, ATLAS ${parts.join(", ")}.`;
       }
 
-      // ── Your Portfolio ─────────────────────────────────────────────
       const access = await db
         .select()
         .from(orgVentureAccess)
@@ -581,7 +566,6 @@ export const portalRouter = {
         });
       }
 
-      // ── Intelligence Layer: Forecasts + Market Signals ──────────────
       let forecasts: Array<{ ventureId: number; ventureName: string; projectedDays: number; confidence: number; riskLevel: string; riskFactors: string[] }> = [];
       let marketSignals: Array<{ sector: string; signalType: string; headline: string; impact: string; relevance: number }> = [];
       let portfolioHealth: { score: number; trend: string; riskCount: number } | null = null;
@@ -638,7 +622,6 @@ export const portalRouter = {
         console.error("[Portal] Intelligence layer failed (non-blocking):", e);
       }
 
-      // ── Enrich portfolio items with momentum indicators ──────────
       if (forecasts.length > 0) {
         const forecastMap = new Map(forecasts.map(f => [f.ventureId, f]));
         portfolio = portfolio.map(v => {
@@ -794,7 +777,6 @@ export const portalRouter = {
       return { success: true, message: "Action completed.", actionFlow: input.actionFlow };
     }),
 
-  // ── Client Task Velocity: Get tasks for a venture ──────────────────────
   getVentureTasks: protectedProcedure
     .input(z.object({ ventureId: z.number() }))
     .query(async ({ input, ctx }) => {
@@ -829,7 +811,6 @@ export const portalRouter = {
       return ventureTasks;
     }),
 
-  // ── Client Task Velocity: Complete a task + auto-advance ──────────────
   completeTask: protectedProcedure
     .input(z.object({ taskId: z.number(), ventureId: z.number() }))
     .mutation(async ({ input, ctx }) => {
@@ -895,7 +876,6 @@ export const portalRouter = {
         organizationId: resolvedOrgId ?? undefined,
       });
 
-      // ── Auto-advance check ──────────────────────────────────────────
       let autoAdvanced = false;
       let newStage: string | null = null;
 
@@ -1003,7 +983,6 @@ export const portalRouter = {
       };
     }),
 
-  // ── Client AI Assistant — scoped to their org only ──────────────────────
   aiChat: protectedProcedure
     .input(z.object({
       orgSlug: z.string(),

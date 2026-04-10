@@ -1,7 +1,5 @@
-// ============================================================================
 // AI Chat Streaming Endpoint — SSE for real-time token delivery
 // Uses LIVE database context instead of hardcoded data
-// ============================================================================
 
 import { Router, Request, Response } from "express";
 import { ENV } from "../_core/env";
@@ -13,7 +11,6 @@ import {
 } from "../../drizzle/schema";
 import { desc, eq } from "drizzle-orm";
 
-// ── Build live context from database ──────────────────────────────────────
 
 async function buildLiveContext(): Promise<string> {
   try {

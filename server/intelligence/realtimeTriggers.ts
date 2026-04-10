@@ -1,8 +1,6 @@
-// ═══════════════════════════════════════════════════════════════════════════
 // ATLAS Real-time Agent Triggers
 // Gap 4: Event-driven agent execution — instant response to mutations
 // Instead of waiting for 6-hour polling cycles, agents react immediately
-// ═══════════════════════════════════════════════════════════════════════════
 
 import { getDb } from "../db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -10,7 +8,6 @@ import { eventTriggerLog, agentEvents, ventures, tasks } from "../../drizzle/sch
 import { invokeLLM } from "../_core/llm";
 import { broadcastSSE } from "../routes/sseEvents";
 
-// ── Trigger Types ───────────────────────────────────────────────────────
 type TriggerEvent = {
   type: "task_completed" | "task_overdue" | "stage_advanced" | "distribution_scheduled"
     | "client_action" | "blocker_resolved" | "venture_created" | "document_uploaded"
@@ -30,7 +27,6 @@ type TriggerResult = {
   eventCreated?: number;
 };
 
-// ── Trigger Registry ────────────────────────────────────────────────────
 // Maps mutation types to agent responses
 const TRIGGER_RULES: Array<{
   eventTypes: TriggerEvent["type"][];
@@ -49,7 +45,6 @@ function registerTrigger(
   TRIGGER_RULES.push({ eventTypes, agentName, description, handler });
 }
 
-// ── Rule: Task Completed → Check if stage can advance ───────────────────
 registerTrigger(
   ["task_completed"],
   "velocity",
@@ -105,7 +100,6 @@ registerTrigger(
   }
 );
 
-// ── Rule: Task Overdue → Immediate alert ────────────────────────────────
 registerTrigger(
   ["task_overdue"],
   "overdue",
@@ -137,7 +131,6 @@ registerTrigger(
   }
 );
 
-// ── Rule: Client Portal Action → Acknowledge + cascade ──────────────────
 registerTrigger(
   ["client_portal_action"],
   "orchestrator",
@@ -190,7 +183,6 @@ registerTrigger(
   }
 );
 
-// ── Rule: Blueprint Generated → Auto-create tasks ───────────────────────
 registerTrigger(
   ["blueprint_generated"],
   "orchestrator",
@@ -221,7 +213,6 @@ registerTrigger(
   }
 );
 
-// ── Rule: Stage Advanced → Update forecasts + notify ────────────────────
 registerTrigger(
   ["stage_advanced"],
   "velocity",
@@ -257,7 +248,6 @@ registerTrigger(
   }
 );
 
-// ── Rule: Distribution Scheduled → Alert + draft notice ─────────────────
 registerTrigger(
   ["distribution_scheduled"],
   "distribution",
@@ -309,7 +299,6 @@ registerTrigger(
   }
 );
 
-// ── Main Dispatch Function ──────────────────────────────────────────────
 // Called from tRPC mutation middleware or directly from procedures
 export async function dispatchTrigger(event: TriggerEvent): Promise<TriggerResult[]> {
   const db = await getDb();
@@ -375,7 +364,6 @@ export async function dispatchTrigger(event: TriggerEvent): Promise<TriggerResul
   return results;
 }
 
-// ── Convenience Dispatchers ─────────────────────────────────────────────
 // Called directly from tRPC procedures for instant response
 
 export async function onTaskCompleted(organizationId: number, ventureId: number, taskId: number, taskName: string) {
@@ -449,7 +437,6 @@ export async function onDistributionScheduled(
   });
 }
 
-// ── Get Trigger Execution History ───────────────────────────────────────
 export async function getTriggerHistory(organizationId: number, limit = 50) {
   const db = await getDb();
   if (!db) return [];

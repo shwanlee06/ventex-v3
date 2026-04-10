@@ -1,8 +1,5 @@
-// ============================================================================
 // ATLAS Blueprint Extraction Engine
 // Document extraction, conversation extraction, venture mapping,
-// venture mapping, and refinement
-// ============================================================================
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
@@ -23,7 +20,6 @@ import { resolveOrgId } from "../security/orgScope";
 import { onBlueprintGenerated } from "../intelligence/realtimeTriggers";
 import { enforceRateLimit } from "../security/rateLimit";
 
-// ── LLM extraction prompt ────────────────────────────────────────────────
 const EXTRACTION_SYSTEM_PROMPT = `You are an expert at analyzing business documents and extracting structured process blueprints for venture/investment management.
 
 Given a document about a business process (e.g., real estate acquisition, yacht charter setup, F&B licensing), extract a structured blueprint with:
@@ -75,7 +71,6 @@ Be conversational but efficient. After each answer, acknowledge what you learned
 
 IMPORTANT: Only output the JSON when you have gathered enough information. Until then, just have a natural conversation.`;
 
-// ── Stage pipeline for smart pre-marking ─────────────────────────────────
 const STAGE_PIPELINE = [
   "In Validation",
   "In Structuring",
@@ -91,9 +86,7 @@ function getStageIndex(stage: string): number {
   return STAGE_PIPELINE.indexOf(stage);
 }
 
-// ── Router ───────────────────────────────────────────────────────────────
 export const blueprintsRouter = router({
-  // ── Extract blueprint from document text ──────────────────────────────
   extractFromDocument: protectedProcedure
     .input(z.object({
       documentText: z.string().min(50),
@@ -183,7 +176,6 @@ export const blueprintsRouter = router({
       };
     }),
 
-  // ── Upload document for extraction ────────────────────────────────────
   uploadAndExtract: protectedProcedure
     .input(z.object({
       fileBase64: z.string(),
@@ -227,7 +219,6 @@ export const blueprintsRouter = router({
       };
     }),
 
-  // ── Conversation extraction — chat with Concierge AI ──────────────────
   conversationExtract: protectedProcedure
     .input(z.object({
       messages: z.array(z.object({
@@ -310,7 +301,6 @@ export const blueprintsRouter = router({
       };
     }),
 
-  // ── List templates for an organization ────────────────────────────────
   listTemplates: protectedProcedure
     .input(z.object({ organizationId: z.number() }))
     .query(async ({ input, ctx }) => {
@@ -327,7 +317,6 @@ export const blueprintsRouter = router({
         .orderBy(desc(processTemplates.createdAt));
     }),
 
-  // ── Get template with steps ───────────────────────────────────────────
   getTemplateWithSteps: protectedProcedure
     .input(z.object({ templateId: z.number() }))
     .query(async ({ input }) => {
@@ -345,7 +334,6 @@ export const blueprintsRouter = router({
       return { template, steps };
     }),
 
-  // ── Update a step (inline editor) ─────────────────────────────────────
   updateStep: protectedProcedure
     .input(z.object({
       stepId: z.number(),
@@ -372,7 +360,6 @@ export const blueprintsRouter = router({
       return { success: true };
     }),
 
-  // ── Delete a step ─────────────────────────────────────────────────────
   deleteStep: protectedProcedure
     .input(z.object({ stepId: z.number() }))
     .mutation(async ({ input }) => {
@@ -383,7 +370,6 @@ export const blueprintsRouter = router({
       return { success: true };
     }),
 
-  // ── Add a step to a template ──────────────────────────────────────────
   addStep: protectedProcedure
     .input(z.object({
       templateId: z.number(),
@@ -413,7 +399,6 @@ export const blueprintsRouter = router({
       return { stepId: step.id };
     }),
 
-  // ── Apply blueprint to ventures (auto-populate tracking) ──────────────
   applyToVentures: protectedProcedure
     .input(z.object({
       templateId: z.number(),
@@ -470,7 +455,6 @@ export const blueprintsRouter = router({
             completedAt: isBeforeCurrent ? new Date() : null,
             completedBy: isBeforeCurrent ? "Pre-marked (venture already past stage)" : null,
             actualDays: isBeforeCurrent ? 0 : null,
-            // confidence inherited from template
           });
 
           totalCreated++;
@@ -485,7 +469,6 @@ export const blueprintsRouter = router({
       };
     }),
 
-  // ── Get venture tracking (for journey tracker) ────────────────────────
   getVentureTracking: protectedProcedure
     .input(z.object({ ventureId: z.number() }))
     .query(async ({ input }) => {
@@ -497,7 +480,6 @@ export const blueprintsRouter = router({
         .orderBy(ventureProcessTracking.stepOrder);
     }),
 
-  // ── Update venture tracking step status ───────────────────────────────
   updateTrackingStep: protectedProcedure
     .input(z.object({
       trackingId: z.number(),
@@ -533,7 +515,6 @@ export const blueprintsRouter = router({
       return { success: true };
     }),
 
-  // ── Refine blueprint from actual completion data ──────────────────────
   refineFromActuals: protectedProcedure
     .input(z.object({ templateId: z.number() }))
     .mutation(async ({ input }) => {
@@ -590,7 +571,6 @@ export const blueprintsRouter = router({
       return { updatedSteps: updatedCount, totalSamples: completedTracking.length };
     }),
 
-  // ── Get sectors without blueprints for an org ─────────────────────────
   getMissingSectors: protectedProcedure
     .input(z.object({ organizationId: z.number() }))
     .query(async ({ input, ctx }) => {
@@ -630,7 +610,6 @@ export const blueprintsRouter = router({
       return missingSectors;
     }),
 
-  // ── Connection 1: Generate starter blueprints for selected sectors ──────
   generateStarterBlueprints: protectedProcedure
     .input(z.object({
       organizationId: z.number(),
@@ -755,7 +734,6 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
       return results;
     }),
 
-  // ── Connection 3: Auto-apply blueprint to all ventures in a sector ─────
   autoApplyToSectorVentures: protectedProcedure
     .input(z.object({
       templateId: z.number(),
@@ -827,7 +805,6 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
       return { appliedCount, ventureNames: orgVentures.map((v: { id: number; name: string; stage: string }) => v.name) };
     }),
 
-  // ── Connection 4: Calculate real health scores ─────────────────────────
   recalculateHealthScores: protectedProcedure
     .input(z.object({
       organizationId: z.number(),
@@ -931,8 +908,6 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
       return results;
     }),
 
-  // ── Aliases for spec-required procedure names ─────────────────────────
-  // blueprints.list → alias for listTemplates
   list: protectedProcedure
     .input(z.object({ organizationId: z.number() }))
     .query(async ({ input, ctx }) => {
@@ -948,7 +923,6 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
         .orderBy(desc(processTemplates.createdAt));
     }),
 
-  // blueprints.create → manual blueprint creation
   create: protectedProcedure
     .input(z.object({
       name: z.string().min(1),
@@ -998,7 +972,6 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
       return { id: templateId, name: input.name };
     }),
 
-  // blueprints.generateFromSector → LLM-powered blueprint generation for a sector
   generateFromSector: protectedProcedure
     .input(z.object({
       sector: z.string().min(1),
@@ -1106,7 +1079,6 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
       return { id: templateId, name: blueprint.name, stepsCreated: allSteps.length };
     }),
 
-  // ── Confirm a blueprint (human-in-the-loop review) ─────────────────────
   confirmTemplate: protectedProcedure
     .input(z.object({ templateId: z.number() }))
     .mutation(async ({ input }) => {
@@ -1117,7 +1089,6 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
       return { success: true };
     }),
 
-  // ── Archive a blueprint ────────────────────────────────────────────────
   archiveTemplate: protectedProcedure
     .input(z.object({ templateId: z.number() }))
     .mutation(async ({ input }) => {
@@ -1128,7 +1099,6 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
       return { success: true };
     }),
 
-  // ── Update template metadata ───────────────────────────────────────────
   updateTemplate: protectedProcedure
     .input(z.object({
       templateId: z.number(),
@@ -1149,7 +1119,6 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
       return { success: true };
     }),
 
-  // ── Venture Process Overrides (Layer 3) ────────────────────────────────
   listOverrides: protectedProcedure
     .input(z.object({ ventureId: z.number() }))
     .query(async ({ input }) => {
@@ -1196,7 +1165,6 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
       return { success: true };
     }),
 
-  // ── 3-Layer Blueprint Lookup (used by agents) ──────────────────────────
   // Returns the effective blueprint for a venture:
   //   Layer 3 (venture override) > Layer 2 (client blueprint) > Layer 1 (system default)
   getBlueprintForVenture: protectedProcedure

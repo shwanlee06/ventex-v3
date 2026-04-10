@@ -9,9 +9,7 @@
 
 import { ENV } from "./env";
 
-// ============================================================================
 // Configuration
-// ============================================================================
 
 type MapsConfig = {
   baseUrl: string;
@@ -34,9 +32,7 @@ function getMapsConfig(): MapsConfig {
   };
 }
 
-// ============================================================================
 // Core Request Handler
-// ============================================================================
 
 interface RequestOptions {
   method?: "GET" | "POST";
@@ -89,9 +85,7 @@ export async function makeRequest<T = unknown>(
   return (await response.json()) as T;
 }
 
-// ============================================================================
 // Type Definitions
-// ============================================================================
 
 export type TravelMode = "driving" | "walking" | "bicycling" | "transit";
 export type MapType = "roadmap" | "satellite" | "terrain" | "hybrid";
@@ -231,9 +225,7 @@ export type RoadsResult = {
   }>;
 };
 
-// ============================================================================
 // Google Maps API Reference
-// ============================================================================
 
 /**
  * GEOCODING - Convert between addresses and coordinates
@@ -313,7 +305,4 @@ export type RoadsResult = {
  * Output: Image URL (not JSON) - use directly in <img src={url} />
  * Note: Construct URL manually with getMapsConfig() for auth
  */
-
-
-
 

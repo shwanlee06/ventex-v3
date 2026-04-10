@@ -1,7 +1,5 @@
-// ============================================================================
 // Tasks Page — /tasks — Mobile-First Responsive
 // Card/Table toggle, Kanban board, filters, add/edit, checkboxes
-// ============================================================================
 
 import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";

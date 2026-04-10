@@ -1,7 +1,5 @@
-// ============================================================================
 // Executive Summary Widget — Shows key leadership team members with real data
 // Pulls from team.listInternal and displays CEO, CFO, COO, etc.
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";

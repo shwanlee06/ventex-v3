@@ -1,8 +1,6 @@
-// ============================================================================
 // Velocity Feed — Client-facing agent intelligence feed
 // Three card types: ACTION NEEDED (amber) · COMPLETED (teal) · WATCHING (gray)
 // Integrated with ClientActionModals for 4 action flows
-// ============================================================================
 
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
@@ -49,14 +47,12 @@ interface FeedEvent {
   createdAt: Date | string;
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────
 
 function hasActionableEntity(event: FeedEvent): boolean {
   // Only show action buttons if the event links to a real entity
   return !!(event.agentEntityId || (event as any).actionPayload);
 }
 
-// ── Card Type Classification ─────────────────────────────────────────────
 
 type CardType = "action_needed" | "completed" | "watching";
 
@@ -101,7 +97,6 @@ const CARD_CONFIG: Record<CardType, {
   },
 };
 
-// ── Friendly Agent Name ──────────────────────────────────────────────────
 
 function friendlyAgentName(agentName: string): string {
   const map: Record<string, string> = {
@@ -113,7 +108,6 @@ function friendlyAgentName(agentName: string): string {
   return map[agentName] || agentName;
 }
 
-// ── Action Button Text ──────────────────────────────────────────────────
 
 function getActionText(event: FeedEvent): string | null {
   if (!hasActionableEntity(event)) return null;
@@ -125,7 +119,6 @@ function getActionText(event: FeedEvent): string | null {
   return "Take Action";
 }
 
-// ── Feed Card ────────────────────────────────────────────────────────────
 
 function FeedCard({
   event,
@@ -263,7 +256,6 @@ function FeedCard({
   );
 }
 
-// ── Main Feed Component ──────────────────────────────────────────────────
 
 export default function VelocityFeed({ onNavigate }: VelocityFeedProps) {
   const { activeOrg } = useWorkspace();
@@ -300,7 +292,6 @@ export default function VelocityFeed({ onNavigate }: VelocityFeedProps) {
     utils.agents.invalidate();
   }, [feedQ, utils]);
 
-  // clientFeed returns { actionNeeded, completed, watching } — flatten into a single array
   const feedData = feedQ.data as { actionNeeded: FeedEvent[]; completed: FeedEvent[]; watching: FeedEvent[] } | undefined;
   const grouped = useMemo(() => ({
     actionNeeded: feedData?.actionNeeded || [],
