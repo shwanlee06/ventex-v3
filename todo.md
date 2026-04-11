@@ -2355,3 +2355,4 @@
 - [x] Make investor demo link more prominent and direct on pitch deck
 - [x] Overall pitch deck polish and improvements
 - [x] Fix overlap between "OR READ THE FULL PITCH" button and scroll indicator on Demo page
+- [x] Convert Chris Phelps photo to black and white and update on pitch deck

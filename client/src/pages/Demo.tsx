@@ -148,7 +148,7 @@ const TEAM = [
     initials: "CP",
     role: "CRO",
     color: "#22C55E",
-    photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/chris-phelps_c7e7c272.jpeg",
+    photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/chris-phelps-bw_662a9642.jpg",
     linkedin: "https://linkedin.com/in/chrisphelps",
     bio: "Christopher Phelps is a self-taught revenue operator who built his sales foundation through hands-on experience rather than a traditional background. As Co-Founder and CRO of Aurovia, he leads go-to-market strategy and client acquisition for ATLAS, focused on family offices, UHNWI networks, and institutional channels. He owns the full revenue cycle from first outreach to closed deal and built the commercial playbook from the ground up.",
     quote: "Pipeline doesn't build itself. But with the right system, it gets close.",
