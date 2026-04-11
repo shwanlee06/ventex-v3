@@ -2395,3 +2395,10 @@
 - [x] Remove all red glow/accents from Demo.tsx, replace with green theme
 - [x] Match SpyOps intro to reference site intro style
 - [x] Remove red glow effects from all pages
+## Pitch Deck Color Differentiation (Apr 10)
+- [x] Add selective color accents to differentiate key sections for investors
+- [x] Color the financial numbers ($700K, $6T, 42%, etc.) to stand out
+- [x] Color section labels/badges to help investors scan quickly
+- [x] Add subtle color to agent cards and GTM stages for differentiation
+- [x] Keep overall palette restrained — green accent + 1-2 warm tones max
+- [x] Verify visual balance — not too colorful, just enough to guide the eye

@@ -294,14 +294,14 @@ export default function Demo() {
       <section id="problem" className="py-24 md:py-32 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           <RevealSection>
-            <div className="text-[10px] tracking-[0.3em] text-[#00ff87]/70 uppercase mb-4">The Problem</div>
+            <div className="text-[10px] tracking-[0.3em] text-[#FF6B6B]/70 uppercase mb-4">The Problem</div>
             <h2
               className="text-[clamp(28px,5vw,64px)] font-bold leading-[0.95] mb-8"
               style={{ fontFamily: HEADLINE_FONT }}
             >
               THE PEOPLE RUNNING
               <br />
-              $200M+ PORTFOLIOS
+              <span className="text-[#FFB800]">$200M+</span> PORTFOLIOS
               <br />
               <span className="text-white/45">ARE STILL DOING IT</span>
               <br />
@@ -337,7 +337,7 @@ export default function Demo() {
 
           <RevealSection delay={0.3} className="mt-12">
             <div className="text-center">
-              <p className="text-sm text-white/50 mb-2">No platform has been built to fix this.</p>
+              <p className="text-sm text-[#FF6B6B]/70 mb-2">No platform has been built to fix this.</p>
               <h3 className="text-[clamp(24px,4vw,48px)] font-bold" style={{ fontFamily: HEADLINE_FONT }}>
                 UNTIL NOW.
               </h3>
@@ -432,15 +432,15 @@ export default function Demo() {
       <section className="py-24 md:py-32 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           <RevealSection>
-            <div className="text-[10px] tracking-[0.3em] text-[#00ff87]/70 uppercase mb-4">Market Opportunity</div>
+            <div className="text-[10px] tracking-[0.3em] text-[#FFB800]/70 uppercase mb-4">Market Opportunity</div>
             <div className="flex items-baseline gap-3 mb-4">
               <h2
                 className="text-[clamp(60px,10vw,120px)] font-bold leading-[0.85]"
                 style={{ fontFamily: HEADLINE_FONT }}
               >
-                $6T
+                <span className="text-[#FFB800]">$6T</span>
               </h2>
-              <span className="text-[clamp(18px,3vw,32px)] font-bold text-[#00ff87]" style={{ fontFamily: HEADLINE_FONT }}>
+              <span className="text-[clamp(18px,3vw,32px)] font-bold text-[#FFB800]/80" style={{ fontFamily: HEADLINE_FONT }}>
                 IN AUM
               </span>
             </div>
@@ -455,10 +455,10 @@ export default function Demo() {
           </RevealSection>
 
           <RevealSection delay={0.25}>
-            <div className="border border-[#00ff87]/20 p-6 bg-[#00ff87]/[0.03] max-w-2xl">
+<div className="border border-[#FFB800]/20 p-6 bg-[#FFB800]/[0.03] max-w-2xl">
               <p className="text-sm text-white/70 leading-relaxed">
                 VENTEX does not compete with Masttro, Addepar, Voly, or AppFolio. It sits above all of them.
-                <span className="text-[#00ff87] font-medium"> No platform serves the autonomous execution layer today.</span>
+                <span className="text-[#FFB800] font-medium"> No platform serves the autonomous execution layer today.</span>
               </p>
             </div>
           </RevealSection>
@@ -469,7 +469,7 @@ export default function Demo() {
       <section className="py-24 md:py-32 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           <RevealSection>
-            <div className="text-[10px] tracking-[0.3em] text-[#00ff87]/70 uppercase mb-4">Go-to-Market</div>
+            <div className="text-[10px] tracking-[0.3em] text-[#00cc6a]/70 uppercase mb-4">Go-to-Market</div>
             <h2
               className="text-[clamp(28px,5vw,56px)] font-bold leading-[0.95] mb-4"
               style={{ fontFamily: HEADLINE_FONT }}
@@ -512,7 +512,7 @@ export default function Demo() {
           </div>
 
           <RevealSection delay={0.5} className="mt-10">
-            <p className="text-center text-[clamp(18px,3vw,32px)] font-bold text-[#00ff87]" style={{ fontFamily: HEADLINE_FONT }}>
+            <p className="text-center text-[clamp(18px,3vw,32px)] font-bold text-[#FFB800]" style={{ fontFamily: HEADLINE_FONT }}>
               HIGH MARGIN ARR AT EXIT.
             </p>
           </RevealSection>
@@ -717,9 +717,9 @@ export default function Demo() {
       <section className="py-24 md:py-32 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           <RevealSection>
-            <div className="text-[10px] tracking-[0.3em] text-[#00ff87]/70 uppercase mb-4">The Ask</div>
+            <div className="text-[10px] tracking-[0.3em] text-[#FFB800]/70 uppercase mb-4">The Ask</div>
             <h2
-              className="text-[clamp(32px,6vw,80px)] font-bold leading-[0.85] mb-2"
+              className="text-[clamp(32px,6vw,80px)] font-bold leading-[0.85] mb-2 text-[#FFB800]"
               style={{ fontFamily: HEADLINE_FONT }}
             >
               $700,000.
@@ -731,7 +731,7 @@ export default function Demo() {
               THREE UNLOCKS.
             </h3>
             <h3
-              className="text-[clamp(20px,3vw,40px)] font-bold leading-[0.95] mb-8 text-[#00ff87]"
+              className="text-[clamp(20px,3vw,40px)] font-bold leading-[0.95] mb-8 text-[#FFB800]"
               style={{ fontFamily: HEADLINE_FONT }}
             >
               SERIES A IN 18 MONTHS.
@@ -782,15 +782,15 @@ export default function Demo() {
           <RevealSection delay={0.25}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="border border-white/8 p-5 text-center">
-                <div className="text-2xl font-bold text-white font-mono mb-1">$700K</div>
+                <div className="text-2xl font-bold text-[#FFB800] font-mono mb-1">$700K</div>
                 <div className="text-[11px] text-white/50">Round Size</div>
               </div>
               <div className="border border-white/8 p-5 text-center">
-                <div className="text-2xl font-bold text-white font-mono mb-1">$4M</div>
+                <div className="text-2xl font-bold text-[#FFB800] font-mono mb-1">$4M</div>
                 <div className="text-[11px] text-white/50">SAFE Cap</div>
               </div>
               <div className="border border-white/8 p-5 text-center">
-                <div className="text-2xl font-bold text-white font-mono mb-1">25+</div>
+                <div className="text-2xl font-bold text-[#00ff87] font-mono mb-1">25+</div>
                 <div className="text-[11px] text-white/50">Months Runway</div>
               </div>
             </div>
@@ -802,7 +802,7 @@ export default function Demo() {
       <section className="py-24 md:py-32 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           <RevealSection>
-            <div className="text-[10px] tracking-[0.3em] text-[#00ff87]/70 uppercase mb-4">The Team</div>
+            <div className="text-[10px] tracking-[0.3em] text-[#8B8BFF]/70 uppercase mb-4">The Team</div>
             <h2
               className="text-[clamp(28px,5vw,56px)] font-bold leading-[0.95] mb-4"
               style={{ fontFamily: HEADLINE_FONT }}
@@ -915,7 +915,7 @@ export default function Demo() {
 
           <RevealSection delay={0.2}>
             <p className="text-sm text-white/70 max-w-xl mx-auto leading-relaxed mb-12">
-              The market is uncontested. The platform is live. The round is $700K, SAFE Cap $4,000,000.
+              The market is uncontested. The platform is live. The round is <span className="text-[#FFB800] font-semibold">$700K</span>, SAFE Cap <span className="text-[#FFB800] font-semibold">$4,000,000</span>.
               <span className="text-white font-medium"> The next call is yours to make.</span>
             </p>
           </RevealSection>
