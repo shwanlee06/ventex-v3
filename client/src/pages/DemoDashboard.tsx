@@ -554,7 +554,8 @@ function LiveNotificationToast({ message, onDismiss }: { message: string; onDism
       animate={{ opacity: 1, y: 0, x: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="fixed top-20 right-4 z-50 max-w-sm bg-card border border-primary/30 rounded-lg shadow-lg shadow-primary/5 p-3 flex items-start gap-3"
+      className="fixed top-20 right-4 z-50 max-w-sm border border-primary/30 rounded-lg shadow-lg shadow-primary/5 p-3 flex items-start gap-3"
+      style={{ backgroundColor: '#0a0a0f' }}
     >
       <div className="size-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
         <Zap className="size-3 text-primary" />
@@ -2561,7 +2562,7 @@ export default function DemoDashboard() {
             <button className="size-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors">
               <Search className="size-4" />
             </button>
-            <button className="size-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors relative">
+            <button className="size-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors relative" style={{ backgroundColor: 'transparent' }} onMouseEnter={e => e.currentTarget.style.backgroundColor = '#1a1a2e'} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
               <Bell className="size-4" />
               <span className="absolute -top-0.5 -right-0.5 size-4 rounded-full bg-red-500 text-[9px] font-bold text-white flex items-center justify-center">3</span>
             </button>

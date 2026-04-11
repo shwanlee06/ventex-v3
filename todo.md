@@ -2458,3 +2458,7 @@
 ## Quick Fix (Apr 11)
 - [x] Remove entire top nav bar from login phase (VENTEX logo, nav links, REQUEST ACCESS button)
 - [x] Remove bottom bar from login phase (CLASSIFICATION/SCROLL/INVITE-ONLY)
+
+## FIX — Notification Hover Transparency on Demo Dashboard
+- [x] Fix LiveNotificationToast using transparent bg-card — now uses solid #0a0a0f background
+- [x] Fix bell button hover using semi-transparent hover:bg-accent/50 — now uses solid #1a1a2e on hover
