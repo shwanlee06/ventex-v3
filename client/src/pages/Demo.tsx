@@ -61,7 +61,7 @@ function CountUp({ value, suffix = "", prefix = "" }: { value: number; suffix?: 
 function ParticleGlobe() {
   const dots = useMemo(() => {
     const arr: { x: number; y: number; opacity: number; size: number; delay: number }[] = [];
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 80; i++) {
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
       const r = 180;
@@ -89,14 +89,7 @@ function ParticleGlobe() {
             r={d.size}
             fill="#e2e2e2"
             opacity={d.opacity}
-          >
-            <animate
-              attributeName="opacity"
-              values={`${d.opacity};${d.opacity * 0.3};${d.opacity}`}
-              dur={`${2 + d.delay}s`}
-              repeatCount="indefinite"
-            />
-          </circle>
+          />
         ))}
         {/* Equator ring */}
         <ellipse cx="220" cy="220" rx="180" ry="40" fill="none" stroke="#e2e2e2" strokeWidth="0.5" opacity="0.1" />

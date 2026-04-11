@@ -763,7 +763,7 @@ export default function SpyOps() {
                   textAlign: "center",
                 }}
               >
-                A T L A S
+                V E N T E X
               </div>
 
               {/* Tagline */}
@@ -856,8 +856,8 @@ export default function SpyOps() {
                     fontSize: 11,
                     letterSpacing: "0.15em",
                     background: "transparent",
-                    color: "#22D3EE",
-                    border: "1px solid rgba(34,211,238,0.4)",
+                    color: "#00ff87",
+                    border: "1px solid rgba(0,255,135,0.4)",
                     padding: "18px 24px",
                     cursor: "none",
                     transition: "border-color 0.3s, background 0.3s",
@@ -867,11 +867,11 @@ export default function SpyOps() {
                     gap: 6,
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(34,211,238,0.8)";
-                    e.currentTarget.style.background = "rgba(34,211,238,0.05)";
+                    e.currentTarget.style.borderColor = "rgba(0,255,135,0.8)";
+                    e.currentTarget.style.background = "rgba(0,255,135,0.05)";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(34,211,238,0.4)";
+                    e.currentTarget.style.borderColor = "rgba(0,255,135,0.4)";
                     e.currentTarget.style.background = "transparent";
                   }}
                 >
@@ -1007,7 +1007,7 @@ export default function SpyOps() {
               color: "#fff",
             }}
           >
-            ATL<span className="spyops-blink">_</span>
+            VTX<span className="spyops-blink">_</span>
           </span>
           <span
             style={{
@@ -1083,7 +1083,7 @@ export default function SpyOps() {
           paddingTop: 52,
         }}
       >
-        {/* FIX 5: giant ATL background — larger, more visible, bleeding off right edge */}
+        {/* FIX 5: giant VTX background — larger, more visible, bleeding off right edge */}
         <div
           className="spyops-drift"
           style={{
@@ -1100,7 +1100,7 @@ export default function SpyOps() {
             whiteSpace: "nowrap",
           }}
         >
-          ATL
+          VTX
         </div>
         {/* grid overlay */}
         <div
@@ -1134,7 +1134,7 @@ export default function SpyOps() {
                 marginBottom: 24,
               }}
             >
-              // MISSION BRIEF — REF: ATL-2026-001
+              // MISSION BRIEF — REF: VTX-2026-001
             </div>
             <h1
               style={{
@@ -1943,7 +1943,7 @@ export default function SpyOps() {
                 marginBottom: 8,
               }}
             >
-              ATL_
+              VTX_
             </div>
             <div
               style={{
@@ -2055,7 +2055,7 @@ export default function SpyOps() {
           }}
         >
           <span>CLASSIFICATION: CONFIDENTIAL</span>
-          <span>BUILD: ATL-2026.03.15</span>
+          <span>BUILD: VTX-2026.03.15</span>
         </div>
       </footer>
 

@@ -58,7 +58,7 @@ export function exportDistributionPdf(dist: DistributionData) {
 
   // Reference ID
   doc.setTextColor(140, 140, 140);
-  doc.text(`REF: ATL-DIST-${Date.now().toString(36).toUpperCase()}`, pageWidth - margin, 34, { align: "right" });
+  doc.text(`REF: VTX-DIST-${Date.now().toString(36).toUpperCase()}`, pageWidth - margin, 34, { align: "right" });
 
   y = 55;
 

@@ -2385,3 +2385,7 @@
 - [x] Update Demo.tsx product/GTM/timeline section styles to match reference
 - [x] Update Demo.tsx team/ask/closing section styles to match reference
 - [x] Visual comparison and verification
+## Demo Lag Fix + Intro/Dashboard Theme (Apr 10)
+- [x] Fix Demo page lag (particle animation reduced from 200 to 80 static dots)
+- [x] Update SpyOps.tsx intro/login screen to match reference theme
+- [x] Update Home.tsx welcome dashboard to match reference site theme (inherits via global CSS)
