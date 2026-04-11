@@ -119,7 +119,7 @@ const TEAM = [
     role: "Founder & CEO",
     color: "#22D3EE",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee-new_e321fa79.webp",
-    linkedin: "https://linkedin.com/in/shwanlee",
+    linkedin: "https://www.linkedin.com/in/shwan-lee-93b486356/",
     bio: "Shwan Lee is a full-stack architect who saw the problem firsthand inside a UHNWI holding company — 20+ ventures across 6 sectors coordinated on spreadsheets and email chains. As Founder and CEO of Aurovia, he designed and built the entire ATLAS platform in under 90 days: 5 AI intelligence engines, SOC 2-compliant architecture, and an enterprise-grade system targeting a $6 trillion market. He owns the product, the vision, and every line of code behind it.",
     quote: "We didn't raise money to build the product. We built the product to raise money.",
     stats: [
@@ -134,7 +134,7 @@ const TEAM = [
     role: "COO",
     color: "#A78BFA",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/brian-chen_b535f902.jpeg",
-    linkedin: "https://linkedin.com/in/brianchen",
+    linkedin: "https://www.linkedin.com/in/brian-chen-1a6aa2373/",
     bio: "Brian Chen is the operational backbone of Aurovia. As Co-Founder and COO, he architected the intelligence layer behind ATLAS’s autonomous AI agents — including the Mirofish predictive engine that forecasts venture outcomes before they happen. He runs day-to-day operations across all verticals and designed the systems that eliminate bottlenecks before anyone notices them. Equal parts operator and engineer, Brian turns complex multi-entity workflows into automated pipelines that scale.",
     quote: "The best operations are the ones nobody notices — because nothing breaks.",
     stats: [
@@ -149,7 +149,7 @@ const TEAM = [
     role: "CRO",
     color: "#22C55E",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/chris-phelps-bw_662a9642.jpg",
-    linkedin: "https://linkedin.com/in/chrisphelps",
+    linkedin: "https://www.linkedin.com/in/christopher-phelps-090848230/",
     bio: "Christopher Phelps is a self-taught revenue operator who built his sales foundation through hands-on experience rather than a traditional background. As Co-Founder and CRO of Aurovia, he leads go-to-market strategy and client acquisition for ATLAS, focused on family offices, UHNWI networks, and institutional channels. He owns the full revenue cycle from first outreach to closed deal and built the commercial playbook from the ground up.",
     quote: "Pipeline doesn't build itself. But with the right system, it gets close.",
     stats: [
