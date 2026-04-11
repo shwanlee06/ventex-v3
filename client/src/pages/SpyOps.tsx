@@ -763,68 +763,7 @@ export default function SpyOps() {
                 overflow: "hidden",
               }}
             >
-              {/* Top nav bar — matches reference site */}
-              <nav
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 52,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "0 24px",
-                  zIndex: 10,
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ color: "#e53e3e", fontSize: 14 }}>▼</span>
-                  <span
-                    style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: 14,
-                      fontWeight: 600,
-                      color: "#fff",
-                      letterSpacing: "0.08em",
-                    }}
-                  >
-                    VENTEX
-                  </span>
-                </div>
-                <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
-                  {["PLATFORM", "INTELLIGENCE", "VELOCITY", "ABOUT"].map((label) => (
-                    <span
-                      key={label}
-                      style={{
-                        fontFamily: "'IBM Plex Mono', monospace",
-                        fontSize: 10,
-                        letterSpacing: "0.12em",
-                        color: "#888",
-                        cursor: "none",
-                      }}
-                    >
-                      {label}
-                    </span>
-                  ))}
-                  <button
-                    onClick={handleSignIn}
-                    className="spyops-hover"
-                    style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: 10,
-                      letterSpacing: "0.1em",
-                      background: "transparent",
-                      color: "#fff",
-                      border: "1px solid rgba(255,255,255,0.3)",
-                      padding: "6px 14px",
-                      cursor: "none",
-                    }}
-                  >
-                    ▲ REQUEST ACCESS
-                  </button>
-                </div>
-              </nav>
+
               {/* Particle Globe — right side */}
               <svg
                 viewBox="0 0 440 440"

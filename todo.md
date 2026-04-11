@@ -2454,3 +2454,6 @@
 - [x] Match SpyOps intro/loading page exactly to reference site (atlasweb-aaerha7b.manus.space)
 - [x] Lock SpyOps hero to full viewport — no scrolling on first page
 - [x] User must click CTA to proceed to investor demo
+
+## Quick Fix (Apr 11)
+- [x] Remove entire top nav bar from login phase (VENTEX logo, nav links, REQUEST ACCESS button)
