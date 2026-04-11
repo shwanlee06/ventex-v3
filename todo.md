@@ -2356,3 +2356,4 @@
 - [x] Overall pitch deck polish and improvements
 - [x] Fix overlap between "OR READ THE FULL PITCH" button and scroll indicator on Demo page
 - [x] Convert Chris Phelps photo to black and white and update on pitch deck
+- [x] Rewrite Shwan Lee's bio to match Chris and Brian's concise style

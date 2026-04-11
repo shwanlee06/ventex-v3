@@ -120,7 +120,7 @@ const TEAM = [
     color: "#22D3EE",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee-new_e321fa79.webp",
     linkedin: "https://linkedin.com/in/shwanlee",
-    bio: "Built ATLAS from the ground up — 5 AI intelligence engines, SOC 2-compliant architecture, and an enterprise-grade platform targeting a $6 trillion market. Shwan didn't study the problem in a classroom. He watched it happen firsthand inside a UHNWI holding company, saw the inefficiencies bleeding millions, and spent the next 90 days engineering the solution. Full-stack architect, systems thinker, and the driving force behind every component of ATLAS.",
+    bio: "Shwan Lee is a full-stack architect who saw the problem firsthand inside a UHNWI holding company — 20+ ventures across 6 sectors coordinated on spreadsheets and email chains. As Founder and CEO of Aurovia, he designed and built the entire ATLAS platform in under 90 days: 5 AI intelligence engines, SOC 2-compliant architecture, and an enterprise-grade system targeting a $6 trillion market. He owns the product, the vision, and every line of code behind it.",
     quote: "We didn't raise money to build the product. We built the product to raise money.",
     stats: [
       { label: "AI Engines", value: "5" },
