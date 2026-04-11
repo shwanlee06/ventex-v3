@@ -2457,3 +2457,4 @@
 
 ## Quick Fix (Apr 11)
 - [x] Remove entire top nav bar from login phase (VENTEX logo, nav links, REQUEST ACCESS button)
+- [x] Remove bottom bar from login phase (CLASSIFICATION/SCROLL/INVITE-ONLY)

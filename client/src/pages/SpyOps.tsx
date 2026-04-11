@@ -988,32 +988,6 @@ export default function SpyOps() {
                 </div>
               </div>
 
-              {/* Bottom bar — matches reference site */}
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: 40,
-                  borderTop: "1px solid rgba(255,255,255,0.1)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "0 24px",
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 10,
-                  color: "#555",
-                  letterSpacing: "0.1em",
-                }}
-              >
-                <span>CLASSIFICATION: CONFIDENTIAL</span>
-                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  SCROLL
-                  <span style={{ display: "inline-block", width: 1, height: 16, background: "#555" }} />
-                </span>
-                <span>INVITE-ONLY ACCESS</span>
-              </div>
             </div>
           )}
 
