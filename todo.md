@@ -2378,3 +2378,10 @@
 - [x] Update demo dashboard (DemoDashboard) to match reference theme
 - [x] Update prototype dashboard (Home) to match reference theme
 - [x] Visual comparison and verification
+## Pitch Deck Theme Match (Apr 10)
+- [x] Audit reference site pitch deck styling in detail
+- [x] Update Demo.tsx hero section styles to match reference
+- [x] Update Demo.tsx problem/solution section styles to match reference
+- [x] Update Demo.tsx product/GTM/timeline section styles to match reference
+- [x] Update Demo.tsx team/ask/closing section styles to match reference
+- [x] Visual comparison and verification

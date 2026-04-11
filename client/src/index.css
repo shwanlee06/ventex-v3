@@ -4,12 +4,12 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* ── Border Radius (minimal/angular) ────────────────────── */
-  --radius: 0.25rem;                   /* 4px — cards */
-  --radius-sm: 0.125rem;               /* 2px — badges/pills */
-  --radius-md: 0.1875rem;              /* 3px — buttons/inputs */
-  --radius-lg: 0.25rem;                /* 4px — cards */
-  --radius-xl: 0.375rem;               /* 6px — modals */
+  /* ── Border Radius (0px — matching reference) ────────────── */
+  --radius: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
 
   /* ── Semantic Colour Tokens ─────────────────────────────── */
   --color-background: var(--background);
@@ -68,75 +68,75 @@
 }
 /* ── Light Mode (mirrors dark for consistency) ───────────────────── */
 :root {
-  --radius: 0.25rem;
-  --primary: oklch(0.75 0.18 155);
-  --primary-foreground: oklch(0.08 0.005 270);
-  --sidebar-primary: oklch(0.75 0.18 155);
-  --sidebar-primary-foreground: oklch(0.08 0.005 270);
+  --radius: 0px;
+  --primary: oklch(88% .004 264);
+  --primary-foreground: oklch(6% .003 264);
+  --sidebar-primary: oklch(88% .004 264);
+  --sidebar-primary-foreground: oklch(6% .003 264);
   --chart-1: oklch(0.75 0.18 155);
   --chart-2: oklch(0.45 0.15 25);
   --chart-3: oklch(0.91 0.005 0);
   --chart-4: oklch(0.52 0.005 0);
   --chart-5: oklch(0.70 0.005 0);
-  --background: oklch(0.07 0.005 270);
-  --foreground: oklch(0.91 0.005 0);
-  --card: oklch(0.10 0.005 270);
-  --card-foreground: oklch(0.91 0.005 0);
-  --popover: oklch(0.12 0.005 270);
-  --popover-foreground: oklch(0.91 0.005 0);
-  --secondary: oklch(0.14 0.005 270);
-  --secondary-foreground: oklch(0.70 0.005 0);
-  --muted: oklch(0.16 0.005 270);
-  --muted-foreground: oklch(0.52 0.005 0);
-  --accent: oklch(0.14 0.005 270);
-  --accent-foreground: oklch(0.91 0.005 0);
-  --destructive: oklch(0.45 0.15 25);
-  --destructive-foreground: oklch(0.91 0.005 0);
-  --border: oklch(0.91 0 0 / 6%);
-  --input: oklch(0.91 0 0 / 8%);
-  --ring: oklch(0.75 0.18 155);
-  --sidebar: oklch(0.08 0.005 270);
-  --sidebar-foreground: oklch(0.85 0.005 0);
-  --sidebar-accent: oklch(0.14 0.005 270);
-  --sidebar-accent-foreground: oklch(0.91 0.005 0);
-  --sidebar-border: oklch(0.91 0 0 / 6%);
-  --sidebar-ring: oklch(0.75 0.18 155);
+  --background: oklch(6% .003 264);
+  --foreground: oklch(88% .004 264);
+  --card: oklch(8% .003 264);
+  --card-foreground: oklch(88% .004 264);
+  --popover: oklch(8% .003 264);
+  --popover-foreground: oklch(88% .004 264);
+  --secondary: oklch(12% .003 264);
+  --secondary-foreground: oklch(70% .004 264);
+  --muted: oklch(10% .003 264);
+  --muted-foreground: oklch(50% .004 264);
+  --accent: oklch(35% .12 25);
+  --accent-foreground: oklch(88% .004 264);
+  --destructive: oklch(45% .18 25);
+  --destructive-foreground: oklch(88% .004 264);
+  --border: oklch(88% .004 264/.07);
+  --input: oklch(88% .004 264/.1);
+  --ring: oklch(88% .004 264/.3);
+  --sidebar: oklch(6% .003 264);
+  --sidebar-foreground: oklch(88% .004 264);
+  --sidebar-accent: oklch(12% .003 264);
+  --sidebar-accent-foreground: oklch(88% .004 264);
+  --sidebar-border: oklch(88% .004 264/.07);
+  --sidebar-ring: oklch(88% .004 264/.3);
 }
 
 /* ── Dark Mode ──────────────────────────────────────────────────── */
 .dark {
-  --primary: oklch(0.75 0.18 155);           /* green accent #00ff87 */
-  --primary-foreground: oklch(0.08 0.005 270);
-  --sidebar-primary: oklch(0.75 0.18 155);
-  --sidebar-primary-foreground: oklch(0.08 0.005 270);
-  --background: oklch(0.07 0.005 270);        /* #050507 near-black */
-  --foreground: oklch(0.91 0.005 0);          /* #e2e2e2 */
-  --card: oklch(0.10 0.005 270);              /* slightly lighter than bg */
-  --card-foreground: oklch(0.91 0.005 0);
-  --popover: oklch(0.12 0.005 270);
-  --popover-foreground: oklch(0.91 0.005 0);
-  --secondary: oklch(0.14 0.005 270);
-  --secondary-foreground: oklch(0.70 0.005 0);
-  --muted: oklch(0.16 0.005 270);
-  --muted-foreground: oklch(0.52 0.005 0);    /* rgba(226,226,226,0.55) */
-  --accent: oklch(0.14 0.005 270);
-  --accent-foreground: oklch(0.91 0.005 0);
-  --destructive: oklch(0.45 0.15 25);         /* dark red #8b1a1a */
-  --destructive-foreground: oklch(0.91 0.005 0);
-  --border: oklch(0.91 0 0 / 6%);             /* rgba(226,226,226,0.06) */
-  --input: oklch(0.91 0 0 / 8%);
-  --ring: oklch(0.75 0.18 155);
-  --chart-1: oklch(0.75 0.18 155);            /* green */
-  --chart-2: oklch(0.45 0.15 25);             /* dark red */
-  --chart-3: oklch(0.91 0.005 0);             /* white */
-  --chart-4: oklch(0.52 0.005 0);             /* muted */
-  --chart-5: oklch(0.70 0.005 0);             /* secondary */
-  --sidebar: oklch(0.08 0.005 270);
-  --sidebar-foreground: oklch(0.85 0.005 0);
-  --sidebar-accent: oklch(0.14 0.005 270);
-  --sidebar-accent-foreground: oklch(0.91 0.005 0);
-  --sidebar-border: oklch(0.91 0 0 / 6%);
-  --sidebar-ring: oklch(0.75 0.18 155);
+  --primary: oklch(88% .004 264);
+  --primary-foreground: oklch(6% .003 264);
+  --sidebar-primary: oklch(88% .004 264);
+  --sidebar-primary-foreground: oklch(6% .003 264);
+  --background: oklch(6% .003 264);
+  --foreground: oklch(88% .004 264);
+  --card: oklch(8% .003 264);
+  --card-foreground: oklch(88% .004 264);
+  --popover: oklch(8% .003 264);
+  --popover-foreground: oklch(88% .004 264);
+  --secondary: oklch(12% .003 264);
+  --secondary-foreground: oklch(70% .004 264);
+  --muted: oklch(10% .003 264);
+  --muted-foreground: oklch(50% .004 264);
+  --accent: oklch(35% .12 25);
+  --accent-foreground: oklch(88% .004 264);
+  --destructive: oklch(45% .18 25);
+  --destructive-foreground: oklch(88% .004 264);
+  --border: oklch(88% .004 264/.07);
+  --input: oklch(88% .004 264/.1);
+  --ring: oklch(88% .004 264/.3);
+  --chart-1: oklch(0.75 0.18 155);
+  --chart-2: oklch(0.45 0.15 25);
+  --chart-3: oklch(0.91 0.005 0);
+  --chart-4: oklch(0.52 0.005 0);
+  --chart-5: oklch(0.70 0.005 0);
+  --sidebar: oklch(6% .003 264);
+  --sidebar-foreground: oklch(88% .004 264);
+  --sidebar-accent: oklch(12% .003 264);
+  --sidebar-accent-foreground: oklch(88% .004 264);
+  --sidebar-border: oklch(88% .004 264/.07);
+  --sidebar-ring: oklch(88% .004 264/.3);
 }
 
 /* ================================================================== */
@@ -269,7 +269,7 @@
   /* ── FIX 3 — Unified Status Badge System ────────────────── */
   .status-badge {
     @apply inline-flex items-center px-2 py-0.5 text-xs font-medium whitespace-nowrap;
-    border-radius: 4px;
+    border-radius: 0px;
   }
   /* In progress — always teal/green */
   .status-active,
@@ -304,7 +304,7 @@
     background: transparent;
     color: #f59e0b;
     border: 1px solid #f59e0b;
-    border-radius: 4px;
+    border-radius: 0px;
   }
   /* Healthy — teal border variant, no fill */
   .status-healthy {
@@ -327,17 +327,17 @@
   .priority-high {
     background: rgba(248, 113, 113, 0.15);
     color: #f87171;
-    border-radius: 4px;
+    border-radius: 0px;
   }
   .priority-medium {
     background: rgba(245, 158, 11, 0.15);
     color: #f59e0b;
-    border-radius: 4px;
+    border-radius: 0px;
   }
   .priority-low {
     background: rgba(74, 222, 128, 0.15);
     color: #4ade80;
-    border-radius: 4px;
+    border-radius: 0px;
   }
 
   /* ── FIX 4+5 — Card System ──────────────────────────────── */
