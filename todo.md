@@ -2389,3 +2389,9 @@
 - [x] Fix Demo page lag (particle animation reduced from 200 to 80 static dots)
 - [x] Update SpyOps.tsx intro/login screen to match reference theme
 - [x] Update Home.tsx welcome dashboard to match reference site theme (inherits via global CSS)
+## Pitch Deck Revert + Red Glow Fix (Apr 10)
+- [x] Revert Demo.tsx back to investor pitch deck structure (from checkpoint d058dd39 or earlier)
+- [x] Keep VENTEX branding and new theme on the reverted pitch deck
+- [x] Remove all red glow/accents from Demo.tsx, replace with green theme
+- [x] Match SpyOps intro to reference site intro style
+- [x] Remove red glow effects from all pages

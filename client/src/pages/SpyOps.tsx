@@ -738,174 +738,266 @@ export default function SpyOps() {
             </>
           )}
 
-          {/* ── PHASE 2: LOGIN ── */}
+          {/* ── PHASE 2: LOGIN — Reference-site hero style ── */}
           {flowPhase === "login" && (
             <div
               style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 0,
-                animation: "spyops-fadeIn 0.6s ease",
+                position: "relative",
                 width: "100%",
-                maxWidth: 640,
-                padding: "0 24px",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                animation: "spyops-fadeIn 0.6s ease",
+                overflow: "hidden",
               }}
             >
-              {/* VENTEX */}
-              <div
+              {/* Particle Globe — right side */}
+              <svg
+                viewBox="0 0 440 440"
+                className="spyops-login-globe"
                 style={{
-                  fontFamily: "'Bebas Neue', sans-serif",
-                  fontSize: "clamp(36px, 6vw, 56px)",
-                  letterSpacing: "0.4em",
-                  color: "#fff",
-                  marginBottom: 8,
-                  textAlign: "center",
+                  position: "absolute",
+                  right: "-2%",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  width: 440,
+                  height: 440,
+                  opacity: 0.25,
+                  pointerEvents: "none",
                 }}
               >
-                V E N T E X
-              </div>
+                {Array.from({ length: 180 }, (_, i) => {
+                  const theta = (i * 2.399963) % (Math.PI * 2);
+                  const phi = Math.acos(1 - 2 * ((i + 0.5) / 180));
+                  const r = 180;
+                  const x = r * Math.sin(phi) * Math.cos(theta) + 220;
+                  const y = r * Math.sin(phi) * Math.sin(theta) + 220;
+                  const size = 1 + (i % 3) * 0.6;
+                  const op = 0.15 + (i % 5) * 0.12;
+                  return (
+                    <circle key={i} cx={x} cy={y} r={size} fill="#e2e2e2" opacity={op}>
+                      <animate
+                        attributeName="opacity"
+                        values={`${op};${op * 0.3};${op}`}
+                        dur={`${2 + (i % 4)}s`}
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                  );
+                })}
+                <ellipse cx="220" cy="220" rx="180" ry="40" fill="none" stroke="#e2e2e2" strokeWidth="0.5" opacity="0.1" />
+                <ellipse cx="220" cy="220" rx="40" ry="180" fill="none" stroke="#e2e2e2" strokeWidth="0.5" opacity="0.08" />
+              </svg>
 
-              {/* Tagline */}
+              {/* Grid overlay */}
               <div
                 style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: 10,
-                  letterSpacing: "0.3em",
-                  color: "#555",
-                  marginBottom: 56,
-                  textAlign: "center",
-                }}
-              >
-                VENTURE INTELLIGENCE OPERATIONS
-              </div>
-
-              {/* OAuth error message — shown above buttons */}
-              {oauthError && (
-                <div
-                  style={{
-                    fontFamily: "'Share Tech Mono', monospace",
-                    fontSize: 11,
-                    color: "#ff3333",
-                    marginBottom: 32,
-                    letterSpacing: "0.15em",
-                    textAlign: "center",
-                    lineHeight: 1.8,
-                    padding: "12px 24px",
-                    border: "1px solid rgba(255,51,51,0.3)",
-                    background: "rgba(255,51,51,0.05)",
-                    width: "100%",
-                    animation: "spyops-fadeIn 0.5s ease",
-                  }}
-                >
-                  ✖ {oauthError}
-                  <div style={{ fontSize: 9, color: "#666", marginTop: 8 }}>
-                    CONTACT YOUR ORGANIZATION ADMIN FOR ACCESS
-                  </div>
-                </div>
-              )}
-
-              {/* Two clear action buttons side by side */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  gap: 16,
-                  width: "100%",
-                  maxWidth: 520,
-                  marginBottom: 48,
-                }}
-              >
-                {/* Authorized Access (Sign In) */}
-                <button
-                  onClick={handleSignIn}
-                  disabled={authLoading}
-                  className="spyops-btn-primary"
-                  style={{
-                    flex: 1,
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: 11,
-                    letterSpacing: "0.15em",
-                    background: authLoading ? "#333" : "#fff",
-                    color: authLoading ? "#666" : "#000",
-                    border: "none",
-                    padding: "18px 24px",
-                    cursor: authLoading ? "wait" : "none",
-                    transition: "background 0.3s, color 0.3s",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
-                >
-                  <span style={{ fontSize: 12, fontWeight: 600 }}>
-                    {authLoading ? "VERIFYING..." : "AUTHORIZED ACCESS"}
-                  </span>
-                  <span style={{ fontSize: 9, opacity: 0.6, letterSpacing: "0.1em" }}>
-                    {authLoading ? "" : "TEAM & CLIENT LOGIN"}
-                  </span>
-                </button>
-
-                {/* Investor Demo */}
-                <button
-                  onClick={() => navigate("/demo")}
-                  className="spyops-hover"
-                  style={{
-                    flex: 1,
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: 11,
-                    letterSpacing: "0.15em",
-                    background: "transparent",
-                    color: "#00ff87",
-                    border: "1px solid rgba(0,255,135,0.4)",
-                    padding: "18px 24px",
-                    cursor: "none",
-                    transition: "border-color 0.3s, background 0.3s",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(0,255,135,0.8)";
-                    e.currentTarget.style.background = "rgba(0,255,135,0.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(0,255,135,0.4)";
-                    e.currentTarget.style.background = "transparent";
-                  }}
-                >
-                  <span style={{ fontSize: 12, fontWeight: 600 }}>
-                    INVESTOR DEMO
-                  </span>
-                  <span style={{ fontSize: 9, opacity: 0.6, letterSpacing: "0.1em" }}>
-                    VIEW PITCH DECK
-                  </span>
-                </button>
-              </div>
-
-              {/* Divider */}
-              <div
-                style={{
-                  width: "100%",
-                  maxWidth: 520,
-                  height: 1,
-                  background: "linear-gradient(90deg, transparent, #333, transparent)",
-                  marginBottom: 24,
+                  position: "absolute",
+                  inset: 0,
+                  backgroundImage: "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
+                  backgroundSize: "80px 80px",
+                  pointerEvents: "none",
                 }}
               />
 
-              {/* Status line */}
+              {/* Left-aligned content */}
               <div
                 style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: 10,
-                  color: "#333",
-                  textAlign: "center",
-                  letterSpacing: "0.2em",
+                  position: "relative",
+                  zIndex: 2,
+                  maxWidth: 640,
+                  padding: "0 6vw",
                 }}
               >
-                CLASSIFICATION: CONFIDENTIAL // INVITE-ONLY ACCESS
+                {/* Classified badge */}
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 32 }}>
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "4px 10px",
+                      fontSize: 10,
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      letterSpacing: "0.1em",
+                      background: "rgba(0,255,135,0.08)",
+                      color: "#00ff87",
+                      border: "1px solid rgba(0,255,135,0.25)",
+                    }}
+                  >
+                    <span style={{ color: "#00ff87" }}>■</span> CLASSIFIED
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      letterSpacing: "0.1em",
+                      color: "#666",
+                    }}
+                  >
+                    OPERATION VENTEX — ACTIVE DEPLOYMENT
+                  </span>
+                </div>
+
+                {/* Headline — Space Grotesk */}
+                <h1
+                  style={{
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontSize: "clamp(48px, 8vw, 96px)",
+                    letterSpacing: "-0.01em",
+                    lineHeight: 0.95,
+                    margin: 0,
+                    marginBottom: 24,
+                  }}
+                >
+                  <span style={{ color: "#666" }}>THE AI THAT</span>
+                  <br />
+                  <span style={{ color: "#fff" }}>ACCELERATES</span>
+                  <br />
+                  <span style={{ color: "#666" }}>VENTURE HOLDINGS</span>
+                </h1>
+
+                {/* Subtext */}
+                <p
+                  style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 13,
+                    color: "rgba(255,255,255,0.6)",
+                    maxWidth: 400,
+                    lineHeight: 1.8,
+                    margin: 0,
+                    marginBottom: 8,
+                  }}
+                >
+                  <span style={{ color: "#fff", fontWeight: 500 }}>V</span>elocity{" "}
+                  <span style={{ color: "#fff", fontWeight: 500 }}>EN</span>abled{" "}
+                  <span style={{ color: "#fff", fontWeight: 500 }}>T</span>echnology for{" "}
+                  <span style={{ color: "#fff", fontWeight: 500 }}>EX</span>ponential returns.
+                </p>
+                <p
+                  style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 12,
+                    color: "rgba(255,255,255,0.45)",
+                    maxWidth: 400,
+                    lineHeight: 1.7,
+                    margin: 0,
+                    marginBottom: 36,
+                  }}
+                >
+                  The AI-powered operations dashboard built exclusively
+                  for venture holding businesses. One command layer.
+                  Every holding. Total control.
+                </p>
+
+                {/* OAuth error message */}
+                {oauthError && (
+                  <div
+                    style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: 11,
+                      color: "rgba(255,255,255,0.7)",
+                      marginBottom: 24,
+                      letterSpacing: "0.1em",
+                      lineHeight: 1.8,
+                      padding: "12px 20px",
+                      border: "1px solid rgba(255,255,255,0.15)",
+                      background: "rgba(255,255,255,0.03)",
+                      maxWidth: 480,
+                      animation: "spyops-fadeIn 0.5s ease",
+                    }}
+                  >
+                    ✖ {oauthError}
+                    <div style={{ fontSize: 9, color: "#666", marginTop: 8 }}>
+                      CONTACT YOUR ORGANIZATION ADMIN FOR ACCESS
+                    </div>
+                  </div>
+                )}
+
+                {/* CTA buttons */}
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                  <button
+                    onClick={handleSignIn}
+                    disabled={authLoading}
+                    className="spyops-btn-primary"
+                    style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: 11,
+                      letterSpacing: "0.12em",
+                      background: authLoading ? "#333" : "#fff",
+                      color: authLoading ? "#666" : "#000",
+                      border: "none",
+                      padding: "14px 28px",
+                      cursor: authLoading ? "wait" : "none",
+                      transition: "background 0.2s, color 0.2s",
+                    }}
+                  >
+                    {authLoading ? "VERIFYING..." : "AUTHORIZED ACCESS →"}
+                  </button>
+                  <button
+                    onClick={() => navigate("/demo")}
+                    className="spyops-hover"
+                    style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: 11,
+                      letterSpacing: "0.12em",
+                      background: "transparent",
+                      color: "#00ff87",
+                      border: "1px solid rgba(0,255,135,0.4)",
+                      padding: "14px 28px",
+                      cursor: "none",
+                      transition: "border-color 0.2s, background 0.2s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = "rgba(0,255,135,0.8)";
+                      e.currentTarget.style.background = "rgba(0,255,135,0.05)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "rgba(0,255,135,0.4)";
+                      e.currentTarget.style.background = "transparent";
+                    }}
+                  >
+                    INVESTOR DEMO
+                  </button>
+                </div>
+
+                {/* Bottom classification */}
+                <div
+                  style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 10,
+                    color: "#333",
+                    letterSpacing: "0.1em",
+                    marginTop: 48,
+                  }}
+                >
+                  DOC-VTX-2026-001 // EYES ONLY // VENTURE INTELLIGENCE DIVISION
+                </div>
+              </div>
+
+              {/* Scroll indicator — bottom center */}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 32,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 10,
+                    letterSpacing: "0.15em",
+                    color: "#555",
+                  }}
+                >
+                  CLASSIFICATION: CONFIDENTIAL // INVITE-ONLY ACCESS
+                </span>
               </div>
             </div>
           )}
@@ -1073,7 +1165,7 @@ export default function SpyOps() {
         </div>
       </nav>
 
-      {/* ═══ SECTION 3 — HERO ═══ */}
+      {/* ═══ SECTION 3 — HERO (Reference-site style) ═══ */}
       <section
         id="hero"
         style={{
@@ -1083,33 +1175,54 @@ export default function SpyOps() {
           paddingTop: 52,
         }}
       >
-        {/* FIX 5: giant VTX background — larger, more visible, bleeding off right edge */}
-        <div
-          className="spyops-drift"
+        {/* Particle Globe — right side */}
+        <svg
+          viewBox="0 0 600 600"
+          className="spyops-hero-globe"
           style={{
             position: "absolute",
+            right: "-5%",
             top: "50%",
-            right: "-10%",
             transform: "translateY(-50%)",
-            fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: "55vw",
-            color: "rgba(255,255,255,0.045)",
-            lineHeight: 1,
+            width: "55vw",
+            maxWidth: 700,
+            height: "auto",
+            opacity: 0.2,
             pointerEvents: "none",
-            userSelect: "none",
-            whiteSpace: "nowrap",
           }}
         >
-          VTX
-        </div>
+          {Array.from({ length: 240 }, (_, i) => {
+            const theta = (i * 2.399963) % (Math.PI * 2);
+            const phi = Math.acos(1 - 2 * ((i + 0.5) / 240));
+            const r = 250;
+            const x = r * Math.sin(phi) * Math.cos(theta) + 300;
+            const y = r * Math.sin(phi) * Math.sin(theta) + 300;
+            const size = 1.2 + (i % 3) * 0.5;
+            const op = 0.2 + (i % 5) * 0.1;
+            return (
+              <circle key={i} cx={x} cy={y} r={size} fill="#e2e2e2" opacity={op}>
+                <animate
+                  attributeName="opacity"
+                  values={`${op};${op * 0.25};${op}`}
+                  dur={`${2.5 + (i % 4)}s`}
+                  repeatCount="indefinite"
+                />
+              </circle>
+            );
+          })}
+          <ellipse cx="300" cy="300" rx="250" ry="55" fill="none" stroke="#e2e2e2" strokeWidth="0.5" opacity="0.08" />
+          <ellipse cx="300" cy="300" rx="55" ry="250" fill="none" stroke="#e2e2e2" strokeWidth="0.5" opacity="0.06" />
+          <ellipse cx="300" cy="300" rx="250" ry="250" fill="none" stroke="#e2e2e2" strokeWidth="0.3" opacity="0.04" />
+        </svg>
+
         {/* grid overlay */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)",
-            backgroundSize: "100px 100px",
+              "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
+            backgroundSize: "80px 80px",
             pointerEvents: "none",
           }}
         />
@@ -1125,55 +1238,74 @@ export default function SpyOps() {
           }}
         >
           <div style={{ maxWidth: 700 }}>
-            <div
-              style={{
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: 10,
-                color: "#666",
-                letterSpacing: "0.2em",
-                marginBottom: 24,
-              }}
-            >
-              // MISSION BRIEF — REF: VTX-2026-001
+            {/* Classified badge */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 32 }}>
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "4px 10px",
+                  fontSize: 10,
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  letterSpacing: "0.1em",
+                  background: "rgba(0,255,135,0.08)",
+                  color: "#00ff87",
+                  border: "1px solid rgba(0,255,135,0.25)",
+                }}
+              >
+                <span style={{ color: "#00ff87" }}>■</span> CLASSIFIED
+              </span>
+              <span
+                style={{
+                  fontSize: 10,
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  letterSpacing: "0.1em",
+                  color: "#555",
+                }}
+              >
+                OPERATION VENTEX — ACTIVE DEPLOYMENT
+              </span>
             </div>
+
             <h1
               style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: "clamp(72px, 12vw, 180px)",
-                letterSpacing: "0.05em",
-                lineHeight: 0.9,
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontSize: "clamp(56px, 9vw, 130px)",
+                letterSpacing: "-0.01em",
+                lineHeight: 0.95,
                 margin: 0,
-                color: "#fff",
               }}
             >
-              VENTURE
+              <span style={{ color: "#666" }}>THE AI THAT</span>
               <br />
-              INTELLIGENCE
+              <span style={{ color: "#fff" }}>ACCELERATES</span>
               <br />
-              OPERATIONS
+              <span style={{ color: "#666" }}>VENTURE HOLDINGS</span>
             </h1>
-            <div
-              style={{
-                width: 120,
-                height: 1,
-                background: "#fff",
-                marginTop: 32,
-              }}
-            />
+
             <p
               style={{
                 fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 13,
-                color: "rgba(255,255,255,0.7)",
-                maxWidth: 480,
+                color: "rgba(255,255,255,0.55)",
+                maxWidth: 420,
                 lineHeight: 1.8,
-                marginTop: 24,
+                marginTop: 28,
               }}
             >
-              AI-powered venture task automation for UHNWI holding companies.
-              Real-time operational intelligence across every sector. One command
-              center. Zero drag.
+              <span style={{ color: "#fff", fontWeight: 500 }}>V</span>elocity{" "}
+              <span style={{ color: "#fff", fontWeight: 500 }}>EN</span>abled{" "}
+              <span style={{ color: "#fff", fontWeight: 500 }}>T</span>echnology for{" "}
+              <span style={{ color: "#fff", fontWeight: 500 }}>EX</span>ponential returns.
+              <br />
+              <span style={{ color: "rgba(255,255,255,0.4)" }}>
+                The AI-powered operations dashboard built exclusively
+                for venture holding businesses. One command layer.
+                Every holding. Total control.
+              </span>
             </p>
+
             <div style={{ display: "flex", gap: 12, marginTop: 32, flexWrap: "wrap" }}>
               {/* ENTER COMMAND CENTER — auth-aware */}
               <button
@@ -1182,53 +1314,75 @@ export default function SpyOps() {
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 11,
-                  letterSpacing: "0.15em",
+                  letterSpacing: "0.12em",
                   background: "#fff",
                   color: "#000",
                   border: "none",
-                  padding: "12px 24px",
+                  padding: "14px 28px",
                   cursor: "none",
                 }}
               >
-                {isAuthenticated ? "ENTER COMMAND CENTER ▶" : "SIGN IN ▶"}
+                {isAuthenticated ? "ENTER COMMAND CENTER →" : "AUTHORIZED ACCESS →"}
               </button>
               {/* INVESTOR DEMO — no auth required */}
               <button
                 onClick={() => navigate("/demo")}
-                className="spyops-btn-secondary"
+                className="spyops-hover"
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 11,
-                  letterSpacing: "0.15em",
+                  letterSpacing: "0.12em",
                   background: "transparent",
-                  color: "#22d3ee",
-                  border: "1px solid rgba(34,211,238,0.4)",
-                  padding: "12px 24px",
+                  color: "#00ff87",
+                  border: "1px solid rgba(0,255,135,0.4)",
+                  padding: "14px 28px",
                   cursor: "none",
+                  transition: "border-color 0.2s, background 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(0,255,135,0.8)";
+                  e.currentTarget.style.background = "rgba(0,255,135,0.05)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(0,255,135,0.4)";
+                  e.currentTarget.style.background = "transparent";
                 }}
               >
-                VIEW DEMO ◉
+                VIEW BRIEFING
               </button>
-              {/* FIX 15: REQUEST ACCESS scrolls to contact/coordinates */}
+              {/* REQUEST ACCESS scrolls to contact/coordinates */}
               <button
                 onClick={() => scrollTo("coordinates")}
                 className="spyops-btn-secondary"
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 11,
-                  letterSpacing: "0.15em",
+                  letterSpacing: "0.12em",
                   background: "transparent",
                   color: "#fff",
-                  border: "1px solid #fff",
-                  padding: "12px 24px",
+                  border: "1px solid rgba(255,255,255,0.3)",
+                  padding: "14px 28px",
                   cursor: "none",
                 }}
               >
                 REQUEST ACCESS +
               </button>
             </div>
+
+            {/* Bottom classification */}
+            <div
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 10,
+                color: "#333",
+                letterSpacing: "0.1em",
+                marginTop: 48,
+              }}
+            >
+              DOC-VTX-2026-001 // EYES ONLY // VENTURE INTELLIGENCE DIVISION
+            </div>
           </div>
-          {/* FIX 6: right readouts with left border */}
+          {/* right readouts with left border */}
           <div
             className="spyops-hero-readouts"
             style={{
@@ -1236,7 +1390,7 @@ export default function SpyOps() {
               right: "8%",
               top: "50%",
               transform: "translateY(-50%)",
-              borderLeft: "1px solid rgba(255,255,255,0.4)",
+              borderLeft: "1px solid rgba(255,255,255,0.2)",
               paddingLeft: 16,
               display: "flex",
               flexDirection: "column",
@@ -1249,7 +1403,7 @@ export default function SpyOps() {
                 style={{
                   fontFamily: "'Share Tech Mono', monospace",
                   fontSize: 10,
-                  color: i === 0 ? "#666" : "#fff",
+                  color: i === 0 ? "#555" : "rgba(255,255,255,0.7)",
                   textAlign: "right",
                 }}
               >
@@ -1258,18 +1412,30 @@ export default function SpyOps() {
             ))}
           </div>
         </div>
-        {/* bottom right */}
+        {/* Scroll indicator — bottom center */}
         <div
           style={{
             position: "absolute",
-            bottom: 24,
-            right: 24,
-            fontFamily: "'Share Tech Mono', monospace",
-            fontSize: 10,
-            color: "#666",
+            bottom: 32,
+            left: "50%",
+            transform: "translateX(-50%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 8,
           }}
         >
-          <span className="spyops-blink">[SCROLL TO INITIALIZE ↓]</span>
+          <span
+            style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 10,
+              letterSpacing: "0.15em",
+              color: "#555",
+            }}
+          >
+            SCROLL
+          </span>
+          <div style={{ width: 1, height: 24, background: "#555" }} />
         </div>
         {/* bottom left */}
         <div
@@ -1277,9 +1443,9 @@ export default function SpyOps() {
             position: "absolute",
             bottom: 24,
             left: 24,
-            fontFamily: "'Share Tech Mono', monospace",
+            fontFamily: "'IBM Plex Mono', monospace",
             fontSize: 10,
-            color: "#666",
+            color: "#444",
           }}
         >
           N 40.712800 · W 074.006000
