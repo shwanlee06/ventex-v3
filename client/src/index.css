@@ -4,12 +4,12 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* ── Border Radius (FIX 4) ──────────────────────────────── */
-  --radius: 0.5rem;                    /* 8px — cards */
-  --radius-sm: 0.25rem;                /* 4px — badges/pills */
-  --radius-md: 0.375rem;               /* 6px — buttons/inputs */
-  --radius-lg: 0.5rem;                 /* 8px — cards */
-  --radius-xl: 0.625rem;               /* 10px — modals */
+  /* ── Border Radius (minimal/angular) ────────────────────── */
+  --radius: 0.25rem;                   /* 4px — cards */
+  --radius-sm: 0.125rem;               /* 2px — badges/pills */
+  --radius-md: 0.1875rem;              /* 3px — buttons/inputs */
+  --radius-lg: 0.25rem;                /* 4px — cards */
+  --radius-xl: 0.375rem;               /* 6px — modals */
 
   /* ── Semantic Colour Tokens ─────────────────────────────── */
   --color-background: var(--background);
@@ -46,9 +46,9 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   /* ── Typography ─────────────────────────────────────────── */
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-display: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: "IBM Plex Mono", monospace;
+  --font-mono: "Fira Code", "IBM Plex Mono", monospace;
+  --font-display: "Space Grotesk", "IBM Plex Mono", sans-serif;
 
   /* ── Vertical Semantic Colours ──────────────────────────── */
   --color-v-realestate: oklch(0.65 0.12 240);
@@ -56,9 +56,9 @@
   --color-v-hospitality: oklch(0.7 0.14 60);
   --color-v-fnb: oklch(0.7 0.14 340);
   --color-v-energy: oklch(0.72 0.14 85);
-  --color-gold: oklch(0.75 0.1 75);
-  --color-gold-light: oklch(0.82 0.08 75);
-  --color-gold-muted: oklch(0.75 0.1 75 / 15%);
+  --color-gold: oklch(0.75 0.18 155);       /* green accent */
+  --color-gold-light: oklch(0.82 0.15 155);
+  --color-gold-muted: oklch(0.75 0.18 155 / 15%);
 
   /* ── Semantic Status Colours ────────────────────────────── */
   --color-success: oklch(0.72 0.17 155);
@@ -66,78 +66,77 @@
   --color-danger: oklch(0.63 0.22 25);
   --color-info: oklch(0.65 0.1 250);
 }
-
-/* ── Light Mode ───────────────────────────────────────────── */
+/* ── Light Mode (mirrors dark for consistency) ───────────────────── */
 :root {
-  --radius: 0.5rem;
-  --primary: oklch(0.55 0.12 75);
-  --primary-foreground: oklch(0.98 0.005 75);
-  --sidebar-primary: oklch(0.55 0.12 75);
-  --sidebar-primary-foreground: oklch(0.98 0.005 75);
-  --chart-1: oklch(0.55 0.15 240);
-  --chart-2: oklch(0.55 0.15 180);
-  --chart-3: oklch(0.6 0.15 60);
-  --chart-4: oklch(0.6 0.15 340);
-  --chart-5: oklch(0.6 0.15 85);
-  --background: oklch(0.97 0.003 270);
-  --foreground: oklch(0.15 0.005 270);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0.005 270);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0.005 270);
-  --secondary: oklch(0.93 0.003 270);
-  --secondary-foreground: oklch(0.35 0.01 270);
-  --muted: oklch(0.92 0.003 270);
-  --muted-foreground: oklch(0.45 0.01 270);
-  --accent: oklch(0.94 0.003 270);
-  --accent-foreground: oklch(0.15 0.005 270);
-  --destructive: oklch(0.55 0.22 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0 0 0 / 10%);
-  --input: oklch(0 0 0 / 12%);
-  --ring: oklch(0.55 0.12 75);
-  --sidebar: oklch(0.96 0.003 270);
-  --sidebar-foreground: oklch(0.25 0.005 270);
-  --sidebar-accent: oklch(0.93 0.003 270);
-  --sidebar-accent-foreground: oklch(0.15 0.005 270);
-  --sidebar-border: oklch(0 0 0 / 8%);
-  --sidebar-ring: oklch(0.55 0.12 75);
+  --radius: 0.25rem;
+  --primary: oklch(0.75 0.18 155);
+  --primary-foreground: oklch(0.08 0.005 270);
+  --sidebar-primary: oklch(0.75 0.18 155);
+  --sidebar-primary-foreground: oklch(0.08 0.005 270);
+  --chart-1: oklch(0.75 0.18 155);
+  --chart-2: oklch(0.45 0.15 25);
+  --chart-3: oklch(0.91 0.005 0);
+  --chart-4: oklch(0.52 0.005 0);
+  --chart-5: oklch(0.70 0.005 0);
+  --background: oklch(0.07 0.005 270);
+  --foreground: oklch(0.91 0.005 0);
+  --card: oklch(0.10 0.005 270);
+  --card-foreground: oklch(0.91 0.005 0);
+  --popover: oklch(0.12 0.005 270);
+  --popover-foreground: oklch(0.91 0.005 0);
+  --secondary: oklch(0.14 0.005 270);
+  --secondary-foreground: oklch(0.70 0.005 0);
+  --muted: oklch(0.16 0.005 270);
+  --muted-foreground: oklch(0.52 0.005 0);
+  --accent: oklch(0.14 0.005 270);
+  --accent-foreground: oklch(0.91 0.005 0);
+  --destructive: oklch(0.45 0.15 25);
+  --destructive-foreground: oklch(0.91 0.005 0);
+  --border: oklch(0.91 0 0 / 6%);
+  --input: oklch(0.91 0 0 / 8%);
+  --ring: oklch(0.75 0.18 155);
+  --sidebar: oklch(0.08 0.005 270);
+  --sidebar-foreground: oklch(0.85 0.005 0);
+  --sidebar-accent: oklch(0.14 0.005 270);
+  --sidebar-accent-foreground: oklch(0.91 0.005 0);
+  --sidebar-border: oklch(0.91 0 0 / 6%);
+  --sidebar-ring: oklch(0.75 0.18 155);
 }
 
-/* ── Dark Mode ────────────────────────────────────────────── */
+/* ── Dark Mode ──────────────────────────────────────────────────── */
 .dark {
-  --primary: oklch(0.75 0.1 75);
-  --primary-foreground: oklch(0.15 0.01 75);
-  --sidebar-primary: oklch(0.75 0.1 75);
-  --sidebar-primary-foreground: oklch(0.15 0.01 75);
-  --background: oklch(0.12 0.005 270);
-  --foreground: oklch(0.92 0.005 80);
-  --card: oklch(0.15 0.005 270);
-  --card-foreground: oklch(0.92 0.005 80);
-  --popover: oklch(0.17 0.005 270);
-  --popover-foreground: oklch(0.92 0.005 80);
-  --secondary: oklch(0.19 0.005 270);
-  --secondary-foreground: oklch(0.75 0.005 80);
-  --muted: oklch(0.21 0.005 270);
-  --muted-foreground: oklch(0.58 0.01 270);
-  --accent: oklch(0.19 0.005 270);
-  --accent-foreground: oklch(0.92 0.005 80);
-  --destructive: oklch(0.65 0.2 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(1 0 0 / 7%);
-  --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.75 0.1 75);
-  --chart-1: oklch(0.65 0.12 240);
-  --chart-2: oklch(0.7 0.12 180);
-  --chart-3: oklch(0.7 0.14 60);
-  --chart-4: oklch(0.7 0.14 340);
-  --chart-5: oklch(0.72 0.14 85);
-  --sidebar: oklch(0.13 0.005 270);
-  --sidebar-foreground: oklch(0.85 0.005 80);
-  --sidebar-accent: oklch(0.19 0.005 270);
-  --sidebar-accent-foreground: oklch(0.92 0.005 80);
-  --sidebar-border: oklch(1 0 0 / 7%);
-  --sidebar-ring: oklch(0.75 0.1 75);
+  --primary: oklch(0.75 0.18 155);           /* green accent #00ff87 */
+  --primary-foreground: oklch(0.08 0.005 270);
+  --sidebar-primary: oklch(0.75 0.18 155);
+  --sidebar-primary-foreground: oklch(0.08 0.005 270);
+  --background: oklch(0.07 0.005 270);        /* #050507 near-black */
+  --foreground: oklch(0.91 0.005 0);          /* #e2e2e2 */
+  --card: oklch(0.10 0.005 270);              /* slightly lighter than bg */
+  --card-foreground: oklch(0.91 0.005 0);
+  --popover: oklch(0.12 0.005 270);
+  --popover-foreground: oklch(0.91 0.005 0);
+  --secondary: oklch(0.14 0.005 270);
+  --secondary-foreground: oklch(0.70 0.005 0);
+  --muted: oklch(0.16 0.005 270);
+  --muted-foreground: oklch(0.52 0.005 0);    /* rgba(226,226,226,0.55) */
+  --accent: oklch(0.14 0.005 270);
+  --accent-foreground: oklch(0.91 0.005 0);
+  --destructive: oklch(0.45 0.15 25);         /* dark red #8b1a1a */
+  --destructive-foreground: oklch(0.91 0.005 0);
+  --border: oklch(0.91 0 0 / 6%);             /* rgba(226,226,226,0.06) */
+  --input: oklch(0.91 0 0 / 8%);
+  --ring: oklch(0.75 0.18 155);
+  --chart-1: oklch(0.75 0.18 155);            /* green */
+  --chart-2: oklch(0.45 0.15 25);             /* dark red */
+  --chart-3: oklch(0.91 0.005 0);             /* white */
+  --chart-4: oklch(0.52 0.005 0);             /* muted */
+  --chart-5: oklch(0.70 0.005 0);             /* secondary */
+  --sidebar: oklch(0.08 0.005 270);
+  --sidebar-foreground: oklch(0.85 0.005 0);
+  --sidebar-accent: oklch(0.14 0.005 270);
+  --sidebar-accent-foreground: oklch(0.91 0.005 0);
+  --sidebar-border: oklch(0.91 0 0 / 6%);
+  --sidebar-ring: oklch(0.75 0.18 155);
 }
 
 /* ================================================================== */
@@ -148,9 +147,9 @@
     @apply border-border outline-ring/50;
   }
 
-  /* FIX 1 — Font rendering: enforce Inter globally */
+  /* Font rendering: IBM Plex Mono as primary body font (matching reference) */
   html {
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: "IBM Plex Mono", monospace;
     font-size: 15px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -168,7 +167,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: "IBM Plex Mono", monospace;
     overscroll-behavior: none;
   }
 
@@ -185,19 +184,19 @@
   td:has(.currency),
   .font-mono {
     font-variant-numeric: tabular-nums;
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: "Fira Code", "IBM Plex Mono", monospace;
   }
 
   /* Display font for headings and brand elements */
   .font-display {
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: "Space Grotesk", "IBM Plex Mono", sans-serif;
     font-feature-settings: "liga" 1, "kern" 1;
   }
 
   /* Page headings use display font */
   h1.page-title,
   .brand-heading {
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: "Space Grotesk", "IBM Plex Mono", sans-serif;
     font-weight: 500;
     letter-spacing: 0.02em;
   }
@@ -403,16 +402,16 @@
   /* CLIENT PORTAL — Luxury UHNWI Design System  */
   /* ============================================ */
   .client-portal {
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: "IBM Plex Mono", monospace;
   }
   .client-portal .client-heading {
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: "Space Grotesk", "IBM Plex Mono", sans-serif;
     font-weight: 500;
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }
   .client-portal .client-value {
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: "Fira Code", "IBM Plex Mono", monospace;
     font-weight: 300;
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
@@ -429,13 +428,13 @@
     background-color: rgba(255, 255, 255, 0.02);
   }
   .client-portal .gold-accent {
-    color: oklch(0.75 0.1 75);
+    color: oklch(0.75 0.18 155);
   }
   .client-portal .gold-bg {
-    background-color: oklch(0.75 0.1 75 / 0.1);
+    background-color: oklch(0.75 0.18 155 / 0.1);
   }
   .client-portal .gold-border {
-    border-color: oklch(0.75 0.1 75 / 0.2);
+    border-color: oklch(0.75 0.18 155 / 0.2);
   }
   /* Client bottom nav — frosted glass */
   .client-bottom-nav {
@@ -480,8 +479,8 @@
 
   /* Mini sparkline area */
   .sparkline-area {
-    fill: oklch(0.75 0.1 75 / 0.1);
-    stroke: oklch(0.75 0.1 75);
+    fill: oklch(0.75 0.18 155 / 0.1);
+    stroke: oklch(0.75 0.18 155);
     stroke-width: 1.5;
   }
 }

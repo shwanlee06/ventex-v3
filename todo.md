@@ -2370,3 +2370,11 @@
 - [x] Update all tests to match VENTEX branding
 - [x] Verify compilation and all tests pass (745/754 — 9 org test failures are pre-existing DB state issue)
 - [x] Find and eliminate ALL remaining ATLAS references (UI, logos, titles, CDN URLs, metadata)
+## Theme Match to Reference Site (Apr 10)
+- [x] Audit reference site theme: colors, fonts, backgrounds, component styles
+- [x] Update global CSS variables and fonts to match reference
+- [x] Update login screen (SpyOps) to match reference theme
+- [x] Update pitch deck (Demo) to match reference theme
+- [x] Update demo dashboard (DemoDashboard) to match reference theme
+- [x] Update prototype dashboard (Home) to match reference theme
+- [x] Visual comparison and verification
