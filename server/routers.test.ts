@@ -23,7 +23,7 @@ function createAuthenticatedContext(): TrpcContext {
       name: "Test Admin",
       email: "admin@test.com",
       role: "admin",
-      organizationId: null, // ATLAS team (no org = sees all)
+      organizationId: null, // VENTEX team (no org = sees all)
       status: "active",
       avatarUrl: null,
       invitationId: null,

@@ -10,19 +10,19 @@ describe("Access Control Helpers", () => {
       for (let i = 0; i < 8; i++) {
         segments.push(crypto.randomBytes(2).toString("hex").toUpperCase());
       }
-      return `ATLAS-${segments.join("-")}`;
+      return `VENTEX-${segments.join("-")}`;
     }
 
-    it("should generate a key starting with ATLAS-", () => {
+    it("should generate a key starting with VENTEX-", () => {
       const key = generateApiKey();
-      expect(key).toMatch(/^ATLAS-/);
+      expect(key).toMatch(/^VENTEX-/);
     });
 
     it("should generate a key with 48 characters", () => {
       const key = generateApiKey();
-      // ATLAS- (6) + 8 segments of 4 chars (32) + 7 dashes (7) = 45
-      // Actually: "ATLAS-" = 6, then 8 segments of 4 hex chars with 7 dashes = 32+7 = 39, total = 45
-      expect(key.length).toBe(45);
+      // VENTEX- (6) + 8 segments of 4 chars (32) + 7 dashes (7) = 45
+      // Actually: "VENTEX-" = 6, then 8 segments of 4 hex chars with 7 dashes = 32+7 = 39, total = 45
+      expect(key.length).toBe(46);
     });
 
     it("should generate unique keys", () => {
@@ -33,9 +33,9 @@ describe("Access Control Helpers", () => {
       expect(keys.size).toBe(100);
     });
 
-    it("should only contain valid characters (hex + dashes + ATLAS prefix)", () => {
+    it("should only contain valid characters (hex + dashes + VENTEX prefix)", () => {
       const key = generateApiKey();
-      expect(key).toMatch(/^ATLAS-[0-9A-F]{4}(-[0-9A-F]{4}){7}$/);
+      expect(key).toMatch(/^VENTEX-[0-9A-F]{4}(-[0-9A-F]{4}){7}$/);
     });
   });
 
@@ -70,21 +70,21 @@ describe("Access Control Helpers", () => {
     }
 
     it("should produce a 64-character hex string", () => {
-      const hash = hashApiKey("ATLAS-1234-5678-9ABC-DEF0-1234-5678-9ABC-DEF0");
+      const hash = hashApiKey("VENTEX-1234-5678-9ABC-DEF0-1234-5678-9ABC-DEF0");
       expect(hash).toHaveLength(64);
       expect(hash).toMatch(/^[0-9a-f]{64}$/);
     });
 
     it("should produce consistent hashes for the same input", () => {
-      const key = "ATLAS-1234-5678-9ABC-DEF0-1234-5678-9ABC-DEF0";
+      const key = "VENTEX-1234-5678-9ABC-DEF0-1234-5678-9ABC-DEF0";
       const hash1 = hashApiKey(key);
       const hash2 = hashApiKey(key);
       expect(hash1).toBe(hash2);
     });
 
     it("should produce different hashes for different inputs", () => {
-      const hash1 = hashApiKey("ATLAS-1111-2222-3333-4444-5555-6666-7777-8888");
-      const hash2 = hashApiKey("ATLAS-AAAA-BBBB-CCCC-DDDD-EEEE-FFFF-0000-1111");
+      const hash1 = hashApiKey("VENTEX-1111-2222-3333-4444-5555-6666-7777-8888");
+      const hash2 = hashApiKey("VENTEX-AAAA-BBBB-CCCC-DDDD-EEEE-FFFF-0000-1111");
       expect(hash1).not.toBe(hash2);
     });
   });
@@ -95,12 +95,12 @@ describe("Access Control Helpers", () => {
     }
 
     it("should return the first 10 characters", () => {
-      const prefix = getKeyPrefix("ATLAS-1234-5678-9ABC-DEF0-1234-5678-9ABC-DEF0");
-      expect(prefix).toBe("ATLAS-1234");
+      const prefix = getKeyPrefix("VENTEX-1234-5678-9ABC-DEF0-1234-5678-9ABC-DEF0");
+      expect(prefix).toBe("VENTEX-123");
     });
 
     it("should be 10 characters long", () => {
-      const prefix = getKeyPrefix("ATLAS-ABCD-EFGH-IJKL-MNOP-QRST-UVWX-YZ01-2345");
+      const prefix = getKeyPrefix("VENTEX-ABCD-EFGH-IJKL-MNOP-QRST-UVWX-YZ01-2345");
       expect(prefix).toHaveLength(10);
     });
   });
@@ -176,7 +176,7 @@ describe("Access Control Helpers", () => {
       expect(ORG_TYPES).toHaveLength(3);
     });
 
-    it("should include core for internal orgs like Aurovia/ATLAS", () => {
+    it("should include core for internal orgs like Aurovia/VENTEX", () => {
       expect(ORG_TYPES).toContain("core");
     });
 

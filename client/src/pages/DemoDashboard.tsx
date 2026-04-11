@@ -1,4 +1,4 @@
-// Demo Dashboard — Investor-facing read-only replica of the ATLAS admin dashboard
+// Demo Dashboard — Investor-facing read-only replica of the VENTEX admin dashboard
 // Self-contained: no tRPC, no auth, no external data. Pure static UI.
 // ALL sidebar tabs are interactive with data-rich views.
 
@@ -80,10 +80,10 @@ const DEMO_TEAM = [
   { name: "Shwan Lee", role: "Founder & CEO", email: "shwan@aurovia.co", status: "online" as const, ventures: 12, tasks: 3, avatar: "SL", photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee-new_e321fa79.webp" },
   { name: "Brian Chen", role: "COO", email: "brian@aurovia.co", status: "online" as const, ventures: 8, tasks: 5, avatar: "BC", photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/brian-chen_b535f902.jpeg" },
   { name: "Chris Phelps", role: "CRO", email: "chris@aurovia.co", status: "online" as const, ventures: 10, tasks: 4, avatar: "CP", photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/chris-phelps_c7e7c272.jpeg" },
-  { name: "Anton Keller", role: "Head of Operations", email: "anton@atlas.co", status: "online" as const, ventures: 15, tasks: 6, avatar: "AK" },
-  { name: "Maher Haddad", role: "Compliance Lead", email: "maher@atlas.co", status: "away" as const, ventures: 8, tasks: 3, avatar: "MH" },
-  { name: "Jon Mercer", role: "Deal Structuring", email: "jon@atlas.co", status: "offline" as const, ventures: 6, tasks: 2, avatar: "JM" },
-  { name: "Angie Reyes", role: "Finance & Distributions", email: "angie@atlas.co", status: "online" as const, ventures: 7, tasks: 4, avatar: "AR" },
+  { name: "Anton Keller", role: "Head of Operations", email: "anton@ventex.co", status: "online" as const, ventures: 15, tasks: 6, avatar: "AK" },
+  { name: "Maher Haddad", role: "Compliance Lead", email: "maher@ventex.co", status: "away" as const, ventures: 8, tasks: 3, avatar: "MH" },
+  { name: "Jon Mercer", role: "Deal Structuring", email: "jon@ventex.co", status: "offline" as const, ventures: 6, tasks: 2, avatar: "JM" },
+  { name: "Angie Reyes", role: "Finance & Distributions", email: "angie@ventex.co", status: "online" as const, ventures: 7, tasks: 4, avatar: "AR" },
 ];
 
 const DEMO_CONTACTS = [
@@ -159,18 +159,18 @@ const TOUR_STEPS: TourStep[] = [
   { view: "admin", tab: "concierge", title: "AI Concierge", narration: "A conversational AI that understands the entire portfolio. Ask about any venture, client, or deadline — get instant answers. It can draft emails, generate reports, and brief the team.", duration: 8 },
   { view: "admin", tab: "agents", title: "Autonomous AI Agents", narration: "Four AI agents run 24/7 — Velocity Agent tracks momentum, Overdue Agent escalates delays, Distribution Sentinel verifies payments, Compliance Watcher monitors deadlines. They never sleep.", duration: 9 },
   { view: "admin", tab: "blueprints", title: "Venture Pipeline", narration: "A visual kanban showing every venture across stages — from Negotiation through Due Diligence to Active and Closing. Drag-and-drop simplicity with AI-projected timelines.", duration: 8 },
-  { view: "admin", tab: "team", title: "ATLAS Team", narration: "Team management with real-time status, venture assignments, and task loads. See who's available, how work is distributed, and reassign with one click.", duration: 7 },
+  { view: "admin", tab: "team", title: "VENTEX Team", narration: "Team management with real-time status, venture assignments, and task loads. See who's available, how work is distributed, and reassign with one click.", duration: 7 },
   { view: "admin", tab: "contacts", title: "Client Directory", narration: "A centralized contact directory organized by organization. One-click access to email and phone for every stakeholder across all client portfolios.", duration: 7 },
   { view: "admin", tab: "onboard", title: "Client Onboarding", narration: "A structured 5-step wizard — KYC, compliance review, portal setup, venture linking, and access provisioning. Ensures nothing is missed when bringing on new clients.", duration: 7 },
   { view: "admin", tab: "drafts", title: "AI-Generated Drafts", narration: "The AI Concierge auto-generates follow-up emails, reports, and documents based on portfolio activity. Operators review, edit, and send with one click.", duration: 7 },
-  { view: "admin", tab: "settings", title: "System Configuration", narration: "Platform-wide settings — notifications, AI agent thresholds, integrations, security, and team permissions. Full control over how ATLAS operates.", duration: 6 },
+  { view: "admin", tab: "settings", title: "System Configuration", narration: "Platform-wide settings — notifications, AI agent thresholds, integrations, security, and team permissions. Full control over how VENTEX operates.", duration: 6 },
   // Client tour
   { view: "client", tab: "overview", title: "Client Dashboard", narration: "Now switching to the client's view. This is what your investors see — an AI-generated briefing, action cards requiring their attention, and a real-time velocity feed showing progress.", duration: 10 },
   { view: "client", tab: "ventures", title: "My Ventures", narration: "Each venture card shows real-time stage progress, velocity momentum vs. benchmark, risk factors, and AI-projected timelines. Clients see exactly where their investments stand.", duration: 8 },
   { view: "client", tab: "documents", title: "Document Vault", narration: "A secure document vault with all venture-related files — agreements, reports, compliance docs. Organized by type with status badges and one-click download.", duration: 7 },
   { view: "client", tab: "distributions", title: "Distributions", narration: "Complete distribution history with summary cards showing total paid, pending, and projected amounts. Clients see every payment with full transparency.", duration: 7 },
   { view: "client", tab: "reports", title: "AI Reports", narration: "AI-generated performance reports with key highlights and trend analysis. Clients get institutional-grade analytics without the operator lifting a finger.", duration: 7 },
-  { view: "client", tab: "messages", title: "Secure Messaging", narration: "Direct messaging with the ATLAS team. Clients can ask questions, request documents, or flag concerns — all in one secure channel.", duration: 7 },
+  { view: "client", tab: "messages", title: "Secure Messaging", narration: "Direct messaging with the VENTEX team. Clients can ask questions, request documents, or flag concerns — all in one secure channel.", duration: 7 },
   { view: "client", tab: "settings", title: "Account Settings", narration: "Profile management, notification preferences, and security settings. Clients control their own experience.", duration: 6 },
 ];
 
@@ -183,24 +183,24 @@ const DEMO_NAV: { label: string; icon: React.ReactNode; id: TabId }[] = [
   { label: "AI Concierge", icon: <Bot className="size-[18px]" />, id: "concierge" },
   { label: "AI Agents", icon: <Cpu className="size-[18px]" />, id: "agents" },
   { label: "Blueprints", icon: <Layers3 className="size-[18px]" />, id: "blueprints" },
-  { label: "ATLAS Team", icon: <Shield className="size-[18px]" />, id: "team" },
+  { label: "VENTEX Team", icon: <Shield className="size-[18px]" />, id: "team" },
   { label: "Client Contacts", icon: <Users className="size-[18px]" />, id: "contacts" },
   { label: "Onboard Client", icon: <UserPlus className="size-[18px]" />, id: "onboard" },
   { label: "Drafts", icon: <FileText className="size-[18px]" />, id: "drafts" },
   { label: "Settings", icon: <Settings className="size-[18px]" />, id: "settings" },
 ];
 
-const ATLAS_LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/atlas-logo-G2SBqxAK64sZYAYmAZY9js.webp";
+const VENTEX_LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/atlas-logo-G2SBqxAK64sZYAYmAZY9js.webp";
 
 /* ─── Annotation descriptions for investor understanding ─── */
 const ADMIN_ANNOTATIONS: Record<string, { title: string; desc: string }> = {
-  dashboard: { title: "Command Center", desc: "The operator's real-time overview of all client portfolios, AI agent activity, and priority tasks. This is where the ATLAS team manages everything from one screen." },
+  dashboard: { title: "Command Center", desc: "The operator's real-time overview of all client portfolios, AI agent activity, and priority tasks. This is where the VENTEX team manages everything from one screen." },
   activity: { title: "Activity Log", desc: "A complete audit trail of every action — both human and AI. Operators can filter by type and see exactly what happened, when, and by whom." },
   oversight: { title: "Portfolio Oversight", desc: "Risk monitoring and compliance tracking across all clients. Health scores, risk alerts, and regulatory status are updated in real-time by AI agents." },
   concierge: { title: "AI Concierge", desc: "A conversational AI assistant that understands the entire portfolio. Operators can ask questions, draft communications, and get instant briefings." },
   agents: { title: "AI Agents", desc: "Four autonomous AI agents that run 24/7 — monitoring overdue tasks, tracking velocity, flagging distributions, and watching compliance deadlines." },
   blueprints: { title: "Venture Blueprints", desc: "A visual pipeline showing every venture across stages (Negotiation → Due Diligence → Active → Closing). Operators see progress at a glance." },
-  team: { title: "ATLAS Team", desc: "Team management with real-time status, venture assignments, and task loads. The operator sees who is available and how work is distributed." },
+  team: { title: "VENTEX Team", desc: "Team management with real-time status, venture assignments, and task loads. The operator sees who is available and how work is distributed." },
   contacts: { title: "Client Contacts", desc: "A centralized directory of all client contacts organized by organization. One-click access to email and phone for every stakeholder." },
   onboard: { title: "Client Onboarding", desc: "A structured 5-step wizard for onboarding new clients — from KYC to compliance review to portal access. Ensures nothing is missed." },
   drafts: { title: "AI-Generated Drafts", desc: "The AI Concierge auto-generates follow-up emails, reports, and documents based on portfolio activity. Operators review and send with one click." },
@@ -560,7 +560,7 @@ function LiveNotificationToast({ message, onDismiss }: { message: string; onDism
         <Zap className="size-3 text-primary" />
       </div>
       <div className="flex-1 min-w-0">
-        <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">ATLAS Agent</span>
+        <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">VENTEX Agent</span>
         <p className="text-xs text-foreground mt-0.5 leading-relaxed">{message}</p>
       </div>
       <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground transition-colors shrink-0">
@@ -1022,7 +1022,7 @@ function ConciergeView() {
             <Paperclip className="size-4" />
           </button>
           <div className="flex-1 relative">
-            <input type="text" placeholder="Ask ATLAS anything about your portfolio..." disabled
+            <input type="text" placeholder="Ask VENTEX anything about your portfolio..." disabled
               className="w-full h-9 px-3 text-xs bg-secondary/30 border border-border rounded-md text-muted-foreground placeholder:text-muted-foreground/50" />
           </div>
           <button className="size-8 rounded-md flex items-center justify-center bg-primary/20 text-primary">
@@ -1200,7 +1200,7 @@ function TeamView() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground">ATLAS Team</h2>
+        <h2 className="text-sm font-semibold text-foreground">VENTEX Team</h2>
         <span className="text-[10px] font-mono text-muted-foreground">{DEMO_TEAM.length} members</span>
       </div>
 
@@ -1427,7 +1427,7 @@ function SettingsView() {
         <div className="space-y-3">
           {[
             { label: "Organization Name", value: "Royalton Venture Holding" },
-            { label: "Primary Domain", value: "atlasops.manus.space" },
+            { label: "Primary Domain", value: "ventex.manus.space" },
             { label: "Time Zone", value: "UTC+4 (Dubai)" },
             { label: "Default Currency", value: "USD" },
           ].map((item, i) => (
@@ -1486,7 +1486,7 @@ function ClientPortalDemoView() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-semibold text-foreground">Welcome back, Ahmed</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Al Rashid Group · Managed by ATLAS</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Al Rashid Group · Managed by VENTEX</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[10px] text-muted-foreground">Last login: Today, 9:14 AM</span>
@@ -1790,7 +1790,7 @@ function ClientPortalDemoView() {
 
       {/* Footer */}
       <div className="pt-4 pb-8 text-center">
-        <p className="text-[11px] text-muted-foreground/40">Managed by ATLAS · Powered by Aurovia</p>
+        <p className="text-[11px] text-muted-foreground/40">Managed by VENTEX · Powered by Aurovia</p>
       </div>
     </div>
   );
@@ -2067,8 +2067,8 @@ function ClientReportsView() {
 
 function ClientMessagesView() {
   const THREADS = [
-    { from: "Shwan Jafar", role: "ATLAS Operator", subject: "Marina Bay Tower — Closing Timeline Update", preview: "Hi Ahmed, the closing documents are ready for your review. We've expedited the title transfer and expect completion within 12 days...", time: "2h ago", unread: true },
-    { from: "ATLAS AI", role: "Portfolio Assistant", subject: "Weekly Portfolio Digest", preview: "Your portfolio health score improved to 82/100 this week. Key highlights: Marina Bay Tower advancing to closing, Meridian F&B Hub construction at 68%...", time: "1d ago", unread: true },
+    { from: "Shwan Jafar", role: "VENTEX Operator", subject: "Marina Bay Tower — Closing Timeline Update", preview: "Hi Ahmed, the closing documents are ready for your review. We've expedited the title transfer and expect completion within 12 days...", time: "2h ago", unread: true },
+    { from: "VENTEX AI", role: "Portfolio Assistant", subject: "Weekly Portfolio Digest", preview: "Your portfolio health score improved to 82/100 this week. Key highlights: Marina Bay Tower advancing to closing, Meridian F&B Hub construction at 68%...", time: "1d ago", unread: true },
     { from: "Angie Reyes", role: "Finance & Distributions", subject: "Q1 Distribution Confirmation Required", preview: "Dear Ahmed, the Q1 distribution of $2.4M for Meridian F&B Hub is ready for your confirmation. Please review the attached breakdown...", time: "2d ago", unread: false },
     { from: "Brian Chen", role: "Operations Lead", subject: "Pacific Yacht Club — Survey Rescheduled", preview: "We've rescheduled the structural survey for Pacific Yacht Club to next Tuesday. The vendor confirmed availability and we'll have results within 48 hours...", time: "3d ago", unread: false },
     { from: "Chris Papadopoulos", role: "Legal & Compliance", subject: "KYC Renewal — Documents Received", preview: "Thank you for submitting the updated KYC documents. Everything looks good and we've updated your compliance status accordingly...", time: "5d ago", unread: false },
@@ -2328,7 +2328,7 @@ export default function DemoDashboard() {
     concierge: "AI Concierge",
     agents: "AI Agents",
     blueprints: "Venture Blueprints",
-    team: "ATLAS Team",
+    team: "VENTEX Team",
     contacts: "Client Contacts",
     onboard: "Onboard Client",
     drafts: "Drafts",
@@ -2357,9 +2357,9 @@ export default function DemoDashboard() {
           <motion.aside key="admin-sidebar" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}
             className="hidden lg:flex flex-col w-[220px] border-r border-border bg-card/50 shrink-0">
             <div className="h-14 flex items-center gap-2.5 px-4 border-b border-border">
-              <img src={ATLAS_LOGO_URL} alt="ATLAS" className="size-7 rounded-md" />
+              <img src={VENTEX_LOGO_URL} alt="VENTEX" className="size-7 rounded-md" />
               <div className="flex flex-col">
-                <span className="text-[11px] font-semibold tracking-[0.12em] text-foreground">ATLAS</span>
+                <span className="text-[11px] font-semibold tracking-[0.12em] text-foreground">VENTEX</span>
                 <span className="text-[9px] text-muted-foreground tracking-wider">OPERATOR PANEL</span>
               </div>
             </div>
@@ -2401,9 +2401,9 @@ export default function DemoDashboard() {
           <motion.aside key="client-sidebar" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}
             className="hidden lg:flex flex-col w-[220px] border-r border-border bg-card/50 shrink-0">
             <div className="h-14 flex items-center gap-2.5 px-4 border-b border-border">
-              <img src={ATLAS_LOGO_URL} alt="ATLAS" className="size-7 rounded-md" />
+              <img src={VENTEX_LOGO_URL} alt="VENTEX" className="size-7 rounded-md" />
               <div className="flex flex-col">
-                <span className="text-[11px] font-semibold tracking-[0.12em] text-foreground">ATLAS</span>
+                <span className="text-[11px] font-semibold tracking-[0.12em] text-foreground">VENTEX</span>
                 <span className="text-[9px] text-muted-foreground tracking-wider">CLIENT PORTAL</span>
               </div>
             </div>
@@ -2517,7 +2517,7 @@ export default function DemoDashboard() {
         <header className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-border bg-card/30 shrink-0">
           <div className="flex items-center gap-3">
             <div className="lg:hidden flex items-center gap-2">
-              <img src={ATLAS_LOGO_URL} alt="ATLAS" className="size-6 rounded" />
+              <img src={VENTEX_LOGO_URL} alt="VENTEX" className="size-6 rounded" />
             </div>
             <div>
               <h1 className="text-sm font-semibold text-foreground">

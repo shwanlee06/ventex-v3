@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { getThemeColor } from "@/lib/data";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { isAtlasTeam } from "@/lib/atlas";
+import { isVentexTeam } from "@/lib/ventex";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Layers3, MapPin, ListChecks, AlertTriangle, Plus, X,
@@ -60,7 +60,7 @@ export default function VerticalsPage() {
   const [, navigate] = useLocation();
   const utils = trpc.useUtils();
   const { user } = useAuth();
-  const isAdmin = isAtlasTeam(user);
+  const isAdmin = isVentexTeam(user);
 
   const venturesQ = trpc.ventures.listWithOrgs.useQuery();
   const tasksQ = trpc.tasks.list.useQuery();

@@ -3,7 +3,7 @@ import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { activityLog, ventures } from "../../drizzle/schema";
 import { desc, eq, and, gte, sql, inArray, ne } from "drizzle-orm";
-import { isAtlasTeam, resolveVentureScope } from "../security/rbac";
+import { isVentexTeam, resolveVentureScope } from "../security/rbac";
 import { resolveOrgId } from "../security/orgScope";
 
 export const activityRouter = router({
@@ -19,7 +19,7 @@ export const activityRouter = router({
 
     // Cross-tenant isolation
     const effectiveOrgId = resolveOrgId(ctx.user, input.organizationId);
-    const isAdmin = isAtlasTeam(ctx.user);
+    const isAdmin = isVentexTeam(ctx.user);
 
     // If org-scoped, filter activity by venture entity IDs
     let ventureIds: number[] | null = null;
@@ -94,7 +94,7 @@ export const activityRouter = router({
     const db = await getDb();
     if (!db) return [];
 
-    const isAdmin = isAtlasTeam(ctx.user);
+    const isAdmin = isVentexTeam(ctx.user);
     // Cross-tenant isolation
     const effectiveOrgId = resolveOrgId(ctx.user, input.organizationId);
 

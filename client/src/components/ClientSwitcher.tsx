@@ -1,4 +1,4 @@
-// Client Switcher — Command-palette-style overlay for ATLAS operators
+// Client Switcher — Command-palette-style overlay for VENTEX operators
 // Shows client cards with health, overdue count, sectors, search/filter
 // Triggered from Topbar or keyboard shortcut (Ctrl+K)
 

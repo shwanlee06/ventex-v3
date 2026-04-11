@@ -43,7 +43,7 @@ import {
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import VelocityFeed from "@/components/VelocityFeed";
 import AdvanceBanner from "@/components/AdvanceBanner";
-import AtlasActivitySection from "@/components/AtlasActivitySection";
+import VentexActivitySection from "@/components/VentexActivitySection";
 
 const SECTOR_COLORS: Record<string, string> = {
   "Real Estate": "#3B82F6",
@@ -451,8 +451,8 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
         </button>
       </motion.div>
 
-      {/* -- ATLAS Activity ------------------------------------------ */}
-      <AtlasActivitySection />
+      {/* -- VENTEX Activity ------------------------------------------ */}
+      <VentexActivitySection />
 
       {/* -- Action Cards (Section 9A) ----------------------------- */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

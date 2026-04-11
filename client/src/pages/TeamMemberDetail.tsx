@@ -148,7 +148,7 @@ export default function TeamMemberDetail() {
 
   if (isLoading) {
     return (
-      <DashboardLayout title="Team Member" subtitle="ATLAS">
+      <DashboardLayout title="Team Member" subtitle="VENTEX">
         <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
           <Skeleton className="h-8 w-32" />
           <Skeleton className="h-48 rounded-lg" />
@@ -163,7 +163,7 @@ export default function TeamMemberDetail() {
 
   if (!member) {
     return (
-      <DashboardLayout title="Team Member" subtitle="ATLAS">
+      <DashboardLayout title="Team Member" subtitle="VENTEX">
         <div className="p-6 flex flex-col items-center justify-center min-h-[60vh]">
           <p className="text-sm text-muted-foreground mb-4">Team member not found.</p>
           <Button variant="outline" size="sm" onClick={() => navigate("/team")}>

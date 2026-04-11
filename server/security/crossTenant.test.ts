@@ -10,8 +10,8 @@ describe("Cross-tenant isolation — resolveOrgId enforcement", () => {
   const org2Client = { role: "client", organizationId: 2 };
   const org2User = { role: "user", organizationId: 2 };
 
-  // ── Simulate ATLAS admin ───────────────────────────────────────────
-  const atlasAdmin = { role: "admin", organizationId: null };
+  // ── Simulate VENTEX admin ───────────────────────────────────────────
+  const ventexAdmin = { role: "admin", organizationId: null };
 
   describe("distributions.list — org2 client cannot access org1 data", () => {
     it("org2 client requesting org1 data → FORBIDDEN", () => {
@@ -30,12 +30,12 @@ describe("Cross-tenant isolation — resolveOrgId enforcement", () => {
       expect(resolveOrgId(org2Client, undefined)).toBe(2);
     });
 
-    it("ATLAS admin requesting org1 → allowed", () => {
-      expect(resolveOrgId(atlasAdmin, 1)).toBe(1);
+    it("VENTEX admin requesting org1 → allowed", () => {
+      expect(resolveOrgId(ventexAdmin, 1)).toBe(1);
     });
 
-    it("ATLAS admin with no orgId → null (view all)", () => {
-      expect(resolveOrgId(atlasAdmin, undefined)).toBeNull();
+    it("VENTEX admin with no orgId → null (view all)", () => {
+      expect(resolveOrgId(ventexAdmin, undefined)).toBeNull();
     });
   });
 

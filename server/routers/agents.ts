@@ -1,4 +1,4 @@
-// ATLAS Agent System — Velocity Build: Action-Based Intelligence Agents
+// VENTEX Agent System — Velocity Build: Action-Based Intelligence Agents
 // Four agents: Overdue, Velocity, Distribution Sentinel, Orchestrator
 // Every event carries an ACTION — not just awareness, but execution.
 // Multi-tenant: all queries scoped by organizationId
@@ -30,7 +30,7 @@ import {
 import { onStageAdvanced, onTaskCompleted, onTaskOverdue } from "../intelligence/realtimeTriggers";
 import { eq, desc, sql, and, ne, gte, inArray } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
-import { isAtlasTeam, resolveVentureScope } from "../security/rbac";
+import { isVentexTeam, resolveVentureScope } from "../security/rbac";
 import { resolveOrgId } from "../security/orgScope";
 import { lookupBlueprintForVenture, buildBlueprintContext } from "../blueprintLookup";
 import type { User } from "../../drizzle/schema";
@@ -257,7 +257,7 @@ export async function runOverdueAgent(
     }
 
     const draftBody = await callAgentLLM(
-      "You are ATLAS, a venture velocity platform. Draft a brief, professional follow-up message (max 4 sentences) to send to the assigned team member about an overdue task. Reference the task and venture by name. If blueprint blocking steps are provided, mention the specific step that needs attention. Be direct but professional. Sign off as 'ATLAS Operations'.",
+      "You are VENTEX, a venture velocity platform. Draft a brief, professional follow-up message (max 4 sentences) to send to the assigned team member about an overdue task. Reference the task and venture by name. If blueprint blocking steps are provided, mention the specific step that needs attention. Be direct but professional. Sign off as 'VENTEX Operations'.",
       `Task: "${task.title}" | Venture: ${ventureName} | Assigned to: ${assignees} | Days overdue: ${daysOverdue} | Sector: ${sector}${blueprintHint}${blueprintSourceLabel ? ` | Operating on: ${blueprintSourceLabel}` : ""}`
     );
 
@@ -475,7 +475,7 @@ export async function runVelocityAgent(
             toStage: nextStage,
             daysInStage,
             hoursInStage,
-            advancedBy: "ATLAS Agent",
+            advancedBy: "VENTEX Agent",
             blockingStepsTotal: totalTasks,
             blockingStepsCompleted: completedTasks,
             tasksCompletedInStage: completedTasks,
@@ -634,7 +634,7 @@ export async function runVelocityAgent(
       const stallBlueprintCtx = blueprintContext;
 
       const interventionNote = await callAgentLLM(
-        "You are ATLAS. Draft a brief internal note (3 sentences max) recommending a specific intervention for a stalled venture. Name the venture, how long it's been stalled, and one concrete next action to unblock it. If blueprint steps are provided, reference the specific blocking step and who owns it.",
+        "You are VENTEX. Draft a brief internal note (3 sentences max) recommending a specific intervention for a stalled venture. Name the venture, how long it's been stalled, and one concrete next action to unblock it. If blueprint steps are provided, reference the specific blocking step and who owns it.",
         `Venture: "${venture.name}" | Sector: ${venture.sector} | Stage: In Validation | Days stalled: ${daysStalled} | Team members assigned: ${teamNames}${stallBlueprintCtx}${bpSourceLabel ? ` | Operating on: ${bpSourceLabel}` : ""}`
       );
 
@@ -790,7 +790,7 @@ export async function runDistributionSentinel(
     }
 
     const draftBody = await callAgentLLM(
-      "You are ATLAS. Draft a brief, professional LP distribution notification (4 sentences max). Include fund name, amount, timing, and next steps. Professional tone. Sign as 'ATLAS'.",
+      "You are VENTEX. Draft a brief, professional LP distribution notification (4 sentences max). Include fund name, amount, timing, and next steps. Professional tone. Sign as 'VENTEX'.",
       `${fundName} | $${amount.toLocaleString()} | Due: ${dist.distributionDate || "TBD"} | Days until: ${daysUntil ?? "Unknown"}`
     );
 
@@ -912,7 +912,7 @@ export async function runOrchestrator(
   ].join("\n");
 
   const analysis = await callAgentLLM(
-    "You are the ATLAS Orchestrator — the master velocity agent for a UHNWI holding company. You see the entire portfolio across all verticals simultaneously. Your job is to find the ONE thing that, if acted on in the next 24 hours, would most accelerate the portfolio. Identify it, name the specific venture or sector, and state the exact action required. 2 sentences max. No preamble. No filler. Be direct.",
+    "You are the VENTEX Orchestrator — the master velocity agent for a UHNWI holding company. You see the entire portfolio across all verticals simultaneously. Your job is to find the ONE thing that, if acted on in the next 24 hours, would most accelerate the portfolio. Identify it, name the specific venture or sector, and state the exact action required. 2 sentences max. No preamble. No filler. Be direct.",
     portfolioSnapshot
   );
 
@@ -1736,7 +1736,7 @@ export const agentsRouter = router({
 
             if (dist) {
               const recipients = payload.recipients as string[] | undefined;
-              const toAddress = recipients?.length ? recipients : "atlas@royaltonventures.com";
+              const toAddress = recipients?.length ? recipients : "ventex@aurovia.com";
               await sendDistributionNotice({
                 to: toAddress,
                 recipientName: draft?.recipientName || "Investor",

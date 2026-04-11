@@ -18,8 +18,8 @@ function generateApiKey(orgSlug?: string): string {
     segments.push(crypto.randomBytes(2).toString("hex").toUpperCase());
   }
   return prefix
-    ? `ATLAS-${prefix}-${segments.join("-")}`
-    : `ATLAS-${segments.join("-")}`;
+    ? `VENTEX-${prefix}-${segments.join("-")}`
+    : `VENTEX-${segments.join("-")}`;
 }
 
 function generateInviteToken(): string {
@@ -46,36 +46,36 @@ function generateOrgSlug(name: string): string {
 describe("Org-Branded API Key Generation", () => {
   it("generates keys with org prefix for known orgs", () => {
     const key = generateApiKey("aurovia");
-    expect(key).toMatch(/^ATLAS-AUROVI-/);
-    // ATLAS- (6) + AUROVI- (7) + 6 segments of 4 chars + 5 dashes = 6+7+24+5 = 42
+    expect(key).toMatch(/^VENTEX-AUROVI-/);
+    // VENTEX- (6) + AUROVI- (7) + 6 segments of 4 chars + 5 dashes = 6+7+24+5 = 42
     expect(key.length).toBeGreaterThan(35);
   });
 
   it("generates keys with org prefix for royalton", () => {
     const key = generateApiKey("royalton");
-    expect(key).toMatch(/^ATLAS-ROYALT-/);
+    expect(key).toMatch(/^VENTEX-ROYALT-/);
   });
 
-  it("generates keys with org prefix for atlas", () => {
-    const key = generateApiKey("atlas");
-    expect(key).toMatch(/^ATLAS-ATLAS-/);
+  it("generates keys with org prefix for ventex", () => {
+    const key = generateApiKey("ventex");
+    expect(key).toMatch(/^VENTEX-VENTEX-/);
   });
 
   it("generates generic keys when no org slug provided", () => {
     const key = generateApiKey();
-    expect(key).toMatch(/^ATLAS-[A-F0-9]{4}-/);
+    expect(key).toMatch(/^VENTEX-[A-F0-9]{4}-/);
     // Should NOT have a double prefix
-    expect(key).not.toMatch(/^ATLAS-[A-Z]{3,}-[A-Z]{3,}-/);
+    expect(key).not.toMatch(/^VENTEX-[A-Z]{3,}-[A-Z]{3,}-/);
   });
 
   it("strips special characters from org slug in key prefix", () => {
     const key = generateApiKey("oil-&-gas");
-    expect(key).toMatch(/^ATLAS-OILGAS-/);
+    expect(key).toMatch(/^VENTEX-OILGAS-/);
   });
 
   it("truncates long org names to 6 chars in prefix", () => {
     const key = generateApiKey("entertainment-ventures");
-    expect(key).toMatch(/^ATLAS-ENTERT-/);
+    expect(key).toMatch(/^VENTEX-ENTERT-/);
   });
 
   it("generates unique keys for the same org", () => {
@@ -90,7 +90,7 @@ describe("Org-Branded API Key Generation", () => {
 describe("Org Slug Generation", () => {
   it("converts org name to URL-safe slug", () => {
     expect(generateOrgSlug("Aurovia")).toBe("aurovia");
-    expect(generateOrgSlug("ATLAS")).toBe("atlas");
+    expect(generateOrgSlug("VENTEX")).toBe("ventex");
     expect(generateOrgSlug("Frangi Family Office")).toBe("frangi-family-office");
   });
 
@@ -140,7 +140,7 @@ describe("Invite Link Format", () => {
 
 describe("API Key Hashing and Prefix", () => {
   it("hashes org-branded keys consistently", () => {
-    const key = "ATLAS-AUROVI-1234-5678-9ABC-DEF0-1234-5678";
+    const key = "VENTEX-AUROVI-1234-5678-9ABC-DEF0-1234-5678";
     const hash1 = hashApiKey(key);
     const hash2 = hashApiKey(key);
     expect(hash1).toBe(hash2);
@@ -154,13 +154,13 @@ describe("API Key Hashing and Prefix", () => {
   });
 
   it("extracts correct prefix from org-branded key", () => {
-    const key = "ATLAS-AUROVI-1234-5678-9ABC-DEF0-1234-5678";
-    expect(getKeyPrefix(key)).toBe("ATLAS-AURO");
+    const key = "VENTEX-AUROVI-1234-5678-9ABC-DEF0-1234-5678";
+    expect(getKeyPrefix(key)).toBe("VENTEX-AUR");
   });
 
   it("extracts correct prefix from generic key", () => {
-    const key = "ATLAS-1234-5678-9ABC-DEF0-1234-5678-ABCD-EF01";
-    expect(getKeyPrefix(key)).toBe("ATLAS-1234");
+    const key = "VENTEX-1234-5678-9ABC-DEF0-1234-5678-ABCD-EF01";
+    expect(getKeyPrefix(key)).toBe("VENTEX-123");
   });
 });
 

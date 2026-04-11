@@ -25,7 +25,7 @@ import {
   revokeAccess,
   isRoleAtLeast,
   ROLE_HIERARCHY,
-  isAtlasTeam,
+  isVentexTeam,
 } from "../security/rbac";
 import { isEncryptionConfigured } from "../security/encryption";
 import { resolveOrgId } from "../security/orgScope";

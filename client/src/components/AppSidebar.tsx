@@ -3,7 +3,7 @@
 
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { isAtlasTeam, isPartner } from "@/lib/atlas";
+import { isVentexTeam, isPartner } from "@/lib/ventex";
 import { usePreviewMode } from "@/contexts/PreviewMode";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { trpc } from "@/lib/trpc";
@@ -37,30 +37,30 @@ import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
 
-const ATLAS_LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/atlas-logo-G2SBqxAK64sZYAYmAZY9js.webp";
+const VENTEX_LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/atlas-logo-G2SBqxAK64sZYAYmAZY9js.webp";
 
 interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
-  atlasOnly?: boolean;
+  ventexOnly?: boolean;
   clientOnly?: boolean;
   partnerOnly?: boolean;
-  partnerVisible?: boolean; // visible to partners AND atlas
+  partnerVisible?: boolean; // visible to partners AND ventex
 }
 
 const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="size-[18px]" /> },
   { label: "Activity", href: "/activity", icon: <Activity className="size-[18px]" /> },
-  { label: "Oversight", href: "/oversight", icon: <Eye className="size-[18px]" />, atlasOnly: true },
-  { label: "AI Concierge", href: "/agent", icon: <Bot className="size-[18px]" />, atlasOnly: true },
-  { label: "AI Agents", href: "/agents", icon: <Cpu className="size-[18px]" />, atlasOnly: true },
-  { label: "Blueprints", href: "/blueprints", icon: <Layers3 className="size-[18px]" />, atlasOnly: true },
-  { label: "ATLAS Team", href: "/atlas-team", icon: <Shield className="size-[18px]" />, atlasOnly: true },
-  { label: "Client Contacts", href: "/team", icon: <Users className="size-[18px]" />, atlasOnly: true },
-  { label: "Onboard Client", href: "/onboarding", icon: <UserPlus className="size-[18px]" />, atlasOnly: true },
+  { label: "Oversight", href: "/oversight", icon: <Eye className="size-[18px]" />, ventexOnly: true },
+  { label: "AI Concierge", href: "/agent", icon: <Bot className="size-[18px]" />, ventexOnly: true },
+  { label: "AI Agents", href: "/agents", icon: <Cpu className="size-[18px]" />, ventexOnly: true },
+  { label: "Blueprints", href: "/blueprints", icon: <Layers3 className="size-[18px]" />, ventexOnly: true },
+  { label: "VENTEX Team", href: "/ventex-team", icon: <Shield className="size-[18px]" />, ventexOnly: true },
+  { label: "Client Contacts", href: "/team", icon: <Users className="size-[18px]" />, ventexOnly: true },
+  { label: "Onboard Client", href: "/onboarding", icon: <UserPlus className="size-[18px]" />, ventexOnly: true },
   { label: "Drafts", href: "/drafts", icon: <FileText className="size-[18px]" /> },
-  { label: "Settings", href: "/settings", icon: <Settings className="size-[18px]" />, atlasOnly: true },
+  { label: "Settings", href: "/settings", icon: <Settings className="size-[18px]" />, ventexOnly: true },
   // Partner-only
   { label: "My Portfolio", href: "/partner", icon: <Briefcase className="size-[18px]" />, partnerOnly: true },
   { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-[18px]" />, partnerOnly: true },
@@ -106,17 +106,17 @@ export default function AppSidebar() {
     createOrg.mutate({ name, slug });
   };
 
-  const isAtlas = isPreviewMode ? false : isAtlasTeam(user);
+  const isVentex = isPreviewMode ? false : isVentexTeam(user);
   const isPartnerUser = isPreviewMode ? false : isPartner(user);
 
   const navItems = useMemo(() => {
     return ALL_NAV_ITEMS.filter((item) => {
       if (item.partnerOnly) return isPartnerUser;
-      if (item.atlasOnly && !isAtlas) return false;
-      if (item.clientOnly && (isAtlas || isPartnerUser)) return false;
+      if (item.ventexOnly && !isVentex) return false;
+      if (item.clientOnly && (isVentex || isPartnerUser)) return false;
       return true;
     });
-  }, [isAtlas, isPartnerUser]);
+  }, [isVentex, isPartnerUser]);
 
   const isActive = (href: string) => {
     if (href === "/dashboard") return location === "/dashboard" || location.startsWith("/clients/");
@@ -174,12 +174,12 @@ export default function AppSidebar() {
         )}>
           <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0">
             <img
-              src={ATLAS_LOGO_URL}
-              alt="ATLAS"
+              src={VENTEX_LOGO_URL}
+              alt="VENTEX"
               className="size-7 rounded-md object-cover flex-shrink-0"
             />
             {expanded && (
-              <span className="text-[14px] font-medium text-foreground" style={{ letterSpacing: '0.08em' }}>ATLAS</span>
+              <span className="text-[14px] font-medium text-foreground" style={{ letterSpacing: '0.08em' }}>VENTEX</span>
             )}
           </Link>
           {expanded && (
@@ -234,7 +234,7 @@ export default function AppSidebar() {
         </nav>
 
         {/* Client list — admin expanded only */}
-        {isAtlas && expanded && (
+        {isVentex && expanded && (
           <div className="px-2 pb-2 border-t border-border pt-2">
             <div className="flex items-center justify-between px-2 mb-1">
               <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Clients</span>
@@ -374,11 +374,11 @@ export default function AppSidebar() {
               <div className="flex items-center justify-between px-4 h-14 border-b border-border flex-shrink-0">
                 <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="flex items-center gap-2.5">
                   <img
-                    src={ATLAS_LOGO_URL}
-                    alt="ATLAS"
+                    src={VENTEX_LOGO_URL}
+                    alt="VENTEX"
                     className="size-7 rounded-md object-cover"
                   />
-                  <span className="text-[15px] font-medium text-foreground" style={{ letterSpacing: '0.08em' }}>ATLAS</span>
+                  <span className="text-[15px] font-medium text-foreground" style={{ letterSpacing: '0.08em' }}>VENTEX</span>
                 </Link>
                 <button
                   onClick={() => setMobileOpen(false)}

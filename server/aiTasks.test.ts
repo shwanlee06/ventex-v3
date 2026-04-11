@@ -8,7 +8,7 @@ function createAdminContext(): TrpcContext {
   const user: AuthenticatedUser = {
     id: 1,
     openId: "admin-user",
-    email: "admin@atlas.io",
+    email: "admin@ventex.io",
     name: "Admin User",
     loginMethod: "manus",
     role: "admin",
@@ -107,7 +107,7 @@ describe("aiTasks router", () => {
       const ctx = createAdminContext();
       const caller = appRouter.createCaller(ctx);
 
-      // Use org ID 1 (ATLAS) which should exist in the DB
+      // Use org ID 1 (VENTEX) which should exist in the DB
       // This test verifies the export pipeline works end-to-end
       try {
         const result = await caller.aiTasks.exportData({ organizationId: 1 });

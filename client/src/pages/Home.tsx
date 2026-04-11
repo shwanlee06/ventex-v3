@@ -1,34 +1,34 @@
 // Dashboard Page — Role-based routing
-// ATLAS team: Multi-client command center (all clients overview)
+// VENTEX team: Multi-client command center (all clients overview)
 // Client users / Preview mode: Luxury UHNWI portal
 
 import DashboardLayout from "@/components/DashboardLayout";
 import LiveTicker from "@/components/LiveTicker";
-import AtlasDashboard from "@/components/AtlasDashboard";
+import VentexDashboard from "@/components/VentexDashboard";
 import ClientDashboard from "@/components/ClientDashboard";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { usePreviewMode } from "@/contexts/PreviewMode";
 import { useLocation } from "wouter";
-import { isAtlasTeam, isPartner } from "@/lib/atlas";
+import { isVentexTeam, isPartner } from "@/lib/ventex";
 import PartnerDashboard from "@/components/PartnerDashboard";
 
 export default function Home() {
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const { isPreviewMode } = usePreviewMode();
-  const isAtlas = isAtlasTeam(user) && !isPreviewMode;
+  const isVentex = isVentexTeam(user) && !isPreviewMode;
   const isPartnerUser = isPartner(user) && !isPreviewMode;
 
-  const subtitle = isAtlas ? "ATLAS COMMAND CENTER" : isPartnerUser ? "Partner Portal" : "Client Portal";
+  const subtitle = isVentex ? "VENTEX COMMAND CENTER" : isPartnerUser ? "Partner Portal" : "Client Portal";
 
   return (
     <DashboardLayout
       title="Dashboard"
       subtitle={subtitle}
     >
-      {isAtlas && <LiveTicker />}
-      {isAtlas ? (
-        <AtlasDashboard onNavigate={navigate} />
+      {isVentex && <LiveTicker />}
+      {isVentex ? (
+        <VentexDashboard onNavigate={navigate} />
       ) : isPartnerUser ? (
         <PartnerDashboard onNavigate={navigate} />
       ) : (

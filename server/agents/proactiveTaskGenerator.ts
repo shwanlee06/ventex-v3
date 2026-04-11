@@ -1,5 +1,5 @@
 // Proactive Task Generator — AI creates next-step tasks for ventures
-// This is the engine that makes ATLAS actually MOVE ventures forward.
+// This is the engine that makes VENTEX actually MOVE ventures forward.
 // It scans each venture, identifies what needs to happen next, and creates
 
 import { getDb } from "../db";
@@ -125,7 +125,7 @@ export async function runProactiveTaskGenerator(
       .where(eq(ventureTeam.ventureId, venture.id));
 
     const teamNames = team.map((t) => t.name);
-    const assignee = teamNames.length > 0 ? teamNames[0] : "ATLAS Operations";
+    const assignee = teamNames.length > 0 ? teamNames[0] : "VENTEX Operations";
 
     const numToGenerate = Math.min(3, 3 - openTasks); // Generate up to 3 tasks
 
@@ -134,7 +134,7 @@ export async function runProactiveTaskGenerator(
         messages: [
           {
             role: "system",
-            content: `You are ATLAS, an AI velocity platform for a UHNWI venture holding company. You proactively create the next concrete tasks that will move a venture forward.
+            content: `You are VENTEX, an AI velocity platform for a UHNWI venture holding company. You proactively create the next concrete tasks that will move a venture forward.
 
 Rules:
 - Generate exactly ${numToGenerate} tasks
@@ -238,8 +238,8 @@ Generate ${numToGenerate} next-step tasks to move this venture forward.`,
           entityId: venture.id,
           entityName: venture.name,
           action: "Task Created",
-          detail: `ATLAS AI created ${createdTaskNames.length} tasks: ${createdTaskNames.join(", ")}`,
-          userName: "ATLAS Velocity Agent",
+          detail: `VENTEX AI created ${createdTaskNames.length} tasks: ${createdTaskNames.join(", ")}`,
+          userName: "VENTEX Velocity Agent",
           sector: venture.sector,
           activitySource: "system",
           organizationId: orgId,

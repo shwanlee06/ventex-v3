@@ -1,4 +1,4 @@
-// INVESTOR DEMO — Cinematic pitch experience matching the Atlas pitch deck
+// INVESTOR DEMO — Cinematic pitch experience matching the Ventex pitch deck
 // 10 sections mirroring the 10-slide deck: Title → Problem → Agents →
 // Built Not Mocked → Market → GTM → Traction → The Ask → Team → Close
 
@@ -120,7 +120,7 @@ const TEAM = [
     color: "#22D3EE",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee-new_e321fa79.webp",
     linkedin: "https://www.linkedin.com/in/shwan-lee-93b486356/",
-    bio: "Shwan Lee is a full-stack architect who saw the problem firsthand inside a UHNWI holding company — 20+ ventures across 6 sectors coordinated on spreadsheets and email chains. As Founder and CEO of Aurovia, he designed and built the entire ATLAS platform in under 90 days: 5 AI intelligence engines, SOC 2-compliant architecture, and an enterprise-grade system targeting a $6 trillion market. He owns the product, the vision, and every line of code behind it.",
+    bio: "Shwan Lee is a full-stack architect who saw the problem firsthand inside a UHNWI holding company — 20+ ventures across 6 sectors coordinated on spreadsheets and email chains. As Founder and CEO of Aurovia, he designed and built the entire VENTEX platform in under 90 days: 5 AI intelligence engines, SOC 2-compliant architecture, and an enterprise-grade system targeting a $6 trillion market. He owns the product, the vision, and every line of code behind it.",
     quote: "We didn't raise money to build the product. We built the product to raise money.",
     stats: [
       { label: "AI Engines", value: "5" },
@@ -135,7 +135,7 @@ const TEAM = [
     color: "#A78BFA",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/brian-chen_b535f902.jpeg",
     linkedin: "https://www.linkedin.com/in/brian-chen-1a6aa2373/",
-    bio: "Brian Chen is the operational backbone of Aurovia. As Co-Founder and COO, he architected the intelligence layer behind ATLAS’s autonomous AI agents — including the Mirofish predictive engine that forecasts venture outcomes before they happen. He runs day-to-day operations across all verticals and designed the systems that eliminate bottlenecks before anyone notices them. Equal parts operator and engineer, Brian turns complex multi-entity workflows into automated pipelines that scale.",
+    bio: "Brian Chen is the operational backbone of Aurovia. As Co-Founder and COO, he architected the intelligence layer behind VENTEX’s autonomous AI agents — including the Mirofish predictive engine that forecasts venture outcomes before they happen. He runs day-to-day operations across all verticals and designed the systems that eliminate bottlenecks before anyone notices them. Equal parts operator and engineer, Brian turns complex multi-entity workflows into automated pipelines that scale.",
     quote: "The best operations are the ones nobody notices — because nothing breaks.",
     stats: [
       { label: "AI Agents Designed", value: "5" },
@@ -150,7 +150,7 @@ const TEAM = [
     color: "#22C55E",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/chris-phelps-bw_662a9642.jpg",
     linkedin: "https://www.linkedin.com/in/christopher-phelps-090848230/",
-    bio: "Christopher Phelps is a self-taught revenue operator who built his sales foundation through hands-on experience rather than a traditional background. As Co-Founder and CRO of Aurovia, he leads go-to-market strategy and client acquisition for ATLAS, focused on family offices, UHNWI networks, and institutional channels. He owns the full revenue cycle from first outreach to closed deal and built the commercial playbook from the ground up.",
+    bio: "Christopher Phelps is a self-taught revenue operator who built his sales foundation through hands-on experience rather than a traditional background. As Co-Founder and CRO of Aurovia, he leads go-to-market strategy and client acquisition for VENTEX, focused on family offices, UHNWI networks, and institutional channels. He owns the full revenue cycle from first outreach to closed deal and built the commercial playbook from the ground up.",
     quote: "Pipeline doesn't build itself. But with the right system, it gets close.",
     stats: [
       { label: "GTM Playbook", value: "Built" },
@@ -193,7 +193,7 @@ export default function Demo() {
         scrollY > 100 ? "bg-black/80 backdrop-blur-md border-b border-white/5" : "bg-transparent"
       )}>
         <div className="flex items-center gap-3">
-          <span className="text-sm font-bold tracking-[0.2em]" style={{ fontFamily: HEADLINE_FONT }}>ATLAS</span>
+          <span className="text-sm font-bold tracking-[0.2em]" style={{ fontFamily: HEADLINE_FONT }}>VENTEX</span>
           <span className="text-[9px] text-white/50 tracking-wider hidden sm:inline">INVESTOR DEMO</span>
         </div>
         <div className="flex items-center gap-3">
@@ -247,19 +247,19 @@ export default function Demo() {
             <span className="text-[10px] tracking-[0.2em] text-cyan-400 uppercase">Pre-Seed Introduction · Presented by Shwan Lee</span>
           </motion.div>
 
-          {/* ATLAS. */}
+          {/* VENTEX. */}
           <h1
             className="text-[clamp(60px,12vw,160px)] font-bold leading-[0.85] tracking-[-0.02em] mb-4"
             style={{ fontFamily: HEADLINE_FONT }}
           >
-            ATLAS.
+            VENTEX.
           </h1>
 
           <p className="text-sm text-white/60 tracking-[0.15em] uppercase mb-8">Powered by Aurovia LLC</p>
 
           {/* Tagline */}
           <p className="text-sm md:text-base text-white/70 max-w-2xl mx-auto leading-relaxed">
-            ATLAS is an AI velocity platform that runs the operations of multi-vertical holding companies.
+            VENTEX is an AI velocity platform that runs the operations of multi-vertical holding companies.
             Automating tasks, advancing deals, and compressing the time between venture stages so principals
             can run more with less.
           </p>
@@ -458,7 +458,7 @@ export default function Demo() {
           <RevealSection delay={0.25}>
             <div className="border border-emerald-500/20 rounded-lg p-6 bg-emerald-500/[0.03] max-w-2xl">
               <p className="text-sm text-white/70 leading-relaxed">
-                ATLAS does not compete with Masttro, Addepar, Voly, or AppFolio. It sits above all of them.
+                VENTEX does not compete with Masttro, Addepar, Voly, or AppFolio. It sits above all of them.
                 <span className="text-emerald-400 font-medium"> No platform serves the autonomous execution layer today.</span>
               </p>
             </div>
@@ -741,7 +741,7 @@ export default function Demo() {
 
           <RevealSection delay={0.1}>
             <p className="text-sm text-white/70 max-w-3xl leading-relaxed mb-12">
-              This raise gives ATLAS 25+ months of runway to close 5–6 enterprise contracts, hire 2–4
+              This raise gives VENTEX 25+ months of runway to close 5–6 enterprise contracts, hire 2–4
               critical AI engineers, and reach a $4M ARR milestone — the threshold that unlocks our
               Series A at a $15M+ valuation. Every dollar is allocated with precision to generate
               maximum leverage.
@@ -959,7 +959,7 @@ export default function Demo() {
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <span className="text-sm font-bold tracking-[0.2em]" style={{ fontFamily: HEADLINE_FONT }}>
-              ATLAS
+              VENTEX
             </span>
             <span className="text-[10px] text-white/45">Powered by Aurovia LLC</span>
           </div>

@@ -8,7 +8,7 @@ import {
 } from "../../drizzle/schema";
 import { eq, desc, and, sql, gte, lte, ne, inArray } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
-import { isAtlasTeam, resolveVentureScope } from "../security/rbac";
+import { isVentexTeam, resolveVentureScope } from "../security/rbac";
 import { resolveOrgId } from "../security/orgScope";
 
 
@@ -76,7 +76,7 @@ Recent activity: ${recentActivity.slice(0, 5).map((a: any) => `${a.action}: ${a.
     messages: [
       {
         role: "system",
-        content: `You are the AI intelligence officer for ATLAS, a multi-sector venture holding company. Generate a concise daily brief for the executive team. Be specific, actionable, and data-driven.`,
+        content: `You are the AI intelligence officer for VENTEX, a multi-sector venture holding company. Generate a concise daily brief for the executive team. Be specific, actionable, and data-driven.`,
       },
       {
         role: "user",
@@ -561,7 +561,7 @@ Recent document insights: ${recentDocs.slice(0, 5).map((d: any) => d.summary).jo
         messages: [
           {
             role: "system",
-            content: `You are the AI intelligence officer for ATLAS. Generate 3-5 actionable observations about the portfolio. Each observation should identify a pattern, risk, opportunity, or recommendation.`,
+            content: `You are the AI intelligence officer for VENTEX. Generate 3-5 actionable observations about the portfolio. Each observation should identify a pattern, risk, opportunity, or recommendation.`,
           },
           {
             role: "user",

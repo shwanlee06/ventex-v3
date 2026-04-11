@@ -1,5 +1,5 @@
-// ATLAS Activity Section — Client Portal
-// Weekly summary of what ATLAS agents have done for this client.
+// VENTEX Activity Section — Client Portal
+// Weekly summary of what VENTEX agents have done for this client.
 // Shows recent agent actions in plain English, no internal jargon.
 
 import { trpc } from "@/lib/trpc";
@@ -45,7 +45,7 @@ function getClientFriendlyAction(event: {
   }
 }
 
-export default function AtlasActivitySection() {
+export default function VentexActivitySection() {
   const feedQ = trpc.agents.clientFeed.useQuery(
     { limit: 20 },
     { refetchInterval: 60000 }
@@ -90,7 +90,7 @@ export default function AtlasActivitySection() {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <h2 className="text-[11px] uppercase tracking-widest text-muted-foreground font-light">
-            ATLAS Activity
+            VENTEX Activity
           </h2>
           <span className="text-[10px] font-mono text-muted-foreground/60">this week</span>
         </div>

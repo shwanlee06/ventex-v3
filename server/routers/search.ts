@@ -4,7 +4,7 @@ import { getDb } from "../db";
 import { ventures, spvs, tasks, teamMembers, distributions, orgVentureAccess } from "../../drizzle/schema";
 import { like, and, eq, inArray } from "drizzle-orm";
 import { resolveOrgId } from "../security/orgScope";
-import { isAtlasTeam, resolveVentureScope } from "../security/rbac";
+import { isVentexTeam, resolveVentureScope } from "../security/rbac";
 
 export const searchRouter = router({
   global: protectedProcedure

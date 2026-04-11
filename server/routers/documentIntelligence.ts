@@ -6,7 +6,7 @@ import {
   tasks, notifications, meetingBriefs, ventures, teamMembers, activityLog,
   orgVentureAccess,
 } from "../../drizzle/schema";
-import { isAtlasTeam, getOrgVentureIds } from "../security/rbac";
+import { isVentexTeam, getOrgVentureIds } from "../security/rbac";
 import { TRPCError } from "@trpc/server";
 import { eq, desc, and, sql, like, or } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";

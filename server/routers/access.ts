@@ -1,6 +1,6 @@
 /**
  * Access Control Router — Invite-Only System, API Keys, Organizations
- * Manages the closed-circle access model for Aurovia/ATLAS partnerships
+ * Manages the closed-circle access model for Aurovia/VENTEX partnerships
  */
 
 import { z } from "zod";
@@ -20,7 +20,7 @@ import { enforceRateLimit } from "../security/rateLimit";
 import crypto from "crypto";
 
 
-/** Generate an org-branded API key: ATLAS-<ORG>-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX */
+/** Generate an org-branded API key: VENTEX-<ORG>-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX */
 function generateApiKey(orgSlug?: string): string {
   const prefix = orgSlug
     ? orgSlug.toUpperCase().replace(/[^A-Z0-9]/g, "").substring(0, 6)
@@ -32,8 +32,8 @@ function generateApiKey(orgSlug?: string): string {
     segments.push(crypto.randomBytes(2).toString("hex").toUpperCase());
   }
   return prefix
-    ? `ATLAS-${prefix}-${segments.join("-")}`
-    : `ATLAS-${segments.join("-")}`;
+    ? `VENTEX-${prefix}-${segments.join("-")}`
+    : `VENTEX-${segments.join("-")}`;
 }
 
 /** Generate a secure invitation token */

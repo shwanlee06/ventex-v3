@@ -94,7 +94,7 @@ export default function AcceptInvite() {
   }, [token]);
 
   // Typewriter effects
-  const atlasText = useTypewriter("A T L A S", 80, 200);
+  const ventexText = useTypewriter("V E N T E X", 80, 200);
   const subtitleText = useTypewriter("ROYALTON VENTURE HOLDING", 30, 1200);
   const inviteText = useTypewriter(
     invitedBy
@@ -106,7 +106,7 @@ export default function AcceptInvite() {
 
   const handleProceed = () => {
     // Store the invite token in sessionStorage so the OAuth callback can use it
-    sessionStorage.setItem("atlas_invite_token", token);
+    sessionStorage.setItem("ventex_invite_token", token);
     setPhase("redirecting");
     setTimeout(() => {
       window.location.href = getLoginUrl();
@@ -158,7 +158,7 @@ export default function AcceptInvite() {
 
       {/* Main content */}
       <div style={{ position: "relative", zIndex: 1, textAlign: "center", maxWidth: "600px", width: "100%" }}>
-        {/* ATLAS header */}
+        {/* VENTEX header */}
         <div
           style={{
             fontSize: "clamp(28px, 5vw, 42px)",
@@ -168,8 +168,8 @@ export default function AcceptInvite() {
             color: "#fff",
           }}
         >
-          {atlasText.displayed}
-          {!atlasText.done && <span style={{ opacity: 0.5 }}>|</span>}
+          {ventexText.displayed}
+          {!ventexText.done && <span style={{ opacity: 0.5 }}>|</span>}
         </div>
 
         <div

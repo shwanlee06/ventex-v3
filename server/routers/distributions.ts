@@ -3,7 +3,7 @@ import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { distributions, activityLog } from "../../drizzle/schema";
 import { eq, desc } from "drizzle-orm";
-import { isAtlasTeam, logAudit } from "../security/rbac";
+import { isVentexTeam, logAudit } from "../security/rbac";
 import { resolveOrgId } from "../security/orgScope";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { onDistributionScheduled } from "../intelligence/realtimeTriggers";
@@ -27,7 +27,7 @@ export const distributionsRouter = router({
           .orderBy(desc(distributions.createdAt));
       }
 
-      // No org filter — only ATLAS team reaches here (resolveOrgId enforces this)
+      // No org filter — only VENTEX team reaches here (resolveOrgId enforces this)
       return db.select().from(distributions).orderBy(desc(distributions.createdAt));
     }),
 
@@ -43,8 +43,8 @@ export const distributionsRouter = router({
     distributionDate: z.string().optional(),
     organizationId: z.number().optional(),
   })).mutation(async ({ input, ctx }) => {
-    if (!isAtlasTeam(ctx.user)) {
-      throw new Error("Only ATLAS team can create distributions");
+    if (!isVentexTeam(ctx.user)) {
+      throw new Error("Only VENTEX team can create distributions");
     }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
@@ -95,8 +95,8 @@ export const distributionsRouter = router({
     distributionDate: z.string().optional(),
     organizationId: z.number().optional(),
   })).mutation(async ({ input, ctx }) => {
-    if (!isAtlasTeam(ctx.user)) {
-      throw new Error("Only ATLAS team can update distributions");
+    if (!isVentexTeam(ctx.user)) {
+      throw new Error("Only VENTEX team can update distributions");
     }
     const db = await getDb();
     if (!db) throw new Error("Database not available");

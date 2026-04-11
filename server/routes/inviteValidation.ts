@@ -181,9 +181,9 @@ inviteValidationRouter.get("/api/invite/validate-token", async (req: Request, re
 
     res.json({
       valid: true,
-      organizationName: org?.name ?? "ATLAS",
+      organizationName: org?.name ?? "VENTEX",
       organizationType: org?.type ?? "core",
-      organizationSlug: org?.slug ?? "atlas",
+      organizationSlug: org?.slug ?? "ventex",
       email: maskedEmail,
       role: invite.role,
       invitedByName: invite.invitedByName,

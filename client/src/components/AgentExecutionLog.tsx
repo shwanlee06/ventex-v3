@@ -1,6 +1,6 @@
 // Agent Execution Log — Timestamped action feed showing what agents DID
 // Format: [Agent Name] [Timestamp] Action description — outcome
-// The proof that ATLAS is executing, not just watching.
+// The proof that VENTEX is executing, not just watching.
 
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
@@ -82,7 +82,7 @@ export default function AgentExecutionLog({ organizationId, limit = 25, compact 
     { enabled: !!organizationId, refetchInterval: 30_000 }
   );
 
-  // Also fetch across all orgs for ATLAS admin view
+  // Also fetch across all orgs for VENTEX admin view
   const allEventsQ = trpc.agents.listEvents.useQuery(
     { organizationId: 0, limit: 100 },
     { enabled: !organizationId, refetchInterval: 30_000 }

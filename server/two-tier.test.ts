@@ -2,78 +2,78 @@ import { describe, it, expect } from "vitest";
 
 // ── Role identification tests ──────────────────────────────────────────
 
-function isAtlasTeam(role: string): boolean {
+function isVentexTeam(role: string): boolean {
   return role === "owner" || role === "admin";
 }
 
 function isClientUser(role: string): boolean {
-  return !isAtlasTeam(role);
+  return !isVentexTeam(role);
 }
 
-const ATLAS_NAV_ONLY = ["AI Agent", "Team", "Security", "Access", "Settings"];
+const VENTEX_NAV_ONLY = ["AI Agent", "Team", "Security", "Access", "Settings"];
 const CLIENT_NAV_ONLY = ["My Profile"];
 const SHARED_NAV = ["Dashboard", "Ventures", "SPVs & Deals", "Tasks", "Distributions", "Activity"];
 
 interface NavItem {
   label: string;
-  atlasOnly?: boolean;
+  ventexOnly?: boolean;
   clientOnly?: boolean;
 }
 
 const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Dashboard" },
-  { label: "AI Agent", atlasOnly: true },
+  { label: "AI Agent", ventexOnly: true },
   { label: "Ventures" },
   { label: "SPVs & Deals" },
-  { label: "Team", atlasOnly: true },
+  { label: "Team", ventexOnly: true },
   { label: "Tasks" },
   { label: "Distributions" },
   { label: "Activity" },
-  { label: "Security", atlasOnly: true },
-  { label: "Access", atlasOnly: true },
-  { label: "Settings", atlasOnly: true },
+  { label: "Security", ventexOnly: true },
+  { label: "Access", ventexOnly: true },
+  { label: "Settings", ventexOnly: true },
   { label: "My Profile", clientOnly: true },
 ];
 
 function getNavForRole(role: string): string[] {
-  const isAtlas = isAtlasTeam(role);
+  const isVentex = isVentexTeam(role);
   return ALL_NAV_ITEMS
     .filter((item) => {
-      if (item.atlasOnly && !isAtlas) return false;
-      if (item.clientOnly && isAtlas) return false;
+      if (item.ventexOnly && !isVentex) return false;
+      if (item.clientOnly && isVentex) return false;
       return true;
     })
     .map((item) => item.label);
 }
 
 describe("Two-Tier Architecture — Role Identification", () => {
-  it("owner is ATLAS team", () => {
-    expect(isAtlasTeam("owner")).toBe(true);
+  it("owner is VENTEX team", () => {
+    expect(isVentexTeam("owner")).toBe(true);
     expect(isClientUser("owner")).toBe(false);
   });
 
-  it("admin is ATLAS team", () => {
-    expect(isAtlasTeam("admin")).toBe(true);
+  it("admin is VENTEX team", () => {
+    expect(isVentexTeam("admin")).toBe(true);
     expect(isClientUser("admin")).toBe(false);
   });
 
   it("manager is client user", () => {
-    expect(isAtlasTeam("manager")).toBe(false);
+    expect(isVentexTeam("manager")).toBe(false);
     expect(isClientUser("manager")).toBe(true);
   });
 
   it("user is client user", () => {
-    expect(isAtlasTeam("user")).toBe(false);
+    expect(isVentexTeam("user")).toBe(false);
     expect(isClientUser("user")).toBe(true);
   });
 
   it("viewer is client user", () => {
-    expect(isAtlasTeam("viewer")).toBe(false);
+    expect(isVentexTeam("viewer")).toBe(false);
     expect(isClientUser("viewer")).toBe(true);
   });
 
   it("client is client user", () => {
-    expect(isAtlasTeam("client")).toBe(false);
+    expect(isVentexTeam("client")).toBe(false);
     expect(isClientUser("client")).toBe(true);
   });
 });
@@ -81,7 +81,7 @@ describe("Two-Tier Architecture — Role Identification", () => {
 describe("Two-Tier Architecture — Navigation Filtering", () => {
   it("owner sees full nav without client-only items", () => {
     const nav = getNavForRole("owner");
-    for (const item of ATLAS_NAV_ONLY) {
+    for (const item of VENTEX_NAV_ONLY) {
       expect(nav).toContain(item);
     }
     for (const item of SHARED_NAV) {
@@ -94,15 +94,15 @@ describe("Two-Tier Architecture — Navigation Filtering", () => {
 
   it("admin sees full nav without client-only items", () => {
     const nav = getNavForRole("admin");
-    for (const item of ATLAS_NAV_ONLY) {
+    for (const item of VENTEX_NAV_ONLY) {
       expect(nav).toContain(item);
     }
     expect(nav).not.toContain("My Profile");
   });
 
-  it("viewer sees scoped nav without atlas-only items", () => {
+  it("viewer sees scoped nav without ventex-only items", () => {
     const nav = getNavForRole("viewer");
-    for (const item of ATLAS_NAV_ONLY) {
+    for (const item of VENTEX_NAV_ONLY) {
       expect(nav).not.toContain(item);
     }
     for (const item of SHARED_NAV) {
@@ -111,7 +111,7 @@ describe("Two-Tier Architecture — Navigation Filtering", () => {
     expect(nav).toContain("My Profile");
   });
 
-  it("client sees scoped nav without atlas-only items", () => {
+  it("client sees scoped nav without ventex-only items", () => {
     const nav = getNavForRole("client");
     expect(nav).not.toContain("AI Agent");
     expect(nav).not.toContain("Team");
@@ -132,16 +132,16 @@ describe("Two-Tier Architecture — Navigation Filtering", () => {
     expect(nav).not.toContain("Security");
   });
 
-  it("ATLAS nav has more items than client nav", () => {
-    const atlasNav = getNavForRole("owner");
+  it("VENTEX nav has more items than client nav", () => {
+    const ventexNav = getNavForRole("owner");
     const clientNav = getNavForRole("viewer");
-    expect(atlasNav.length).toBeGreaterThan(clientNav.length);
+    expect(ventexNav.length).toBeGreaterThan(clientNav.length);
   });
 });
 
 describe("Two-Tier Architecture — Dashboard Subtitle", () => {
   function getDashboardSubtitle(role: string): string {
-    return isAtlasTeam(role) ? "ROYALTON VENTURE HOLDING" : "Client Portal";
+    return isVentexTeam(role) ? "ROYALTON VENTURE HOLDING" : "Client Portal";
   }
 
   it("owner sees ROYALTON VENTURE HOLDING", () => {
@@ -165,7 +165,7 @@ describe("Two-Tier Architecture — Org-Scoped Data Filtering", () => {
   // Simulate the backend filtering logic
   function filterVenturesByOrg(
     ventures: { id: number; name: string }[],
-    allowedIds: number[] | null, // null = ATLAS (see all)
+    allowedIds: number[] | null, // null = VENTEX (see all)
   ) {
     if (allowedIds === null) return ventures;
     return ventures.filter((v) => allowedIds.includes(v.id));
@@ -179,7 +179,7 @@ describe("Two-Tier Architecture — Org-Scoped Data Filtering", () => {
     { id: 5, name: "Oil Field" },
   ];
 
-  it("ATLAS team sees all ventures (null = no filter)", () => {
+  it("VENTEX team sees all ventures (null = no filter)", () => {
     const result = filterVenturesByOrg(allVentures, null);
     expect(result).toHaveLength(5);
   });
@@ -204,30 +204,30 @@ describe("Two-Tier Architecture — Org-Scoped Data Filtering", () => {
 });
 
 describe("Two-Tier Architecture — Route Guards", () => {
-  const ATLAS_ONLY_ROUTES = ["/agent", "/team", "/security", "/access", "/settings"];
+  const VENTEX_ONLY_ROUTES = ["/agent", "/team", "/security", "/access", "/settings"];
   const SHARED_ROUTES = ["/dashboard", "/ventures", "/spvs", "/tasks", "/distributions", "/activity", "/profile"];
 
   function canAccessRoute(role: string, route: string): boolean {
-    if (ATLAS_ONLY_ROUTES.some((r) => route.startsWith(r))) {
-      return isAtlasTeam(role);
+    if (VENTEX_ONLY_ROUTES.some((r) => route.startsWith(r))) {
+      return isVentexTeam(role);
     }
     return true; // shared routes accessible to all authenticated users
   }
 
   it("owner can access all routes", () => {
-    for (const route of [...ATLAS_ONLY_ROUTES, ...SHARED_ROUTES]) {
+    for (const route of [...VENTEX_ONLY_ROUTES, ...SHARED_ROUTES]) {
       expect(canAccessRoute("owner", route)).toBe(true);
     }
   });
 
   it("admin can access all routes", () => {
-    for (const route of [...ATLAS_ONLY_ROUTES, ...SHARED_ROUTES]) {
+    for (const route of [...VENTEX_ONLY_ROUTES, ...SHARED_ROUTES]) {
       expect(canAccessRoute("admin", route)).toBe(true);
     }
   });
 
-  it("viewer cannot access ATLAS-only routes", () => {
-    for (const route of ATLAS_ONLY_ROUTES) {
+  it("viewer cannot access VENTEX-only routes", () => {
+    for (const route of VENTEX_ONLY_ROUTES) {
       expect(canAccessRoute("viewer", route)).toBe(false);
     }
   });
@@ -238,14 +238,14 @@ describe("Two-Tier Architecture — Route Guards", () => {
     }
   });
 
-  it("client cannot access ATLAS-only routes", () => {
-    for (const route of ATLAS_ONLY_ROUTES) {
+  it("client cannot access VENTEX-only routes", () => {
+    for (const route of VENTEX_ONLY_ROUTES) {
       expect(canAccessRoute("client", route)).toBe(false);
     }
   });
 
-  it("manager cannot access ATLAS-only routes", () => {
-    for (const route of ATLAS_ONLY_ROUTES) {
+  it("manager cannot access VENTEX-only routes", () => {
+    for (const route of VENTEX_ONLY_ROUTES) {
       expect(canAccessRoute("manager", route)).toBe(false);
     }
   });

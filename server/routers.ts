@@ -96,10 +96,10 @@ export const appRouter = router({
 
         // If user is already authenticated, accept the invitation for them
         if (ctx.user) {
-          // ATLAS team roles (admin/partner/manager) should NOT be scoped to a client org
-          // They need organizationId = null so isAtlasTeam() returns true
-          const isAtlasRole = ["admin", "partner", "manager", "owner"].includes(invite.role);
-          const effectiveOrgId = isAtlasRole ? null : invite.organizationId;
+          // VENTEX team roles (admin/partner/manager) should NOT be scoped to a client org
+          // They need organizationId = null so isVentexTeam() returns true
+          const isVentexRole = ["admin", "partner", "manager", "owner"].includes(invite.role);
+          const effectiveOrgId = isVentexRole ? null : invite.organizationId;
 
           // Update user with organization, role, and invitation reference
           await db
@@ -128,8 +128,8 @@ export const appRouter = router({
 
           return {
             success: true,
-            organizationName: org?.name ?? "ATLAS",
-            organizationSlug: org?.slug ?? "atlas",
+            organizationName: org?.name ?? "VENTEX",
+            organizationSlug: org?.slug ?? "ventex",
             role: invite.role,
             redirectTo: org ? `/clients/${org.slug}` : "/",
           };
@@ -144,8 +144,8 @@ export const appRouter = router({
         return {
           success: true,
           requiresAuth: true,
-          organizationName: org?.name ?? "ATLAS",
-          organizationSlug: org?.slug ?? "atlas",
+          organizationName: org?.name ?? "VENTEX",
+          organizationSlug: org?.slug ?? "ventex",
           email: maskedEmail,
           role: invite.role,
           invitedByName: invite.invitedByName,
@@ -208,9 +208,9 @@ export const appRouter = router({
             const resend = new Resend(resendKey);
             const resetUrl = `${process.env.VITE_FRONTEND_FORGE_API_URL ? "" : ""}/?reset_token=reset_${resetToken}`;
             await resend.emails.send({
-              from: "ATLAS <contact@aurovia.co>",
+              from: "VENTEX <contact@aurovia.co>",
               to: input.email,
-              subject: "ATLAS — Sign In Link",
+              subject: "VENTEX — Sign In Link",
               html: `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">
   <div style="max-width:560px;margin:0 auto;padding:48px 32px;">
@@ -218,13 +218,13 @@ export const appRouter = router({
       <span style="color:#fff;font-size:14px;letter-spacing:0.15em;font-weight:600;">A T L A S</span>
     </div>
     <p style="color:#a0a0a0;font-size:13px;line-height:1.7;">A sign-in link was requested for your account.</p>
-    <p style="color:#a0a0a0;font-size:13px;line-height:1.7;">Click the button below to access your ATLAS dashboard. This link expires in 1 hour.</p>
+    <p style="color:#a0a0a0;font-size:13px;line-height:1.7;">Click the button below to access your VENTEX dashboard. This link expires in 1 hour.</p>
     <p style="margin:28px 0;">
       <a href="${resetUrl}" style="display:inline-block;background:#fff;color:#000;padding:12px 28px;font-size:13px;font-weight:600;text-decoration:none;letter-spacing:0.1em;">SIGN IN →</a>
     </p>
     <p style="color:#555;font-size:11px;line-height:1.6;">If you didn't request this, you can safely ignore this email.</p>
     <div style="border-top:1px solid #222;padding-top:16px;margin-top:32px;">
-      <p style="color:#333;font-size:10px;letter-spacing:0.08em;">ATLAS · Powered by Aurovia</p>
+      <p style="color:#333;font-size:10px;letter-spacing:0.08em;">VENTEX · Powered by Aurovia</p>
     </div>
   </div>
 </body></html>`,

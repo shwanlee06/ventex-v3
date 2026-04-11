@@ -8,7 +8,7 @@ function createAdminContext(): TrpcContext {
   const user: AuthenticatedUser = {
     id: 1,
     openId: "admin-user",
-    email: "admin@atlas.io",
+    email: "admin@ventex.io",
     name: "Admin User",
     loginMethod: "manus",
     role: "admin",
@@ -36,7 +36,7 @@ function createOwnerContext(): TrpcContext {
   const user: AuthenticatedUser = {
     id: 2,
     openId: "owner-user",
-    email: "owner@atlas.io",
+    email: "owner@ventex.io",
     name: "Owner User",
     loginMethod: "manus",
     role: "owner",
@@ -61,8 +61,8 @@ function createOwnerContext(): TrpcContext {
 }
 
 function createRegularUserContext(): TrpcContext {
-  // Client user — belongs to a client org (not ATLAS org 1)
-  // With the new isAtlasTeam logic, user/manager with orgId=1 or null are Atlas team
+  // Client user — belongs to a client org (not VENTEX org 1)
+  // With the new isVentexTeam logic, user/manager with orgId=1 or null are Ventex team
   const user: AuthenticatedUser = {
     id: 3,
     openId: "regular-user",
@@ -105,10 +105,10 @@ describe("organizations.list", () => {
     expect(Array.isArray(result)).toBe(true);
   });
 
-  it("returns scoped data for non-Atlas client users (not rejected)", async () => {
+  it("returns scoped data for non-Ventex client users (not rejected)", async () => {
     const ctx = createRegularUserContext();
     const caller = appRouter.createCaller(ctx);
-    // Non-Atlas users get their own org data (or empty array), not a rejection
+    // Non-Ventex users get their own org data (or empty array), not a rejection
     const result = await caller.organizations.list();
     expect(Array.isArray(result)).toBe(true);
   });
@@ -139,10 +139,10 @@ describe("organizations.listWithMetrics", () => {
     expect(Array.isArray(result)).toBe(true);
   });
 
-  it("returns scoped data for non-Atlas client users (not rejected)", async () => {
+  it("returns scoped data for non-Ventex client users (not rejected)", async () => {
     const ctx = createRegularUserContext();
     const caller = appRouter.createCaller(ctx);
-    // Non-Atlas users get their own org data (or empty array), not a rejection
+    // Non-Ventex users get their own org data (or empty array), not a rejection
     const result = await caller.organizations.listWithMetrics();
     expect(Array.isArray(result)).toBe(true);
   });

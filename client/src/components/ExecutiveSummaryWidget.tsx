@@ -79,7 +79,7 @@ export default function ExecutiveSummaryWidget() {
           </span>
         </div>
         <button
-          onClick={() => navigate("/atlas-team")}
+          onClick={() => navigate("/ventex-team")}
           className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
         >
           View all <ChevronRight className="size-3" />
@@ -94,7 +94,7 @@ export default function ExecutiveSummaryWidget() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 + i * 0.04, duration: 0.2 }}
-            onClick={() => navigate(`/atlas-team/${exec.id}`)}
+            onClick={() => navigate(`/ventex-team/${exec.id}`)}
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent/30 transition-colors cursor-pointer group"
           >
             {/* Avatar */}

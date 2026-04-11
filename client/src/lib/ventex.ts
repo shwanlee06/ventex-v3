@@ -1,16 +1,16 @@
 /**
- * ATLAS Team Detection — shared frontend helper
+ * VENTEX Team Detection — shared frontend helper
  * 
- * Determines if a user is part of the ATLAS internal team.
- * ATLAS team members see all clients and the full command center.
+ * Determines if a user is part of the VENTEX internal team.
+ * VENTEX team members see all clients and the full command center.
  * 
  * Rules:
- * - owner/admin are ATLAS team (full Command Center access)
- * - partner is external (like a client with elevated access, NOT ATLAS internal)
- * - manager/user are ATLAS team if they have no client org (orgId null or 1 = ATLAS)
- * - client/viewer are never ATLAS team
+ * - owner/admin are VENTEX team (full Command Center access)
+ * - partner is external (like a client with elevated access, NOT VENTEX internal)
+ * - manager/user are VENTEX team if they have no client org (orgId null or 1 = VENTEX)
+ * - client/viewer are never VENTEX team
  */
-export function isAtlasTeam(user?: {
+export function isVentexTeam(user?: {
   role: string;
   organizationId?: number | null;
 } | null): boolean {
@@ -23,7 +23,7 @@ export function isAtlasTeam(user?: {
 }
 
 /**
- * Partner Detection — partners have elevated access but are NOT ATLAS internal.
+ * Partner Detection — partners have elevated access but are NOT VENTEX internal.
  * Partners can see all clients they're assigned to, plus their own ventures.
  */
 export function isPartner(user?: {

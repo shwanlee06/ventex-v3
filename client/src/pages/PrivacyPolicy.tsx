@@ -1,7 +1,7 @@
 /**
  * Privacy Policy — /privacy
  * Public page, no auth required.
- * Styled to match the ATLAS Swiss-instrument design system.
+ * Styled to match the VENTEX Swiss-instrument design system.
  */
 
 import { ArrowLeft } from "lucide-react";
@@ -9,7 +9,7 @@ import { useLocation } from "wouter";
 
 const EFFECTIVE_DATE = "April 8, 2026";
 const COMPANY = "Royalton Venture Holding";
-const PRODUCT = "ATLAS";
+const PRODUCT = "VENTEX";
 const CONTACT_EMAIL = "privacy@aurovia.co";
 
 export default function PrivacyPolicy() {

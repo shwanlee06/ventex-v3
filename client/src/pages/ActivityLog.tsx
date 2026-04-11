@@ -1,4 +1,4 @@
-// Activity Log Page — /activity — Split View: ATLAS Ops vs Client Business
+// Activity Log Page — /activity — Split View: VENTEX Ops vs Client Business
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
@@ -40,8 +40,8 @@ const ENTITY_COLORS: Record<string, string> = {
 // Source-specific styling
 const SOURCE_STYLES = {
   atlas_ops: {
-    label: "ATLAS Operations",
-    shortLabel: "ATLAS Ops",
+    label: "VENTEX Operations",
+    shortLabel: "VENTEX Ops",
     icon: <Shield className="size-4" />,
     color: "text-primary",
     bgActive: "bg-primary/10 border-primary/40",
@@ -83,7 +83,7 @@ function formatTimestamp(d: string | Date): string {
 }
 
 function getSourceBadge(source: string | null) {
-  if (source === "atlas_ops") return { label: "ATLAS", className: "bg-primary/15 text-primary border-primary/30" };
+  if (source === "atlas_ops") return { label: "VENTEX", className: "bg-primary/15 text-primary border-primary/30" };
   if (source === "client_business") return { label: "Business", className: "bg-blue-500/15 text-blue-400 border-blue-400/30" };
   if (source === "system") return { label: "System", className: "bg-cyan-500/15 text-cyan-400 border-cyan-400/30" };
   return { label: "Other", className: "bg-secondary text-muted-foreground border-border" };
@@ -196,7 +196,7 @@ export default function ActivityLog() {
             <span className="text-xl font-mono font-semibold text-foreground">{entries.length}</span>
           </motion.button>
 
-          {/* ATLAS Ops — admin only */}
+          {/* VENTEX Ops — admin only */}
           {isAdmin && (
             <motion.button
               initial={{ opacity: 0, y: 8 }}
@@ -210,7 +210,7 @@ export default function ActivityLog() {
             >
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Shield className="size-3.5 text-primary" />
-                <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">ATLAS Ops</span>
+                <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">VENTEX Ops</span>
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-mono font-semibold text-foreground">{sourceCounts.atlas_ops}</span>

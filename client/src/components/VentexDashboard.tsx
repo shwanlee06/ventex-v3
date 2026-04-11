@@ -1,4 +1,4 @@
-// ATLAS Admin Dashboard — Velocity AI Venture System
+// VENTEX Admin Dashboard — Velocity AI Venture System
 // Premium CRM command center for managing 30+ UHNWI/HNWI clients
 // Velocity metrics, completion %, task velocity, progress trends per client
 
@@ -69,7 +69,7 @@ type SortField = "name" | "ventures" | "velocity" | "overdue" | "health" | "comp
 type ViewMode = "grid" | "table";
 type TabMode = "active" | "archived";
 
-interface AtlasDashboardProps {
+interface VentexDashboardProps {
   onNavigate: (path: string) => void;
 }
 
@@ -171,7 +171,7 @@ function fmtCurrency(amount: number): string {
   return `$${amount.toLocaleString()}`;
 }
 
-export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
+export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
   // Fetch active clients (default)
   const activeClientsQ = trpc.organizations.listWithMetrics.useQuery();
   // Fetch archived clients separately
@@ -604,7 +604,7 @@ export default function AtlasDashboard({ onNavigate }: AtlasDashboardProps) {
                 { key: "healthScore", label: "Health Score" },
                 { key: "overdueTasks", label: "Overdue Tasks" },
                 { key: "totalTasks", label: "Total Tasks" },
-              ], `atlas-clients-${new Date().toISOString().slice(0,10)}.csv`);
+              ], `ventex-clients-${new Date().toISOString().slice(0,10)}.csv`);
               toast.success("Exported client data");
             }}
             className="h-9 gap-1.5"

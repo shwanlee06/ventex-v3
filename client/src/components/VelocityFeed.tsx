@@ -339,7 +339,7 @@ export default function VelocityFeed({ onNavigate }: VelocityFeedProps) {
           <span className="text-[11px] uppercase tracking-widest text-muted-foreground font-light">Velocity Feed</span>
         </div>
         <p className="text-sm text-muted-foreground font-light">All clear — your portfolio is on track</p>
-        <p className="text-[11px] text-muted-foreground/50 mt-1">ATLAS agents are monitoring your ventures</p>
+        <p className="text-[11px] text-muted-foreground/50 mt-1">VENTEX agents are monitoring your ventures</p>
       </div>
     );
   }

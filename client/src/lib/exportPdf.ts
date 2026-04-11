@@ -1,4 +1,4 @@
-// PDF Export Utility — ATLAS System
+// PDF Export Utility — VENTEX System
 // Generates professional distribution reports using jsPDF
 
 import { jsPDF } from "jspdf";
@@ -44,7 +44,7 @@ export function exportDistributionPdf(dist: DistributionData) {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text("ATLAS", margin, 18);
+  doc.text("VENTEX", margin, 18);
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
@@ -132,12 +132,12 @@ export function exportDistributionPdf(dist: DistributionData) {
   doc.setFontSize(7);
   doc.setTextColor(150, 150, 150);
   doc.setFont("helvetica", "normal");
-  doc.text("ATLAS Venture Intelligence Operations", margin, footerY);
+  doc.text("VENTEX Venture Intelligence Operations", margin, footerY);
   doc.text("Confidential", pageWidth - margin, footerY, { align: "right" });
 
   // Save
   const safeName = dist.name.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
-  doc.save(`atlas_distribution_${safeName}.pdf`);
+  doc.save(`ventex_distribution_${safeName}.pdf`);
 }
 
 // Export all distributions as a summary PDF
@@ -154,7 +154,7 @@ export function exportAllDistributionsPdf(distributions: DistributionData[]) {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
-  doc.text("ATLAS", margin, 16);
+  doc.text("VENTEX", margin, 16);
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
@@ -222,7 +222,7 @@ export function exportAllDistributionsPdf(distributions: DistributionData[]) {
   const footerY = doc.internal.pageSize.getHeight() - 10;
   doc.setFontSize(7);
   doc.setTextColor(150, 150, 150);
-  doc.text("ATLAS Venture Intelligence Operations — Confidential", margin, footerY);
+  doc.text("VENTEX Venture Intelligence Operations — Confidential", margin, footerY);
 
-  doc.save(`atlas_distributions_summary_${new Date().toISOString().split("T")[0]}.pdf`);
+  doc.save(`ventex_distributions_summary_${new Date().toISOString().split("T")[0]}.pdf`);
 }

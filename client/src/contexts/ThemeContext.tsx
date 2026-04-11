@@ -23,7 +23,7 @@ export function ThemeProvider({
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (switchable) {
-      const stored = localStorage.getItem("atlas_theme");
+      const stored = localStorage.getItem("ventex_theme");
       return (stored as Theme) || defaultTheme;
     }
     return defaultTheme;
@@ -38,7 +38,7 @@ export function ThemeProvider({
     }
 
     if (switchable) {
-      localStorage.setItem("atlas_theme", theme);
+      localStorage.setItem("ventex_theme", theme);
     }
   }, [theme, switchable]);
 

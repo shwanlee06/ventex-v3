@@ -1,4 +1,4 @@
-// ATLAS Market Intelligence Service
+// VENTEX Market Intelligence Service
 // Gap 2: External data ingestion — sector signals, regulatory changes, market trends
 // Uses LLM to synthesize sector-specific intelligence for each client's portfolio
 
@@ -39,7 +39,7 @@ async function generateSectorSignals(
       messages: [
         {
           role: "system",
-          content: `You are ATLAS Market Intelligence, an AI system that generates sector-specific market signals for venture portfolio management. You analyze current market conditions, regulatory changes, and industry trends to produce actionable intelligence.
+          content: `You are VENTEX Market Intelligence, an AI system that generates sector-specific market signals for venture portfolio management. You analyze current market conditions, regulatory changes, and industry trends to produce actionable intelligence.
 
 Focus area: ${context}
 Region: ${region}
@@ -159,7 +159,7 @@ export async function runMarketIntelligence(organizationId: number) {
         summary: signal.summary,
         impact: signal.impact as "positive" | "negative" | "neutral",
         impactScore: Math.min(Math.max(signal.impactScore, 0), 100),
-        source: "ATLAS Market Intelligence",
+        source: "VENTEX Market Intelligence",
         affectedVentureIds: data.ids,
         affectedOrganizationIds: [organizationId],
         actionRecommendation: signal.actionRecommendation,

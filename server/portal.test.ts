@@ -8,7 +8,7 @@ function createAdminContext(): TrpcContext {
   const user: AuthenticatedUser = {
     id: 1,
     openId: "admin-user",
-    email: "admin@atlas.io",
+    email: "admin@ventex.io",
     name: "Admin User",
     loginMethod: "manus",
     role: "owner",
@@ -222,12 +222,12 @@ describe("Portal Router — Vision Compliance", () => {
       expect(result.velocitySummary.length).toBeGreaterThan(10);
     });
 
-    it("velocitySummary starts with 'This week, ATLAS' or is the fallback message", async () => {
+    it("velocitySummary starts with 'This week, VENTEX' or is the fallback message", async () => {
       const caller = appRouter.createCaller(createAdminContext());
       const result = await caller.portal.getData({ orgSlug: "royalton" });
 
-      const isActive = result.velocitySummary.startsWith("This week, ATLAS");
-      const isFallback = result.velocitySummary.startsWith("ATLAS is monitoring");
+      const isActive = result.velocitySummary.startsWith("This week, VENTEX");
+      const isFallback = result.velocitySummary.startsWith("VENTEX is monitoring");
       expect(isActive || isFallback).toBe(true);
     });
   });

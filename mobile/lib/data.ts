@@ -1,4 +1,4 @@
-// Shared data for ATLAS mobile app — mirrors web app data.ts
+// Shared data for VENTEX mobile app — mirrors web app data.ts
 
 export interface Venture {
   id: string;

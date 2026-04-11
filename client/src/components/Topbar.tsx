@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { isAtlasTeam } from "@/lib/atlas";
+import { isVentexTeam } from "@/lib/ventex";
 import { usePreviewMode } from "@/contexts/PreviewMode";
 import { useAgents } from "@/contexts/AgentContext";
 import { Bell, Search, User, Settings, LogOut, Eye, EyeOff, X, FileText, Building2 } from "lucide-react";
@@ -48,8 +48,8 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
     // AgentProvider may not be mounted yet
   }
 
-  const isReallyAtlas = isAtlasTeam(user);
-  const isAtlas = isPreviewMode ? false : isReallyAtlas;
+  const isReallyVentex = isVentexTeam(user);
+  const isVentex = isPreviewMode ? false : isReallyVentex;
 
   const displayName = useMemo(() => {
     if (isPreviewMode) return "Client Preview";
@@ -63,7 +63,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
     if (isPreviewMode) return "Viewing as Client";
     if (!user?.role) return "";
     if (user.role === "owner") return "Platform Admin";
-    if (user.role === "admin") return "ATLAS Operator";
+    if (user.role === "admin") return "VENTEX Operator";
     if (user.role === "partner") return "Partner";
     return user.role.charAt(0).toUpperCase() + user.role.slice(1);
   }, [user?.role, isPreviewMode]);
@@ -81,7 +81,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
   const handleTogglePreview = useCallback(() => {
     if (isPreviewMode) {
       exitPreview();
-      toast.info("Exited client preview — back to ATLAS admin view");
+      toast.info("Exited client preview — back to VENTEX admin view");
     } else {
       togglePreview();
       toast.info("Entered client preview — viewing as a client would see it");
@@ -134,8 +134,8 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
-          {/* Client Switcher — only visible to real ATLAS team */}
-          {isReallyAtlas && !isPreviewMode && (
+          {/* Client Switcher — only visible to real VENTEX team */}
+          {isReallyVentex && !isPreviewMode && (
             <button
               onClick={() => setClientSwitcherOpen(true)}
               className="flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] sm:h-9 sm:min-w-0 sm:px-3 rounded-lg sm:bg-secondary/50 text-muted-foreground text-xs hover:bg-secondary hover:text-foreground transition-colors"
@@ -146,8 +146,8 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
             </button>
           )}
 
-          {/* Preview toggle — only visible to real ATLAS team */}
-          {isReallyAtlas && (
+          {/* Preview toggle — only visible to real VENTEX team */}
+          {isReallyVentex && (
             <button
               onClick={handleTogglePreview}
               className={cn(
@@ -211,7 +211,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
                       "text-[11px] font-semibold",
                       isPreviewMode
                         ? "bg-amber-500/20 text-amber-400"
-                        : isAtlas
+                        : isVentex
                           ? "bg-primary/20 text-primary"
                           : "bg-emerald-500/20 text-emerald-400"
                     )}>
@@ -239,13 +239,13 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
                   <User className="size-4 mr-2" />
                   Profile
                 </DropdownMenuItem>
-                {isAtlas && (
+                {isVentex && (
                   <DropdownMenuItem onClick={() => navigate("/settings")} className="min-h-[44px]">
                     <Settings className="size-4 mr-2" />
                     Settings
                   </DropdownMenuItem>
                 )}
-                {isReallyAtlas && (
+                {isReallyVentex && (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleTogglePreview} className="min-h-[44px]">

@@ -1,4 +1,4 @@
-// ATLAS Predictive Analytics Engine
+// VENTEX Predictive Analytics Engine
 // Gap 1: Stage forecasting, bottleneck detection, risk scoring, portfolio health
 
 import { getDb } from "../db";
@@ -326,7 +326,7 @@ export async function forecastVentures(organizationId: number) {
           {
             role: "system",
             content:
-              "You are ATLAS, an AI venture intelligence system. For each venture below, write a 2-sentence forecast narrative and 2-3 specific recommended actions. Return JSON array: [{ventureName, narrative, recommendedActions: string[]}]. Be direct and actionable.",
+              "You are VENTEX, an AI venture intelligence system. For each venture below, write a 2-sentence forecast narrative and 2-3 specific recommended actions. Return JSON array: [{ventureName, narrative, recommendedActions: string[]}]. Be direct and actionable.",
           },
           { role: "user", content: prompt },
         ],
@@ -512,7 +512,7 @@ export async function computePortfolioHealth(organizationId: number) {
         {
           role: "system",
           content:
-            "You are ATLAS, writing a portfolio health executive summary for a client. Be concise, professional, and actionable. Return JSON.",
+            "You are VENTEX, writing a portfolio health executive summary for a client. Be concise, professional, and actionable. Return JSON.",
         },
         {
           role: "user",

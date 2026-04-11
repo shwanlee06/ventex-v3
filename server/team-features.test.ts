@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 import { calculateLiveStatus } from "./routers/team";
-import { hasPermission, isAtlasTeam, ROLE_HIERARCHY } from "./security/rbac";
+import { hasPermission, isVentexTeam, ROLE_HIERARCHY } from "./security/rbac";
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
@@ -10,7 +10,7 @@ function createContext(role: string, orgId: number | null = null): TrpcContext {
   const user: AuthenticatedUser = {
     id: 1,
     openId: `${role}-user`,
-    email: `${role}@atlas.io`,
+    email: `${role}@ventex.io`,
     name: `${role} User`,
     loginMethod: "manus",
     role,
@@ -179,8 +179,8 @@ describe("Team — Partner Role-Based Access", () => {
     expect(ROLE_HIERARCHY.partner).toBeLessThan(ROLE_HIERARCHY.manager);
   });
 
-  it("partner is NOT considered ATLAS team (partners are external)", () => {
-    expect(isAtlasTeam({ role: "partner" })).toBe(false);
+  it("partner is NOT considered VENTEX team (partners are external)", () => {
+    expect(isVentexTeam({ role: "partner" })).toBe(false);
   });
 
   it("partner has read permission", () => {
@@ -231,14 +231,14 @@ describe("Team — Partner Role-Based Access", () => {
     ).rejects.toThrow();
   });
 
-  it("regular user without client org is Atlas team (shared visibility)", () => {
-    // user/manager without organizationId are Atlas internal members
-    expect(isAtlasTeam({ role: "user" })).toBe(true);
-    expect(isAtlasTeam({ role: "user", organizationId: null })).toBe(true);
-    expect(isAtlasTeam({ role: "user", organizationId: 1 })).toBe(true);
-    // user with a client org is NOT Atlas team
-    expect(isAtlasTeam({ role: "user", organizationId: 2 })).toBe(false);
-    // permission checks remain the same (role-based, not Atlas-team-based)
+  it("regular user without client org is Ventex team (shared visibility)", () => {
+    // user/manager without organizationId are Ventex internal members
+    expect(isVentexTeam({ role: "user" })).toBe(true);
+    expect(isVentexTeam({ role: "user", organizationId: null })).toBe(true);
+    expect(isVentexTeam({ role: "user", organizationId: 1 })).toBe(true);
+    // user with a client org is NOT Ventex team
+    expect(isVentexTeam({ role: "user", organizationId: 2 })).toBe(false);
+    // permission checks remain the same (role-based, not Ventex-team-based)
     expect(hasPermission("user", "export_data")).toBe(false);
     expect(hasPermission("user", "view_audit_log")).toBe(false);
   });

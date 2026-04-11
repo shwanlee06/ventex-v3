@@ -1,4 +1,4 @@
-// Schema — ATLAS System
+// Schema — VENTEX System
 import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, bigint, json, boolean } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
@@ -122,7 +122,7 @@ export const teamMembers = mysqlTable("team_members", {
   memberFunction: varchar("memberFunction", { length: 128 }),
   status: varchar("status", { length: 64 }).default("Active"),
   type: varchar("type", { length: 64 }).default("Internal"),
-  organizationId: int("organizationId"), // null = ATLAS/Aurovia internal member
+  organizationId: int("organizationId"), // null = VENTEX/Aurovia internal member
   notes: text("notes"),
   email: varchar("email", { length: 320 }),
   phone: varchar("phone", { length: 64 }),
@@ -553,7 +553,7 @@ export const ventureVelocity = mysqlTable("venture_velocity", {
   toStage: varchar("toStage", { length: 64 }).notNull(),
   daysInStage: int("daysInStage").notNull(),
   hoursInStage: int("hoursInStage"),  // exact to the hour for precision
-  advancedBy: varchar("advancedBy", { length: 128 }),  // 'ATLAS Agent' | 'manual' | user name
+  advancedBy: varchar("advancedBy", { length: 128 }),  // 'VENTEX Agent' | 'manual' | user name
   blockingStepsTotal: int("blockingStepsTotal").default(0).notNull(),
   blockingStepsCompleted: int("blockingStepsCompleted").default(0).notNull(),
   tasksCompletedInStage: int("tasksCompletedInStage").default(0).notNull(),
@@ -717,7 +717,7 @@ export type VentureProcessOverride = typeof ventureProcessOverrides.$inferSelect
 export type InsertVentureProcessOverride = typeof ventureProcessOverrides.$inferInsert;
 
 
-// ATLAS INTELLIGENCE PLATFORM — 4 Gaps
+// VENTEX INTELLIGENCE PLATFORM — 4 Gaps
 
 export const ventureForecast = mysqlTable("venture_forecast", {
   id: int("id").autoincrement().primaryKey(),

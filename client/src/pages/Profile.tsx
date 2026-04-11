@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import { useLocation } from "wouter";
 import { trpc as trpcClient } from "@/lib/trpc";
 
-const ATLAS_LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/atlas-logo-G2SBqxAK64sZYAYmAZY9js.webp";
+const VENTEX_LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/atlas-logo-G2SBqxAK64sZYAYmAZY9js.webp";
 
 const ROLE_LABELS: Record<string, string> = {
   owner: "System Owner",
@@ -169,7 +169,7 @@ export default function ProfilePage() {
                         toast.error("Image must be under 2 MB");
                         return;
                       }
-                      toast.info("Avatar upload is available for team members via the ATLAS Team page.");
+                      toast.info("Avatar upload is available for team members via the VENTEX Team page.");
                     }}
                   />
                 </label>
@@ -200,7 +200,7 @@ export default function ProfilePage() {
                   </p>
                 )}
               </div>
-              <img src={ATLAS_LOGO_URL} alt="ATLAS" className="size-8 sm:size-10 rounded-md opacity-50 hidden sm:block" />
+              <img src={VENTEX_LOGO_URL} alt="VENTEX" className="size-8 sm:size-10 rounded-md opacity-50 hidden sm:block" />
             </div>
           </Card>
         </motion.div>

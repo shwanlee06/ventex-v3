@@ -38,7 +38,7 @@ function buildContext(): string {
 const WELCOME: Message = {
   id: "welcome",
   role: "assistant",
-  content: "Hey — I'm your ATLAS ops assistant. What do you need?",
+  content: "Hey — I'm your VENTEX ops assistant. What do you need?",
   timestamp: new Date(),
 };
 

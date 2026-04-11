@@ -2358,3 +2358,14 @@
 - [x] Convert Chris Phelps photo to black and white and update on pitch deck
 - [x] Rewrite Shwan Lee's bio to match Chris and Brian's concise style
 - [x] Update LinkedIn URLs for all three team members on pitch deck
+## ATLAS → VENTEX Rebrand (Apr 10)
+- [x] Audit all ATLAS references across entire codebase
+- [x] Rebrand Demo.tsx (pitch deck) from ATLAS to VENTEX
+- [x] Rebrand SpyOps.tsx (login/intro screen) from ATLAS to VENTEX
+- [x] Rebrand DemoDashboard.tsx from ATLAS to VENTEX
+- [x] Rebrand Home.tsx (prototype dashboard) from ATLAS to VENTEX
+- [x] Rebrand data.ts, constants, and shared types
+- [x] Rebrand components (DashboardLayout, StatusBadge, etc.)
+- [x] Rebrand server-side files (routers, agents, intelligence)
+- [x] Update all tests to match VENTEX branding
+- [x] Verify compilation and all tests pass (745/754 — 9 org test failures are pre-existing DB state issue)

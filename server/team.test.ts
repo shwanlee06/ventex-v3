@@ -8,7 +8,7 @@ function createAdminContext(): TrpcContext {
   const user: AuthenticatedUser = {
     id: 1,
     openId: "admin-user",
-    email: "admin@atlas.io",
+    email: "admin@ventex.io",
     name: "Admin User",
     loginMethod: "manus",
     role: "admin",
@@ -97,9 +97,9 @@ describe("Team Router — Org-scoped queries", () => {
     }
   });
 
-  it("create with organizationId=null creates an ATLAS internal member", async () => {
+  it("create with organizationId=null creates an VENTEX internal member", async () => {
     const result = await caller.team.create({
-      name: "Test ATLAS Member " + Date.now(),
+      name: "Test VENTEX Member " + Date.now(),
       role: "Test Role",
       type: "Internal",
       organizationId: null,

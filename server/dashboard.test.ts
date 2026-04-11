@@ -4,17 +4,17 @@ import type { TrpcContext } from "./_core/context";
 
 /**
  * Dashboard integration tests — verifies the data endpoints
- * that power both the ATLAS admin command center and the
+ * that power both the VENTEX admin command center and the
  * Client Portal dashboard views.
  */
 
-function createAtlasContext(): TrpcContext {
+function createVentexContext(): TrpcContext {
   return {
     user: {
       id: 1,
-      openId: "atlas-admin-test",
-      name: "ATLAS Admin",
-      email: "admin@atlas.com",
+      openId: "ventex-admin-test",
+      name: "VENTEX Admin",
+      email: "admin@ventex.com",
       role: "admin",
       organizationId: null,
       status: "active",
@@ -73,9 +73,9 @@ function createPublicContext(): TrpcContext {
   };
 }
 
-describe("ATLAS Admin Dashboard — data endpoints", () => {
-  it("fetches ventures list for ATLAS team", async () => {
-    const caller = appRouter.createCaller(createAtlasContext());
+describe("VENTEX Admin Dashboard — data endpoints", () => {
+  it("fetches ventures list for VENTEX team", async () => {
+    const caller = appRouter.createCaller(createVentexContext());
     const ventures = await caller.ventures.list();
     expect(Array.isArray(ventures)).toBe(true);
     expect(ventures.length).toBeGreaterThan(0);
@@ -91,8 +91,8 @@ describe("ATLAS Admin Dashboard — data endpoints", () => {
     expect(v).toHaveProperty("location");
   });
 
-  it("fetches tasks list for ATLAS team", async () => {
-    const caller = appRouter.createCaller(createAtlasContext());
+  it("fetches tasks list for VENTEX team", async () => {
+    const caller = appRouter.createCaller(createVentexContext());
     const tasks = await caller.tasks.list();
     expect(Array.isArray(tasks)).toBe(true);
 
@@ -107,8 +107,8 @@ describe("ATLAS Admin Dashboard — data endpoints", () => {
     }
   });
 
-  it("fetches SPVs list for ATLAS team", async () => {
-    const caller = appRouter.createCaller(createAtlasContext());
+  it("fetches SPVs list for VENTEX team", async () => {
+    const caller = appRouter.createCaller(createVentexContext());
     const spvs = await caller.spvs.list();
     expect(Array.isArray(spvs)).toBe(true);
     expect(spvs.length).toBeGreaterThan(0);
@@ -122,8 +122,8 @@ describe("ATLAS Admin Dashboard — data endpoints", () => {
     expect(s).toHaveProperty("sector");
   });
 
-  it("fetches distributions list for ATLAS team", async () => {
-    const caller = appRouter.createCaller(createAtlasContext());
+  it("fetches distributions list for VENTEX team", async () => {
+    const caller = appRouter.createCaller(createVentexContext());
     const dists = await caller.distributions.list();
     expect(Array.isArray(dists)).toBe(true);
     expect(dists.length).toBeGreaterThan(0);
@@ -136,8 +136,8 @@ describe("ATLAS Admin Dashboard — data endpoints", () => {
     expect(d).toHaveProperty("fund");
   });
 
-  it("fetches recent activity for ATLAS team", async () => {
-    const caller = appRouter.createCaller(createAtlasContext());
+  it("fetches recent activity for VENTEX team", async () => {
+    const caller = appRouter.createCaller(createVentexContext());
     // Activity router uses publicProcedure, so it works for both
     const activity = await caller.activity.recent({ limit: 10 });
     expect(Array.isArray(activity)).toBe(true);
@@ -150,8 +150,8 @@ describe("ATLAS Admin Dashboard — data endpoints", () => {
     }
   });
 
-  it("fetches team list for ATLAS team", async () => {
-    const caller = appRouter.createCaller(createAtlasContext());
+  it("fetches team list for VENTEX team", async () => {
+    const caller = appRouter.createCaller(createVentexContext());
     // Team router uses publicProcedure
     const team = await caller.team.list();
     expect(Array.isArray(team)).toBe(true);
@@ -163,8 +163,8 @@ describe("ATLAS Admin Dashboard — data endpoints", () => {
     expect(t).toHaveProperty("type");
   });
 
-  it("fetches intelligence daily brief for ATLAS team", async () => {
-    const caller = appRouter.createCaller(createAtlasContext());
+  it("fetches intelligence daily brief for VENTEX team", async () => {
+    const caller = appRouter.createCaller(createVentexContext());
     const brief = await caller.intelligence.getDailyBrief();
     // May return null if no brief generated today
     if (brief) {
@@ -172,14 +172,14 @@ describe("ATLAS Admin Dashboard — data endpoints", () => {
     }
   });
 
-  it("fetches smart alerts for ATLAS team", async () => {
-    const caller = appRouter.createCaller(createAtlasContext());
+  it("fetches smart alerts for VENTEX team", async () => {
+    const caller = appRouter.createCaller(createVentexContext());
     const alerts = await caller.intelligence.getSmartAlerts({});
     expect(Array.isArray(alerts)).toBe(true);
   });
 
-  it("fetches doc intelligence feed for ATLAS team", async () => {
-    const caller = appRouter.createCaller(createAtlasContext());
+  it("fetches doc intelligence feed for VENTEX team", async () => {
+    const caller = appRouter.createCaller(createVentexContext());
     const feed = await caller.docIntel.recentFeed({ limit: 5 });
     expect(Array.isArray(feed)).toBe(true);
   });
@@ -236,7 +236,7 @@ describe("Dashboard — access control", () => {
 
 describe("Dashboard — data integrity for metrics", () => {
   it("venture data supports sector grouping", async () => {
-    const caller = appRouter.createCaller(createAtlasContext());
+    const caller = appRouter.createCaller(createVentexContext());
     const ventures = await caller.ventures.list();
 
     // Group by sector and verify each venture has a sector
@@ -250,7 +250,7 @@ describe("Dashboard — data integrity for metrics", () => {
   });
 
   it("venture data supports pipeline stage grouping", async () => {
-    const caller = appRouter.createCaller(createAtlasContext());
+    const caller = appRouter.createCaller(createVentexContext());
     const ventures = await caller.ventures.list();
 
     // All ventures should have a stage
@@ -260,7 +260,7 @@ describe("Dashboard — data integrity for metrics", () => {
   });
 
   it("task data supports completion rate calculation", async () => {
-    const caller = appRouter.createCaller(createAtlasContext());
+    const caller = appRouter.createCaller(createVentexContext());
     const tasks = await caller.tasks.list();
 
     // All tasks should have a status
@@ -277,7 +277,7 @@ describe("Dashboard — data integrity for metrics", () => {
   });
 
   it("distribution data supports paid/pending calculation", async () => {
-    const caller = appRouter.createCaller(createAtlasContext());
+    const caller = appRouter.createCaller(createVentexContext());
     const dists = await caller.distributions.list();
 
     // All distributions should have amount and status
@@ -293,7 +293,7 @@ describe("Dashboard — data integrity for metrics", () => {
   });
 
   it("SPV data supports stage filtering", async () => {
-    const caller = appRouter.createCaller(createAtlasContext());
+    const caller = appRouter.createCaller(createVentexContext());
     const spvs = await caller.spvs.list();
 
     // Filter active deals

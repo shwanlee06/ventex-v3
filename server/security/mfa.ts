@@ -13,7 +13,7 @@ import * as QRCode from "qrcode";
 import crypto from "crypto";
 import { encrypt, decrypt, isEncryptionConfigured } from "./encryption";
 
-const TOTP_ISSUER = "ATLAS";
+const TOTP_ISSUER = "VENTEX";
 const TOTP_PERIOD = 30; // seconds
 const TOTP_DIGITS = 6;
 const TOTP_ALGORITHM = "SHA1"; // Most authenticator apps use SHA1

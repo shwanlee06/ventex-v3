@@ -8,7 +8,7 @@ function createAdminContext(): TrpcContext {
   const user: AuthenticatedUser = {
     id: 1,
     openId: "admin-user",
-    email: "admin@atlas.io",
+    email: "admin@ventex.io",
     name: "Admin User",
     loginMethod: "manus",
     role: "admin",

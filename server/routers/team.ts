@@ -89,7 +89,7 @@ export const teamRouter = router({
     }),
 
   /**
-   * List ATLAS/Aurovia internal members (type = 'Internal')
+   * List VENTEX/Aurovia internal members (type = 'Internal')
    * Includes members with any orgId as long as they are Internal type
    */
   listInternal: protectedProcedure.query(async () => {
@@ -109,8 +109,8 @@ export const teamRouter = router({
     const db = await getDb();
     if (!db) return [];
 
-    // Get all members with a CLIENT org — exclude ATLAS internal members
-    // ATLAS team (admin/owner systemRole, or org 1 = ATLAS) should NOT appear in Client Contacts
+    // Get all members with a CLIENT org — exclude VENTEX internal members
+    // VENTEX team (admin/owner systemRole, or org 1 = VENTEX) should NOT appear in Client Contacts
     const members = await db.select({
       id: teamMembers.id,
       name: teamMembers.name,
@@ -135,8 +135,8 @@ export const teamRouter = router({
       .leftJoin(organizations, eq(teamMembers.organizationId, organizations.id))
       .where(and(
         isNotNull(teamMembers.organizationId),
-        sql`${teamMembers.organizationId} != 1`,  // Exclude ATLAS org
-        sql`(${teamMembers.systemRole} IS NULL OR ${teamMembers.systemRole} NOT IN ('admin', 'owner'))`,  // Exclude ATLAS team roles
+        sql`${teamMembers.organizationId} != 1`,  // Exclude VENTEX org
+        sql`(${teamMembers.systemRole} IS NULL OR ${teamMembers.systemRole} NOT IN ('admin', 'owner'))`,  // Exclude VENTEX team roles
       ))
       .orderBy(organizations.name, desc(teamMembers.createdAt));
 
@@ -163,7 +163,7 @@ export const teamRouter = router({
     memberFunction: z.string().optional(),
     status: z.string().default("Active"),
     type: z.string().default("Internal"),
-    organizationId: z.number().nullable().optional(), // null = ATLAS internal
+    organizationId: z.number().nullable().optional(), // null = VENTEX internal
     notes: z.string().optional(),
     email: z.string().optional(),
     phone: z.string().optional(),
@@ -201,7 +201,7 @@ export const teamRouter = router({
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 30); // 30 day expiry
 
-        // Use ATLAS org (id=1) for internal members, or the member's org
+        // Use VENTEX org (id=1) for internal members, or the member's org
         const inviteOrgId = organizationId ?? 1;
         const inviteRole = systemRole ?? "user";
 
@@ -231,7 +231,7 @@ export const teamRouter = router({
         if (origin) {
           const inviteLink = buildInviteLink(origin, token);
           // Get org name for the email
-          let orgNameForEmail = "ATLAS";
+          let orgNameForEmail = "VENTEX";
           if (organizationId) {
             const [org] = await db.select({ name: organizations.name })
               .from(organizations).where(eq(organizations.id, organizationId)).limit(1);
@@ -255,7 +255,7 @@ export const teamRouter = router({
 
     await db.insert(activityLog).values({
       entityType: "team", entityName: input.name, action: "Member Added",
-      detail: `${input.name} added as ${input.role || input.type}${organizationId ? ` (client contact)` : ` (ATLAS internal)`}${hasEmail ? ` — invitation sent to ${input.email}` : ""}`,
+      detail: `${input.name} added as ${input.role || input.type}${organizationId ? ` (client contact)` : ` (VENTEX internal)`}${hasEmail ? ` — invitation sent to ${input.email}` : ""}`,
       userName: ctx.user.name ?? "System",
       activitySource: "atlas_ops",
     });
@@ -267,7 +267,7 @@ export const teamRouter = router({
       message: `${input.name} added as ${input.role || input.type}${hasEmail ? `. Invitation sent to ${input.email}` : ""}`,
       entityType: "team",
       entityName: input.name,
-      link: organizationId ? "/team" : "/atlas-team",
+      link: organizationId ? "/team" : "/ventex-team",
       actorName: ctx.user.name ?? "System",
       organizationId: organizationId || undefined,
     });
@@ -359,7 +359,7 @@ export const teamRouter = router({
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const { id, ...data } = input;
-    // Handle explicit null for organizationId (move to ATLAS internal)
+    // Handle explicit null for organizationId (move to VENTEX internal)
     const updateData: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(data)) {
       if (val !== undefined) updateData[key] = val;
@@ -621,7 +621,7 @@ export const teamRouter = router({
     // Send invitation email notification
     if (input.origin) {
       const inviteLink = buildInviteLink(input.origin, token);
-      let orgNameForEmail = "ATLAS";
+      let orgNameForEmail = "VENTEX";
       if (member.organizationId && member.organizationId !== 1) {
         const [org] = await db.select({ name: organizations.name })
           .from(organizations).where(eq(organizations.id, member.organizationId)).limit(1);

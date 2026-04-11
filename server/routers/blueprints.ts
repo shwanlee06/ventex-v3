@@ -1,4 +1,4 @@
-// ATLAS Blueprint Extraction Engine
+// VENTEX Blueprint Extraction Engine
 // Document extraction, conversation extraction, venture mapping,
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
@@ -30,7 +30,7 @@ Given a document about a business process (e.g., real estate acquisition, yacht 
 For each step, identify:
 - stepName: clear action description
 - isBlocking: whether this step must be completed before the venture can advance
-- whoOwns: who is responsible (e.g., "Legal Team", "Client", "ATLAS Operator", "Government Agency")
+- whoOwns: who is responsible (e.g., "Legal Team", "Client", "VENTEX Operator", "Government Agency")
 - typicalDays: rough estimate of how many days this step typically takes
 - stepDescription: brief note about why this step is needed or what it involves
 
@@ -57,7 +57,7 @@ Output ONLY valid JSON in this exact format:
   ]
 }`;
 
-const CONVERSATION_SYSTEM_PROMPT = `You are ATLAS Concierge, an expert at understanding business processes through conversation. Your job is to help operators describe their venture management processes so you can build a structured blueprint.
+const CONVERSATION_SYSTEM_PROMPT = `You are VENTEX Concierge, an expert at understanding business processes through conversation. Your job is to help operators describe their venture management processes so you can build a structured blueprint.
 
 Ask targeted questions about:
 1. What sector/industry is this for?

@@ -84,7 +84,7 @@ export default function InviteAccept() {
   }, [orgSlug, token]);
 
   // Typewriter effects
-  const atlasText = useTypewriter("A T L A S", 80, 200);
+  const ventexText = useTypewriter("V E N T E X", 80, 200);
   const subtitleText = useTypewriter("VENTURE INTELLIGENCE OPERATIONS", 30, 1200);
   const inviteText = useTypewriter(
     orgName ? `YOU HAVE BEEN INVITED BY ${orgName.toUpperCase()}` : "VALIDATING INVITATION...",
@@ -94,8 +94,8 @@ export default function InviteAccept() {
 
   const handleProceed = () => {
     // Store the invite token in sessionStorage so we can use it after OAuth
-    sessionStorage.setItem("atlas_invite_token", token);
-    sessionStorage.setItem("atlas_invite_org", orgSlug);
+    sessionStorage.setItem("ventex_invite_token", token);
+    sessionStorage.setItem("ventex_invite_org", orgSlug);
     setPhase("redirecting");
     // Redirect to OAuth
     setTimeout(() => {
@@ -148,7 +148,7 @@ export default function InviteAccept() {
 
       {/* Main content */}
       <div style={{ position: "relative", zIndex: 1, textAlign: "center", maxWidth: "600px", width: "100%" }}>
-        {/* ATLAS header */}
+        {/* VENTEX header */}
         <div
           style={{
             fontSize: "clamp(28px, 5vw, 42px)",
@@ -158,8 +158,8 @@ export default function InviteAccept() {
             color: "#fff",
           }}
         >
-          {atlasText.displayed}
-          {!atlasText.done && <span style={{ opacity: 0.5 }}>|</span>}
+          {ventexText.displayed}
+          {!ventexText.done && <span style={{ opacity: 0.5 }}>|</span>}
         </div>
 
         <div

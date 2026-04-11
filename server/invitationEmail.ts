@@ -7,7 +7,7 @@
 import { Resend } from "resend";
 import { notifyOwner } from "./_core/notification";
 
-const FROM_ADDRESS = "ATLAS <contact@aurovia.co>";
+const FROM_ADDRESS = "VENTEX <contact@aurovia.co>";
 const REPLY_TO = "slee72106@gmail.com";
 
 const BODY_STYLE = `font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; background: #0a0a0a; color: #fafafa; padding: 40px 20px; margin: 0; line-height: 1.6;`;
@@ -21,7 +21,7 @@ const VALUE_STYLE = `font-size: 15px; font-weight: 500; color: #fafafa; margin-b
 const BUTTON_STYLE = `display: inline-block; background: #fafafa; color: #0a0a0a; padding: 12px 28px; border-radius: 6px; font-size: 14px; font-weight: 600; text-decoration: none; letter-spacing: 0.02em;`;
 const FOOTER_STYLE = `border-top: 1px solid #333; margin-top: 32px; padding-top: 16px;`;
 const FOOTER_TEXT = `font-size: 12px; color: #666; margin: 0;`;
-const SIGNATURE = `ATLAS · Powered by Aurovia`;
+const SIGNATURE = `VENTEX · Powered by Aurovia`;
 
 interface SendInvitationEmailParams {
   recipientEmail: string;
@@ -46,7 +46,7 @@ function buildInvitationHtml(params: {
 <body style="${BODY_STYLE}"><div style="${CONTAINER_STYLE}">
   <div style="${HEADER_STYLE}"><span style="${HEADER_TEXT}">${SIGNATURE}</span></div>
   <p style="${P_STYLE}">Hi ${params.recipientName},</p>
-  <p style="${P_STYLE}"><strong style="color:#fafafa">${params.inviterName}</strong> has invited you to join <strong style="color:#fafafa">${params.orgName}</strong> on the ATLAS Venture Intelligence platform.</p>
+  <p style="${P_STYLE}"><strong style="color:#fafafa">${params.inviterName}</strong> has invited you to join <strong style="color:#fafafa">${params.orgName}</strong> on the VENTEX Venture Intelligence platform.</p>
   <div style="${CARD_STYLE}">
     <div style="${LABEL_STYLE}">Your Role</div>
     <div style="${VALUE_STYLE}">${roleLabel}</div>
@@ -73,7 +73,7 @@ export async function sendInvitationEmail(params: SendInvitationEmailParams): Pr
     role,
     inviterName,
     inviteLink,
-    organizationName = "ATLAS",
+    organizationName = "VENTEX",
     expiresInDays = 30,
   } = params;
 
@@ -97,7 +97,7 @@ export async function sendInvitationEmail(params: SendInvitationEmailParams): Pr
         from: FROM_ADDRESS,
         to: recipientEmail,
         replyTo: REPLY_TO,
-        subject: `You've been invited to ${organizationName} on ATLAS`,
+        subject: `You've been invited to ${organizationName} on VENTEX`,
         html,
       });
 
@@ -136,7 +136,7 @@ export async function sendInvitationEmail(params: SendInvitationEmailParams): Pr
 
 /**
  * Build the invitation acceptance URL.
- * @param origin - The frontend origin (e.g., https://atlasventures.manus.space)
+ * @param origin - The frontend origin (e.g., https://ventex.manus.space)
  * @param token - The invitation token
  */
 export function buildInviteLink(origin: string, token: string): string {

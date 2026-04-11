@@ -1,4 +1,4 @@
-// 404 — ATLAS Branded Not Found Page
+// 404 — VENTEX Branded Not Found Page
 // Military-ops aesthetic matching the SpyOps login
 
 import { useLocation } from "wouter";
@@ -46,7 +46,7 @@ export default function NotFound() {
 
       {/* Corner decorations */}
       <div className="absolute top-6 left-6 text-[10px] font-mono tracking-[0.2em] text-white/20">
-        ATLAS // SECTOR NOT FOUND
+        VENTEX // SECTOR NOT FOUND
       </div>
       <div className="absolute top-6 right-6 text-[10px] font-mono tracking-[0.2em] text-white/20">
         <Shield className="size-3 inline mr-1" />

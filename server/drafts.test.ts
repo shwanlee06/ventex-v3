@@ -91,36 +91,36 @@ describe("Draft Center — Auto-Cleanup", () => {
 });
 
 describe("Draft Center — Routing & Navigation", () => {
-  it("Drafts page should be accessible without RequireAtlas wrapper", async () => {
+  it("Drafts page should be accessible without RequireVentex wrapper", async () => {
     const fs = await import("fs");
     const appSource = fs.readFileSync("./client/src/App.tsx", "utf-8");
     
-    // The drafts route should NOT be wrapped in RequireAtlas
+    // The drafts route should NOT be wrapped in RequireVentex
     const draftsRoute = appSource.match(/path="\/drafts"[\s\S]*?<\/Route>/);
     expect(draftsRoute).toBeTruthy();
-    expect(draftsRoute![0]).not.toContain("RequireAtlas");
+    expect(draftsRoute![0]).not.toContain("RequireVentex");
     expect(draftsRoute![0]).toContain("RequireAuth");
   });
 
-  it("Drafts nav item should not be atlasOnly in sidebar", async () => {
+  it("Drafts nav item should not be ventexOnly in sidebar", async () => {
     const fs = await import("fs");
     const sidebarSource = fs.readFileSync("./client/src/components/AppSidebar.tsx", "utf-8");
     
-    // Find the Drafts nav item — it should NOT have atlasOnly: true
+    // Find the Drafts nav item — it should NOT have ventexOnly: true
     const draftsItem = sidebarSource.match(/label:\s*"Drafts"[^}]+}/);
     expect(draftsItem).toBeTruthy();
-    expect(draftsItem![0]).not.toContain("atlasOnly: true");
+    expect(draftsItem![0]).not.toContain("ventexOnly: true");
   });
 
   it("Drafts indicator in topbar should be visible to all users", async () => {
     const fs = await import("fs");
     const topbarSource = fs.readFileSync("./client/src/components/Topbar.tsx", "utf-8");
     
-    // The drafts indicator should NOT be gated by isAtlas
+    // The drafts indicator should NOT be gated by isVentex
     const indicator = topbarSource.match(/pendingDraftCount > 0/);
     expect(indicator).toBeTruthy();
     
-    // Should not have isAtlas && pendingDraftCount
-    expect(topbarSource).not.toContain("isAtlas && pendingDraftCount > 0");
+    // Should not have isVentex && pendingDraftCount
+    expect(topbarSource).not.toContain("isVentex && pendingDraftCount > 0");
   });
 });

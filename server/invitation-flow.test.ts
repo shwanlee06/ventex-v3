@@ -11,7 +11,7 @@ function createAdminContext(): TrpcContext {
   const user: AuthenticatedUser = {
     id: 1,
     openId: "admin-user",
-    email: "admin@atlas.io",
+    email: "admin@ventex.io",
     name: "Admin User",
     loginMethod: "manus",
     role: "admin",
@@ -58,7 +58,7 @@ describe("Team Member Invitation Flow", () => {
       name: `InvTest ${testTimestamp} Partner`,
       role: "Partner",
       memberFunction: "Strategy & Vision",
-      email: `invtest-${testTimestamp}-partner@atlas.io`,
+      email: `invtest-${testTimestamp}-partner@ventex.io`,
       systemRole: "partner",
       origin: "https://test.example.com",
     });
@@ -100,11 +100,11 @@ describe("Team Member Invitation Flow", () => {
       .limit(1);
 
     expect(inv).toBeTruthy();
-    expect(inv.email).toBe(`invtest-${testTimestamp}-partner@atlas.io`);
+    expect(inv.email).toBe(`invtest-${testTimestamp}-partner@ventex.io`);
     expect(inv.role).toBe("partner");
     expect(inv.status).toBe("pending");
     expect(inv.teamMemberId).toBe(createdMemberId);
-    expect(inv.organizationId).toBe(1); // ATLAS org
+    expect(inv.organizationId).toBe(1); // VENTEX org
   });
 
   it("should create a member without email and NOT send invitation", async () => {
@@ -137,7 +137,7 @@ describe("Team Member Invitation Flow", () => {
     const revokedInvs = await db.select()
       .from(invitations)
       .where(and(
-        eq(invitations.email, `invtest-${testTimestamp}-partner@atlas.io`),
+        eq(invitations.email, `invtest-${testTimestamp}-partner@ventex.io`),
         eq(invitations.status, "revoked")
       ));
 
@@ -147,7 +147,7 @@ describe("Team Member Invitation Flow", () => {
     const pendingInvs = await db.select()
       .from(invitations)
       .where(and(
-        eq(invitations.email, `invtest-${testTimestamp}-partner@atlas.io`),
+        eq(invitations.email, `invtest-${testTimestamp}-partner@ventex.io`),
         eq(invitations.status, "pending")
       ));
 
@@ -162,7 +162,7 @@ describe("Team Member Invitation Flow", () => {
     expect(result).toBeTruthy();
     expect(result!.status).toBe("pending");
     expect(result!.role).toBe("partner");
-    expect(result!.email).toBe(`invtest-${testTimestamp}-partner@atlas.io`);
+    expect(result!.email).toBe(`invtest-${testTimestamp}-partner@ventex.io`);
   });
 
   it("should fail to resend invitation for member without email", async () => {

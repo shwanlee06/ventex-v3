@@ -1,4 +1,4 @@
-// ATLAS Continuous Learning Engine
+// VENTEX Continuous Learning Engine
 // Gap 3: Feedback loops, outcome tracking, recommendation calibration
 // Tracks whether agent recommendations were followed and what happened
 
@@ -174,7 +174,7 @@ export async function computeAgentPerformance(organizationId: number) {
           messages: [
             {
               role: "system",
-              content: "You are ATLAS AI calibration system. Analyze agent performance and suggest 2-3 specific tuning improvements in 2-3 sentences. Be concise.",
+              content: "You are VENTEX AI calibration system. Analyze agent performance and suggest 2-3 specific tuning improvements in 2-3 sentences. Be concise.",
             },
             {
               role: "user",

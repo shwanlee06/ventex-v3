@@ -1,4 +1,4 @@
-// ATLAS Real-time Agent Triggers
+// VENTEX Real-time Agent Triggers
 // Gap 4: Event-driven agent execution — instant response to mutations
 // Instead of waiting for 6-hour polling cycles, agents react immediately
 
@@ -266,7 +266,7 @@ registerTrigger(
         messages: [
           {
             role: "system",
-            content: "You are ATLAS, drafting a professional LP distribution notice. Keep it formal, concise (3-4 sentences), and include the key details.",
+            content: "You are VENTEX, drafting a professional LP distribution notice. Keep it formal, concise (3-4 sentences), and include the key details.",
           },
           {
             role: "user",

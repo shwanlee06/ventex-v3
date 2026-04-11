@@ -2,7 +2,7 @@ import { z } from "zod";
 import { eq, inArray, desc, and, ne } from "drizzle-orm";
 import { protectedProcedure, adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { logAudit, isAtlasTeam } from "../security/rbac";
+import { logAudit, isVentexTeam } from "../security/rbac";
 import {
   organizations,
   orgVentureAccess,
@@ -34,13 +34,13 @@ function normalizeOrg<T extends { sectors: unknown }>(org: T): T & { sectors: st
 }
 
 export const organizationsRouter = router({
-  // List all client organizations — basic list (all Atlas team members can see)
+  // List all client organizations — basic list (all Ventex team members can see)
   list: protectedProcedure
     .input(z.object({ includeArchived: z.boolean().optional() }).optional())
     .query(async ({ ctx, input }) => {
-      // All Atlas team members can see all clients; client users see only their own org
-      if (!isAtlasTeam(ctx.user)) {
-        // Non-Atlas users: return only their own organization if they have one
+      // All Ventex team members can see all clients; client users see only their own org
+      if (!isVentexTeam(ctx.user)) {
+        // Non-Ventex users: return only their own organization if they have one
         const db = await getDb();
         if (!db || !ctx.user.organizationId) return [];
         const rows = await db.select().from(organizations).where(eq(organizations.id, ctx.user.organizationId));
@@ -77,13 +77,13 @@ export const organizationsRouter = router({
       }));
     }),
 
-  // List all client organizations with aggregate metrics — for ATLAS dashboard
+  // List all client organizations with aggregate metrics — for VENTEX dashboard
   // By default excludes archived. Pass includeArchived: true to include them.
   listWithMetrics: protectedProcedure
     .input(z.object({ includeArchived: z.boolean().optional() }).optional())
     .query(async ({ ctx, input }) => {
-      // All Atlas team members can see all clients; client users see only their own org
-      if (!isAtlasTeam(ctx.user)) {
+      // All Ventex team members can see all clients; client users see only their own org
+      if (!isVentexTeam(ctx.user)) {
         const db = await getDb();
         if (!db || !ctx.user.organizationId) return [];
         const rows = await db.select().from(organizations).where(eq(organizations.id, ctx.user.organizationId));
@@ -340,7 +340,7 @@ export const organizationsRouter = router({
         entityName: created.name,
         action: "Client Onboarded",
         detail: `New client "${created.name}" onboarded (${input.subscriptionTier || "poc"} tier)`,
-        userName: "ATLAS Admin",
+        userName: "VENTEX Admin",
         activitySource: "atlas_ops",
       });
 
@@ -437,7 +437,7 @@ export const organizationsRouter = router({
         entityName: org.name,
         action: "Client Archived",
         detail: `Client "${org.name}" was archived`,
-        userName: "ATLAS Admin",
+        userName: "VENTEX Admin",
         activitySource: "atlas_ops",
       });
 
@@ -450,7 +450,7 @@ export const organizationsRouter = router({
         entityId: input.id,
         entityName: org.name,
         link: "/dashboard",
-        actorName: "ATLAS Admin",
+        actorName: "VENTEX Admin",
       });
 
       await logAudit({
@@ -490,7 +490,7 @@ export const organizationsRouter = router({
         entityName: org.name,
         action: "Client Restored",
         detail: `Client "${org.name}" was restored from archive`,
-        userName: "ATLAS Admin",
+        userName: "VENTEX Admin",
         activitySource: "atlas_ops",
       });
 
@@ -503,7 +503,7 @@ export const organizationsRouter = router({
         entityId: input.id,
         entityName: org.name,
         link: "/dashboard",
-        actorName: "ATLAS Admin",
+        actorName: "VENTEX Admin",
       });
 
       return { success: true, name: org.name };
@@ -545,7 +545,7 @@ export const organizationsRouter = router({
         entityName: org.name,
         action: "Client Deleted",
         detail: `Client "${org.name}" was permanently removed from the system`,
-        userName: "ATLAS Admin",
+        userName: "VENTEX Admin",
         activitySource: "atlas_ops",
       });
 
@@ -617,7 +617,7 @@ export const organizationsRouter = router({
           role: inv.role,
           token,
           invitedBy: ctx.user.id,
-          invitedByName: ctx.user.name || "ATLAS Admin",
+          invitedByName: ctx.user.name || "VENTEX Admin",
           expiresAt,
         });
         sent.push(inv.email);
@@ -803,7 +803,7 @@ export const organizationsRouter = router({
             role: inv.role,
             token,
             invitedBy: ctx.user.id,
-            invitedByName: ctx.user.name || "ATLAS Admin",
+            invitedByName: ctx.user.name || "VENTEX Admin",
             expiresAt,
           });
           sentEmails.push(inv.email);
@@ -824,7 +824,7 @@ export const organizationsRouter = router({
         entityName: org.name,
         action: "Client Onboarded",
         detail: `New client "${org.name}" fully onboarded (${input.subscriptionTier} tier, ${ventureIds.length} ventures, ${sentEmails.length} invitations)`,
-        userName: ctx.user.name || "ATLAS Admin",
+        userName: ctx.user.name || "VENTEX Admin",
         activitySource: "atlas_ops",
       });
 

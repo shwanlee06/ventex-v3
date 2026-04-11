@@ -117,7 +117,7 @@ export async function runEscalationSweep(organizationId: number): Promise<Escala
           },
         });
 
-        // Create notification for ATLAS operators
+        // Create notification for VENTEX operators
         await createNotification({
           organizationId,
           type: NOTIF_TYPES.SMART_ALERT,

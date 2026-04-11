@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { resolveOrgId } from "./orgScope";
 
 describe("resolveOrgId — cross-tenant isolation", () => {
-  // ── ATLAS team (owner/admin) ────────────────────────────────────────
-  describe("ATLAS team users", () => {
+  // ── VENTEX team (owner/admin) ────────────────────────────────────────
+  describe("VENTEX team users", () => {
     const ownerUser = { role: "owner", organizationId: null };
     const adminUser = { role: "admin", organizationId: null };
 
@@ -16,13 +16,13 @@ describe("resolveOrgId — cross-tenant isolation", () => {
       expect(resolveOrgId(adminUser, 2)).toBe(2);
     });
 
-    it("ATLAS team with no orgId returns null (view all)", () => {
+    it("VENTEX team with no orgId returns null (view all)", () => {
       expect(resolveOrgId(ownerUser, null)).toBeNull();
       expect(resolveOrgId(ownerUser, undefined)).toBeNull();
     });
   });
 
-  // ── Partner users (external, not ATLAS team) ─────────────────────────
+  // ── Partner users (external, not VENTEX team) ─────────────────────────
   describe("Partner users", () => {
     const partnerWithOrg = { role: "partner", organizationId: 3 };
     const partnerNoOrg = { role: "partner", organizationId: null };
@@ -53,16 +53,16 @@ describe("resolveOrgId — cross-tenant isolation", () => {
       expect(() => resolveOrgId(clientUser, 999)).toThrow("Access denied");
     });
 
-    it("client CANNOT access org 1 (ATLAS org) — throws FORBIDDEN", () => {
+    it("client CANNOT access org 1 (VENTEX org) — throws FORBIDDEN", () => {
       expect(() => resolveOrgId(clientUser, 1)).toThrow("Access denied");
     });
   });
 
   // ── Edge cases ──────────────────────────────────────────────────────
   describe("Edge cases", () => {
-    it("user with no organization is treated as ATLAS team (internal user)", () => {
+    it("user with no organization is treated as VENTEX team (internal user)", () => {
       // Business logic: users with no org assignment (null) are considered
-      // ATLAS team members, so they can access any org
+      // VENTEX team members, so they can access any org
       const noOrgUser = { role: "user", organizationId: null };
       expect(resolveOrgId(noOrgUser, 2)).toBe(2);
     });
@@ -73,7 +73,7 @@ describe("resolveOrgId — cross-tenant isolation", () => {
       expect(result).toBeNull();
     });
 
-    it("ATLAS team user with org assignment can still access any org", () => {
+    it("VENTEX team user with org assignment can still access any org", () => {
       // Edge case: admin who also has an org assigned
       const adminWithOrg = { role: "admin", organizationId: 5 };
       expect(resolveOrgId(adminWithOrg, 2)).toBe(2);

@@ -1,8 +1,8 @@
 /**
  * Organization Scope Middleware
  * 
- * Validates that non-ATLAS-team users can only access data from their own organization.
- * ATLAS team (owner, admin, partner) can access any org's data.
+ * Validates that non-VENTEX-team users can only access data from their own organization.
+ * VENTEX team (owner, admin, partner) can access any org's data.
  * 
  * Usage in tRPC procedures:
  *   someProc: protectedProcedure
@@ -18,11 +18,11 @@
  */
 
 import { TRPCError } from "@trpc/server";
-import { isAtlasTeam } from "./rbac";
+import { isVentexTeam } from "./rbac";
 
 /**
  * Resolves the effective organizationId for a query.
- * - ATLAS team: uses the requested orgId (can view any org)
+ * - VENTEX team: uses the requested orgId (can view any org)
  * - Client users: forced to their own orgId, throws FORBIDDEN if mismatch
  * 
  * Returns the effective orgId to use in queries.
@@ -31,14 +31,14 @@ export function resolveOrgId(
   user: { role: string; organizationId?: number | null },
   requestedOrgId?: number | null
 ): number | null {
-  const isAdmin = isAtlasTeam(user);
+  const isAdmin = isVentexTeam(user);
 
   if (isAdmin) {
-    // ATLAS team can scope to any org, or null for all
+    // VENTEX team can scope to any org, or null for all
     return requestedOrgId ?? null;
   }
 
-  // Non-ATLAS user: must have an org
+  // Non-VENTEX user: must have an org
   if (!user.organizationId) {
     throw new TRPCError({
       code: "FORBIDDEN",
@@ -82,7 +82,7 @@ export const enforceOrgScope = async (opts: any) => {
 
 /**
  * tRPC middleware for procedures with optional organizationId input.
- * Same validation but allows null orgId for ATLAS team "view all" mode.
+ * Same validation but allows null orgId for VENTEX team "view all" mode.
  */
 export const enforceOrgScopeOptional = async (opts: any) => {
   const { ctx, input, next } = opts;

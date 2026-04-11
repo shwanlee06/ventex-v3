@@ -6,7 +6,7 @@ import { invokeLLM } from "../_core/llm";
 import { eq, and, sql, desc, like, inArray, isNull, gte } from "drizzle-orm";
 import { storagePut } from "../storage";
 import { nanoid } from "nanoid";
-import { isAtlasTeam, getOrgVentureIds, resolveVentureScope, logAudit } from "../security/rbac";
+import { isVentexTeam, getOrgVentureIds, resolveVentureScope, logAudit } from "../security/rbac";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { onStageAdvanced } from "../intelligence/realtimeTriggers";
 import { enforceRateLimit } from "../security/rateLimit";
@@ -16,11 +16,11 @@ function slugify(name: string) {
 }
 
 export const venturesRouter = router({
-  // List all ventures with their org assignments — for ATLAS admin grouped view
+  // List all ventures with their org assignments — for VENTEX admin grouped view
   listWithOrgs: protectedProcedure.query(async ({ ctx }) => {
     const db = await getDb();
     if (!db) return [];
-    if (!isAtlasTeam(ctx.user)) return []; // admin only
+    if (!isVentexTeam(ctx.user)) return []; // admin only
 
     const allVentures = await db.select().from(ventures).orderBy(desc(ventures.createdAt));
     const allAccess = await db.select().from(orgVentureAccess);
@@ -44,7 +44,7 @@ export const venturesRouter = router({
     }));
   }),
 
-  // List ventures — scoped by org for clients, optionally scoped for ATLAS admin
+  // List ventures — scoped by org for clients, optionally scoped for VENTEX admin
   list: protectedProcedure
     .input(z.object({ organizationId: z.number().optional() }).optional())
     .query(async ({ ctx, input }) => {
@@ -53,7 +53,7 @@ export const venturesRouter = router({
 
       const ventureIds = await resolveVentureScope(ctx.user, input?.organizationId);
 
-      // No filtering needed (ATLAS admin with no org selected)
+      // No filtering needed (VENTEX admin with no org selected)
       if (ventureIds === null) {
         return db.select().from(ventures).orderBy(desc(ventures.createdAt));
       }
@@ -72,8 +72,8 @@ export const venturesRouter = router({
     const rows = await db.select().from(ventures).where(eq(ventures.slug, input.slug)).limit(1);
     if (!rows[0]) return null;
 
-    // Check org access for non-ATLAS users
-    if (!isAtlasTeam(ctx.user)) {
+    // Check org access for non-VENTEX users
+    if (!isVentexTeam(ctx.user)) {
       const ventureIds = await getOrgVentureIds(ctx.user);
       if (ventureIds && !ventureIds.includes(rows[0].id)) return null;
     }
@@ -88,7 +88,7 @@ export const venturesRouter = router({
     const rows = await db.select().from(ventures).where(eq(ventures.id, input.id)).limit(1);
     if (!rows[0]) return null;
 
-    if (!isAtlasTeam(ctx.user)) {
+    if (!isVentexTeam(ctx.user)) {
       const ventureIds = await getOrgVentureIds(ctx.user);
       if (ventureIds && !ventureIds.includes(rows[0].id)) return null;
     }
@@ -96,7 +96,7 @@ export const venturesRouter = router({
     return rows[0];
   }),
 
-  // Create venture — ATLAS team only
+  // Create venture — VENTEX team only
   create: protectedProcedure.input(z.object({
     name: z.string(),
     sector: z.string(),
@@ -110,8 +110,8 @@ export const venturesRouter = router({
     priority: z.string().default("Medium"),
     organizationId: z.number().optional(),
   })).mutation(async ({ input, ctx }) => {
-    if (!isAtlasTeam(ctx.user)) {
-      throw new Error("Only ATLAS team can create ventures");
+    if (!isVentexTeam(ctx.user)) {
+      throw new Error("Only VENTEX team can create ventures");
     }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
@@ -173,7 +173,7 @@ export const venturesRouter = router({
     return newVenture;
   }),
 
-  // Update venture — ATLAS team only
+  // Update venture — VENTEX team only
   update: protectedProcedure.input(z.object({
     id: z.number(),
     name: z.string().optional(),
@@ -187,8 +187,8 @@ export const venturesRouter = router({
     nextMilestone: z.string().optional(),
     priority: z.string().optional(),
   })).mutation(async ({ input, ctx }) => {
-    if (!isAtlasTeam(ctx.user)) {
-      throw new Error("Only ATLAS team can update ventures");
+    if (!isVentexTeam(ctx.user)) {
+      throw new Error("Only VENTEX team can update ventures");
     }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
@@ -272,14 +272,14 @@ export const venturesRouter = router({
     return rows;
   }),
 
-  // Assign team member to venture — ATLAS team only
+  // Assign team member to venture — VENTEX team only
   assignTeam: protectedProcedure.input(z.object({
     ventureId: z.number(),
     memberId: z.number(),
     responsibility: z.string().optional(),
   })).mutation(async ({ input, ctx }) => {
-    if (!isAtlasTeam(ctx.user)) {
-      throw new Error("Only ATLAS team can assign team members");
+    if (!isVentexTeam(ctx.user)) {
+      throw new Error("Only VENTEX team can assign team members");
     }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
@@ -299,13 +299,13 @@ export const venturesRouter = router({
     return { success: true };
   }),
 
-  // Remove team member from venture — ATLAS team only
+  // Remove team member from venture — VENTEX team only
   removeTeam: protectedProcedure.input(z.object({
     ventureId: z.number(),
     memberId: z.number(),
   })).mutation(async ({ input, ctx }) => {
-    if (!isAtlasTeam(ctx.user)) {
-      throw new Error("Only ATLAS team can remove team members");
+    if (!isVentexTeam(ctx.user)) {
+      throw new Error("Only VENTEX team can remove team members");
     }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
@@ -379,10 +379,10 @@ export const venturesRouter = router({
     return { success: true, url };
   }),
 
-  // Delete file — ATLAS team only
+  // Delete file — VENTEX team only
   deleteFile: protectedProcedure.input(z.object({ fileId: z.number() })).mutation(async ({ input, ctx }) => {
-    if (!isAtlasTeam(ctx.user)) {
-      throw new Error("Only ATLAS team can delete files");
+    if (!isVentexTeam(ctx.user)) {
+      throw new Error("Only VENTEX team can delete files");
     }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
@@ -420,10 +420,10 @@ export const venturesRouter = router({
     return { success: true };
   }),
 
-  // Delete folder — ATLAS team only
+  // Delete folder — VENTEX team only
   deleteFolder: protectedProcedure.input(z.object({ folderId: z.number() })).mutation(async ({ input, ctx }) => {
-    if (!isAtlasTeam(ctx.user)) {
-      throw new Error("Only ATLAS team can delete folders");
+    if (!isVentexTeam(ctx.user)) {
+      throw new Error("Only VENTEX team can delete folders");
     }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
@@ -574,7 +574,7 @@ export const venturesRouter = router({
     .mutation(async ({ ctx }) => {
       const db = await getDb();
       if (!db) return { updated: 0 };
-      if (!isAtlasTeam(ctx.user)) return { updated: 0 };
+      if (!isVentexTeam(ctx.user)) return { updated: 0 };
 
       // Get all ventures with any null intelligence fields
       const allVentures = await db.select().from(ventures);
@@ -640,7 +640,7 @@ export const venturesRouter = router({
     .mutation(async ({ ctx }) => {
       const db = await getDb();
       if (!db) return { updated: 0 };
-      if (!isAtlasTeam(ctx.user)) return { updated: 0 };
+      if (!isVentexTeam(ctx.user)) return { updated: 0 };
 
       const allVentures = await db.select().from(ventures);
       const allTasks = await db.select().from(tasks);

@@ -35,7 +35,7 @@ export function useIdleTimeout() {
     clearTimers();
     // Clear local storage
     localStorage.removeItem("atlas_operator");
-    localStorage.removeItem("atlas_demo_session");
+    localStorage.removeItem("ventex_demo_session");
     try {
       await logout();
     } catch {

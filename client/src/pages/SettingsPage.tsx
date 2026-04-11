@@ -29,7 +29,7 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { toast } from "sonner";
 import { logAction } from "@/lib/operatorSession";
-import { isAtlasTeam } from "@/lib/atlas";
+import { isVentexTeam } from "@/lib/ventex";
 import { usePreviewMode } from "@/contexts/PreviewMode";
 
 const SOC2_ITEMS = [
@@ -110,7 +110,7 @@ export default function SettingsConfigPage() {
   const darkMode = theme === "dark";
   const { user: authUser } = useAuth();
   const { isPreviewMode } = usePreviewMode();
-  const isAtlas = isAtlasTeam(authUser) && !isPreviewMode;
+  const isVentex = isVentexTeam(authUser) && !isPreviewMode;
   const utils = trpc.useUtils();
 
   const { data: profile, isLoading } = trpc.settings.getProfile.useQuery(undefined, {
@@ -963,7 +963,7 @@ export default function SettingsConfigPage() {
               </div>
 
               {/* Email Integration Test */}
-              {isAtlas && (
+              {isVentex && (
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
                   <Card className="p-4 sm:p-6 bg-card border-border">
                     <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-2">

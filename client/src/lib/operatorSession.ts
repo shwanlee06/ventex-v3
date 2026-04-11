@@ -1,4 +1,4 @@
-// Operator Session Tracking — ATLAS System
+// Operator Session Tracking — VENTEX System
 // Tracks operator logins, activity, and session history in localStorage
 
 export interface SessionEntry {
@@ -15,8 +15,8 @@ export interface ActionEntry {
   detail?: string;
 }
 
-const SESSION_KEY = "atlas_sessions";
-const CURRENT_SESSION_KEY = "atlas_current_session_id";
+const SESSION_KEY = "ventex_sessions";
+const CURRENT_SESSION_KEY = "ventex_current_session_id";
 const MAX_SESSIONS = 50;
 
 function generateSessionId(): string {

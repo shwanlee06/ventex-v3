@@ -3,11 +3,11 @@
  * Wraps the existing emailService functions with proper input validation.
  *
  * Types: invitation | task_overdue | stage_advance | distribution_notice
- * From: atlas@aurovia.com
+ * From: ventex@aurovia.com
  */
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
-import { isAtlasTeam } from "../security/rbac";
+import { isVentexTeam } from "../security/rbac";
 import { enforceRateLimit } from "../security/rateLimit";
 import {
   sendTaskFollowUp,
@@ -19,7 +19,7 @@ import {
 } from "../emailService";
 import { Resend } from "resend";
 
-const FROM_ADDRESS = "ATLAS <contact@aurovia.co>";
+const FROM_ADDRESS = "VENTEX <contact@aurovia.co>";
 const REPLY_TO = "slee72106@gmail.com";
 
 const BODY_STYLE = `font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; background: #fafafa; color: #1a1a1a; padding: 40px 20px; margin: 0; line-height: 1.6;`;
@@ -33,7 +33,7 @@ const VALUE_STYLE = `font-size: 15px; font-weight: 500; color: #1a1a1a; margin-b
 const BUTTON_STYLE = `display: inline-block; background: #1a1a1a; color: #ffffff; padding: 12px 28px; border-radius: 6px; font-size: 14px; font-weight: 500; text-decoration: none;`;
 const FOOTER_STYLE = `border-top: 1px solid #e5e5e5; margin-top: 32px; padding-top: 16px;`;
 const FOOTER_TEXT = `font-size: 12px; color: #999; margin: 0;`;
-const SIGNATURE = `ATLAS · Powered by Aurovia`;
+const SIGNATURE = `VENTEX · Powered by Aurovia`;
 
 function invitationEmailHtml(params: {
   recipientName: string;
@@ -47,7 +47,7 @@ function invitationEmailHtml(params: {
 <body style="${BODY_STYLE}"><div style="${CONTAINER_STYLE}">
   <div style="${HEADER_STYLE}"><span style="${HEADER_TEXT}">${SIGNATURE}</span></div>
   <p style="${P_STYLE}">Hi ${params.recipientName},</p>
-  <p style="${P_STYLE}">${params.inviterName} has added you to ${params.orgName}'s portfolio on ATLAS.</p>
+  <p style="${P_STYLE}">${params.inviterName} has added you to ${params.orgName}'s portfolio on VENTEX.</p>
   <div style="${CARD_STYLE}">
     <div style="${LABEL_STYLE}">Your Role</div>
     <div style="${VALUE_STYLE}">${roleLabel}</div>
@@ -116,9 +116,9 @@ export const emailRouter = router({
       // Rate limit: 10 emails per hour per user
       enforceRateLimit("emailSend", ctx.user!.id);
 
-      // Only ATLAS team can send emails
-      if (!isAtlasTeam(ctx.user)) {
-        return { success: false, error: "Unauthorized — ATLAS team only" };
+      // Only VENTEX team can send emails
+      if (!isVentexTeam(ctx.user)) {
+        return { success: false, error: "Unauthorized — VENTEX team only" };
       }
 
       const resend = new Resend(process.env.RESEND_API_KEY || "");
@@ -135,8 +135,8 @@ export const emailRouter = router({
             // Use invitation template
             const html = invitationEmailHtml({
               recipientName: c.recipientName || "there",
-              inviterName: c.inviterName || ctx.user.name || "ATLAS Admin",
-              orgName: c.orgName || "ATLAS",
+              inviterName: c.inviterName || ctx.user.name || "VENTEX Admin",
+              orgName: c.orgName || "VENTEX",
               role: c.role || "client",
               inviteLink: c.inviteLink || c.actionUrl || "",
             });
@@ -144,7 +144,7 @@ export const emailRouter = router({
               from: FROM_ADDRESS,
               to: toAddr,
               replyTo: REPLY_TO,
-              subject: input.subject || `You've been invited to ${c.orgName || "ATLAS"} on ATLAS`,
+              subject: input.subject || `You've been invited to ${c.orgName || "VENTEX"} on VENTEX`,
               html,
             });
             if (error) return { success: false, error: error.message };
@@ -235,7 +235,7 @@ export const emailRouter = router({
   sendTest: protectedProcedure
     .input(z.object({ to: z.string().email() }))
     .mutation(async ({ ctx, input }) => {
-      if (!isAtlasTeam(ctx.user)) {
+      if (!isVentexTeam(ctx.user)) {
         return { success: false, error: "Unauthorized" };
       }
       const resend = new Resend(process.env.RESEND_API_KEY || "");
@@ -247,12 +247,12 @@ export const emailRouter = router({
           from: FROM_ADDRESS,
           to: input.to,
           replyTo: REPLY_TO,
-          subject: "ATLAS — Email Configuration Test",
+          subject: "VENTEX — Email Configuration Test",
           html: `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
 <body style="${BODY_STYLE}"><div style="${CONTAINER_STYLE}">
   <div style="${HEADER_STYLE}"><span style="${HEADER_TEXT}">${SIGNATURE}</span></div>
-  <p style="${P_STYLE}">This is a test email from ATLAS to confirm your Resend integration is working.</p>
-  <p style="${P_STYLE}">Sent by: ${ctx.user.name || "ATLAS Admin"}</p>
+  <p style="${P_STYLE}">This is a test email from VENTEX to confirm your Resend integration is working.</p>
+  <p style="${P_STYLE}">Sent by: ${ctx.user.name || "VENTEX Admin"}</p>
   <p style="${P_STYLE}">Timestamp: ${new Date().toISOString()}</p>
   <div style="${FOOTER_STYLE}"><p style="${FOOTER_TEXT}">${SIGNATURE}</p></div>
 </div></body></html>`,

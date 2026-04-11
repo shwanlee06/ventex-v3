@@ -3,7 +3,7 @@ import { publicProcedure, protectedProcedure, adminProcedure, router } from "../
 import { getDb } from "../db";
 import { tasks, activityLog, ventures, orgVentureAccess, organizations, ventureTeam, teamMembers } from "../../drizzle/schema";
 import { eq, desc, and, sql, inArray, isNull, ne } from "drizzle-orm";
-import { isAtlasTeam, getOrgVentureIds, resolveVentureScope, logAudit } from "../security/rbac";
+import { isVentexTeam, getOrgVentureIds, resolveVentureScope, logAudit } from "../security/rbac";
 import { createNotification, createBulkNotifications, NOTIF_TYPES } from "../notificationHelper";
 import { onTaskCompleted, onTaskOverdue } from "../intelligence/realtimeTriggers";
 
@@ -29,7 +29,7 @@ export function getOverdueSeverity(daysOverdue: number): "critical" | "warning" 
 }
 
 export const tasksRouter = router({
-  // List tasks — scoped by org for clients, optionally scoped for ATLAS admin
+  // List tasks — scoped by org for clients, optionally scoped for VENTEX admin
   list: protectedProcedure
     .input(z.object({ organizationId: z.number().optional() }).optional())
     .query(async ({ ctx, input }) => {
@@ -54,7 +54,7 @@ export const tasksRouter = router({
     const rows = await db.select().from(tasks).where(eq(tasks.id, input.id)).limit(1);
     if (!rows[0]) return null;
 
-    if (!isAtlasTeam(ctx.user) && rows[0].ventureId) {
+    if (!isVentexTeam(ctx.user) && rows[0].ventureId) {
       const ventureIds = await getOrgVentureIds(ctx.user);
       if (ventureIds && !ventureIds.includes(rows[0].ventureId)) return null;
     }
@@ -78,7 +78,7 @@ export const tasksRouter = router({
     status: z.string().default("open"),
     description: z.string().optional(),
   })).mutation(async ({ input, ctx }) => {
-    if (!isAtlasTeam(ctx.user) && input.ventureId) {
+    if (!isVentexTeam(ctx.user) && input.ventureId) {
       const ventureIds = await getOrgVentureIds(ctx.user);
       if (ventureIds && !ventureIds.includes(input.ventureId)) {
         throw new Error("You can only create tasks for your assigned ventures");
@@ -174,8 +174,8 @@ export const tasksRouter = router({
   }),
 
   delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
-    if (!isAtlasTeam(ctx.user)) {
-      throw new Error("Only ATLAS team can delete tasks");
+    if (!isVentexTeam(ctx.user)) {
+      throw new Error("Only VENTEX team can delete tasks");
     }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
@@ -260,7 +260,7 @@ export const tasksRouter = router({
 
   /**
    * Get overdue task summary grouped by client organization.
-   * Admin only — for the ATLAS dashboard overview.
+   * Admin only — for the VENTEX dashboard overview.
    */
   overdueByClient: adminProcedure.query(async () => {
     const db = await getDb();
@@ -368,7 +368,7 @@ export const tasksRouter = router({
 
   /**
    * Get workload summary per team member — tasks assigned, overdue, completion rate.
-   * Admin only — for ATLAS Team capacity view.
+   * Admin only — for VENTEX Team capacity view.
    */
   workloadSummary: adminProcedure.query(async () => {
     const db = await getDb();

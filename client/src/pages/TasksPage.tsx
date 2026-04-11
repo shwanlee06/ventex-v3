@@ -6,7 +6,7 @@ import StatusBadge from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { isAtlasTeam } from "@/lib/atlas";
+import { isVentexTeam } from "@/lib/ventex";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ListChecks, Plus, CheckCircle2, Clock, AlertTriangle,
@@ -57,7 +57,7 @@ function formatDate(d: string | null): string {
 export default function TasksPage() {
   const utils = trpc.useUtils();
   const { user } = useAuth();
-  const isAdmin = isAtlasTeam(user);
+  const isAdmin = isVentexTeam(user);
 
   const tasksQ = trpc.tasks.list.useQuery();
   const metricsQ = trpc.tasks.metrics.useQuery();

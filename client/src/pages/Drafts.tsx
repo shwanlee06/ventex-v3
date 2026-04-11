@@ -396,7 +396,7 @@ export default function DraftsPage() {
                 {searchQuery
                   ? "Try adjusting your search or filters"
                   : activeTab === "pending"
-                    ? "ATLAS AI will generate drafts as it works on your ventures"
+                    ? "VENTEX AI will generate drafts as it works on your ventures"
                     : activeTab === "sent"
                       ? "Approved drafts will appear here"
                       : "Dismissed drafts will appear here"

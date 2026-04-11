@@ -15,7 +15,7 @@ import {
   tasks,
   distributions,
 } from "../../drizzle/schema";
-import { isAtlasTeam } from "../security/rbac";
+import { isVentexTeam } from "../security/rbac";
 import { onClientPortalAction, onTaskCompleted, onStageAdvanced } from "../intelligence/realtimeTriggers";
 import { getNextStage } from "../../shared/pipeline";
 import { activityLog, ventureVelocity } from "../../drizzle/schema";
@@ -169,8 +169,8 @@ function translateEvent(e: RawEvent): TranslatedEvent {
       const atRiskMatch = e.message.match(/(\d+)\s*(?:at risk|needs? attention)/i);
       const atRisk = atRiskMatch ? parseInt(atRiskMatch[1]) : 0;
       const summary = atRisk > 0
-        ? `ATLAS is actively managing ${count} ventures. ${atRisk} ${atRisk === 1 ? "needs" : "need"} closer attention.`
-        : `ATLAS is actively managing ${count} ventures. Everything is on track.`;
+        ? `VENTEX is actively managing ${count} ventures. ${atRisk} ${atRisk === 1 ? "needs" : "need"} closer attention.`
+        : `VENTEX is actively managing ${count} ventures. Everything is on track.`;
       return {
         id: e.id, summary, date: e.createdAt, ventureName, ventureId, fromStage, toStage,
         cardType: "watching", actionFlow: null, actionLabel: null,
@@ -404,7 +404,7 @@ export const portalRouter = {
         throw new TRPCError({ code: "NOT_FOUND", message: "Organization not found" });
 
       // Access control
-      const isAdmin = isAtlasTeam(ctx.user);
+      const isAdmin = isVentexTeam(ctx.user);
       if (!isAdmin && ctx.user.organizationId !== org.id) {
         throw new TRPCError({ code: "FORBIDDEN", message: "You do not have access to this portal" });
       }
@@ -483,7 +483,7 @@ export const portalRouter = {
       let velocitySummary: string;
       if (advancedCount === 0 && overdueFlags === 0 && distributionEvents === 0) {
         velocitySummary =
-          "ATLAS is monitoring your portfolio. We'll surface anything that needs your attention.";
+          "VENTEX is monitoring your portfolio. We'll surface anything that needs your attention.";
       } else {
         const parts: string[] = [];
         if (advancedCount > 0)
@@ -492,7 +492,7 @@ export const portalRouter = {
           parts.push(`caught ${overdueFlags} item${overdueFlags !== 1 ? "s" : ""} before ${overdueFlags !== 1 ? "they became" : "it became"} a problem`);
         if (distributionEvents > 0)
           parts.push(`kept ${distributionEvents} distribution${distributionEvents !== 1 ? "s" : ""} on track`);
-        velocitySummary = `This week, ATLAS ${parts.join(", ")}.`;
+        velocitySummary = `This week, VENTEX ${parts.join(", ")}.`;
       }
 
       const access = await db
@@ -724,7 +724,7 @@ export const portalRouter = {
       if (!event) throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
 
       // Verify access
-      const isAdmin = isAtlasTeam(ctx.user);
+      const isAdmin = isVentexTeam(ctx.user);
       if (!isAdmin && ctx.user.organizationId !== event.organizationId) {
         throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
       }
@@ -769,7 +769,7 @@ export const portalRouter = {
         // Mark the blocker as resolved
         return {
           success: true,
-          message: "Venture unblocked. ATLAS will continue monitoring.",
+          message: "Venture unblocked. VENTEX will continue monitoring.",
           actionFlow: input.actionFlow,
         };
       }
@@ -783,8 +783,8 @@ export const portalRouter = {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
 
-      // Verify access: user must be ATLAS team or have org access to this venture
-      const isAdmin = isAtlasTeam(ctx.user);
+      // Verify access: user must be VENTEX team or have org access to this venture
+      const isAdmin = isVentexTeam(ctx.user);
       if (!isAdmin) {
         const [access] = await db.select({ id: orgVentureAccess.id })
           .from(orgVentureAccess)
@@ -818,7 +818,7 @@ export const portalRouter = {
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
 
       // Verify access
-      const isAdmin = isAtlasTeam(ctx.user);
+      const isAdmin = isVentexTeam(ctx.user);
       if (!isAdmin) {
         const [access] = await db.select({ id: orgVentureAccess.id })
           .from(orgVentureAccess)
@@ -1002,9 +1002,9 @@ export const portalRouter = {
       const [org] = await db.select().from(organizations).where(eq(organizations.slug, input.orgSlug)).limit(1);
       if (!org) throw new TRPCError({ code: "NOT_FOUND", message: "Organization not found" });
 
-      // Access check: must be ATLAS team OR belong to this org
-      const atlas = isAtlasTeam(ctx.user);
-      if (!atlas && ctx.user.organizationId !== org.id) {
+      // Access check: must be VENTEX team OR belong to this org
+      const ventex = isVentexTeam(ctx.user);
+      if (!ventex && ctx.user.organizationId !== org.id) {
         throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
       }
 
@@ -1045,9 +1045,9 @@ DISTRIBUTIONS (${orgDists.length} total, ${orgDists.filter((d: any) => d.status 
 ${orgDists.slice(0, 15).map((d: any) => `- ${d.label || "Distribution"} | ${d.status} | $${Number(d.amount || 0).toLocaleString()}`).join("\n")}
 `;
 
-      const systemPrompt = `You are the ATLAS Portfolio Assistant for ${org.name}. You help this client understand their venture portfolio, track progress, and make informed decisions.
+      const systemPrompt = `You are the VENTEX Portfolio Assistant for ${org.name}. You help this client understand their venture portfolio, track progress, and make informed decisions.
 
-You have access ONLY to this client's data — never reference other clients or internal ATLAS operations.
+You have access ONLY to this client's data — never reference other clients or internal VENTEX operations.
 
 Your capabilities:
 1. Answer questions about their ventures, tasks, and distributions

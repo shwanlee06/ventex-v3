@@ -39,7 +39,7 @@ export default function DashboardScreen() {
         {/* Header */}
         <View style={s.header}>
           <Text style={s.title}>ROYALTON</Text>
-          <Text style={s.subtitle}>ATLAS</Text>
+          <Text style={s.subtitle}>VENTEX</Text>
         </View>
 
         {/* Stat Cards 2x2 */}

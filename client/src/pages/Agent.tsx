@@ -59,8 +59,8 @@ interface StoredMessage {
 }
 
 
-const CHATS_INDEX_KEY = "atlas_chat_index";
-const CHAT_PREFIX = "atlas_chat_";
+const CHATS_INDEX_KEY = "ventex_chat_index";
+const CHAT_PREFIX = "ventex_chat_";
 const MAX_MESSAGES = 50;
 
 
@@ -105,7 +105,7 @@ function deleteChatStorage(chatId: string) {
 
 function migrateOldStorage(): string | null {
   try {
-    const oldKey = "atlas_chat_history";
+    const oldKey = "ventex_chat_history";
     const raw = localStorage.getItem(oldKey);
     if (!raw) return null;
     const stored: StoredMessage[] = JSON.parse(raw);
@@ -333,7 +333,7 @@ export default function Agent() {
     if (msgs.length === 0) return;
     const lines = msgs.map(m => {
       const time = m.timestamp.toLocaleString();
-      const role = m.role === "user" ? "You" : "ATLAS";
+      const role = m.role === "user" ? "You" : "VENTEX";
       return `[${time}] ${role}:\n${m.content}\n`;
     });
     const content = `${entry?.title || "Conversation"}\nExported: ${new Date().toLocaleString()}\n\n${lines.join("\n---\n\n")}`;
@@ -341,7 +341,7 @@ export default function Agent() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `atlas-${entry?.title?.replace(/[^a-zA-Z0-9]/g, "-").slice(0, 30) || chatId}.txt`;
+    a.download = `ventex-${entry?.title?.replace(/[^a-zA-Z0-9]/g, "-").slice(0, 30) || chatId}.txt`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success("Exported");
@@ -528,7 +528,7 @@ export default function Agent() {
   };
 
   return (
-    <DashboardLayout title="Concierge" subtitle="ATLAS INTELLIGENCE">
+    <DashboardLayout title="Concierge" subtitle="VENTEX INTELLIGENCE">
       <div className="flex flex-col h-[calc(100vh-3.5rem)] overflow-hidden">
 
         {/* ── Minimal top bar ──────────────────────────────────────── */}

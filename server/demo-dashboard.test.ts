@@ -68,7 +68,7 @@ describe("Demo Dashboard", () => {
     it("includes sidebar labels for all navigation items", () => {
       const expectedLabels = [
         "Dashboard", "Activity", "Oversight", "AI Concierge",
-        "AI Agents", "Blueprints", "ATLAS Team", "Client Contacts",
+        "AI Agents", "Blueprints", "VENTEX Team", "Client Contacts",
         "Onboard Client", "Drafts", "Settings"
       ];
       for (const label of expectedLabels) {
@@ -179,7 +179,7 @@ describe("Demo Dashboard", () => {
     it("has ConciergeView with chat interface", () => {
       expect(source).toContain("function ConciergeView");
       expect(source).toContain("AI Concierge");
-      expect(source).toContain("Ask ATLAS anything");
+      expect(source).toContain("Ask VENTEX anything");
     });
 
     it("has AgentsView with agent cards and metrics", () => {
@@ -200,7 +200,7 @@ describe("Demo Dashboard", () => {
 
     it("has TeamView with team member cards", () => {
       expect(source).toContain("function TeamView");
-      expect(source).toContain("ATLAS Team");
+      expect(source).toContain("VENTEX Team");
     });
 
     it("has ContactsView with contact list", () => {
@@ -465,7 +465,7 @@ describe("Demo Dashboard", () => {
       expect(source).toContain("function ClientMessagesView");
       expect(source).toContain("Messages");
       expect(source).toContain("Shwan Jafar");
-      expect(source).toContain("ATLAS AI");
+      expect(source).toContain("VENTEX AI");
       expect(source).toContain("unread");
     });
 
@@ -494,8 +494,8 @@ describe("Demo Dashboard", () => {
         if (line.includes("import ")) continue;
         // Check visible text strings
         if (line.includes('"') && line.toLowerCase().includes("manus")) {
-          // Allow ATLAS_LOGO_URL and similar technical references
-          if (line.includes("ATLAS_LOGO_URL") || line.includes("manus-")) continue;
+          // Allow VENTEX_LOGO_URL and similar technical references
+          if (line.includes("VENTEX_LOGO_URL") || line.includes("manus-")) continue;
           fail(`Found Manus reference in visible content: ${line.trim()}`);
         }
       }

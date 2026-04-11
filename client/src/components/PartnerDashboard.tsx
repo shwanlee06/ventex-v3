@@ -168,7 +168,7 @@ export default function PartnerDashboard({ onNavigate }: PartnerDashboardProps) 
           <Card className="p-8 text-center bg-card border-border">
             <Layers3 className="size-8 text-muted-foreground/40 mx-auto mb-3" />
             <p className="text-sm text-muted-foreground">No active ventures assigned yet.</p>
-            <p className="text-xs text-muted-foreground/60 mt-1">Your ATLAS team will assign ventures to your portfolio.</p>
+            <p className="text-xs text-muted-foreground/60 mt-1">Your VENTEX team will assign ventures to your portfolio.</p>
           </Card>
         ) : (
           <div className="bg-card border border-border rounded-xl divide-y divide-border">

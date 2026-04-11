@@ -49,7 +49,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const savedSlug = localStorage.getItem("atlas_active_org");
+    const savedSlug = localStorage.getItem("ventex_active_org");
     const saved = orgs.find((o: Organization) => o.slug === savedSlug);
 
     if (saved) {
@@ -58,13 +58,13 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     } else {
       // Saved org was archived/deleted — default to first available
       setActiveOrgState(orgs[0]);
-      localStorage.setItem("atlas_active_org", orgs[0].slug);
+      localStorage.setItem("ventex_active_org", orgs[0].slug);
     }
   }, [orgs]);
 
   const setActiveOrg = (org: Organization) => {
     setActiveOrgState(org);
-    localStorage.setItem("atlas_active_org", org.slug);
+    localStorage.setItem("ventex_active_org", org.slug);
   };
 
   const refetchOrgs = () => {

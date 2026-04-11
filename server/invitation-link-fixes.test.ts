@@ -3,7 +3,7 @@
  * 1. resendInvitation returns both `token` and `inviteToken`
  * 2. OAuth callback links userId to team member on acceptance
  * 3. acceptInvitation links userId to team member on acceptance
- * 4. Partner role is recognized as ATLAS-level access
+ * 4. Partner role is recognized as VENTEX-level access
  */
 
 import { describe, it, expect, afterAll } from "vitest";
@@ -19,7 +19,7 @@ function createAdminContext(): TrpcContext {
   const user: AuthenticatedUser = {
     id: 1,
     openId: "admin-user",
-    email: "admin@atlas.io",
+    email: "admin@ventex.io",
     name: "Admin User",
     loginMethod: "manus",
     role: "admin",
@@ -64,7 +64,7 @@ describe("resendInvitation returns inviteToken field", () => {
       name: `LinkFix ${testTimestamp} Member`,
       role: "Partner",
       memberFunction: "Strategy & Vision",
-      email: `linkfix-${testTimestamp}@atlas.io`,
+      email: `linkfix-${testTimestamp}@ventex.io`,
       systemRole: "partner",
       origin: "https://test.example.com",
     });

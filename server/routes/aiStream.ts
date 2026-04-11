@@ -84,7 +84,7 @@ DISTRIBUTIONS: ${allDist.length} total, ${allDist.filter((d: any) => d.status ==
   }
 }
 
-const BASE_SYSTEM_PROMPT = `You are the ATLAS Venture Intelligence Operations assistant.
+const BASE_SYSTEM_PROMPT = `You are the VENTEX Venture Intelligence Operations assistant.
 
 You serve as an AI-powered operations assistant for a multi-sector venture holding company. The company manages ventures across Real Estate, F&B, Yacht, Entertainment, Oil & Gas, and other sectors.
 
@@ -224,7 +224,7 @@ aiStreamRouter.post("/api/ai/stream", async (req: Request, res: Response) => {
             // Check for finish
             if (chunk.choices?.[0]?.finish_reason) {
               res.write(
-                `data: ${JSON.stringify({ finish_reason: chunk.choices[0].finish_reason, model: chunk.model || "atlas-intelligence" })}\n\n`
+                `data: ${JSON.stringify({ finish_reason: chunk.choices[0].finish_reason, model: chunk.model || "ventex-intelligence" })}\n\n`
               );
             }
           } catch {

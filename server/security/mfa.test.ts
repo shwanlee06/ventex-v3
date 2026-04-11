@@ -8,17 +8,17 @@ import {
 
 describe("MFA / TOTP Module", () => {
   it("generates a TOTP secret with valid structure", () => {
-    const result = generateTotpSecret("test@atlas.io");
+    const result = generateTotpSecret("test@ventex.io");
     expect(result.secret).toBeTruthy();
     expect(result.secret.length).toBeGreaterThanOrEqual(16);
     expect(result.encryptedSecret).toBeTruthy();
     expect(result.otpauthUri).toContain("otpauth://totp/");
-    expect(result.otpauthUri).toContain("ATLAS");
-    expect(result.otpauthUri).toContain("test%40atlas.io");
+    expect(result.otpauthUri).toContain("VENTEX");
+    expect(result.otpauthUri).toContain("test%40ventex.io");
   });
 
   it("verifyTotpCode returns false for invalid code", () => {
-    const { encryptedSecret } = generateTotpSecret("test@atlas.io");
+    const { encryptedSecret } = generateTotpSecret("test@ventex.io");
     const result = verifyTotpCode("000000", encryptedSecret);
     // This may or may not be valid depending on timing, but "000000" is almost certainly wrong
     expect(typeof result).toBe("boolean");

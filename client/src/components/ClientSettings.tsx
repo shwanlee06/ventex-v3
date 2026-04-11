@@ -550,7 +550,7 @@ export default function ClientSettings({ orgId, orgSlug }: ClientSettingsProps) 
                     <div>
                       <span className="text-sm font-medium text-foreground">Auto-Advance Enabled</span>
                       <p className="text-[10px] text-muted-foreground">
-                        When enabled, ventures in pre-authorized sectors advance stages automatically without ATLAS approval
+                        When enabled, ventures in pre-authorized sectors advance stages automatically without VENTEX approval
                       </p>
                     </div>
                   </div>

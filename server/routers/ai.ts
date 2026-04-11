@@ -92,7 +92,7 @@ ${observations.map((o: any) => `- [${o.observationType}] ${o.observation}`).join
   }
 }
 
-const BASE_SYSTEM_PROMPT = `You are the ATLAS Venture Intelligence Operations assistant. You have LIVE access to the full portfolio database.
+const BASE_SYSTEM_PROMPT = `You are the VENTEX Venture Intelligence Operations assistant. You have LIVE access to the full portfolio database.
 
 You serve as an AI-powered operations assistant for a multi-sector venture holding company. The company manages ventures across Real Estate, F&B, Yacht, Entertainment, Oil & Gas, and other sectors.
 
@@ -121,7 +121,7 @@ const messageSchema = z.object({
 });
 
 export const aiRouter = router({
-  // ATLAS-only: chat builds context from ALL ventures across all clients
+  // VENTEX-only: chat builds context from ALL ventures across all clients
   chat: adminProcedure
     .input(
       z.object({
@@ -175,7 +175,7 @@ ${liveContext}`;
         return {
           content: textContent,
           requiresApproval,
-          model: result.model || "atlas-intelligence",
+          model: result.model || "ventex-intelligence",
         };
       } catch (error: unknown) {
         console.error("[AI Chat] Error:", error);

@@ -133,7 +133,7 @@ export const onboardingRouter = router({
             role: inv.role,
             token,
             invitedBy: ctx.user.id,
-            invitedByName: ctx.user.name || "ATLAS Admin",
+            invitedByName: ctx.user.name || "VENTEX Admin",
             expiresAt,
           });
           sentEmails.push(inv.email);
@@ -154,7 +154,7 @@ export const onboardingRouter = router({
         entityName: org.name,
         action: "Client Onboarded",
         detail: `New client "${org.name}" fully onboarded (${input.subscriptionTier} tier, ${ventureIds.length} ventures, ${sentEmails.length} invitations)`,
-        userName: ctx.user.name || "ATLAS Admin",
+        userName: ctx.user.name || "VENTEX Admin",
         activitySource: "atlas_ops",
       });
 

@@ -17,7 +17,7 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY || "");
 
-const FROM_ADDRESS = "ATLAS <contact@aurovia.co>";
+const FROM_ADDRESS = "VENTEX <contact@aurovia.co>";
 const REPLY_TO = "slee72106@gmail.com"; // Operator: Shwan Lee
 
 
@@ -103,7 +103,7 @@ const VALUE_STYLE = `font-size: 15px; font-weight: 500; color: #1a1a1a; margin-b
 const BUTTON_STYLE = `display: inline-block; background: #1a1a1a; color: #ffffff; padding: 12px 28px; border-radius: 6px; font-size: 14px; font-weight: 500; text-decoration: none;`;
 const FOOTER_STYLE = `border-top: 1px solid #e5e5e5; margin-top: 32px; padding-top: 16px;`;
 const FOOTER_TEXT = `font-size: 12px; color: #999; margin: 0;`;
-const SIGNATURE = `ATLAS · Powered by Aurovia`;
+const SIGNATURE = `VENTEX · Powered by Aurovia`;
 
 
 function taskFollowUpHtml(params: TaskFollowUpParams): string {
@@ -130,7 +130,7 @@ function taskFollowUpHtml(params: TaskFollowUpParams): string {
 function distributionNoticeHtml(params: DistributionNoticeParams): string {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
 <body style="${BODY_STYLE}"><div style="${CONTAINER_STYLE}">
-  <div style="${HEADER_STYLE}"><span style="${HEADER_TEXT}">ATLAS</span></div>
+  <div style="${HEADER_STYLE}"><span style="${HEADER_TEXT}">VENTEX</span></div>
   <p style="font-size: 18px; font-weight: 600; color: #1a1a1a; margin: 0 0 8px;">Distribution Notice</p>
   <p style="${P_STYLE}">Dear ${params.recipientName},</p>
   <div style="${CARD_STYLE}">
@@ -142,7 +142,7 @@ function distributionNoticeHtml(params: DistributionNoticeParams): string {
   </div>
   <div style="font-size: 14px; color: #333; line-height: 1.6; margin-bottom: 24px; white-space: pre-line;">${params.draftBody}</div>
   ${params.actionUrl ? `<a href="${params.actionUrl}" style="${BUTTON_STYLE}">View Details →</a>` : ""}
-  <div style="${FOOTER_STYLE}"><p style="${FOOTER_TEXT}">ATLAS · Powered by Aurovia</p></div>
+  <div style="${FOOTER_STYLE}"><p style="${FOOTER_TEXT}">VENTEX · Powered by Aurovia</p></div>
 </div></body></html>`;
 }
 
@@ -176,7 +176,7 @@ function overdueAutoEmailHtml(params: OverdueAutoEmailParams): string {
   <p style="${P_STYLE}">${params.taskTitle} on ${params.ventureName} is now <strong>${params.daysOverdue} days</strong> past its due date.</p>
   <p style="${P_STYLE}">This is a blocking item for ${params.ventureName}'s progress in ${params.stage}.</p>
   <p style="${P_STYLE}">Please update the status or reassign by <strong>${params.deadlineDate}</strong>.</p>
-  ${params.actionUrl ? `<p style="margin: 24px 0;"><a href="${params.actionUrl}" style="${BUTTON_STYLE}">View Task in ATLAS →</a></p>` : ""}
+  ${params.actionUrl ? `<p style="margin: 24px 0;"><a href="${params.actionUrl}" style="${BUTTON_STYLE}">View Task in VENTEX →</a></p>` : ""}
   <div style="${FOOTER_STYLE}"><p style="${FOOTER_TEXT}">${SIGNATURE}</p></div>
 </div></body></html>`;
 }
@@ -196,7 +196,7 @@ function readyToAdvanceEmailHtml(params: ReadyToAdvanceEmailParams): string {
   <p style="${P_STYLE}">Hi ${params.contactName},</p>
   <p style="${P_STYLE}">${params.ventureName} has completed all required ${params.currentStage} steps and is ready to move to ${params.nextStage}.</p>
   <div style="${CARD_STYLE}">${stepsList}</div>
-  ${params.actionUrl ? `<p style="margin: 24px 0;"><a href="${params.actionUrl}" style="${BUTTON_STYLE}">Advance Stage in ATLAS →</a></p>` : ""}
+  ${params.actionUrl ? `<p style="margin: 24px 0;"><a href="${params.actionUrl}" style="${BUTTON_STYLE}">Advance Stage in VENTEX →</a></p>` : ""}
   <div style="${FOOTER_STYLE}"><p style="${FOOTER_TEXT}">${SIGNATURE}</p></div>
 </div></body></html>`;
 }
@@ -218,7 +218,7 @@ function stageAdvancedEmailHtml(params: StageAdvancedEmailParams): string {
 <body style="${BODY_STYLE}"><div style="${CONTAINER_STYLE}">
   <div style="${HEADER_STYLE}"><span style="${HEADER_TEXT}">${SIGNATURE}</span></div>
   <p style="${P_STYLE}">Hi ${params.contactName},</p>
-  <p style="${P_STYLE}">ATLAS has advanced ${params.ventureName} from ${params.previousStage} to <strong>${params.newStage}</strong>.</p>
+  <p style="${P_STYLE}">VENTEX has advanced ${params.ventureName} from ${params.previousStage} to <strong>${params.newStage}</strong>.</p>
   <div style="${CARD_STYLE}">
     <div style="${LABEL_STYLE}">Time in ${params.previousStage}</div>
     <div style="font-size: 22px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">${params.daysInPreviousStage} days</div>

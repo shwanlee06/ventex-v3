@@ -3,7 +3,7 @@
  * Required for SOC 2 compliance.
  * 
  * Exposes audit log as `audit.list` (the expected tRPC path).
- * Restricted to ATLAS team (owner, admin, partner roles).
+ * Restricted to VENTEX team (owner, admin, partner roles).
  */
 
 import { z } from "zod";

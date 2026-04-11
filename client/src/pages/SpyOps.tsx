@@ -1,5 +1,5 @@
 /**
- * ATLAS — Spy-Ops Landing Page
+ * VENTEX — Spy-Ops Landing Page
  * Design: ose-engineering.fr inspired — pure black/white, monospace, military-ops feel
  * Fonts: IBM Plex Mono (body), Bebas Neue (display), Share Tech Mono (data)
  */
@@ -373,7 +373,7 @@ export default function SpyOps() {
 
   const dynamicReadouts = useMemo(() => [
     "// SYSTEM STATUS",
-    "ATLAS CORE ........ [ONLINE]",
+    "VENTEX CORE ........ [ONLINE]",
     "SEC LAYER ......... [ACTIVE]",
     `VENTURES TRACKED .. [${String(realStats.ventures).padStart(2, '0')}]`,
     `SPVs ACTIVE ....... [${String(realStats.spvs).padStart(2, '0')}]`,
@@ -383,7 +383,7 @@ export default function SpyOps() {
 
   // SEO: Set document title for the landing page
   useEffect(() => {
-    document.title = "ATLAS \u2014 Venture Intelligence Operations Platform";
+    document.title = "VENTEX \u2014 Venture Intelligence Operations Platform";
   }, []);
 
   /* ─── 4-phase flow: cipher → login → welcome → transition ─── */
@@ -442,8 +442,8 @@ export default function SpyOps() {
     }
   }, [authLoading, isAuthenticated, user, flowPhase]);
 
-  /* Phase 1: ATLAS cipher decode */
-  const atlasCipher = useSingleLineCipher("A T L A S", 400, 120);
+  /* Phase 1: VENTEX cipher decode */
+  const ventexCipher = useSingleLineCipher("V E N T E X", 400, 120);
 
   /* Ambient random lines behind the cipher */
   const [ambientLines, setAmbientLines] = useState<string[]>([]);
@@ -465,11 +465,11 @@ export default function SpyOps() {
 
   /* Auto-advance from cipher to login after decode completes */
   useEffect(() => {
-    if (flowPhase === "cipher" && atlasCipher.done) {
+    if (flowPhase === "cipher" && ventexCipher.done) {
       const t = setTimeout(() => setFlowPhase("login"), 1200);
       return () => clearTimeout(t);
     }
-  }, [flowPhase, atlasCipher.done]);
+  }, [flowPhase, ventexCipher.done]);
 
   /* Check for welcome param on login phase */
   useEffect(() => {
@@ -667,7 +667,7 @@ export default function SpyOps() {
                   letterSpacing: "0.3em",
                   color: "rgba(255,255,255,0.06)",
                   pointerEvents: "none",
-                  opacity: atlasCipher.done ? 0 : 1,
+                  opacity: ventexCipher.done ? 0 : 1,
                   transition: "opacity 0.8s",
                 }}
               >
@@ -676,7 +676,7 @@ export default function SpyOps() {
                 ))}
               </div>
 
-              {/* Center: single line cipher resolving to ATLAS */}
+              {/* Center: single line cipher resolving to VENTEX */}
               <div
                 style={{
                   position: "relative",
@@ -696,8 +696,8 @@ export default function SpyOps() {
                     textAlign: "center",
                   }}
                 >
-                  {atlasCipher.display || "\u00A0"}
-                  {atlasCipher.started && !atlasCipher.done && (
+                  {ventexCipher.display || "\u00A0"}
+                  {ventexCipher.started && !ventexCipher.done && (
                     <span className="spyops-blink" style={{ marginLeft: 2 }}>_</span>
                   )}
                 </div>
@@ -710,8 +710,8 @@ export default function SpyOps() {
                     letterSpacing: "0.4em",
                     color: "#444",
                     marginTop: 20,
-                    opacity: atlasCipher.done ? 1 : 0,
-                    transform: atlasCipher.done ? "translateY(0)" : "translateY(8px)",
+                    opacity: ventexCipher.done ? 1 : 0,
+                    transform: ventexCipher.done ? "translateY(0)" : "translateY(8px)",
                     transition: "opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s",
                     textAlign: "center",
                   }}
@@ -729,7 +729,7 @@ export default function SpyOps() {
                   fontSize: 10,
                   color: "#222",
                   textAlign: "center",
-                  opacity: atlasCipher.done ? 1 : 0,
+                  opacity: ventexCipher.done ? 1 : 0,
                   transition: "opacity 0.5s ease 0.3s",
                 }}
               >
@@ -752,7 +752,7 @@ export default function SpyOps() {
                 padding: "0 24px",
               }}
             >
-              {/* ATLAS */}
+              {/* VENTEX */}
               <div
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
@@ -1026,7 +1026,7 @@ export default function SpyOps() {
               textTransform: "uppercase",
             }}
           >
-            ATLAS
+            VENTEX
           </span>
         </div>
         {/* center */}
@@ -1499,7 +1499,7 @@ export default function SpyOps() {
               }}
             >
               Built for holding companies operating across multiple venture
-              verticals. ATLAS eliminates the operational drag that costs
+              verticals. VENTEX eliminates the operational drag that costs
               principals 30–40 hours per week.
             </p>
           </div>
@@ -1953,7 +1953,7 @@ export default function SpyOps() {
                 lineHeight: 2,
               }}
             >
-              ATLAS
+              VENTEX
               <br />
               POWERED BY AUROVIA
             </div>
@@ -2014,7 +2014,7 @@ export default function SpyOps() {
                 lineHeight: 2,
               }}
             >
-              ATLAS CORE: [ONLINE]
+              VENTEX CORE: [ONLINE]
               <br />
               ENCRYPTION: [AES-256]
               <br />
@@ -2031,7 +2031,7 @@ export default function SpyOps() {
                 lineHeight: 2,
               }}
             >
-              © 2026 ATLAS
+              © 2026 VENTEX
               <br />
               POWERED BY AUROVIA LLC
               <br />

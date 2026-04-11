@@ -27,10 +27,10 @@ async function acceptPendingInvitation(
     teamMemberId: number | null;
   }
 ) {
-  // ATLAS team roles (admin/partner/manager) should NOT be scoped to a client org
-  // They need organizationId = null so isAtlasTeam() returns true and they can see all clients
-  const isAtlasRole = ["admin", "partner", "manager", "owner"].includes(pendingInvite.role);
-  const effectiveOrgId = isAtlasRole ? null : pendingInvite.organizationId;
+  // VENTEX team roles (admin/partner/manager) should NOT be scoped to a client org
+  // They need organizationId = null so isVentexTeam() returns true and they can see all clients
+  const isVentexRole = ["admin", "partner", "manager", "owner"].includes(pendingInvite.role);
+  const effectiveOrgId = isVentexRole ? null : pendingInvite.organizationId;
 
   // Update user with organization, role, and invitation reference
   await database

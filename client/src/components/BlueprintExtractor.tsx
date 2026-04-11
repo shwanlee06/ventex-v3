@@ -188,7 +188,7 @@ export default function BlueprintExtractor({ organizationId, onComplete, initial
             <Upload className="size-5 text-primary mb-2" />
             <h3 className="text-sm font-medium text-foreground">Upload Document</h3>
             <p className="text-[10px] text-muted-foreground mt-1">
-              Upload a process document, SOP, or regulatory guide. ATLAS will extract the blueprint automatically.
+              Upload a process document, SOP, or regulatory guide. VENTEX will extract the blueprint automatically.
             </p>
           </button>
           <button
@@ -196,7 +196,7 @@ export default function BlueprintExtractor({ organizationId, onComplete, initial
               setMode("conversation");
               setChatMessages([{
                 role: "assistant",
-                content: "Hi! I'm ATLAS Concierge. I'll help you build a process blueprint through conversation. Let's start — what sector or industry is this blueprint for? (e.g., Real Estate, Yacht, F&B, Oil & Gas)",
+                content: "Hi! I'm VENTEX Concierge. I'll help you build a process blueprint through conversation. Let's start — what sector or industry is this blueprint for? (e.g., Real Estate, Yacht, F&B, Oil & Gas)",
               }]);
             }}
             className="bg-card border border-border rounded-lg p-5 text-left hover:border-primary/30 transition-all group"
@@ -204,7 +204,7 @@ export default function BlueprintExtractor({ organizationId, onComplete, initial
             <MessageSquare className="size-5 text-emerald-400 mb-2" />
             <h3 className="text-sm font-medium text-foreground">Describe in Conversation</h3>
             <p className="text-[10px] text-muted-foreground mt-1">
-              Chat with ATLAS Concierge to describe your process. It will ask targeted questions and build the blueprint.
+              Chat with VENTEX Concierge to describe your process. It will ask targeted questions and build the blueprint.
             </p>
           </button>
         </div>

@@ -1,4 +1,4 @@
-// VelocityKPI — 3-Tier Agent Activity card for ATLAS dashboard
+// VelocityKPI — 3-Tier Agent Activity card for VENTEX dashboard
 // Tier 0: No advances → empty state with prompt
 // Tier 1: 1–2 advances → basic metrics + recent list
 // Tier 2: 3+ advances → full sparkline + compression trend + stage breakdown

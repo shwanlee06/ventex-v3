@@ -1,5 +1,5 @@
 // Autonomous Task Executor — AI completes tasks and logs what it did
-// This is the engine that makes ATLAS actually DO the work.
+// This is the engine that makes VENTEX actually DO the work.
 // It identifies tasks that can be completed autonomously (research, drafts,
 
 import { getDb } from "../db";
@@ -141,7 +141,7 @@ export async function runAutonomousTaskExecutor(
         messages: [
           {
             role: "system",
-            content: `You are ATLAS, an AI velocity platform executing a task for a UHNWI venture holding company. 
+            content: `You are VENTEX, an AI velocity platform executing a task for a UHNWI venture holding company. 
 You are completing a ${classification.type} task. Produce a concise but substantive deliverable.
 
 For "research" tasks: Provide key findings, data points, and recommendations (5-8 bullet points).
@@ -170,7 +170,7 @@ Execute this task and provide the deliverable.`,
       if (!deliverable || typeof deliverable !== "string") continue;
 
       // Mark task as complete with the deliverable stored in description
-      const completionPrefix = `[ATLAS AI — ${new Date().toISOString().split("T")[0]}]\n`;
+      const completionPrefix = `[VENTEX AI — ${new Date().toISOString().split("T")[0]}]\n`;
       const existingDesc = task.description || "";
       await db
         .update(tasks)
@@ -211,8 +211,8 @@ Execute this task and provide the deliverable.`,
         entityId: task.id,
         entityName: task.title,
         action: "Task Completed",
-        detail: `ATLAS AI completed: "${task.title}" for ${venture.name} (${classification.type})`,
-        userName: "ATLAS Velocity Agent",
+        detail: `VENTEX AI completed: "${task.title}" for ${venture.name} (${classification.type})`,
+        userName: "VENTEX Velocity Agent",
         sector: venture.sector,
         activitySource: "system",
         organizationId: orgId,

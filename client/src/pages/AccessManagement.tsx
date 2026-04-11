@@ -1,5 +1,5 @@
 // Access Management — Organizations, Invitations, API Keys
-// Closed-circle access control for Aurovia/ATLAS partnerships
+// Closed-circle access control for Aurovia/VENTEX partnerships
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
@@ -282,7 +282,7 @@ function OrganizationsTab() {
               <Input
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="e.g., Aurovia, ATLAS Capital"
+                placeholder="e.g., Aurovia, VENTEX Capital"
               />
             </div>
             <div>
@@ -463,7 +463,7 @@ function InvitationsTab() {
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Send Invitation</DialogTitle>
-            <DialogDescription>Invite a partner to access the ATLAS System</DialogDescription>
+            <DialogDescription>Invite a partner to access the VENTEX System</DialogDescription>
           </DialogHeader>
 
           {generatedToken ? (

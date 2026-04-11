@@ -3,12 +3,12 @@
  * 
  * SOC 2 compliant permission system with 7 roles:
  * 
- * ATLAS INTERNAL TEAM:
+ * VENTEX INTERNAL TEAM:
  * - owner: Full system access, can manage all settings and users
  * - admin: Same as owner — full Command Center access, all settings, all clients
  * 
  * EXTERNAL / CLIENT-SIDE:
- * - partner: Elevated client access (read all data + limited write) — NOT ATLAS internal
+ * - partner: Elevated client access (read all data + limited write) — NOT VENTEX internal
  * - manager: Can view/edit assigned ventures and tasks
  * - user: Standard access to assigned ventures (read + limited write)
  * - client: External client portal — read-only access to assigned ventures
@@ -77,15 +77,15 @@ const PERMISSION_MATRIX: Record<string, Set<Action>> = {
 
 
 /**
- * Check if a user is part of the ATLAS internal team.
- * ATLAS team sees everything; clients see only their org's data.
+ * Check if a user is part of the VENTEX internal team.
+ * VENTEX team sees everything; clients see only their org's data.
  * 
- * owner/admin = ATLAS team (full Command Center access)
- * partner = external (elevated client, NOT ATLAS internal)
- * manager/user = ATLAS team only if no client org assigned
- * client/viewer = never ATLAS team
+ * owner/admin = VENTEX team (full Command Center access)
+ * partner = external (elevated client, NOT VENTEX internal)
+ * manager/user = VENTEX team only if no client org assigned
+ * client/viewer = never VENTEX team
  */
-export function isAtlasTeam(user: { role: string; organizationId?: number | null }): boolean {
+export function isVentexTeam(user: { role: string; organizationId?: number | null }): boolean {
   if (user.role === "owner" || user.role === "admin") return true;
   if (user.role === "manager" || user.role === "user") {
     return !user.organizationId || user.organizationId === 1;
@@ -95,14 +95,14 @@ export function isAtlasTeam(user: { role: string; organizationId?: number | null
 
 /**
  * Get venture IDs accessible to a user's organization.
- * Returns null for ATLAS team (meaning "all ventures").
+ * Returns null for VENTEX team (meaning "all ventures").
  * Returns empty array if user has no org or org has no venture access.
  */
 export async function getOrgVentureIds(
   user: User
 ): Promise<number[] | null> {
-  // ATLAS team sees everything
-  if (isAtlasTeam(user)) return null;
+  // VENTEX team sees everything
+  if (isVentexTeam(user)) return null;
 
   // No org = no access
   if (!user.organizationId) return [];
@@ -120,12 +120,12 @@ export async function getOrgVentureIds(
 
 /**
  * Get SPV IDs accessible to a user's organization (via venture links).
- * Returns null for ATLAS team (meaning "all SPVs").
+ * Returns null for VENTEX team (meaning "all SPVs").
  */
 export async function getOrgSpvIds(
   user: User
 ): Promise<number[] | null> {
-  if (isAtlasTeam(user)) return null;
+  if (isVentexTeam(user)) return null;
 
   const ventureIds = await getOrgVentureIds(user);
   if (!ventureIds || ventureIds.length === 0) return ventureIds === null ? null : [];
@@ -161,7 +161,7 @@ export function isRoleAtLeast(roleA: string, roleB: string): boolean {
 
 /**
  * Get venture IDs belonging to a specific organization.
- * Used by ATLAS admin to scope data to a selected client workspace.
+ * Used by VENTEX admin to scope data to a selected client workspace.
  */
 export async function getVentureIdsForOrg(
   organizationId: number
@@ -199,16 +199,16 @@ export async function getSpvIdsForOrg(
 }
 
 /**
- * Resolve venture IDs for a query — handles both ATLAS admin org-scoping and client RBAC.
- * Returns null if no filtering needed (ATLAS admin with no org selected).
+ * Resolve venture IDs for a query — handles both VENTEX admin org-scoping and client RBAC.
+ * Returns null if no filtering needed (VENTEX admin with no org selected).
  * Returns number[] of allowed venture IDs otherwise.
  */
 export async function resolveVentureScope(
   user: User,
   organizationId?: number | null
 ): Promise<number[] | null> {
-  // If ATLAS admin with a specific org selected, scope to that org
-  if (isAtlasTeam(user) && organizationId) {
+  // If VENTEX admin with a specific org selected, scope to that org
+  if (isVentexTeam(user) && organizationId) {
     return getVentureIdsForOrg(organizationId);
   }
   // Otherwise use standard RBAC
@@ -216,13 +216,13 @@ export async function resolveVentureScope(
 }
 
 /**
- * Resolve SPV IDs for a query — handles both ATLAS admin org-scoping and client RBAC.
+ * Resolve SPV IDs for a query — handles both VENTEX admin org-scoping and client RBAC.
  */
 export async function resolveSpvScope(
   user: User,
   organizationId?: number | null
 ): Promise<number[] | null> {
-  if (isAtlasTeam(user) && organizationId) {
+  if (isVentexTeam(user) && organizationId) {
     return getSpvIdsForOrg(organizationId);
   }
   return getOrgSpvIds(user);

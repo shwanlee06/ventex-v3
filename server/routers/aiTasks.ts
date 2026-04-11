@@ -197,7 +197,7 @@ VENTURE: "${v.name}" (ID: ${v.id})
     ? `\nTeam: ${data.team.map((m) => `${m.name} (${m.role})`).join(", ")}`
     : "";
 
-  return `You are an AI venture intelligence agent for ATLAS, a venture holding company. You analyze client venture portfolios and determine what tasks need to be created to move ventures forward.
+  return `You are an AI venture intelligence agent for VENTEX, a venture holding company. You analyze client venture portfolios and determine what tasks need to be created to move ventures forward.
 
 TODAY'S DATE: ${now.toISOString().split("T")[0]}
 

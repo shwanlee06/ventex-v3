@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// ATLAS Intelligence Platform — Unit Tests
+// VENTEX Intelligence Platform — Unit Tests
 // Tests for: Predictive Analytics, Market Intelligence, Continuous Learning,
 //            Real-time Triggers, Portal Intelligence Integration
 // ═══════════════════════════════════════════════════════════════════════════

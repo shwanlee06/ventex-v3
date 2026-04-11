@@ -353,7 +353,7 @@ export default function ClientPortal() {
               {orgName}
             </h1>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Managed by ATLAS
+              Managed by VENTEX
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -1024,7 +1024,7 @@ export default function ClientPortal() {
         {/* Footer */}
         <div className="pt-8 pb-12 text-center">
           <p className="text-[11px] text-muted-foreground/40">
-            Managed by ATLAS · Powered by Aurovia
+            Managed by VENTEX · Powered by Aurovia
           </p>
         </div>
       </main>

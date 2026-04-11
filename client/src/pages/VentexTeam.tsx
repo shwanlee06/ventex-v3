@@ -1,4 +1,4 @@
-// ATLAS Team — Dedicated page for internal ATLAS/Aurovia team members
+// VENTEX Team — Dedicated page for internal VENTEX/Aurovia team members
 // Shows all internal operators, their roles, functions, venture assignments,
 
 import DashboardLayout from "@/components/DashboardLayout";
@@ -48,7 +48,7 @@ const FUNCTIONS = [
 
 // Removed static StatusDot — now using LiveStatusDot component
 
-export default function AtlasTeam() {
+export default function VentexTeam() {
   const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
@@ -84,7 +84,7 @@ export default function AtlasTeam() {
   const [editLocation, setEditLocation] = useState("");
 
   // Data queries
-  const atlasTeamQ = trpc.team.listInternal.useQuery();
+  const ventexTeamQ = trpc.team.listInternal.useQuery();
   const ventureAssignmentsQ = trpc.team.ventureAssignments.useQuery();
   const liveStatusesQ = trpc.team.liveStatuses.useQuery(undefined, { refetchInterval: 30000 }); // poll every 30s
   const utils = trpc.useUtils();
@@ -147,7 +147,7 @@ export default function AtlasTeam() {
   }, [drawerMember, uploadAvatar]);
 
   const handleMoveUp = useCallback((memberId: number) => {
-    const all = atlasTeamQ.data || [];
+    const all = ventexTeamQ.data || [];
     const idx = all.findIndex(m => m.id === memberId);
     if (idx <= 0) return;
     const items = all.map((m, i) => ({ id: m.id, sortOrder: i * 10 }));
@@ -156,10 +156,10 @@ export default function AtlasTeam() {
     items[idx].sortOrder = items[idx - 1].sortOrder;
     items[idx - 1].sortOrder = temp;
     reorderMembers.mutate({ items });
-  }, [atlasTeamQ.data, reorderMembers]);
+  }, [ventexTeamQ.data, reorderMembers]);
 
   const handleMoveDown = useCallback((memberId: number) => {
-    const all = atlasTeamQ.data || [];
+    const all = ventexTeamQ.data || [];
     const idx = all.findIndex(m => m.id === memberId);
     if (idx < 0 || idx >= all.length - 1) return;
     const items = all.map((m, i) => ({ id: m.id, sortOrder: i * 10 }));
@@ -168,7 +168,7 @@ export default function AtlasTeam() {
     items[idx].sortOrder = items[idx + 1].sortOrder;
     items[idx + 1].sortOrder = temp;
     reorderMembers.mutate({ items });
-  }, [atlasTeamQ.data, reorderMembers]);
+  }, [ventexTeamQ.data, reorderMembers]);
 
   const setAdminStatus = trpc.team.setAdminStatus.useMutation({
     onSuccess: () => {
@@ -194,9 +194,9 @@ export default function AtlasTeam() {
         const link = `${window.location.origin}/accept-invite?token=${encodeURIComponent(data.inviteToken)}`;
         setLastInviteLink(link);
         setLinkCopied(false);
-        toast.success("ATLAS member added — invitation link ready to share");
+        toast.success("VENTEX member added — invitation link ready to share");
       } else {
-        toast.success("ATLAS member added");
+        toast.success("VENTEX member added");
         setAddOpen(false);
         resetForm();
       }
@@ -212,7 +212,7 @@ export default function AtlasTeam() {
       utils.team.listInternal.invalidate();
       // Refresh drawer data
       if (drawerMember) {
-        const updated = atlasTeamQ.data?.find(m => m.id === drawerMember.id);
+        const updated = ventexTeamQ.data?.find(m => m.id === drawerMember.id);
         if (updated) setDrawerMember(updated);
       }
     },
@@ -244,7 +244,7 @@ export default function AtlasTeam() {
       memberFunction: newFunc,
       status: "Active",
       type: "Internal",
-      organizationId: null, // ATLAS internal = null org
+      organizationId: null, // VENTEX internal = null org
       notes: newNotes.trim() || undefined,
       email: newEmail.trim() || undefined,
       phone: newPhone.trim() || undefined,
@@ -305,7 +305,7 @@ export default function AtlasTeam() {
 
   // Filter members
   const members = useMemo(() => {
-    const all = atlasTeamQ.data || [];
+    const all = ventexTeamQ.data || [];
     // Filter out test data
     const real = all.filter(m => !m.name.startsWith("Test "));
     if (!search.trim()) return real;
@@ -316,12 +316,12 @@ export default function AtlasTeam() {
       m.memberFunction?.toLowerCase().includes(q) ||
       m.email?.toLowerCase().includes(q)
     );
-  }, [atlasTeamQ.data, search]);
+  }, [ventexTeamQ.data, search]);
 
-  const isLoading = atlasTeamQ.isLoading;
+  const isLoading = ventexTeamQ.isLoading;
 
   return (
-    <DashboardLayout title="ATLAS Team">
+    <DashboardLayout title="VENTEX Team">
       <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5 pb-24 md:pb-6">
 
         {/* ── Stats Bar ──────────────────────────────────────────── */}
@@ -380,7 +380,7 @@ export default function AtlasTeam() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Shield className="size-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">ATLAS Members</h2>
+            <h2 className="text-sm font-semibold text-foreground">VENTEX Members</h2>
             <span className="text-[10px] font-mono text-muted-foreground">
               {members.length} member{members.length !== 1 ? "s" : ""}
             </span>
@@ -411,7 +411,7 @@ export default function AtlasTeam() {
           ) : members.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Shield className="size-8 mx-auto mb-3 opacity-40" />
-              <p className="text-sm">{search ? "No members match your search" : "No ATLAS team members yet"}</p>
+              <p className="text-sm">{search ? "No members match your search" : "No VENTEX team members yet"}</p>
               <p className="text-xs mt-1">Add internal team members to get started</p>
             </div>
           ) : (
@@ -588,7 +588,7 @@ export default function AtlasTeam() {
                 <div>
                   <SheetTitle className="text-sm font-semibold text-foreground">{drawerMember?.name}</SheetTitle>
                   <SheetDescription className="text-xs text-muted-foreground">
-                    {drawerMember?.role || "ATLAS Member"} · {drawerMember?.memberFunction || "—"}
+                    {drawerMember?.role || "VENTEX Member"} · {drawerMember?.memberFunction || "—"}
                   </SheetDescription>
                 </div>
               </div>
@@ -725,7 +725,7 @@ export default function AtlasTeam() {
                     showLabel
                   />
                   <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-                    ATLAS Internal
+                    VENTEX Internal
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -892,9 +892,9 @@ export default function AtlasTeam() {
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="sm:max-w-md bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="text-sm font-semibold">Add ATLAS Member</DialogTitle>
+            <DialogTitle className="text-sm font-semibold">Add VENTEX Member</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Add a new internal team member to ATLAS
+              Add a new internal team member to VENTEX
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
@@ -1029,7 +1029,7 @@ export default function AtlasTeam() {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-sm">Remove Team Member</AlertDialogTitle>
             <AlertDialogDescription className="text-xs">
-              This will remove this member from the ATLAS team and all venture assignments. This action cannot be undone.
+              This will remove this member from the VENTEX team and all venture assignments. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

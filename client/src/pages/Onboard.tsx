@@ -1,5 +1,5 @@
 // People — Condensed view for managing contacts across 30+ clients
-// ATLAS section = just you (the operator)
+// VENTEX section = just you (the operator)
 // Client Contacts = unified searchable table with client filter
 
 import DashboardLayout from "@/components/DashboardLayout";
@@ -84,7 +84,7 @@ export default function OnboardPage() {
   const [newOrgId, setNewOrgId] = useState<string>("none");
 
   // Data queries
-  const atlasTeamQ = trpc.team.listInternal.useQuery();
+  const ventexTeamQ = trpc.team.listInternal.useQuery();
   const clientContactsQ = trpc.team.listByOrganization.useQuery();
   const orgsQ = trpc.organizations.list.useQuery();
   const liveStatusesQ = trpc.team.liveStatuses.useQuery(undefined, { refetchInterval: 30000 });
@@ -187,10 +187,10 @@ export default function OnboardPage() {
   }, [clientContactsQ.data]);
 
   // Stats
-  const atlasMembers = atlasTeamQ.data || [];
+  const ventexMembers = ventexTeamQ.data || [];
   const totalContacts = clientContactsQ.data?.length ?? 0;
   const uniqueClients = clientOptions.length;
-  const isLoading = atlasTeamQ.isLoading || clientContactsQ.isLoading;
+  const isLoading = ventexTeamQ.isLoading || clientContactsQ.isLoading;
 
   const hasActiveFilters = clientFilter !== "all" || typeFilter !== "all" || search.trim() !== "";
 
@@ -198,7 +198,7 @@ export default function OnboardPage() {
     <DashboardLayout title="People" subtitle="CONTACTS & TEAM DIRECTORY">
       <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5 pb-24 md:pb-6">
 
-        {/* ── Your Profile (ATLAS Operator) ──────────────────────── */}
+        {/* ── Your Profile (VENTEX Operator) ──────────────────────── */}
         <div className="bg-card border border-border rounded-lg p-4">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -207,14 +207,14 @@ export default function OnboardPage() {
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-foreground">
-                  {atlasMembers.length > 0 ? atlasMembers[0].name : "ATLAS Operator"}
+                  {ventexMembers.length > 0 ? ventexMembers[0].name : "VENTEX Operator"}
                 </span>
                 <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-                  ATLAS
+                  VENTEX
                 </span>
               </div>
               <span className="text-xs text-muted-foreground">
-                {atlasMembers.length > 0 ? atlasMembers[0].role : "Founder & CEO"} · Managing {uniqueClients} client{uniqueClients !== 1 ? "s" : ""} · {totalContacts} contact{totalContacts !== 1 ? "s" : ""}
+                {ventexMembers.length > 0 ? ventexMembers[0].role : "Founder & CEO"} · Managing {uniqueClients} client{uniqueClients !== 1 ? "s" : ""} · {totalContacts} contact{totalContacts !== 1 ? "s" : ""}
               </span>
             </div>
           </div>

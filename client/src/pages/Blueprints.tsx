@@ -445,7 +445,7 @@ export default function BlueprintsPage() {
                 </div>
                 <h3 className="text-sm font-medium text-foreground mb-1">No blueprints yet</h3>
                 <p className="text-xs text-muted-foreground max-w-sm mb-4">
-                  Upload a document, have a conversation with ATLAS Concierge, or generate from a sector template.
+                  Upload a document, have a conversation with VENTEX Concierge, or generate from a sector template.
                 </p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" className="text-xs gap-1.5" onClick={() => setActiveTab("upload")}>
@@ -715,7 +715,7 @@ export default function BlueprintsPage() {
                     Extract Blueprint from Document
                   </h2>
                   <p className="text-xs text-muted-foreground">
-                    Upload a process document or paste text — ATLAS will extract a structured blueprint
+                    Upload a process document or paste text — VENTEX will extract a structured blueprint
                   </p>
                 </div>
               </div>
@@ -803,7 +803,7 @@ export default function BlueprintsPage() {
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-primary font-mono font-bold">2.</span>
-                  <span>ATLAS extracts stages, steps, owners, and timelines into a structured blueprint</span>
+                  <span>VENTEX extracts stages, steps, owners, and timelines into a structured blueprint</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-primary font-mono font-bold">3.</span>
@@ -828,7 +828,7 @@ export default function BlueprintsPage() {
                 </div>
                 <div>
                   <h2 className="text-sm font-semibold text-foreground">
-                    ATLAS Concierge
+                    VENTEX Concierge
                   </h2>
                   <p className="text-[10px] text-muted-foreground">
                     Describe your process — I'll build a blueprint from our conversation

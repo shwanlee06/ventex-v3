@@ -9,7 +9,7 @@ import { PreviewModeProvider, usePreviewMode } from "./contexts/PreviewMode";
 import { WorkspaceProvider } from "./contexts/WorkspaceContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import CustomCursor from "./components/CustomCursor";
-import { isAtlasTeam } from "@/lib/atlas";
+import { isVentexTeam } from "@/lib/ventex";
 import Home from "./pages/Home";
 import Agent from "./pages/Agent";
 import Verticals from "./pages/Verticals";
@@ -28,7 +28,7 @@ import SecurityPage from "./pages/SecurityPage";
 import AccessManagement from "./pages/AccessManagement";
 import InviteAccept from "./pages/InviteAccept";
 import ClientDetail from "./pages/ClientDetail";
-import AtlasTeam from "./pages/AtlasTeam";
+import VentexTeam from "./pages/VentexTeam";
 import AcceptInvite from "./pages/AcceptInvite";
 import AgentsPage from "./pages/Agents";
 import DraftsPage from "./pages/Drafts";
@@ -72,15 +72,15 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-/* ATLAS-only guard — redirects non-admin/owner users to dashboard.
+/* VENTEX-only guard — redirects non-admin/owner users to dashboard.
    In preview mode, admin/owner users are treated as clients and get redirected too. */
-function RequireAtlas({ children }: { children: React.ReactNode }) {
+function RequireVentex({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const { isPreviewMode } = usePreviewMode();
   const [, navigate] = useLocation();
 
-  const isAtlas = isAtlasTeam(user);
-  const shouldBlock = !isAtlas || isPreviewMode;
+  const isVentex = isVentexTeam(user);
+  const shouldBlock = !isVentex || isPreviewMode;
 
   useEffect(() => {
     if (loading) return;
@@ -126,7 +126,7 @@ function Router() {
         <RequireAuth><Home /></RequireAuth>
       </Route>
       <Route path="/clients/:slug">
-        <RequireAuth><RequireAtlas><ClientDetail /></RequireAtlas></RequireAuth>
+        <RequireAuth><RequireVentex><ClientDetail /></RequireVentex></RequireAuth>
       </Route>
       <Route path="/ventures/:slug">
         <RequireAuth><VentureDetail /></RequireAuth>
@@ -156,45 +156,45 @@ function Router() {
         <RequireAuth><Profile /></RequireAuth>
       </Route>
 
-      {/* ATLAS team only pages — admin/owner access required (blocked in preview mode) */}
+      {/* VENTEX team only pages — admin/owner access required (blocked in preview mode) */}
       <Route path="/agent">
-        <RequireAuth><RequireAtlas><Agent /></RequireAtlas></RequireAuth>
+        <RequireAuth><RequireVentex><Agent /></RequireVentex></RequireAuth>
       </Route>
       <Route path="/team/:slug">
-        <RequireAuth><RequireAtlas><TeamMemberDetail /></RequireAtlas></RequireAuth>
+        <RequireAuth><RequireVentex><TeamMemberDetail /></RequireVentex></RequireAuth>
       </Route>
       <Route path="/team">
-        <RequireAuth><RequireAtlas><Onboard /></RequireAtlas></RequireAuth>
+        <RequireAuth><RequireVentex><Onboard /></RequireVentex></RequireAuth>
       </Route>
-      <Route path="/atlas-team/:slug">
-        <RequireAuth><RequireAtlas><TeamMemberDetail /></RequireAtlas></RequireAuth>
+      <Route path="/ventex-team/:slug">
+        <RequireAuth><RequireVentex><TeamMemberDetail /></RequireVentex></RequireAuth>
       </Route>
-      <Route path="/atlas-team">
-        <RequireAuth><RequireAtlas><AtlasTeam /></RequireAtlas></RequireAuth>
+      <Route path="/ventex-team">
+        <RequireAuth><RequireVentex><VentexTeam /></RequireVentex></RequireAuth>
       </Route>
       <Route path="/security">
-        <RequireAuth><RequireAtlas><SecurityPage /></RequireAtlas></RequireAuth>
+        <RequireAuth><RequireVentex><SecurityPage /></RequireVentex></RequireAuth>
       </Route>
       <Route path="/access">
-        <RequireAuth><RequireAtlas><AccessManagement /></RequireAtlas></RequireAuth>
+        <RequireAuth><RequireVentex><AccessManagement /></RequireVentex></RequireAuth>
       </Route>
       <Route path="/settings">
-        <RequireAuth><RequireAtlas><SettingsPage /></RequireAtlas></RequireAuth>
+        <RequireAuth><RequireVentex><SettingsPage /></RequireVentex></RequireAuth>
       </Route>
       <Route path="/agents">
-        <RequireAuth><RequireAtlas><AgentsPage /></RequireAtlas></RequireAuth>
+        <RequireAuth><RequireVentex><AgentsPage /></RequireVentex></RequireAuth>
       </Route>
       <Route path="/drafts">
         <RequireAuth><DraftsPage /></RequireAuth>
       </Route>
       <Route path="/onboarding">
-        <RequireAuth><RequireAtlas><OnboardingWizard /></RequireAtlas></RequireAuth>
+        <RequireAuth><RequireVentex><OnboardingWizard /></RequireVentex></RequireAuth>
       </Route>
       <Route path="/blueprints">
-        <RequireAuth><RequireAtlas><BlueprintsPage /></RequireAtlas></RequireAuth>
+        <RequireAuth><RequireVentex><BlueprintsPage /></RequireVentex></RequireAuth>
       </Route>
       <Route path="/oversight">
-        <RequireAuth><RequireAtlas><OversightPage /></RequireAtlas></RequireAuth>
+        <RequireAuth><RequireVentex><OversightPage /></RequireVentex></RequireAuth>
       </Route>
 
       <Route path="/404" component={NotFound} />
