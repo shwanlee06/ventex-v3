@@ -2,9 +2,9 @@
 
 ## Actual Production Dashboard
 - Uses `DashboardLayout` wrapper (AppSidebar + Topbar + content)
-- AppSidebar: slim collapsible rail (60px collapsed / 220px expanded), ATLAS logo, tooltips, client list at bottom
+- AppSidebar: slim collapsible rail (60px collapsed / 220px expanded), VENTEX logo, tooltips, client list at bottom
 - Topbar: h-14, title + subtitle, search/notifications/user dropdown, preview toggle, client switcher
-- Admin (AtlasDashboard): velocity KPIs, client grid/table with health/velocity/completion metrics, AI task generator, overdue alerts, live presence, agent execution log, executive summary
+- Admin (VentexDashboard): velocity KPIs, client grid/table with health/velocity/completion metrics, AI task generator, overdue alerts, live presence, agent execution log, executive summary
 - Client (ClientDashboard): velocity feed, action cards, sector pie chart, stage bars, venture cards, advance banner
 
 ## Demo Dashboard (DemoDashboard.tsx)
@@ -17,7 +17,7 @@
 ## Key Visual Differences to Fix
 1. **Sidebar**: Demo uses custom sidebar with different styling. Should match AppSidebar's slim rail + expand pattern
 2. **Topbar**: Demo has custom topbar. Should match actual Topbar layout (title/subtitle left, actions right)
-3. **Admin content**: Demo shows different metrics/layout than AtlasDashboard. Should mirror the velocity KPIs, client grid, agent log pattern
+3. **Admin content**: Demo shows different metrics/layout than VentexDashboard. Should mirror the velocity KPIs, client grid, agent log pattern
 4. **Client content**: Demo ClientPortalDemoView should mirror ClientDashboard's velocity feed, action cards, sector pie, stage bars
 
 ## Decision

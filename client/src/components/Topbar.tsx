@@ -54,7 +54,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
   const displayName = useMemo(() => {
     if (isPreviewMode) return "Client Preview";
     if (user?.name) return user.name;
-    try { return localStorage.getItem("atlas_operator") || "User"; } catch { return "User"; }
+    try { return localStorage.getItem("ventex_operator") || "User"; } catch { return "User"; }
   }, [user?.name, isPreviewMode]);
 
   const initials = displayName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
@@ -70,7 +70,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
 
   const handleSignOut = useCallback(async () => {
     endCurrentSession();
-    localStorage.removeItem("atlas_operator");
+    localStorage.removeItem("ventex_operator");
     try {
       await logout();
     } catch {}

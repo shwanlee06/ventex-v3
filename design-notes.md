@@ -2,7 +2,7 @@
 
 ## Screenshot 1 - Dashboard Home
 - ✅ Dark theme working correctly - near-black background
-- ✅ Gold ATLAS logo in sidebar
+- ✅ Gold VENTEX logo in sidebar
 - ✅ Sidebar with 5 nav items, active state with gold accent
 - ✅ Topbar with search, notification bell, user avatar
 - ✅ 4 metric cards at top: Tasks Automated (247), Hours Reclaimed (61), Active Clients (2), Compliance Alerts (3)

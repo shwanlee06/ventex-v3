@@ -1,6 +1,6 @@
 # Incident Response Policy
 
-**Royalton Venture Holding — ATLAS Platform**
+**Royalton Venture Holding — VENTEX Platform**
 **Document ID:** SOC2-IRP-002
 **Version:** 1.0
 **Effective Date:** April 8, 2026
@@ -11,11 +11,11 @@
 
 ## 1. Purpose
 
-This Incident Response Policy establishes procedures for identifying, reporting, assessing, responding to, and recovering from security incidents affecting the ATLAS platform. It ensures that incidents are handled consistently, minimizing impact on business operations and client data, in alignment with SOC 2 Trust Services Criteria CC7.3, CC7.4, and CC7.5.
+This Incident Response Policy establishes procedures for identifying, reporting, assessing, responding to, and recovering from security incidents affecting the VENTEX platform. It ensures that incidents are handled consistently, minimizing impact on business operations and client data, in alignment with SOC 2 Trust Services Criteria CC7.3, CC7.4, and CC7.5.
 
 ## 2. Scope
 
-This policy covers all security events and incidents involving the ATLAS platform, including but not limited to: unauthorized access attempts; data breaches or data loss; service disruptions or denial of service; malware or ransomware; insider threats; third-party vendor compromises; and misuse of platform resources.
+This policy covers all security events and incidents involving the VENTEX platform, including but not limited to: unauthorized access attempts; data breaches or data loss; service disruptions or denial of service; malware or ransomware; insider threats; third-party vendor compromises; and misuse of platform resources.
 
 ## 3. Definitions
 
@@ -98,6 +98,6 @@ This policy is reviewed annually or after any significant incident. Updates requ
 ---
 
 **Approval:**
-- Prepared by: ATLAS Security Team
+- Prepared by: VENTEX Security Team
 - Approved by: CISO, Royalton Venture Holding
 - Next Review Date: April 8, 2027

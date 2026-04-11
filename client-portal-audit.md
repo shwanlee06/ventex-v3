@@ -1,7 +1,7 @@
 # Client Portal Structure (for Demo Client View)
 
 ## Key Sections:
-1. **Header** — Org name, "Managed by ATLAS", user name, logout
+1. **Header** — Org name, "Managed by VENTEX", user name, logout
 2. **Velocity Summary** — AI-generated weekly summary of what happened
 3. **Action Needed (amber cards)** — Items requiring client approval/action
    - Advance stage, approve follow-up, confirm distribution, unblock venture, view tasks

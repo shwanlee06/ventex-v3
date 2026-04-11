@@ -1,6 +1,6 @@
 # Vendor Management Policy
 
-**Royalton Venture Holding — ATLAS Platform**
+**Royalton Venture Holding — VENTEX Platform**
 **Document ID:** SOC2-VMP-005
 **Version:** 1.0
 **Effective Date:** April 8, 2026
@@ -11,15 +11,15 @@
 
 ## 1. Purpose
 
-This Vendor Management Policy establishes the framework for evaluating, selecting, monitoring, and managing third-party vendors and service providers that support the ATLAS platform. It ensures that vendors meet the security, privacy, and compliance standards required to protect client data and maintain SOC 2 compliance, addressing Trust Services Criteria CC9.2 (risk assessment of third parties).
+This Vendor Management Policy establishes the framework for evaluating, selecting, monitoring, and managing third-party vendors and service providers that support the VENTEX platform. It ensures that vendors meet the security, privacy, and compliance standards required to protect client data and maintain SOC 2 compliance, addressing Trust Services Criteria CC9.2 (risk assessment of third parties).
 
 ## 2. Scope
 
-This policy applies to all third-party vendors, service providers, and subprocessors that: host, process, or store ATLAS platform data; provide infrastructure or platform services; supply software components or libraries integrated into the platform; or have access to confidential business or client information.
+This policy applies to all third-party vendors, service providers, and subprocessors that: host, process, or store VENTEX platform data; provide infrastructure or platform services; supply software components or libraries integrated into the platform; or have access to confidential business or client information.
 
 ## 3. Current Vendor Inventory
 
-The following vendors are currently integrated with the ATLAS platform:
+The following vendors are currently integrated with the VENTEX platform:
 
 | Vendor | Service | Data Access | Risk Tier | SOC 2 Status |
 |---|---|---|---|---|
@@ -48,7 +48,7 @@ Before engaging a new vendor, the following due diligence steps are required: re
 
 ### 5.2 Contractual Requirements
 
-Vendor contracts must include: data processing agreements specifying the types of data processed and permitted uses; confidentiality and non-disclosure obligations; security requirements aligned with the ATLAS Information Security Policy; incident notification requirements (within 72 hours of discovery); data return and deletion obligations upon contract termination; right to audit or request security assessments; and compliance with applicable data protection regulations.
+Vendor contracts must include: data processing agreements specifying the types of data processed and permitted uses; confidentiality and non-disclosure obligations; security requirements aligned with the VENTEX Information Security Policy; incident notification requirements (within 72 hours of discovery); data return and deletion obligations upon contract termination; right to audit or request security assessments; and compliance with applicable data protection regulations.
 
 ### 5.3 Approval Process
 
@@ -70,11 +70,11 @@ Open-source dependencies are managed through: regular vulnerability scanning usi
 
 ## 7. Vendor Incidents
 
-When a vendor reports a security incident that may affect ATLAS platform data: (1) the CISO is notified immediately; (2) the impact on ATLAS data is assessed; (3) containment measures are implemented (credential rotation, access revocation); (4) affected clients are notified per the Incident Response Policy; and (5) the incident is documented and reviewed for lessons learned.
+When a vendor reports a security incident that may affect VENTEX platform data: (1) the CISO is notified immediately; (2) the impact on VENTEX data is assessed; (3) containment measures are implemented (credential rotation, access revocation); (4) affected clients are notified per the Incident Response Policy; and (5) the incident is documented and reviewed for lessons learned.
 
 ## 8. Vendor Offboarding
 
-When a vendor relationship is terminated: all vendor access to ATLAS systems and data is revoked; confirmation of data deletion is obtained from the vendor; API keys, credentials, and integration configurations are removed; and the vendor is removed from the approved vendor inventory.
+When a vendor relationship is terminated: all vendor access to VENTEX systems and data is revoked; confirmation of data deletion is obtained from the vendor; API keys, credentials, and integration configurations are removed; and the vendor is removed from the approved vendor inventory.
 
 ## 9. Policy Review
 
@@ -83,6 +83,6 @@ This policy is reviewed annually or when significant changes occur in the vendor
 ---
 
 **Approval:**
-- Prepared by: ATLAS Security Team
+- Prepared by: VENTEX Security Team
 - Approved by: CISO, Royalton Venture Holding
 - Next Review Date: April 8, 2027

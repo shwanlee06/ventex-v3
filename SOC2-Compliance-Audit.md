@@ -1,6 +1,6 @@
-# SOC 2 Compliance Audit — Royalton System by ATLAS
+# SOC 2 Compliance Audit — Royalton System by VENTEX
 
-**Prepared for:** Shwan Lee, CEO & Founder, ATLAS  
+**Prepared for:** Shwan Lee, CEO & Founder, VENTEX  
 **Date:** April 1, 2026  
 **System:** Royalton System (atlasops.manus.space)  
 **Audit scope:** Application-layer controls only (infrastructure managed by Manus platform)
@@ -70,7 +70,7 @@ Confidentiality controls protect sensitive information from unauthorized disclos
 | Control Area | Status | Evidence |
 |---|---|---|
 | **Data Classification** | Not Implemented | No formal data classification policy. No distinction between public, internal, confidential, and restricted data in the schema. |
-| **Access Restrictions** | Implemented | Admin-only procedures for sensitive operations. Client portal scoped to own organization. Document intelligence and AI chat restricted to ATLAS team. |
+| **Access Restrictions** | Implemented | Admin-only procedures for sensitive operations. Client portal scoped to own organization. Document intelligence and AI chat restricted to VENTEX team. |
 | **Data Retention** | Not Implemented | No data retention policy. No automated purging of old audit logs, expired sessions, or stale agent events. Data accumulates indefinitely. |
 | **Data Disposal** | Not Implemented | No secure deletion procedures. No process for removing client data when an engagement ends. |
 | **Confidentiality Agreements** | Organizational | Requires NDAs/contracts with clients and team members. Not enforceable through code. |

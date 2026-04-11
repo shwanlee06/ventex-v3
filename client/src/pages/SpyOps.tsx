@@ -436,7 +436,7 @@ export default function SpyOps() {
     if (isAuthenticated && user && flowPhase === "login") {
       const name = user.name || "OPERATOR";
       setOperatorName(name);
-      localStorage.setItem("atlas_operator", name);
+      localStorage.setItem("ventex_operator", name);
       startSession(name);
       setFlowPhase("welcome");
     }
@@ -478,7 +478,7 @@ export default function SpyOps() {
       if (params.get("welcome") === "true" && isAuthenticated && user) {
         const name = user.name || "OPERATOR";
         setOperatorName(name);
-        localStorage.setItem("atlas_operator", name);
+        localStorage.setItem("ventex_operator", name);
         startSession(name);
         setFlowPhase("welcome");
       }

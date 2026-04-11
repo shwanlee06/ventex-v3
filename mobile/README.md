@@ -1,4 +1,4 @@
-# ATLAS Mobile App
+# VENTEX Mobile App
 
 React Native mobile application for the Royalton Investment System, built with Expo.
 
@@ -67,5 +67,5 @@ The AI Agent uses the same backend streaming endpoint (`/api/ai/stream`) as the 
 
 ## Bundle ID
 
-- iOS: `com.royalton.atlas`
-- Android: `com.royalton.atlas`
+- iOS: `com.aurovia.ventex`
+- Android: `com.aurovia.ventex`

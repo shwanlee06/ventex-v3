@@ -17,7 +17,7 @@ export const auditRouter = router({
   /**
    * audit.list — Paginated, filterable audit log query.
    * Returns records for every blueprint generation, stage advance, and agent event.
-   * Restricted to atlas_operator (admin/owner/partner) roles.
+   * Restricted to ventex_operator (admin/owner/partner) roles.
    */
   list: partnerProcedure
     .input(

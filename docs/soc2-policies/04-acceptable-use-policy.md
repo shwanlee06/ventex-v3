@@ -1,6 +1,6 @@
 # Acceptable Use Policy
 
-**Royalton Venture Holding — ATLAS Platform**
+**Royalton Venture Holding — VENTEX Platform**
 **Document ID:** SOC2-AUP-004
 **Version:** 1.0
 **Effective Date:** April 8, 2026
@@ -11,17 +11,17 @@
 
 ## 1. Purpose
 
-This Acceptable Use Policy defines the standards of conduct for all users of the ATLAS platform. It establishes guidelines for the responsible and secure use of platform resources, protecting both the organization and its clients from security risks and legal liability. This policy supports SOC 2 Trust Services Criteria CC6.1 (logical and physical access controls) and CC1.1 (control environment).
+This Acceptable Use Policy defines the standards of conduct for all users of the VENTEX platform. It establishes guidelines for the responsible and secure use of platform resources, protecting both the organization and its clients from security risks and legal liability. This policy supports SOC 2 Trust Services Criteria CC6.1 (logical and physical access controls) and CC1.1 (control environment).
 
 ## 2. Scope
 
-This policy applies to all individuals who access the ATLAS platform, including: Royalton Venture Holding employees and contractors; ATLAS administrators and operators; client organization members with portal access; and third-party partners with authorized access.
+This policy applies to all individuals who access the VENTEX platform, including: Royalton Venture Holding employees and contractors; VENTEX administrators and operators; client organization members with portal access; and third-party partners with authorized access.
 
 ## 3. Authorized Use
 
 ### 3.1 Permitted Activities
 
-Users may use the ATLAS platform for the following authorized business purposes: managing venture lifecycle operations (creation, tracking, stage advancement); administering SPV deals and investment pipelines; tracking and processing financial distributions; managing tasks, assignments, and deadlines; uploading and managing business documents; using AI-powered agents for venture analysis and recommendations; communicating with team members and clients through platform channels; and configuring organization settings and user preferences.
+Users may use the VENTEX platform for the following authorized business purposes: managing venture lifecycle operations (creation, tracking, stage advancement); administering SPV deals and investment pipelines; tracking and processing financial distributions; managing tasks, assignments, and deadlines; uploading and managing business documents; using AI-powered agents for venture analysis and recommendations; communicating with team members and clients through platform channels; and configuring organization settings and user preferences.
 
 ### 3.2 Role-Based Access
 
@@ -89,7 +89,7 @@ Policy violations are handled according to severity:
 
 ### 7.3 Reporting
 
-Users must report suspected policy violations, security incidents, or suspicious activity to their organization administrator or the ATLAS security team. Reports can be made through the platform's notification system or by contacting the security team directly.
+Users must report suspected policy violations, security incidents, or suspicious activity to their organization administrator or the VENTEX security team. Reports can be made through the platform's notification system or by contacting the security team directly.
 
 ## 8. Policy Review
 
@@ -98,6 +98,6 @@ This policy is reviewed annually and updated as needed to address new threats, t
 ---
 
 **Approval:**
-- Prepared by: ATLAS Security Team
+- Prepared by: VENTEX Security Team
 - Approved by: CISO, Royalton Venture Holding
 - Next Review Date: April 8, 2027

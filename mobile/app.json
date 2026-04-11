@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ATLAS",
-    "slug": "atlas-mobile",
+    "name": "VENTEX",
+    "slug": "ventex-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,16 +14,16 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.royalton.atlas"
+      "bundleIdentifier": "com.aurovia.ventex"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0a0a0a"
       },
-      "package": "com.royalton.atlas"
+      "package": "com.aurovia.ventex"
     },
-    "scheme": "atlas",
+    "scheme": "ventex",
     "plugins": ["expo-router", "expo-font"],
     "experiments": {
       "typedRoutes": true

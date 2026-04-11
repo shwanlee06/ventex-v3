@@ -7,14 +7,14 @@
 4. AI Concierge — chat interface with pre-filled conversation
 5. AI Agents — 4 agent cards (Velocity, Overdue, Distribution Sentinel, Compliance Watcher) with status/metrics
 6. Blueprints — venture pipeline kanban across stages
-7. ATLAS Team — team member cards with photos, status, ventures, tasks
+7. VENTEX Team — team member cards with photos, status, ventures, tasks
 8. Client Contacts — org-grouped contact directory
 9. Onboard Client — 3-step wizard (org details, ventures, team/access)
 10. Drafts — document drafts list
 11. Settings — configuration panels (general, notifications, integrations, security)
 
 ## Client Portal Components (ClientPortal.tsx)
-1. Header — org name, "Managed by ATLAS", user name, logout
+1. Header — org name, "Managed by VENTEX", user name, logout
 2. Velocity Summary — AI-generated one-line briefing
 3. Action Needed (amber) — cards with action buttons (Advance Status, Review & Approve, Confirm Distribution, Resolve, View Tasks)
 4. Completed (teal) — completed items feed

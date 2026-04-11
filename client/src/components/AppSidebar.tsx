@@ -140,7 +140,7 @@ export default function AppSidebar() {
 
   const handleSignOut = async () => {
     try {
-      localStorage.removeItem("atlas_operator");
+      localStorage.removeItem("ventex_operator");
       await logout();
     } catch {}
     toast.info("Signed out");

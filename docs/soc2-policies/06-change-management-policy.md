@@ -1,6 +1,6 @@
 # Change Management Policy
 
-**Royalton Venture Holding — ATLAS Platform**
+**Royalton Venture Holding — VENTEX Platform**
 **Document ID:** SOC2-CMP-006
 **Version:** 1.0
 **Effective Date:** April 8, 2026
@@ -11,11 +11,11 @@
 
 ## 1. Purpose
 
-This Change Management Policy establishes the procedures for planning, approving, implementing, and reviewing changes to the ATLAS platform. It ensures that changes are made in a controlled manner that minimizes risk to service availability, data integrity, and security posture, in alignment with SOC 2 Trust Services Criteria CC8.1 (change management).
+This Change Management Policy establishes the procedures for planning, approving, implementing, and reviewing changes to the VENTEX platform. It ensures that changes are made in a controlled manner that minimizes risk to service availability, data integrity, and security posture, in alignment with SOC 2 Trust Services Criteria CC8.1 (change management).
 
 ## 2. Scope
 
-This policy applies to all changes to the ATLAS platform, including: application code changes (frontend and backend); database schema modifications; infrastructure and configuration changes; dependency updates and security patches; environment variable and secret changes; and third-party integration modifications.
+This policy applies to all changes to the VENTEX platform, including: application code changes (frontend and backend); database schema modifications; infrastructure and configuration changes; dependency updates and security patches; environment variable and secret changes; and third-party integration modifications.
 
 ## 3. Change Classification
 
@@ -97,6 +97,6 @@ This policy is reviewed annually or after significant incidents related to chang
 ---
 
 **Approval:**
-- Prepared by: ATLAS Security Team
+- Prepared by: VENTEX Security Team
 - Approved by: CISO, Royalton Venture Holding
 - Next Review Date: April 8, 2027

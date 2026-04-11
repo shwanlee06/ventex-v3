@@ -1,6 +1,6 @@
 # Data Retention Policy
 
-**Royalton Venture Holding — ATLAS Platform**
+**Royalton Venture Holding — VENTEX Platform**
 **Document ID:** SOC2-DRP-003
 **Version:** 1.0
 **Effective Date:** April 8, 2026
@@ -11,11 +11,11 @@
 
 ## 1. Purpose
 
-This Data Retention Policy defines the retention periods, storage requirements, and disposal procedures for all data processed by the ATLAS platform. It ensures compliance with SOC 2 Trust Services Criteria CC6.5 (logical access controls) and CC7.2 (system monitoring), as well as applicable legal and regulatory requirements.
+This Data Retention Policy defines the retention periods, storage requirements, and disposal procedures for all data processed by the VENTEX platform. It ensures compliance with SOC 2 Trust Services Criteria CC6.5 (logical access controls) and CC7.2 (system monitoring), as well as applicable legal and regulatory requirements.
 
 ## 2. Scope
 
-This policy applies to all data stored, processed, or transmitted by the ATLAS platform, including database records, uploaded files, system logs, and cached data. It covers both production and backup data.
+This policy applies to all data stored, processed, or transmitted by the VENTEX platform, including database records, uploaded files, system logs, and cached data. It covers both production and backup data.
 
 ## 3. Retention Schedule
 
@@ -101,6 +101,6 @@ This policy is reviewed annually or upon changes to regulatory requirements, bus
 ---
 
 **Approval:**
-- Prepared by: ATLAS Security Team
+- Prepared by: VENTEX Security Team
 - Approved by: CISO, Royalton Venture Holding
 - Next Review Date: April 8, 2027

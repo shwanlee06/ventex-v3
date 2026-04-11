@@ -1,6 +1,6 @@
 # Information Security Policy
 
-**Royalton Venture Holding — ATLAS Platform**
+**Royalton Venture Holding — VENTEX Platform**
 **Document ID:** SOC2-ISP-001
 **Version:** 1.0
 **Effective Date:** April 8, 2026
@@ -11,15 +11,15 @@
 
 ## 1. Purpose
 
-This Information Security Policy establishes the framework for protecting the confidentiality, integrity, and availability of information assets managed by the ATLAS platform. It defines the security controls, responsibilities, and procedures required to safeguard business data, client information, and system infrastructure in alignment with SOC 2 Type II Trust Services Criteria (TSC).
+This Information Security Policy establishes the framework for protecting the confidentiality, integrity, and availability of information assets managed by the VENTEX platform. It defines the security controls, responsibilities, and procedures required to safeguard business data, client information, and system infrastructure in alignment with SOC 2 Type II Trust Services Criteria (TSC).
 
 ## 2. Scope
 
-This policy applies to all employees, contractors, administrators, and third-party service providers who access, process, store, or transmit information through the ATLAS platform. It covers all information assets including venture data, SPV records, financial distributions, client communications, documents, and system configurations.
+This policy applies to all employees, contractors, administrators, and third-party service providers who access, process, store, or transmit information through the VENTEX platform. It covers all information assets including venture data, SPV records, financial distributions, client communications, documents, and system configurations.
 
 ## 3. Information Classification
 
-All information processed by ATLAS is classified into the following categories:
+All information processed by VENTEX is classified into the following categories:
 
 | Classification | Description | Examples | Controls |
 |---|---|---|---|
@@ -111,6 +111,6 @@ This policy is reviewed annually or upon significant changes to the platform arc
 ---
 
 **Approval:**
-- Prepared by: ATLAS Security Team
+- Prepared by: VENTEX Security Team
 - Approved by: CISO, Royalton Venture Holding
 - Next Review Date: April 8, 2027

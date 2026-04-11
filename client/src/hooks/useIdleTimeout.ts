@@ -34,7 +34,7 @@ export function useIdleTimeout() {
   const handleLogout = useCallback(async () => {
     clearTimers();
     // Clear local storage
-    localStorage.removeItem("atlas_operator");
+    localStorage.removeItem("ventex_operator");
     localStorage.removeItem("ventex_demo_session");
     try {
       await logout();

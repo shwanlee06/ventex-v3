@@ -7,11 +7,11 @@
 - Other letters (G, J, N, 1) are showing as random cipher characters: CORRECT - they're still scrambling
 - Progress bar visible below: CORRECT
 - Status text "AUTHENTICATING OPERATOR_" visible: CORRECT
-- The cipher decode animation is working - letters resolve one by one into ATLAS
+- The cipher decode animation is working - letters resolve one by one into VENTEX
 
 ## Issues to Check
 - The hero section buttons (ENTER COMMAND CENTER, REQUEST ACCESS) are visible during loading - they should be hidden
-- Need to verify the full ATLAS word resolves correctly after the animation completes
+- Need to verify the full VENTEX word resolves correctly after the animation completes
 - The nav buttons at top are visible during loading - they should be behind the loading overlay
 
 ## Status: Working correctly - the cipher decode effect is functioning as designed

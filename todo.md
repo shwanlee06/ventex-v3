@@ -2369,3 +2369,4 @@
 - [x] Rebrand server-side files (routers, agents, intelligence)
 - [x] Update all tests to match VENTEX branding
 - [x] Verify compilation and all tests pass (745/754 — 9 org test failures are pre-existing DB state issue)
+- [x] Find and eliminate ALL remaining ATLAS references (UI, logos, titles, CDN URLs, metadata)

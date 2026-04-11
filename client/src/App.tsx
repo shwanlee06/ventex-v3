@@ -54,19 +54,19 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (loading) return;
     // Check real session first, then localStorage fallback
-    const hasLocalSession = Boolean(localStorage.getItem("atlas_operator"));
+    const hasLocalSession = Boolean(localStorage.getItem("ventex_operator"));
     if (!isAuthenticated && !hasLocalSession) {
       navigate("/", { replace: true });
     }
     // If authenticated via OAuth but localStorage not set yet, set it
-    if (isAuthenticated && user && !localStorage.getItem("atlas_operator")) {
-      localStorage.setItem("atlas_operator", user.name || "OPERATOR");
+    if (isAuthenticated && user && !localStorage.getItem("ventex_operator")) {
+      localStorage.setItem("ventex_operator", user.name || "OPERATOR");
     }
   }, [loading, isAuthenticated, user, navigate]);
 
   if (loading) return null;
 
-  const hasLocalSession = Boolean(localStorage.getItem("atlas_operator"));
+  const hasLocalSession = Boolean(localStorage.getItem("ventex_operator"));
   if (!isAuthenticated && !hasLocalSession) return null;
 
   return <>{children}</>;
