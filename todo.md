@@ -2402,3 +2402,10 @@
 - [x] Add subtle color to agent cards and GTM stages for differentiation
 - [x] Keep overall palette restrained — green accent + 1-2 warm tones max
 - [x] Verify visual balance — not too colorful, just enough to guide the eye
+
+## Use of Funds Redesign (Apr 10)
+- [x] Give each fund category a distinct color (not all green)
+- [x] Improve layout clarity — larger labels, percentage values more prominent
+- [x] Add dollar amounts alongside percentages for investor clarity
+- [x] Make the bar chart segments more readable with spacing or labels
+- [x] Ensure the color palette ties to the amber financial theme

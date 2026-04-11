@@ -100,15 +100,49 @@ const GTM_STAGES = [
   },
 ];
 
-const USE_OF_FUNDS = [
-  { label: "Engineers", pct: 25.6, color: "#00ff87" },
-  { label: "Team Stipends", pct: 20.9, color: "#00cc6a" },
-  { label: "Reserve", pct: 25.4, color: "#009952" },
-  { label: "Sales & GTM", pct: 10.7, color: "#00ff87" },
-  { label: "Platform Infrastructure", pct: 4.7, color: "#00cc6a" },
-  { label: "Legal & Compliance", pct: 4.6, color: "#009952" },
-  { label: "Security Baseline", pct: 2.9, color: "#006638" },
-  { label: "LOI / Client Legal", pct: 0.7, color: "#004d2b" },
+// Strategic fund allocation grouped by purpose
+const FUND_BUCKETS = [
+  {
+    bucket: "BUILD",
+    bucketColor: "#00ff87",
+    bucketDesc: "Product & Engineering",
+    milestone: "Ship production platform, onboard 5-6 enterprise clients",
+    items: [
+      { label: "AI/ML Engineers", pct: 25.6, amount: "$179K", color: "#00ff87" },
+      { label: "Platform Infrastructure", pct: 4.7, amount: "$33K", color: "#00cc6a" },
+      { label: "Security Baseline", pct: 2.9, amount: "$20K", color: "#009952" },
+    ],
+  },
+  {
+    bucket: "GROW",
+    bucketColor: "#FFB800",
+    bucketDesc: "Sales & Market Entry",
+    milestone: "Close 5-6 UHNWI contracts, reach $4M ARR for Series A",
+    items: [
+      { label: "Sales & GTM", pct: 10.7, amount: "$75K", color: "#FFB800" },
+      { label: "LOI / Client Legal", pct: 0.7, amount: "$5K", color: "#FF9F43" },
+    ],
+  },
+  {
+    bucket: "SUSTAIN",
+    bucketColor: "#8B8BFF",
+    bucketDesc: "Team & Operations",
+    milestone: "25+ months runway, retain core team through Series A",
+    items: [
+      { label: "Team Stipends", pct: 20.9, amount: "$146K", color: "#8B8BFF" },
+      { label: "Operating Reserve", pct: 25.4, amount: "$178K", color: "#54A0FF" },
+      { label: "Legal & Compliance", pct: 4.6, amount: "$32K", color: "#7C7CCC" },
+    ],
+  },
+];
+
+// Flat list for the bar chart
+const USE_OF_FUNDS = FUND_BUCKETS.flatMap((b) => b.items);
+
+const TIMELINE_MILESTONES = [
+  { quarter: "Q1-Q2", label: "Platform launch + first 2 pilots", color: "#00ff87" },
+  { quarter: "Q3-Q4", label: "3-4 paying clients + $1M ARR", color: "#FFB800" },
+  { quarter: "Q5-Q7", label: "5-6 clients + $4M ARR + Series A", color: "#8B8BFF" },
 ];
 
 const TEAM = [
@@ -747,30 +781,109 @@ export default function Demo() {
             </p>
           </RevealSection>
 
-          {/* Use of Funds */}
+          {/* Use of Funds — Investor-Grade */}
           <RevealSection delay={0.15}>
-            <div className="border border-white/8 p-6 mb-8">
-              <div className="text-[10px] tracking-[0.2em] text-white/50 uppercase mb-6">Use of Funds</div>
+            <div className="border border-white/8 p-6 md:p-8 mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="text-[10px] tracking-[0.3em] text-[#FFB800]/70 uppercase">Capital Allocation</div>
+                <div className="text-sm font-mono font-semibold text-[#FFB800]">$700,000</div>
+              </div>
 
-              {/* Visual bar */}
-              <div className="flex h-4 overflow-hidden mb-6 bg-white/5">
-                {USE_OF_FUNDS.map((f) => (
-                  <div
-                    key={f.label}
-                    className="h-full transition-all duration-700"
-                    style={{ width: `${f.pct}%`, backgroundColor: f.color }}
-                  />
+              {/* Stacked bar — grouped by bucket */}
+              <div className="flex h-8 gap-[3px] mb-2 overflow-hidden">
+                {FUND_BUCKETS.map((b) => (
+                  <div key={b.bucket} className="flex h-full gap-[1px]" style={{ width: `${b.items.reduce((s, i) => s + i.pct, 0)}%` }}>
+                    {b.items.map((f) => (
+                      <div
+                        key={f.label}
+                        className="h-full transition-all duration-700"
+                        style={{ width: `${(f.pct / b.items.reduce((s, i) => s + i.pct, 0)) * 100}%`, backgroundColor: f.color }}
+                        title={`${f.label}: ${f.amount} (${f.pct}%)`}
+                      />
+                    ))}
+                  </div>
                 ))}
               </div>
 
-              {/* Legend */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {USE_OF_FUNDS.map((f) => (
-                  <div key={f.label} className="flex items-start gap-2">
-                    <div className="size-2 mt-1 flex-shrink-0" style={{ backgroundColor: f.color }} />
-                    <div>
-                      <div className="text-[11px] text-white/80 font-medium">{f.label}</div>
-                      <div className="text-[10px] text-white/50 font-mono">{f.pct}%</div>
+              {/* Bucket labels under bar */}
+              <div className="flex mb-8">
+                {FUND_BUCKETS.map((b) => (
+                  <div key={b.bucket} style={{ width: `${b.items.reduce((s, i) => s + i.pct, 0)}%` }} className="text-center">
+                    <span className="text-[9px] font-mono tracking-[0.15em] uppercase" style={{ color: b.bucketColor }}>
+                      {b.bucket} {Math.round(b.items.reduce((s, i) => s + i.pct, 0))}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Strategic Buckets with milestones */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {FUND_BUCKETS.map((b) => {
+                  const totalPct = Math.round(b.items.reduce((s, i) => s + i.pct, 0));
+                  const totalAmt = b.items.reduce((s, i) => s + parseInt(i.amount.replace(/[^0-9]/g, "")), 0);
+                  return (
+                    <div key={b.bucket} className="border border-white/8 p-5">
+                      {/* Bucket header */}
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="size-2 rounded-[1px]" style={{ backgroundColor: b.bucketColor }} />
+                        <span className="text-[10px] font-mono tracking-[0.15em] font-bold" style={{ color: b.bucketColor }}>
+                          {b.bucket}
+                        </span>
+                        <span className="text-[10px] font-mono text-white/30 ml-auto">{totalPct}%</span>
+                      </div>
+                      <div className="text-[11px] text-white/50 mb-4">{b.bucketDesc}</div>
+
+                      {/* Dollar total for bucket */}
+                      <div className="text-xl font-bold font-mono mb-4" style={{ color: b.bucketColor }}>
+                        ${totalAmt}K
+                      </div>
+
+                      {/* Line items */}
+                      <div className="space-y-2 mb-4">
+                        {b.items.map((f) => (
+                          <div key={f.label} className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="size-1.5 rounded-full" style={{ backgroundColor: f.color }} />
+                              <span className="text-[11px] text-white/70">{f.label}</span>
+                            </div>
+                            <span className="text-[11px] font-mono text-white/50">{f.amount}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Milestone outcome */}
+                      <div className="border-t border-white/8 pt-3">
+                        <div className="text-[9px] tracking-[0.15em] text-white/30 uppercase mb-1">Milestone</div>
+                        <div className="text-[11px] text-white/70 leading-relaxed">{b.milestone}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </RevealSection>
+
+          {/* Timeline — How Capital Deploys */}
+          <RevealSection delay={0.2}>
+            <div className="border border-white/8 p-6 md:p-8 mb-8">
+              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase mb-6">25-Month Deployment Timeline</div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
+                {TIMELINE_MILESTONES.map((m, i) => (
+                  <div key={m.quarter} className="relative p-4 border border-white/5">
+                    {/* Quarter badge */}
+                    <div
+                      className="text-[10px] font-mono font-bold tracking-wider mb-2"
+                      style={{ color: m.color }}
+                    >
+                      {m.quarter}
+                    </div>
+                    <div className="text-[12px] text-white/70 leading-relaxed">{m.label}</div>
+                    {/* Progress indicator */}
+                    <div className="mt-3 h-[2px] bg-white/5 overflow-hidden">
+                      <div
+                        className="h-full"
+                        style={{ width: `${(i + 1) * 33}%`, backgroundColor: m.color }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -778,20 +891,23 @@ export default function Demo() {
             </div>
           </RevealSection>
 
-          {/* SAFE terms */}
+          {/* SAFE Terms */}
           <RevealSection delay={0.25}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="border border-white/8 p-5 text-center">
-                <div className="text-2xl font-bold text-[#FFB800] font-mono mb-1">$700K</div>
-                <div className="text-[11px] text-white/50">Round Size</div>
+              <div className="border border-[#FFB800]/20 p-5 text-center bg-[#FFB800]/[0.03]">
+                <div className="text-[9px] tracking-[0.15em] text-[#FFB800]/50 uppercase mb-2">Round Size</div>
+                <div className="text-2xl font-bold text-[#FFB800] font-mono">$700K</div>
+                <div className="text-[10px] text-white/30 mt-1">Pre-Seed SAFE</div>
               </div>
-              <div className="border border-white/8 p-5 text-center">
-                <div className="text-2xl font-bold text-[#FFB800] font-mono mb-1">$4M</div>
-                <div className="text-[11px] text-white/50">SAFE Cap</div>
+              <div className="border border-[#FFB800]/20 p-5 text-center bg-[#FFB800]/[0.03]">
+                <div className="text-[9px] tracking-[0.15em] text-[#FFB800]/50 uppercase mb-2">Valuation Cap</div>
+                <div className="text-2xl font-bold text-[#FFB800] font-mono">$4M</div>
+                <div className="text-[10px] text-white/30 mt-1">Post-money SAFE</div>
               </div>
-              <div className="border border-white/8 p-5 text-center">
-                <div className="text-2xl font-bold text-[#00ff87] font-mono mb-1">25+</div>
-                <div className="text-[11px] text-white/50">Months Runway</div>
+              <div className="border border-[#00ff87]/20 p-5 text-center bg-[#00ff87]/[0.03]">
+                <div className="text-[9px] tracking-[0.15em] text-[#00ff87]/50 uppercase mb-2">Runway</div>
+                <div className="text-2xl font-bold text-[#00ff87] font-mono">25+</div>
+                <div className="text-[10px] text-white/30 mt-1">Months to Series A</div>
               </div>
             </div>
           </RevealSection>
