@@ -2421,3 +2421,11 @@
 - [x] Add Revenue Model / Pricing section with clear tier structure
 - [x] Add key assumptions footnote under the $4M ARR target
 - [x] Ensure all sections flow as a cohesive investor narrative
+
+## Traction Narrative Revision (Apr 11) — Royalton as Dev Partner, Not Paying Client
+- [x] Reframe Royalton as "development partner" / "design partner" not a paying client
+- [x] Remove or reword any claims that imply Royalton is a paying customer
+- [x] Update pipeline section to remove Royalton from revenue pipeline
+- [x] Rewrite testimonial to reflect partnership, not purchase
+- [x] Adjust traction metrics to focus on product validation, not revenue
+- [x] Ensure the narrative is honest and credible for investor scrutiny

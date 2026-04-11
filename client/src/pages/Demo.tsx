@@ -140,7 +140,7 @@ const FUND_BUCKETS = [
 const USE_OF_FUNDS = FUND_BUCKETS.flatMap((b) => b.items);
 
 const TIMELINE_MILESTONES = [
-  { quarter: "Q1-Q2", label: "Platform launch + first 2 pilots", color: "#00ff87" },
+  { quarter: "Q1-Q2", label: "Platform launch + first 3 paying clients", color: "#00ff87" },
   { quarter: "Q3-Q4", label: "3-4 paying clients + $1M ARR", color: "#FFB800" },
   { quarter: "Q5-Q7", label: "5-6 clients + $4M ARR + Series A", color: "#8B8BFF" },
 ];
@@ -905,7 +905,7 @@ export default function Demo() {
                   </div>
                   <p className="text-sm text-white/70 leading-relaxed mb-4">
                     Platform is fully functional and demo-ready. Client portal live. Operator command center live.
-                    AI agents running autonomously. <span className="text-[#00ff87] font-medium">1 active pilot client (Royalton Venture Holding)</span> — validating the full workflow end-to-end.
+                    AI agents running autonomously. <span className="text-[#00ff87] font-medium">1 design partner (Royalton Venture Holding)</span> — validating the full workflow across 23 ventures and 6 sectors in a live production environment.
                   </p>
                   {/* Pilot Metrics */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-4 border border-[#00ff87]/15 bg-[#00ff87]/[0.02]">
@@ -927,8 +927,8 @@ export default function Demo() {
                     </div>
                   </div>
                   <p className="text-sm text-white/70 leading-relaxed">
-                    <span className="text-[#00cc6a] font-medium">90-day north star: convert pilot to a paid annual license
-                    and sign 5 additional clients by Q4 2026.</span>
+                    <span className="text-[#00cc6a] font-medium">90-day north star: close first 3 paying clients from active pipeline.
+                    Design partner validates product. Paying clients validate the market.</span>
                   </p>
                 </div>
               </div>
@@ -940,7 +940,7 @@ export default function Demo() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Pilot Testimonial */}
               <div className="border border-[#00ff87]/20 p-6 bg-[#00ff87]/[0.03]">
-                <div className="text-[9px] tracking-[0.2em] text-[#00ff87]/50 uppercase mb-4">Pilot Client Feedback</div>
+                <div className="text-[9px] tracking-[0.2em] text-[#00ff87]/50 uppercase mb-4">Design Partner Validation</div>
                 <p className="text-sm text-white/70 leading-relaxed italic mb-4">
                   "Before VENTEX, coordinating 23 ventures across 6 sectors meant constant email chains and spreadsheet updates. Now the agents handle follow-ups, flag stalled deals, and draft distribution notices automatically. We went from reactive to proactive in weeks."
                 </p>
@@ -948,19 +948,20 @@ export default function Demo() {
                   <div className="size-8 bg-[#00ff87]/20 flex items-center justify-center text-[10px] font-bold text-[#00ff87]">RV</div>
                   <div>
                     <div className="text-[11px] text-white font-medium">Royalton Venture Holding</div>
-                    <div className="text-[10px] text-white/40">Active Pilot — 23 ventures, 6 sectors</div>
+                    <div className="text-[10px] text-white/40">Design Partner — 23 ventures, 6 sectors, live production</div>
                   </div>
+                </div>
+                <div className="mt-4 pt-3 border-t border-[#00ff87]/10">
+                  <p className="text-[10px] text-white/50 leading-relaxed">
+                    Royalton is our design partner — not a paying client. We built VENTEX inside their operations to solve our own pain. This gave us 6 months of real-world product validation at zero CAC. The product works. Now we sell it.
+                  </p>
                 </div>
               </div>
 
               {/* Pipeline */}
               <div className="border border-white/8 p-6">
-                <div className="text-[9px] tracking-[0.2em] text-white/40 uppercase mb-4">Active Pipeline</div>
+                <div className="text-[9px] tracking-[0.2em] text-white/40 uppercase mb-4">Go-To-Market Pipeline</div>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-white/70">Royalton Venture Holding</span>
-                    <span className="text-[9px] font-mono px-2 py-0.5 bg-[#00ff87]/10 text-[#00ff87] border border-[#00ff87]/20">PILOT ACTIVE</span>
-                  </div>
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] text-white/70">UHNWI Family Office — Dubai</span>
                     <span className="text-[9px] font-mono px-2 py-0.5 bg-[#FFB800]/10 text-[#FFB800] border border-[#FFB800]/20">DISCOVERY CALL</span>
@@ -980,9 +981,10 @@ export default function Demo() {
                 </div>
                 <div className="mt-4 pt-3 border-t border-white/8">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-white/40">Weighted pipeline value</span>
+                    <span className="text-[10px] text-white/40">Potential pipeline value (if converted)</span>
                     <span className="text-sm font-bold text-[#FFB800] font-mono">$480K ARR</span>
                   </div>
+                  <p className="text-[9px] text-white/30 mt-2">All prospects sourced through Royalton's network. Zero paid acquisition.</p>
                 </div>
               </div>
             </div>
@@ -1239,7 +1241,7 @@ export default function Demo() {
                 </div>
                 <div className="flex items-start gap-2">
                   <div className="size-1.5 mt-1.5 bg-[#8B8BFF] flex-shrink-0" />
-                  <p className="text-[11px] text-white/60 leading-relaxed"><span className="text-[#8B8BFF] font-medium">Built-In Distribution</span> — Royalton's network gives us direct access to UHNWI operators, family offices, and holding companies. No cold outreach needed for first 10 clients.</p>
+                  <p className="text-[11px] text-white/60 leading-relaxed"><span className="text-[#8B8BFF] font-medium">Built-In Distribution</span> — Our design partnership with Royalton gives us direct access to UHNWI operators, family offices, and holding companies through their network. First 10 prospects already sourced — zero paid acquisition.</p>
                 </div>
               </div>
             </div>
