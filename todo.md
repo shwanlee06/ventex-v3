@@ -2449,3 +2449,8 @@
 - [ ] Term Sheet Summary
 - [ ] Use of Funds Detailed Memo
 - [ ] Note LLC to C-Corp conversion as planned use of pre-seed funds
+
+## Hero No-Scroll Lock + Intro Match (Apr 11)
+- [x] Match SpyOps intro/loading page exactly to reference site (atlasweb-aaerha7b.manus.space)
+- [x] Lock SpyOps hero to full viewport — no scrolling on first page
+- [x] User must click CTA to proceed to investor demo

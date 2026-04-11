@@ -513,6 +513,18 @@ export default function SpyOps() {
     window.location.href = getLoginUrl();
   };
 
+  /* ─── scroll lock: no scrolling until user clicks a CTA ─── */
+  const [scrollUnlocked, setScrollUnlocked] = useState(false);
+
+  useEffect(() => {
+    if (flowPhase !== "page" || scrollUnlocked) {
+      document.body.style.overflow = (flowPhase !== "page") ? "hidden" : (scrollUnlocked ? "auto" : "hidden");
+    } else {
+      document.body.style.overflow = "hidden";
+    }
+    return () => { document.body.style.overflow = "auto"; };
+  }, [flowPhase, scrollUnlocked]);
+
   /* ─── page state (after transition) ─── */
   const [clock, setClock] = useState(fmtClock(estNow()));
   const [scrollY, setScrollY] = useState(0);
@@ -751,6 +763,68 @@ export default function SpyOps() {
                 overflow: "hidden",
               }}
             >
+              {/* Top nav bar — matches reference site */}
+              <nav
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 52,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "0 24px",
+                  zIndex: 10,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ color: "#e53e3e", fontSize: 14 }}>▼</span>
+                  <span
+                    style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: "#fff",
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    VENTEX
+                  </span>
+                </div>
+                <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+                  {["PLATFORM", "INTELLIGENCE", "VELOCITY", "ABOUT"].map((label) => (
+                    <span
+                      key={label}
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 10,
+                        letterSpacing: "0.12em",
+                        color: "#888",
+                        cursor: "none",
+                      }}
+                    >
+                      {label}
+                    </span>
+                  ))}
+                  <button
+                    onClick={handleSignIn}
+                    className="spyops-hover"
+                    style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: 10,
+                      letterSpacing: "0.1em",
+                      background: "transparent",
+                      color: "#fff",
+                      border: "1px solid rgba(255,255,255,0.3)",
+                      padding: "6px 14px",
+                      cursor: "none",
+                    }}
+                  >
+                    ▲ REQUEST ACCESS
+                  </button>
+                </div>
+              </nav>
               {/* Particle Globe — right side */}
               <svg
                 viewBox="0 0 440 440"
@@ -975,29 +1049,31 @@ export default function SpyOps() {
                 </div>
               </div>
 
-              {/* Scroll indicator — bottom center */}
+              {/* Bottom bar — matches reference site */}
               <div
                 style={{
                   position: "absolute",
-                  bottom: 32,
-                  left: "50%",
-                  transform: "translateX(-50%)",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 40,
+                  borderTop: "1px solid rgba(255,255,255,0.1)",
                   display: "flex",
-                  flexDirection: "column",
                   alignItems: "center",
-                  gap: 8,
+                  justifyContent: "space-between",
+                  padding: "0 24px",
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 10,
+                  color: "#555",
+                  letterSpacing: "0.1em",
                 }}
               >
-                <span
-                  style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: 10,
-                    letterSpacing: "0.15em",
-                    color: "#555",
-                  }}
-                >
-                  CLASSIFICATION: CONFIDENTIAL // INVITE-ONLY ACCESS
+                <span>CLASSIFICATION: CONFIDENTIAL</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  SCROLL
+                  <span style={{ display: "inline-block", width: 1, height: 16, background: "#555" }} />
                 </span>
+                <span>INVITE-ONLY ACCESS</span>
               </div>
             </div>
           )}
@@ -1309,7 +1385,7 @@ export default function SpyOps() {
             <div style={{ display: "flex", gap: 12, marginTop: 32, flexWrap: "wrap" }}>
               {/* ENTER COMMAND CENTER — auth-aware */}
               <button
-                onClick={() => isAuthenticated ? navigate("/dashboard") : handleSignIn()}
+                onClick={() => { setScrollUnlocked(true); isAuthenticated ? navigate("/dashboard") : handleSignIn(); }}
                 className="spyops-btn-primary"
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
@@ -1326,7 +1402,7 @@ export default function SpyOps() {
               </button>
               {/* INVESTOR DEMO — no auth required */}
               <button
-                onClick={() => navigate("/demo")}
+                onClick={() => { setScrollUnlocked(true); navigate("/demo"); }}
                 className="spyops-hover"
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
@@ -1352,7 +1428,7 @@ export default function SpyOps() {
               </button>
               {/* REQUEST ACCESS scrolls to contact/coordinates */}
               <button
-                onClick={() => scrollTo("coordinates")}
+                onClick={() => { setScrollUnlocked(true); setTimeout(() => scrollTo("coordinates"), 100); }}
                 className="spyops-btn-secondary"
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
@@ -1412,31 +1488,36 @@ export default function SpyOps() {
             ))}
           </div>
         </div>
-        {/* Scroll indicator — bottom center */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 32,
-            left: "50%",
-            transform: "translateX(-50%)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <span
+        {/* Scroll indicator — bottom center — only shows when scroll is locked */}
+        {!scrollUnlocked && (
+          <div
+            onClick={() => setScrollUnlocked(true)}
             style={{
-              fontFamily: "'IBM Plex Mono', monospace",
-              fontSize: 10,
-              letterSpacing: "0.15em",
-              color: "#555",
+              position: "absolute",
+              bottom: 32,
+              left: "50%",
+              transform: "translateX(-50%)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 8,
+              cursor: "none",
             }}
+            className="spyops-hover"
           >
-            SCROLL
-          </span>
-          <div style={{ width: 1, height: 24, background: "#555" }} />
-        </div>
+            <span
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 10,
+                letterSpacing: "0.15em",
+                color: "#555",
+              }}
+            >
+              SCROLL
+            </span>
+            <div style={{ width: 1, height: 24, background: "#555" }} />
+          </div>
+        )}
         {/* bottom left */}
         <div
           style={{
