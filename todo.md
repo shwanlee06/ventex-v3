@@ -2409,3 +2409,15 @@
 - [x] Add dollar amounts alongside percentages for investor clarity
 - [x] Make the bar chart segments more readable with spacing or labels
 - [x] Ensure the color palette ties to the amber financial theme
+
+## Pitch Deck Investor Readiness Upgrade (Apr 10) — Target: 9+/10
+- [x] Add Unit Economics section (ACV, CAC, LTV, payback period, gross margin)
+- [x] Upgrade Market section with TAM → SAM → SOM breakdown
+- [x] Cite the 42% statistic with a credible source
+- [x] Add Competitive Moat section with visual comparison table vs Masttro/Addepar/Voly
+- [x] Strengthen Team section with credentials, domain expertise, unfair advantage
+- [x] Upgrade Traction section with pilot metrics and usage data
+- [x] Add social proof — pilot testimonial and prospect pipeline
+- [x] Add Revenue Model / Pricing section with clear tier structure
+- [x] Add key assumptions footnote under the $4M ARR target
+- [x] Ensure all sections flow as a cohesive investor narrative

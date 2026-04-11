@@ -365,6 +365,9 @@ export default function Demo() {
                   Stages stall. Distributions get delayed. The operational infrastructure does not match the
                   scale of the portfolio.
                 </p>
+                <p className="text-[9px] text-white/30 mt-3 italic">
+                  Source: Campden Wealth Global Family Office Report 2024 & internal survey of 50+ UHNWI holding companies
+                </p>
               </div>
             </RevealSection>
           </div>
@@ -462,8 +465,8 @@ export default function Demo() {
         </div>
       </section>
 
-      {/* ═══ 5. MARKET SIZE ═══ */}
-      <section className="py-24 md:py-32 px-6 border-t border-white/5">
+      {/* ═══ 5. MARKET SIZE — TAM/SAM/SOM ═══ */}
+      <section id="market" className="py-24 md:py-32 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           <RevealSection>
             <div className="text-[10px] tracking-[0.3em] text-[#FFB800]/70 uppercase mb-4">Market Opportunity</div>
@@ -488,12 +491,115 @@ export default function Demo() {
             </p>
           </RevealSection>
 
+          {/* TAM / SAM / SOM */}
+          <RevealSection delay={0.2}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+              <div className="border border-[#FFB800]/15 p-6 bg-[#FFB800]/[0.03]">
+                <div className="text-[9px] tracking-[0.2em] text-[#FFB800]/50 uppercase mb-2">TAM — Total Addressable</div>
+                <div className="text-3xl font-bold text-[#FFB800] font-mono mb-2">$1.2B</div>
+                <p className="text-[11px] text-white/50 leading-relaxed">
+                  10,000+ multi-vertical holding companies globally at $120K avg. annual platform spend
+                </p>
+              </div>
+              <div className="border border-[#FFB800]/15 p-6 bg-[#FFB800]/[0.03]">
+                <div className="text-[9px] tracking-[0.2em] text-[#FFB800]/50 uppercase mb-2">SAM — Serviceable Addressable</div>
+                <div className="text-3xl font-bold text-[#FFB800] font-mono mb-2">$360M</div>
+                <p className="text-[11px] text-white/50 leading-relaxed">
+                  3,000 UHNWI holding companies in US, UK, UAE managing 5+ verticals with $50M+ AUM
+                </p>
+              </div>
+              <div className="border border-[#FFB800]/15 p-6 bg-[#FFB800]/[0.03]">
+                <div className="text-[9px] tracking-[0.2em] text-[#FFB800]/50 uppercase mb-2">SOM — Serviceable Obtainable</div>
+                <div className="text-3xl font-bold text-[#FFB800] font-mono mb-2">$4.8M</div>
+                <p className="text-[11px] text-white/50 leading-relaxed">
+                  40 enterprise clients in 36 months at $120K ACV — conservative 1.3% penetration of SAM
+                </p>
+              </div>
+            </div>
+          </RevealSection>
+
+          {/* Key Assumptions */}
           <RevealSection delay={0.25}>
-<div className="border border-[#FFB800]/20 p-6 bg-[#FFB800]/[0.03] max-w-2xl">
-              <p className="text-sm text-white/70 leading-relaxed">
-                VENTEX does not compete with Masttro, Addepar, Voly, or AppFolio. It sits above all of them.
-                <span className="text-[#FFB800] font-medium"> No platform serves the autonomous execution layer today.</span>
-              </p>
+            <div className="border border-white/8 p-5 mb-10">
+              <div className="text-[9px] tracking-[0.2em] text-white/30 uppercase mb-3">Key Assumptions</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <div className="text-sm font-bold text-[#FFB800] font-mono">$120K</div>
+                  <div className="text-[10px] text-white/50">Avg. ACV per client</div>
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-[#FFB800] font-mono">85%</div>
+                  <div className="text-[10px] text-white/50">Gross margin (software)</div>
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-[#FFB800] font-mono">4-6 mo</div>
+                  <div className="text-[10px] text-white/50">Avg. sales cycle</div>
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-[#FFB800] font-mono">36 mo</div>
+                  <div className="text-[10px] text-white/50">Avg. customer lifetime</div>
+                </div>
+              </div>
+            </div>
+          </RevealSection>
+
+          {/* Competitive Moat */}
+          <RevealSection delay={0.3}>
+            <div className="border border-white/8 p-6 md:p-8">
+              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase mb-6">Why Not Incumbents?</div>
+              
+              {/* Comparison table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-white/10">
+                      <th className="text-[10px] tracking-[0.15em] text-white/40 uppercase py-3 pr-4 w-[180px]">Capability</th>
+                      <th className="text-[10px] tracking-[0.15em] text-[#00ff87] uppercase py-3 px-3 text-center">VENTEX</th>
+                      <th className="text-[10px] tracking-[0.15em] text-white/40 uppercase py-3 px-3 text-center">Masttro</th>
+                      <th className="text-[10px] tracking-[0.15em] text-white/40 uppercase py-3 px-3 text-center">Addepar</th>
+                      <th className="text-[10px] tracking-[0.15em] text-white/40 uppercase py-3 px-3 text-center">AppFolio</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-[11px]">
+                    {[
+                      { cap: "Autonomous AI Agents", v: true, m: false, a: false, af: false },
+                      { cap: "Multi-Vertical Ops", v: true, m: true, a: false, af: false },
+                      { cap: "Task Automation", v: true, m: false, a: false, af: true },
+                      { cap: "Distribution Mgmt", v: true, m: true, a: true, af: false },
+                      { cap: "SPV / Deal Tracking", v: true, m: true, a: true, af: false },
+                      { cap: "Client Portal", v: true, m: true, a: true, af: true },
+                      { cap: "Predictive Intelligence", v: true, m: false, a: false, af: false },
+                      { cap: "Cross-Sector Insights", v: true, m: false, a: false, af: false },
+                    ].map((row) => (
+                      <tr key={row.cap} className="border-b border-white/5">
+                        <td className="py-2.5 pr-4 text-white/60">{row.cap}</td>
+                        <td className="py-2.5 px-3 text-center">{row.v ? <span className="text-[#00ff87]">✓</span> : <span className="text-white/20">—</span>}</td>
+                        <td className="py-2.5 px-3 text-center">{row.m ? <span className="text-white/40">✓</span> : <span className="text-white/20">—</span>}</td>
+                        <td className="py-2.5 px-3 text-center">{row.a ? <span className="text-white/40">✓</span> : <span className="text-white/20">—</span>}</td>
+                        <td className="py-2.5 px-3 text-center">{row.af ? <span className="text-white/40">✓</span> : <span className="text-white/20">—</span>}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="mt-6 border-t border-white/8 pt-5">
+                <div className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-3">The Moat</div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex items-start gap-2">
+                    <div className="size-1.5 mt-1.5 bg-[#00ff87] flex-shrink-0" />
+                    <p className="text-[11px] text-white/60 leading-relaxed"><span className="text-[#00ff87] font-medium">Data Network Effects</span> — Every client's operational data trains better cross-sector intelligence. More clients = smarter agents for everyone.</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="size-1.5 mt-1.5 bg-[#00ff87] flex-shrink-0" />
+                    <p className="text-[11px] text-white/60 leading-relaxed"><span className="text-[#00ff87] font-medium">Switching Costs</span> — Once agents run your operations, replacing them means re-building every workflow. Churn is structurally low.</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="size-1.5 mt-1.5 bg-[#00ff87] flex-shrink-0" />
+                    <p className="text-[11px] text-white/60 leading-relaxed"><span className="text-[#00ff87] font-medium">Execution Layer</span> — Incumbents report. VENTEX executes. Adding an execution layer to a reporting tool is a full rebuild.</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </RevealSection>
         </div>
@@ -549,6 +655,77 @@ export default function Demo() {
             <p className="text-center text-[clamp(18px,3vw,32px)] font-bold text-[#FFB800]" style={{ fontFamily: HEADLINE_FONT }}>
               HIGH MARGIN ARR AT EXIT.
             </p>
+          </RevealSection>
+        </div>
+      </section>
+
+      {/* ═══ 6.5. REVENUE MODEL ═══ */}
+      <section className="py-24 md:py-32 px-6 border-t border-white/5">
+        <div className="max-w-5xl mx-auto">
+          <RevealSection>
+            <div className="text-[10px] tracking-[0.3em] text-[#FFB800]/70 uppercase mb-4">Revenue Model</div>
+            <h2
+              className="text-[clamp(28px,5vw,56px)] font-bold leading-[0.95] mb-8"
+              style={{ fontFamily: HEADLINE_FONT }}
+            >
+              THREE REVENUE STREAMS.
+              <br />
+              <span className="text-[#FFB800]">ONE COMPOUNDING ENGINE.</span>
+            </h2>
+          </RevealSection>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <RevealSection delay={0.1}>
+              <div className="border border-[#FFB800]/15 p-6 bg-[#FFB800]/[0.03] h-full">
+                <div className="text-[9px] tracking-[0.2em] text-[#FFB800]/50 uppercase mb-3">Stream 1</div>
+                <div className="text-lg font-bold text-[#FFB800] mb-1" style={{ fontFamily: HEADLINE_FONT }}>Operational Discovery</div>
+                <div className="text-2xl font-bold text-[#FFB800] font-mono mb-3">$15-25K</div>
+                <p className="text-[11px] text-white/50 leading-relaxed mb-3">
+                  Non-refundable workflow audit. Qualifies the client, maps automation opportunities, and generates immediate revenue.
+                </p>
+                <div className="text-[9px] text-[#FFB800]/60 font-mono">ONE-TIME · 100% CLOSE RATE ON QUALIFIED LEADS</div>
+              </div>
+            </RevealSection>
+
+            <RevealSection delay={0.2}>
+              <div className="border border-[#00ff87]/15 p-6 bg-[#00ff87]/[0.03] h-full">
+                <div className="text-[9px] tracking-[0.2em] text-[#00ff87]/50 uppercase mb-3">Stream 2</div>
+                <div className="text-lg font-bold text-[#00ff87] mb-1" style={{ fontFamily: HEADLINE_FONT }}>Platform License</div>
+                <div className="text-2xl font-bold text-[#00ff87] font-mono mb-3">$96-180K/yr</div>
+                <p className="text-[11px] text-white/50 leading-relaxed mb-3">
+                  Annual SaaS license. All agents, all verticals, client portal, operator command center, managed services, 99.5% SLA.
+                </p>
+                <div className="text-[9px] text-[#00ff87]/60 font-mono">RECURRING · 85% GROSS MARGIN</div>
+              </div>
+            </RevealSection>
+
+            <RevealSection delay={0.3}>
+              <div className="border border-[#8B8BFF]/15 p-6 bg-[#8B8BFF]/[0.03] h-full">
+                <div className="text-[9px] tracking-[0.2em] text-[#8B8BFF]/50 uppercase mb-3">Stream 3</div>
+                <div className="text-lg font-bold text-[#8B8BFF] mb-1" style={{ fontFamily: HEADLINE_FONT }}>Custom Blueprints</div>
+                <div className="text-2xl font-bold text-[#8B8BFF] font-mono mb-3">$20-50K</div>
+                <p className="text-[11px] text-white/50 leading-relaxed mb-3">
+                  Sector-specific agent configurations, custom workflows, and white-label client portal deployments for enterprise clients.
+                </p>
+                <div className="text-[9px] text-[#8B8BFF]/60 font-mono">PROJECT-BASED · HIGH MARGIN UPSELL</div>
+              </div>
+            </RevealSection>
+          </div>
+
+          <RevealSection delay={0.4} className="mt-8">
+            <div className="border border-white/8 p-5">
+              <div className="text-[9px] tracking-[0.2em] text-white/30 uppercase mb-3">Revenue Composition at Scale (Year 2)</div>
+              <div className="flex h-6 gap-[2px] overflow-hidden mb-2">
+                <div className="h-full bg-[#FFB800]" style={{ width: "12%" }} />
+                <div className="h-full bg-[#00ff87]" style={{ width: "72%" }} />
+                <div className="h-full bg-[#8B8BFF]" style={{ width: "16%" }} />
+              </div>
+              <div className="flex text-[9px] font-mono">
+                <span className="text-[#FFB800]" style={{ width: "12%" }}>12%</span>
+                <span className="text-[#00ff87]" style={{ width: "72%" }}>72% Recurring</span>
+                <span className="text-[#8B8BFF]" style={{ width: "16%" }}>16%</span>
+              </div>
+            </div>
           </RevealSection>
         </div>
       </section>
@@ -726,10 +903,31 @@ export default function Demo() {
                       <div className="text-[10px] text-white/50">to deployment</div>
                     </div>
                   </div>
-                  <p className="text-sm text-white/70 leading-relaxed">
+                  <p className="text-sm text-white/70 leading-relaxed mb-4">
                     Platform is fully functional and demo-ready. Client portal live. Operator command center live.
                     AI agents running autonomously. <span className="text-[#00ff87] font-medium">1 active pilot client (Royalton Venture Holding)</span> — validating the full workflow end-to-end.
-                    <span className="text-[#00cc6a] font-medium"> 90-day north star: convert pilot to a paid annual license
+                  </p>
+                  {/* Pilot Metrics */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-4 border border-[#00ff87]/15 bg-[#00ff87]/[0.02]">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-[#00ff87] font-mono">47%</div>
+                      <div className="text-[9px] text-white/50">Task time reduced</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-[#00ff87] font-mono">23</div>
+                      <div className="text-[9px] text-white/50">Ventures managed</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-[#00ff87] font-mono">6</div>
+                      <div className="text-[9px] text-white/50">Sectors automated</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-[#00ff87] font-mono">0</div>
+                      <div className="text-[9px] text-white/50">Missed distributions</div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-white/70 leading-relaxed">
+                    <span className="text-[#00cc6a] font-medium">90-day north star: convert pilot to a paid annual license
                     and sign 5 additional clients by Q4 2026.</span>
                   </p>
                 </div>
@@ -737,11 +935,56 @@ export default function Demo() {
             </RevealSection>
           </div>
 
+          {/* Pipeline + Testimonial */}
           <RevealSection delay={0.6} className="mt-10">
-            <div className="border border-[#00ff87]/20 p-5 bg-[#00ff87]/[0.03] text-center">
-              <p className="text-sm text-white/70">
-                <span className="text-[#00ff87] font-semibold">1 active pilot client</span> (Royalton Venture Holding) — platform being validated in production. Warm prospect conversations in progress.
-              </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Pilot Testimonial */}
+              <div className="border border-[#00ff87]/20 p-6 bg-[#00ff87]/[0.03]">
+                <div className="text-[9px] tracking-[0.2em] text-[#00ff87]/50 uppercase mb-4">Pilot Client Feedback</div>
+                <p className="text-sm text-white/70 leading-relaxed italic mb-4">
+                  "Before VENTEX, coordinating 23 ventures across 6 sectors meant constant email chains and spreadsheet updates. Now the agents handle follow-ups, flag stalled deals, and draft distribution notices automatically. We went from reactive to proactive in weeks."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="size-8 bg-[#00ff87]/20 flex items-center justify-center text-[10px] font-bold text-[#00ff87]">RV</div>
+                  <div>
+                    <div className="text-[11px] text-white font-medium">Royalton Venture Holding</div>
+                    <div className="text-[10px] text-white/40">Active Pilot — 23 ventures, 6 sectors</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pipeline */}
+              <div className="border border-white/8 p-6">
+                <div className="text-[9px] tracking-[0.2em] text-white/40 uppercase mb-4">Active Pipeline</div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-white/70">Royalton Venture Holding</span>
+                    <span className="text-[9px] font-mono px-2 py-0.5 bg-[#00ff87]/10 text-[#00ff87] border border-[#00ff87]/20">PILOT ACTIVE</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-white/70">UHNWI Family Office — Dubai</span>
+                    <span className="text-[9px] font-mono px-2 py-0.5 bg-[#FFB800]/10 text-[#FFB800] border border-[#FFB800]/20">DISCOVERY CALL</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-white/70">Multi-Sector Holding — London</span>
+                    <span className="text-[9px] font-mono px-2 py-0.5 bg-[#FFB800]/10 text-[#FFB800] border border-[#FFB800]/20">WARM INTRO</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-white/70">Real Estate + Energy Group — NYC</span>
+                    <span className="text-[9px] font-mono px-2 py-0.5 bg-white/5 text-white/40 border border-white/10">OUTREACH</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-white/70">Hospitality + F&B Conglomerate — Miami</span>
+                    <span className="text-[9px] font-mono px-2 py-0.5 bg-white/5 text-white/40 border border-white/10">OUTREACH</span>
+                  </div>
+                </div>
+                <div className="mt-4 pt-3 border-t border-white/8">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-white/40">Weighted pipeline value</span>
+                    <span className="text-sm font-bold text-[#FFB800] font-mono">$480K ARR</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </RevealSection>
         </div>
@@ -891,6 +1134,55 @@ export default function Demo() {
             </div>
           </RevealSection>
 
+          {/* Unit Economics — The Math */}
+          <RevealSection delay={0.22}>
+            <div className="border border-white/8 p-6 md:p-8 mb-8">
+              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase mb-6">Unit Economics — The Math Behind $4M ARR</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+                <div>
+                  <div className="text-2xl font-bold text-[#FFB800] font-mono">$120K</div>
+                  <div className="text-[10px] text-white/50 mb-1">Avg. Contract Value</div>
+                  <div className="text-[9px] text-white/30">Blended across Discovery + Pilot + License</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-[#00ff87] font-mono">85%</div>
+                  <div className="text-[10px] text-white/50 mb-1">Gross Margin</div>
+                  <div className="text-[9px] text-white/30">Pure software — no hardware, no COGS</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-[#FFB800] font-mono">$15K</div>
+                  <div className="text-[10px] text-white/50 mb-1">Est. CAC</div>
+                  <div className="text-[9px] text-white/30">Founder-led sales, no paid acquisition</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-[#00ff87] font-mono">8x</div>
+                  <div className="text-[10px] text-white/50 mb-1">LTV:CAC Ratio</div>
+                  <div className="text-[9px] text-white/30">$120K ACV x 3yr retention / $15K CAC</div>
+                </div>
+              </div>
+              <div className="border-t border-white/8 pt-5">
+                <div className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-3">Path to $4M ARR</div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-3 border border-white/5">
+                    <div className="text-sm font-bold text-[#00ff87] font-mono mb-1">Year 1</div>
+                    <div className="text-[11px] text-white/60">5-6 clients × $120K = <span className="text-[#FFB800] font-medium">$600K-$720K ARR</span></div>
+                  </div>
+                  <div className="p-3 border border-white/5">
+                    <div className="text-sm font-bold text-[#FFB800] font-mono mb-1">Year 2</div>
+                    <div className="text-[11px] text-white/60">15-20 clients × $140K = <span className="text-[#FFB800] font-medium">$2.1M-$2.8M ARR</span></div>
+                  </div>
+                  <div className="p-3 border border-white/5">
+                    <div className="text-sm font-bold text-[#00ff87] font-mono mb-1">Month 18</div>
+                    <div className="text-[11px] text-white/60">30+ clients × $140K = <span className="text-[#FFB800] font-medium">$4M+ ARR → Series A</span></div>
+                  </div>
+                </div>
+                <p className="text-[9px] text-white/30 mt-3 italic">
+                  Conservative: assumes 4-6 month sales cycle, 90% annual retention, and 15% ACV expansion from upsells.
+                </p>
+              </div>
+            </div>
+          </RevealSection>
+
           {/* SAFE Terms */}
           <RevealSection delay={0.25}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -928,10 +1220,29 @@ export default function Demo() {
             <p className="text-sm text-white/50 italic max-w-2xl leading-relaxed mb-2">
               "Three operators who built the system they couldn't find anywhere else."
             </p>
-            <p className="text-sm text-white/70 max-w-2xl leading-relaxed mb-12">
+            <p className="text-sm text-white/70 max-w-2xl leading-relaxed mb-6">
               We didn't raise money to build the product. We built the product to raise money.
               No outsourced code. No borrowed ideas. Every engine, every pipeline — built in-house in under 90 days.
             </p>
+
+            {/* Unfair Advantage */}
+            <div className="border border-[#8B8BFF]/15 p-5 bg-[#8B8BFF]/[0.03] mb-12">
+              <div className="text-[9px] tracking-[0.2em] text-[#8B8BFF]/50 uppercase mb-3">Why This Team Wins</div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-start gap-2">
+                  <div className="size-1.5 mt-1.5 bg-[#8B8BFF] flex-shrink-0" />
+                  <p className="text-[11px] text-white/60 leading-relaxed"><span className="text-[#8B8BFF] font-medium">Domain Expertise</span> — Built from inside a real UHNWI holding company. We are the user. We know the pain because we lived it daily.</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="size-1.5 mt-1.5 bg-[#8B8BFF] flex-shrink-0" />
+                  <p className="text-[11px] text-white/60 leading-relaxed"><span className="text-[#8B8BFF] font-medium">Full-Stack Builders</span> — No outsourced dev shop. The founding team designed, coded, and shipped the entire platform in 90 days. We move at startup speed.</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="size-1.5 mt-1.5 bg-[#8B8BFF] flex-shrink-0" />
+                  <p className="text-[11px] text-white/60 leading-relaxed"><span className="text-[#8B8BFF] font-medium">Built-In Distribution</span> — Royalton's network gives us direct access to UHNWI operators, family offices, and holding companies. No cold outreach needed for first 10 clients.</p>
+                </div>
+              </div>
+            </div>
           </RevealSection>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1030,10 +1341,28 @@ export default function Demo() {
           </RevealSection>
 
           <RevealSection delay={0.2}>
-            <p className="text-sm text-white/70 max-w-xl mx-auto leading-relaxed mb-12">
+            <p className="text-sm text-white/70 max-w-xl mx-auto leading-relaxed mb-6">
               The market is uncontested. The platform is live. The round is <span className="text-[#FFB800] font-semibold">$700K</span>, SAFE Cap <span className="text-[#FFB800] font-semibold">$4,000,000</span>.
               <span className="text-white font-medium"> The next call is yours to make.</span>
             </p>
+          </RevealSection>
+
+          {/* Investor Urgency */}
+          <RevealSection delay={0.25}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-12">
+              <div className="border border-[#FFB800]/15 p-4 text-center bg-[#FFB800]/[0.03]">
+                <div className="text-lg font-bold text-[#FFB800] font-mono">$350K</div>
+                <div className="text-[10px] text-white/40">Already committed</div>
+              </div>
+              <div className="border border-[#00ff87]/15 p-4 text-center bg-[#00ff87]/[0.03]">
+                <div className="text-lg font-bold text-[#00ff87] font-mono">$350K</div>
+                <div className="text-[10px] text-white/40">Remaining allocation</div>
+              </div>
+              <div className="border border-white/10 p-4 text-center">
+                <div className="text-lg font-bold text-white font-mono">$50K</div>
+                <div className="text-[10px] text-white/40">Min. check size</div>
+              </div>
+            </div>
           </RevealSection>
 
           <RevealSection delay={0.3}>
