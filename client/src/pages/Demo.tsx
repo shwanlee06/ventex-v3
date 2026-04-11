@@ -1353,12 +1353,12 @@ export default function Demo() {
           <RevealSection delay={0.25}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-12">
               <div className="border border-[#FFB800]/15 p-4 text-center bg-[#FFB800]/[0.03]">
-                <div className="text-lg font-bold text-[#FFB800] font-mono">$350K</div>
-                <div className="text-[10px] text-white/40">Already committed</div>
+                <div className="text-lg font-bold text-[#FFB800] font-mono">$700K</div>
+                <div className="text-[10px] text-white/40">Total round size</div>
               </div>
               <div className="border border-[#00ff87]/15 p-4 text-center bg-[#00ff87]/[0.03]">
-                <div className="text-lg font-bold text-[#00ff87] font-mono">$350K</div>
-                <div className="text-[10px] text-white/40">Remaining allocation</div>
+                <div className="text-lg font-bold text-[#00ff87] font-mono">$4M</div>
+                <div className="text-[10px] text-white/40">Post-money cap</div>
               </div>
               <div className="border border-white/10 p-4 text-center">
                 <div className="text-lg font-bold text-white font-mono">$50K</div>

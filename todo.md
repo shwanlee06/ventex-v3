@@ -2429,3 +2429,23 @@
 - [x] Rewrite testimonial to reflect partnership, not purchase
 - [x] Adjust traction metrics to focus on product validation, not revenue
 - [x] Ensure the narrative is honest and credible for investor scrutiny
+
+## Pitch Deck Fixes (Apr 11)
+- [ ] Remove "$350K committed" from The Ask / closing section
+- [ ] Update CEO name from Zaid to Shwan
+- [ ] Update team structure: Shwan (CEO 55%), Brian (COO 30%), CTO hire (15%)
+
+## Investor Document Package (Apr 11)
+- [ ] SAFE Agreement (YC Post-Money SAFE, $700K at $4M cap)
+- [ ] Executive Summary (1-2 page leave-behind)
+- [ ] Financial Model / 24-month projections
+- [ ] Cap Table (pre-money and post-SAFE scenarios)
+- [ ] Company One-Pager
+- [ ] Product & Technical Brief
+- [ ] Competitive Analysis memo
+- [ ] Market Research memo
+- [ ] Investor FAQ
+- [ ] Data Room Checklist
+- [ ] Term Sheet Summary
+- [ ] Use of Funds Detailed Memo
+- [ ] Note LLC to C-Corp conversion as planned use of pre-seed funds
