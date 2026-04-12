@@ -23,22 +23,22 @@ type ClientTabId = "overview" | "ventures" | "documents" | "distributions" | "re
 
 /* ─── Static demo data ─── */
 const DEMO_CLIENTS = [
-  { name: "Al Rashid Group", slug: "al-rashid", ventures: 8, velocity: 94, completion: 78, overdue: 1, health: "excellent" as const, sector: "Real Estate" },
-  { name: "Meridian Holdings", slug: "meridian", ventures: 5, velocity: 87, completion: 65, overdue: 2, health: "good" as const, sector: "F&B" },
-  { name: "Northstar Capital", slug: "northstar", ventures: 6, velocity: 91, completion: 82, overdue: 0, health: "excellent" as const, sector: "Oil & Gas" },
-  { name: "Pacific Ventures", slug: "pacific", ventures: 4, velocity: 76, completion: 55, overdue: 3, health: "warning" as const, sector: "Entertainment" },
-  { name: "Sovereign Wealth Partners", slug: "sovereign", ventures: 7, velocity: 89, completion: 71, overdue: 1, health: "good" as const, sector: "Real Estate" },
-  { name: "Titan Industries", slug: "titan", ventures: 3, velocity: 82, completion: 60, overdue: 0, health: "good" as const, sector: "Yacht" },
+  { name: "Crestfield Capital", slug: "crestfield", ventures: 8, velocity: 94, completion: 78, overdue: 1, health: "excellent" as const, sector: "Real Estate" },
+  { name: "Harborview Group", slug: "meridian", ventures: 5, velocity: 87, completion: 65, overdue: 2, health: "good" as const, sector: "F&B" },
+  { name: "Ironclad Partners", slug: "northstar", ventures: 6, velocity: 91, completion: 82, overdue: 0, health: "excellent" as const, sector: "Oil & Gas" },
+  { name: "Solaris Holdings", slug: "pacific", ventures: 4, velocity: 76, completion: 55, overdue: 3, health: "warning" as const, sector: "Entertainment" },
+  { name: "Pinnacle Trust", slug: "sovereign", ventures: 7, velocity: 89, completion: 71, overdue: 1, health: "good" as const, sector: "Real Estate" },
+  { name: "Vanguard Maritime", slug: "titan", ventures: 3, velocity: 82, completion: 60, overdue: 0, health: "good" as const, sector: "Yacht" },
 ];
 
 const DEMO_FEED = [
   { id: 1, action: "Velocity Agent", detail: "Advanced 'Marina Bay Tower' from Due Diligence → Closing", time: "2m ago", color: "#22D3EE" },
-  { id: 2, action: "Overdue Agent", detail: "Sent follow-up to Al Rashid Group — permit review 3 days overdue", time: "8m ago", color: "#EF4444" },
-  { id: 3, action: "Distribution Sentinel", detail: "Flagged $2.4M distribution for Meridian Holdings — awaiting approval", time: "14m ago", color: "#A855F7" },
-  { id: 4, action: "Compliance Watcher", detail: "KYC renewal triggered for Northstar Capital — 30 days remaining", time: "22m ago", color: "#F59E0B" },
+  { id: 2, action: "Overdue Agent", detail: "Sent follow-up to Crestfield Capital — permit review 3 days overdue", time: "8m ago", color: "#EF4444" },
+  { id: 3, action: "Distribution Sentinel", detail: "Flagged $2.4M distribution for Harborview Group — awaiting approval", time: "14m ago", color: "#A855F7" },
+  { id: 4, action: "Compliance Watcher", detail: "KYC renewal triggered for Ironclad Partners — 30 days remaining", time: "22m ago", color: "#F59E0B" },
   { id: 5, action: "Velocity Agent", detail: "Stall detected: 'Dubai Creek Residences' — no activity for 7 days", time: "35m ago", color: "#22D3EE" },
-  { id: 6, action: "Overdue Agent", detail: "Task completed: Legal review for Pacific Ventures yacht acquisition", time: "1h ago", color: "#EF4444" },
-  { id: 7, action: "Compliance Watcher", detail: "Annual audit documents uploaded for Sovereign Wealth Partners", time: "2h ago", color: "#F59E0B" },
+  { id: 6, action: "Overdue Agent", detail: "Task completed: Legal review for Solaris Holdings yacht acquisition", time: "1h ago", color: "#EF4444" },
+  { id: 7, action: "Compliance Watcher", detail: "Annual audit documents uploaded for Pinnacle Trust", time: "2h ago", color: "#F59E0B" },
 ];
 
 const DEMO_KPI = [
@@ -49,28 +49,28 @@ const DEMO_KPI = [
 ];
 
 const DEMO_TASKS = [
-  { title: "Review Marina Bay Tower closing documents", assignee: "Anton Keller", priority: "high" as const, due: "Apr 10", client: "Al Rashid Group" },
-  { title: "Submit KYC renewal for Northstar Capital", assignee: "Maher Haddad", priority: "high" as const, due: "Apr 11", client: "Northstar Capital" },
-  { title: "Finalize yacht acquisition terms — Pacific Ventures", assignee: "Jon Mercer", priority: "medium" as const, due: "Apr 12", client: "Pacific Ventures" },
-  { title: "Prepare Q1 distribution report for Sovereign Wealth", assignee: "Angie Reyes", priority: "medium" as const, due: "Apr 14", client: "Sovereign Wealth" },
-  { title: "Schedule board meeting for Meridian Holdings F&B expansion", assignee: "Anton Keller", priority: "low" as const, due: "Apr 18", client: "Meridian Holdings" },
+  { title: "Review Marina Bay Tower closing documents", assignee: "Daniel Voss", priority: "high" as const, due: "Apr 10", client: "Crestfield Capital" },
+  { title: "Submit KYC renewal for Ironclad Partners", assignee: "Ryan Torres", priority: "high" as const, due: "Apr 11", client: "Ironclad Partners" },
+  { title: "Finalize yacht acquisition terms — Solaris Holdings", assignee: "Nate Calloway", priority: "medium" as const, due: "Apr 12", client: "Solaris Holdings" },
+  { title: "Prepare Q1 distribution report for Pinnacle Trust", assignee: "Lena Park", priority: "medium" as const, due: "Apr 14", client: "Pinnacle Trust" },
+  { title: "Schedule board meeting for Harborview Group F&B expansion", assignee: "Daniel Voss", priority: "low" as const, due: "Apr 18", client: "Harborview Group" },
 ];
 
 const DEMO_ACTIVITY = [
   { id: 1, type: "venture", action: "Stage advanced", detail: "Marina Bay Tower moved from Due Diligence to Closing", user: "Velocity Agent", time: "2 minutes ago", icon: <Zap className="size-3.5" />, color: "text-cyan-400" },
-  { id: 2, type: "task", action: "Task overdue", detail: "Permit review for Al Rashid Group is 3 days overdue", user: "Overdue Agent", time: "8 minutes ago", icon: <AlertTriangle className="size-3.5" />, color: "text-red-400" },
-  { id: 3, type: "distribution", action: "Distribution flagged", detail: "$2.4M distribution for Meridian Holdings flagged for approval", user: "Distribution Sentinel", time: "14 minutes ago", icon: <DollarSign className="size-3.5" />, color: "text-purple-400" },
-  { id: 4, type: "compliance", action: "KYC renewal", detail: "Northstar Capital KYC renewal triggered — 30 days remaining", user: "Compliance Watcher", time: "22 minutes ago", icon: <ShieldCheck className="size-3.5" />, color: "text-amber-400" },
+  { id: 2, type: "task", action: "Task overdue", detail: "Permit review for Crestfield Capital is 3 days overdue", user: "Overdue Agent", time: "8 minutes ago", icon: <AlertTriangle className="size-3.5" />, color: "text-red-400" },
+  { id: 3, type: "distribution", action: "Distribution flagged", detail: "$2.4M distribution for Harborview Group flagged for approval", user: "Distribution Sentinel", time: "14 minutes ago", icon: <DollarSign className="size-3.5" />, color: "text-purple-400" },
+  { id: 4, type: "compliance", action: "KYC renewal", detail: "Ironclad Partners KYC renewal triggered — 30 days remaining", user: "Compliance Watcher", time: "22 minutes ago", icon: <ShieldCheck className="size-3.5" />, color: "text-amber-400" },
   { id: 5, type: "venture", action: "Stall detected", detail: "Dubai Creek Residences — no activity for 7 days", user: "Velocity Agent", time: "35 minutes ago", icon: <AlertTriangle className="size-3.5" />, color: "text-cyan-400" },
-  { id: 6, type: "task", action: "Task completed", detail: "Legal review for Pacific Ventures yacht acquisition", user: "Jon Mercer", time: "1 hour ago", icon: <CheckCircle2 className="size-3.5" />, color: "text-emerald-400" },
-  { id: 7, type: "document", action: "Document uploaded", detail: "Annual audit documents for Sovereign Wealth Partners", user: "Angie Reyes", time: "2 hours ago", icon: <FileText className="size-3.5" />, color: "text-blue-400" },
-  { id: 8, type: "venture", action: "New venture created", detail: "Palm Jumeirah Residences added to Al Rashid Group portfolio", user: "Shwan Lee", time: "3 hours ago", icon: <Plus className="size-3.5" />, color: "text-emerald-400" },
-  { id: 9, type: "task", action: "Task assigned", detail: "Prepare investor deck for Titan Industries yacht project", user: "Shwan Lee", time: "4 hours ago", icon: <ListChecks className="size-3.5" />, color: "text-blue-400" },
-  { id: 10, type: "compliance", action: "Compliance check passed", detail: "Titan Industries annual compliance review approved", user: "Compliance Watcher", time: "5 hours ago", icon: <ShieldCheck className="size-3.5" />, color: "text-emerald-400" },
+  { id: 6, type: "task", action: "Task completed", detail: "Legal review for Solaris Holdings yacht acquisition", user: "Nate Calloway", time: "1 hour ago", icon: <CheckCircle2 className="size-3.5" />, color: "text-emerald-400" },
+  { id: 7, type: "document", action: "Document uploaded", detail: "Annual audit documents for Pinnacle Trust", user: "Lena Park", time: "2 hours ago", icon: <FileText className="size-3.5" />, color: "text-blue-400" },
+  { id: 8, type: "venture", action: "New venture created", detail: "Palm Jumeirah Residences added to Crestfield Capital portfolio", user: "Shwan Lee", time: "3 hours ago", icon: <Plus className="size-3.5" />, color: "text-emerald-400" },
+  { id: 9, type: "task", action: "Task assigned", detail: "Prepare investor deck for Vanguard Maritime yacht project", user: "Shwan Lee", time: "4 hours ago", icon: <ListChecks className="size-3.5" />, color: "text-blue-400" },
+  { id: 10, type: "compliance", action: "Compliance check passed", detail: "Vanguard Maritime annual compliance review approved", user: "Compliance Watcher", time: "5 hours ago", icon: <ShieldCheck className="size-3.5" />, color: "text-emerald-400" },
 ];
 
 const DEMO_AGENTS = [
-  { name: "Overdue Agent", status: "running" as const, actions: 47, uptime: "99.8%", lastAction: "Sent follow-up to Al Rashid Group", lastActionTime: "8m ago", color: "#EF4444", description: "Monitors all tasks for overdue deadlines. Sends automated follow-ups and escalates to team leads after 48 hours." },
+  { name: "Overdue Agent", status: "running" as const, actions: 47, uptime: "99.8%", lastAction: "Sent follow-up to Crestfield Capital", lastActionTime: "8m ago", color: "#EF4444", description: "Monitors all tasks for overdue deadlines. Sends automated follow-ups and escalates to team leads after 48 hours." },
   { name: "Velocity Agent", status: "running" as const, actions: 23, uptime: "99.9%", lastAction: "Advanced Marina Bay Tower stage", lastActionTime: "2m ago", color: "#22D3EE", description: "Tracks venture pipeline velocity. Detects stalls, suggests stage advances, and optimizes deal flow timing." },
   { name: "Distribution Sentinel", status: "monitoring" as const, actions: 12, uptime: "100%", lastAction: "Flagged $2.4M distribution", lastActionTime: "14m ago", color: "#A855F7", description: "Watches all distribution events. Validates amounts, flags anomalies, and ensures compliance before payouts." },
   { name: "Compliance Watcher", status: "running" as const, actions: 8, uptime: "99.7%", lastAction: "KYC renewal triggered", lastActionTime: "22m ago", color: "#F59E0B", description: "Monitors regulatory deadlines. Auto-triggers KYC renewals, audit reminders, and license expiration alerts." },
@@ -80,63 +80,63 @@ const DEMO_TEAM = [
   { name: "Shwan Lee", role: "Founder & CEO", email: "shwan@aurovia.co", status: "online" as const, ventures: 12, tasks: 3, avatar: "SL", photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee-new_e321fa79.webp" },
   { name: "Brian Chen", role: "COO", email: "brian@aurovia.co", status: "online" as const, ventures: 8, tasks: 5, avatar: "BC", photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/brian-chen_b535f902.jpeg" },
   { name: "Chris Phelps", role: "CRO", email: "chris@aurovia.co", status: "online" as const, ventures: 10, tasks: 4, avatar: "CP", photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/chris-phelps_c7e7c272.jpeg" },
-  { name: "Anton Keller", role: "Head of Operations", email: "anton@ventex.co", status: "online" as const, ventures: 15, tasks: 6, avatar: "AK" },
-  { name: "Maher Haddad", role: "Compliance Lead", email: "maher@ventex.co", status: "away" as const, ventures: 8, tasks: 3, avatar: "MH" },
-  { name: "Jon Mercer", role: "Deal Structuring", email: "jon@ventex.co", status: "offline" as const, ventures: 6, tasks: 2, avatar: "JM" },
-  { name: "Angie Reyes", role: "Finance & Distributions", email: "angie@ventex.co", status: "online" as const, ventures: 7, tasks: 4, avatar: "AR" },
+  { name: "Daniel Voss", role: "Head of Operations", email: "daniel@ventex.co", status: "online" as const, ventures: 15, tasks: 6, avatar: "DV" },
+  { name: "Ryan Torres", role: "Compliance Lead", email: "ryan@ventex.co", status: "away" as const, ventures: 8, tasks: 3, avatar: "RT" },
+  { name: "Nate Calloway", role: "Deal Structuring", email: "nate@ventex.co", status: "offline" as const, ventures: 6, tasks: 2, avatar: "NC" },
+  { name: "Lena Park", role: "Finance & Distributions", email: "lena@ventex.co", status: "online" as const, ventures: 7, tasks: 4, avatar: "LP" },
 ];
 
 const DEMO_CONTACTS = [
-  { name: "Ahmed Al Rashid", org: "Al Rashid Group", role: "Chairman", email: "ahmed@alrashid.ae", phone: "+971-4-XXX-XXXX", status: "active" as const },
-  { name: "Sarah Chen", org: "Meridian Holdings", role: "CEO", email: "sarah@meridian.com", phone: "+1-XXX-XXX-XXXX", status: "active" as const },
-  { name: "Viktor Petrov", org: "Northstar Capital", role: "Managing Partner", email: "viktor@northstar.com", phone: "+44-XXX-XXX-XXXX", status: "active" as const },
-  { name: "Maria Santos", org: "Pacific Ventures", role: "Director", email: "maria@pacific.vc", phone: "+1-XXX-XXX-XXXX", status: "active" as const },
-  { name: "James Whitfield", org: "Sovereign Wealth Partners", role: "CIO", email: "james@sovereign.com", phone: "+41-XXX-XXX-XXXX", status: "active" as const },
-  { name: "Yuki Tanaka", org: "Titan Industries", role: "VP Operations", email: "yuki@titan.co.jp", phone: "+81-XXX-XXX-XXXX", status: "active" as const },
+  { name: "Marcus Hale", org: "Crestfield Capital", role: "Chairman", email: "marcus@crestfield.com", phone: "+971-4-XXX-XXXX", status: "active" as const },
+  { name: "Olivia Grant", org: "Harborview Group", role: "CEO", email: "olivia@harborview.com", phone: "+1-XXX-XXX-XXXX", status: "active" as const },
+  { name: "Thomas Richter", org: "Ironclad Partners", role: "Managing Partner", email: "thomas@ironclad.com", phone: "+44-XXX-XXX-XXXX", status: "active" as const },
+  { name: "Diana Morales", org: "Solaris Holdings", role: "Director", email: "diana@solaris.vc", phone: "+1-XXX-XXX-XXXX", status: "active" as const },
+  { name: "Robert Ashford", org: "Pinnacle Trust", role: "CIO", email: "robert@pinnacle.com", phone: "+41-XXX-XXX-XXXX", status: "active" as const },
+  { name: "Kenji Mori", org: "Vanguard Maritime", role: "VP Operations", email: "kenji@vanguard.co", phone: "+81-XXX-XXX-XXXX", status: "active" as const },
 ];
 
 const DEMO_BLUEPRINTS = [
-  { name: "Marina Bay Tower", client: "Al Rashid Group", stage: "Closing", progress: 92, sector: "Real Estate" },
-  { name: "Dubai Creek Residences", client: "Al Rashid Group", stage: "Due Diligence", progress: 45, sector: "Real Estate" },
-  { name: "Palm Jumeirah Residences", client: "Al Rashid Group", stage: "Negotiation", progress: 30, sector: "Real Estate" },
-  { name: "Meridian F&B Hub", client: "Meridian Holdings", stage: "Active", progress: 68, sector: "F&B" },
-  { name: "Northstar Refinery", client: "Northstar Capital", stage: "Active", progress: 75, sector: "Oil & Gas" },
-  { name: "Pacific Yacht Club", client: "Pacific Ventures", stage: "Due Diligence", progress: 40, sector: "Yacht" },
-  { name: "Sovereign Tower II", client: "Sovereign Wealth", stage: "Closing", progress: 88, sector: "Real Estate" },
-  { name: "Titan Superyacht", client: "Titan Industries", stage: "Negotiation", progress: 25, sector: "Yacht" },
+  { name: "Marina Bay Tower", client: "Crestfield Capital", stage: "Closing", progress: 92, sector: "Real Estate" },
+  { name: "Dubai Creek Residences", client: "Crestfield Capital", stage: "Due Diligence", progress: 45, sector: "Real Estate" },
+  { name: "Palm Jumeirah Residences", client: "Crestfield Capital", stage: "Negotiation", progress: 30, sector: "Real Estate" },
+  { name: "Harborview Culinary District", client: "Harborview Group", stage: "Active", progress: 68, sector: "F&B" },
+  { name: "Ironclad Refinery", client: "Ironclad Partners", stage: "Active", progress: 75, sector: "Oil & Gas" },
+  { name: "Solaris Yacht Club", client: "Solaris Holdings", stage: "Due Diligence", progress: 40, sector: "Yacht" },
+  { name: "Pinnacle Tower II", client: "Pinnacle Trust", stage: "Closing", progress: 88, sector: "Real Estate" },
+  { name: "Vanguard Superyacht", client: "Vanguard Maritime", stage: "Negotiation", progress: 25, sector: "Yacht" },
 ];
 
 const DEMO_CHAT = [
-  { role: "assistant" as const, content: "Good morning. I've completed the overnight analysis. Here's your briefing:\n\n**3 items require attention:**\n1. Marina Bay Tower closing docs need review by Apr 10\n2. Northstar Capital KYC renewal due in 30 days\n3. Pacific Ventures has 3 overdue tasks — velocity declining\n\nShall I draft follow-up emails for the overdue items?" },
-  { role: "user" as const, content: "Yes, draft the follow-ups. Also, what's the status on the Meridian distribution?" },
-  { role: "assistant" as const, content: "I've drafted 3 follow-up emails — they're in your Drafts tab for review.\n\n**Meridian Holdings Distribution:**\n- Amount: $2.4M (Q1 2026)\n- Status: Flagged by Distribution Sentinel for approval\n- Reason: Amount exceeds quarterly threshold by 15%\n- Action needed: Your approval to release\n\nWould you like me to prepare the approval memo?" },
+  { role: "assistant" as const, content: "Good morning. I've completed the overnight analysis. Here's your briefing:\n\n**3 items require attention:**\n1. Marina Bay Tower closing docs need review by Apr 10\n2. Ironclad Partners KYC renewal due in 30 days\n3. Solaris Holdings has 3 overdue tasks — velocity declining\n\nShall I draft follow-up emails for the overdue items?" },
+  { role: "user" as const, content: "Yes, draft the follow-ups. Also, what's the status on the Harborview distribution?" },
+  { role: "assistant" as const, content: "I've drafted 3 follow-up emails — they're in your Drafts tab for review.\n\n**Harborview Group Distribution:**\n- Amount: $2.4M (Q1 2026)\n- Status: Flagged by Distribution Sentinel for approval\n- Reason: Amount exceeds quarterly threshold by 15%\n- Action needed: Your approval to release\n\nWould you like me to prepare the approval memo?" },
 ];
 
 const DEMO_DRAFTS = [
-  { title: "Follow-up: Marina Bay Tower Closing Documents", to: "Ahmed Al Rashid", status: "ready" as const, created: "2h ago", type: "email" },
-  { title: "Follow-up: Pacific Ventures Overdue Tasks", to: "Maria Santos", status: "ready" as const, created: "2h ago", type: "email" },
-  { title: "Follow-up: Northstar KYC Renewal", to: "Viktor Petrov", status: "ready" as const, created: "2h ago", type: "email" },
-  { title: "Q1 Distribution Report — Sovereign Wealth", to: "James Whitfield", status: "draft" as const, created: "1d ago", type: "report" },
-  { title: "Board Meeting Agenda — Meridian Holdings", to: "Sarah Chen", status: "draft" as const, created: "2d ago", type: "document" },
+  { title: "Follow-up: Marina Bay Tower Closing Documents", to: "Marcus Hale", status: "ready" as const, created: "2h ago", type: "email" },
+  { title: "Follow-up: Solaris Holdings Overdue Tasks", to: "Diana Morales", status: "ready" as const, created: "2h ago", type: "email" },
+  { title: "Follow-up: Ironclad Partners KYC Renewal", to: "Thomas Richter", status: "ready" as const, created: "2h ago", type: "email" },
+  { title: "Q1 Distribution Report — Pinnacle Trust", to: "Robert Ashford", status: "draft" as const, created: "1d ago", type: "report" },
+  { title: "Board Meeting Agenda — Harborview Group", to: "Olivia Grant", status: "draft" as const, created: "2d ago", type: "document" },
 ];
 
 /* ─── Live simulation data ─── */
 const LIVE_EVENTS = [
   { action: "Velocity Agent", detail: "Detected momentum shift: Dubai Creek Residences velocity up 8% this week", color: "#22D3EE" },
-  { action: "Overdue Agent", detail: "Auto-escalated: Pacific Ventures permit review — now 5 days overdue", color: "#EF4444" },
-  { action: "Distribution Sentinel", detail: "Verified $1.8M distribution for Sovereign Wealth Partners — cleared", color: "#A855F7" },
-  { action: "Compliance Watcher", detail: "Titan Industries license renewal — 45 days remaining, auto-reminder queued", color: "#F59E0B" },
+  { action: "Overdue Agent", detail: "Auto-escalated: Solaris Holdings permit review — now 5 days overdue", color: "#EF4444" },
+  { action: "Distribution Sentinel", detail: "Verified $1.8M distribution for Pinnacle Trust — cleared", color: "#A855F7" },
+  { action: "Compliance Watcher", detail: "Vanguard Maritime license renewal — 45 days remaining, auto-reminder queued", color: "#F59E0B" },
   { action: "Velocity Agent", detail: "Palm Jumeirah Residences advanced from Negotiation → Due Diligence", color: "#22D3EE" },
-  { action: "Overdue Agent", detail: "Follow-up sent to Meridian Holdings — board meeting agenda 2 days overdue", color: "#EF4444" },
-  { action: "Distribution Sentinel", detail: "Q2 distribution forecast generated for Al Rashid Group — $3.1M projected", color: "#A855F7" },
-  { action: "Compliance Watcher", detail: "Environmental compliance check passed for Northstar Refinery", color: "#F59E0B" },
+  { action: "Overdue Agent", detail: "Follow-up sent to Harborview Group — board meeting agenda 2 days overdue", color: "#EF4444" },
+  { action: "Distribution Sentinel", detail: "Q2 distribution forecast generated for Crestfield Capital — $3.1M projected", color: "#A855F7" },
+  { action: "Compliance Watcher", detail: "Environmental compliance check passed for Ironclad Refinery", color: "#F59E0B" },
   { action: "Velocity Agent", detail: "Benchmark analysis: Portfolio velocity 18% above industry average", color: "#22D3EE" },
-  { action: "Overdue Agent", detail: "Task auto-completed: Sovereign Tower II title transfer docs received", color: "#EF4444" },
+  { action: "Overdue Agent", detail: "Task auto-completed: Pinnacle Tower II title transfer docs received", color: "#EF4444" },
 ];
 
 const TYPING_MESSAGES = [
   "Analyzing portfolio velocity trends across all clients...",
-  "Generating Q2 distribution forecast for Al Rashid Group...",
+  "Generating Q2 distribution forecast for Crestfield Capital...",
   "Scanning regulatory updates for UAE energy sector...",
   "Preparing weekly performance summary for 6 clients...",
   "Cross-referencing market signals with venture timelines...",
@@ -416,35 +416,35 @@ function GuidedTourOverlay({
 /* ─── Client Portal Demo Data ─── */
 const CLIENT_DEMO_FEED = [
   { id: 1, type: "action" as const, summary: "Marina Bay Tower is ready to advance from Due Diligence to Closing", ventureName: "Marina Bay Tower", actionLabel: "Advance Status", date: "2 hours ago" },
-  { id: 2, type: "action" as const, summary: "Q1 distribution of $2.4M for Meridian F&B Hub requires your confirmation", ventureName: "Meridian F&B Hub", actionLabel: "Confirm Distribution", date: "4 hours ago" },
-  { id: 3, type: "action" as const, summary: "Legal review completed — approve follow-up letter for Northstar Refinery", ventureName: "Northstar Refinery", actionLabel: "Review & Approve", date: "6 hours ago" },
+  { id: 2, type: "action" as const, summary: "Q1 distribution of $2.4M for Harborview Culinary District requires your confirmation", ventureName: "Harborview Culinary District", actionLabel: "Confirm Distribution", date: "4 hours ago" },
+  { id: 3, type: "action" as const, summary: "Legal review completed — approve follow-up letter for Ironclad Refinery", ventureName: "Ironclad Refinery", actionLabel: "Review & Approve", date: "6 hours ago" },
 ];
 
 const CLIENT_DEMO_COMPLETED = [
-  { id: 4, summary: "KYC renewal documents submitted for Northstar Capital", ventureName: "Northstar Capital", date: "Yesterday" },
-  { id: 5, summary: "Annual audit report uploaded for Sovereign Tower II", ventureName: "Sovereign Tower II", date: "2 days ago" },
-  { id: 6, summary: "Board meeting minutes filed for Meridian Holdings", ventureName: "Meridian Holdings", date: "3 days ago" },
+  { id: 4, summary: "KYC renewal documents submitted for Ironclad Partners", ventureName: "Ironclad Partners", date: "Yesterday" },
+  { id: 5, summary: "Annual audit report uploaded for Pinnacle Tower II", ventureName: "Pinnacle Tower II", date: "2 days ago" },
+  { id: 6, summary: "Board meeting minutes filed for Harborview Group", ventureName: "Harborview Group", date: "3 days ago" },
 ];
 
 const CLIENT_DEMO_PORTFOLIO = [
   { id: 1, name: "Marina Bay Tower", sector: "Real Estate", stage: "Closing", statusLine: "Final documents under review", momentum: { projectedDays: 12, confidence: 88, velocityVsBenchmark: "faster" as const, benchmarkDays: 21 } },
   { id: 2, name: "Dubai Creek Residences", sector: "Real Estate", stage: "Due Diligence", statusLine: "Environmental assessment in progress", momentum: { projectedDays: 34, confidence: 72, velocityVsBenchmark: "on_pace" as const, benchmarkDays: 35 } },
-  { id: 3, name: "Meridian F&B Hub", sector: "F&B", stage: "Active", statusLine: "Construction phase — 68% complete", momentum: { projectedDays: 45, confidence: 81, velocityVsBenchmark: "faster" as const, benchmarkDays: 60 } },
-  { id: 4, name: "Northstar Refinery", sector: "Oil & Gas", stage: "Active", statusLine: "Regulatory permits approved", momentum: { projectedDays: 28, confidence: 65, velocityVsBenchmark: "slower" as const, benchmarkDays: 20, riskLevel: "medium" as const, riskFactors: ["Supply chain delays", "Permit renewal pending"] } },
-  { id: 5, name: "Pacific Yacht Club", sector: "Yacht", stage: "Due Diligence", statusLine: "Structural survey scheduled", momentum: { projectedDays: 42, confidence: 58, velocityVsBenchmark: "slower" as const, benchmarkDays: 30, riskLevel: "high" as const, riskFactors: ["3 overdue tasks", "Vendor unresponsive"] } },
-  { id: 6, name: "Sovereign Tower II", sector: "Real Estate", stage: "Closing", statusLine: "Title transfer in progress", momentum: { projectedDays: 8, confidence: 94, velocityVsBenchmark: "faster" as const, benchmarkDays: 15 } },
+  { id: 3, name: "Harborview Culinary District", sector: "F&B", stage: "Active", statusLine: "Construction phase — 68% complete", momentum: { projectedDays: 45, confidence: 81, velocityVsBenchmark: "faster" as const, benchmarkDays: 60 } },
+  { id: 4, name: "Ironclad Refinery", sector: "Oil & Gas", stage: "Active", statusLine: "Regulatory permits approved", momentum: { projectedDays: 28, confidence: 65, velocityVsBenchmark: "slower" as const, benchmarkDays: 20, riskLevel: "medium" as const, riskFactors: ["Supply chain delays", "Permit renewal pending"] } },
+  { id: 5, name: "Solaris Yacht Club", sector: "Yacht", stage: "Due Diligence", statusLine: "Structural survey scheduled", momentum: { projectedDays: 42, confidence: 58, velocityVsBenchmark: "slower" as const, benchmarkDays: 30, riskLevel: "high" as const, riskFactors: ["3 overdue tasks", "Vendor unresponsive"] } },
+  { id: 6, name: "Pinnacle Tower II", sector: "Real Estate", stage: "Closing", statusLine: "Title transfer in progress", momentum: { projectedDays: 8, confidence: 94, velocityVsBenchmark: "faster" as const, benchmarkDays: 15 } },
 ];
 
 const CLIENT_DEMO_FORECASTS = [
   { ventureName: "Marina Bay Tower", projectedDays: 12, confidence: 88, riskLevel: "low" },
   { ventureName: "Dubai Creek Residences", projectedDays: 34, confidence: 72, riskLevel: "medium", riskFactors: ["Environmental review pending"] },
-  { ventureName: "Pacific Yacht Club", projectedDays: 42, confidence: 58, riskLevel: "high", riskFactors: ["3 overdue tasks", "Vendor delays", "Survey rescheduled"] },
+  { ventureName: "Solaris Yacht Club", projectedDays: 42, confidence: 58, riskLevel: "high", riskFactors: ["3 overdue tasks", "Vendor delays", "Survey rescheduled"] },
 ];
 
 const CLIENT_DEMO_SIGNALS = [
   { sector: "Real Estate", signalType: "opportunity", headline: "Dubai Marina demand up 18% YoY", impact: "Favorable conditions for Marina Bay Tower closing timeline", relevance: 92 },
-  { sector: "Oil & Gas", signalType: "regulatory", headline: "New UAE energy efficiency standards", impact: "Northstar Refinery may need compliance updates by Q3", relevance: 78 },
-  { sector: "F&B", signalType: "opportunity", headline: "Tourism sector growth accelerating", impact: "Meridian F&B Hub positioned to benefit from 23% visitor increase", relevance: 85 },
+  { sector: "Oil & Gas", signalType: "regulatory", headline: "New UAE energy efficiency standards", impact: "Ironclad Refinery may need compliance updates by Q3", relevance: 78 },
+  { sector: "F&B", signalType: "opportunity", headline: "Tourism sector growth accelerating", impact: "Harborview Culinary District positioned to benefit from 23% visitor increase", relevance: 85 },
 ];
 
 const SECTOR_ICONS: Record<string, React.ReactNode> = {
@@ -752,12 +752,12 @@ function DashboardView({ search, setSearch, liveFeed, agentThinking }: { search:
               <div className="space-y-2">
                 <div className="p-2.5 bg-primary/5 border border-primary/10 rounded-md">
                   <p className="text-[11px] text-foreground leading-relaxed">
-                    <span className="text-primary font-medium">Insight:</span> Al Rashid Group's velocity increased 12% after AI agent automation was enabled. Recommend expanding to Meridian Holdings.
+                    <span className="text-primary font-medium">Insight:</span> Crestfield Capital's velocity increased 12% after AI agent automation was enabled. Recommend expanding to Harborview Group.
                   </p>
                 </div>
                 <div className="p-2.5 bg-amber-500/5 border border-amber-500/10 rounded-md">
                   <p className="text-[11px] text-foreground leading-relaxed">
-                    <span className="text-amber-400 font-medium">Alert:</span> Pacific Ventures has 3 overdue tasks and declining velocity. Schedule a review call.
+                    <span className="text-amber-400 font-medium">Alert:</span> Solaris Holdings has 3 overdue tasks and declining velocity. Schedule a review call.
                   </p>
                 </div>
               </div>
@@ -931,8 +931,8 @@ function OversightView() {
       <SectionCard title="Active Risk Alerts" subtitle="Items requiring immediate attention" icon={<AlertTriangle className="size-4" />}>
         <div className="space-y-2">
           {[
-            { level: "high", title: "Pacific Ventures velocity declining", detail: "3 overdue tasks, velocity dropped from 85% to 76% in 2 weeks", action: "Review call scheduled" },
-            { level: "medium", title: "Northstar Capital KYC expiring", detail: "KYC documents expire in 30 days — renewal process initiated", action: "Auto-reminder sent" },
+            { level: "high", title: "Solaris Holdings velocity declining", detail: "3 overdue tasks, velocity dropped from 85% to 76% in 2 weeks", action: "Review call scheduled" },
+            { level: "medium", title: "Ironclad Partners KYC expiring", detail: "KYC documents expire in 30 days — renewal process initiated", action: "Auto-reminder sent" },
             { level: "low", title: "Meridian distribution threshold exceeded", detail: "$2.4M Q1 distribution exceeds quarterly threshold by 15%", action: "Pending approval" },
           ].map((risk, i) => (
             <FadeIn key={i} delay={i * 0.1}>
@@ -1427,7 +1427,7 @@ function SettingsView() {
       <SectionCard title="General" icon={<Settings className="size-4" />}>
         <div className="space-y-3">
           {[
-            { label: "Organization Name", value: "Royalton Venture Holding" },
+            { label: "Organization Name", value: "Crestfield Venture Holding" },
             { label: "Primary Domain", value: "ventex.manus.space" },
             { label: "Time Zone", value: "UTC+4 (Dubai)" },
             { label: "Default Currency", value: "USD" },
@@ -1486,8 +1486,8 @@ function ClientPortalDemoView() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Welcome back, Ahmed</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Al Rashid Group · Managed by VENTEX</p>
+          <h1 className="text-lg font-semibold text-foreground">Welcome back, Marcus</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">Crestfield Capital · Managed by VENTEX</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[10px] text-muted-foreground">Last login: Today, 9:14 AM</span>
@@ -1504,7 +1504,7 @@ function ClientPortalDemoView() {
             <Annotation id="velocitySummary" annotations={CLIENT_ANNOTATIONS} />
           </div>
           <p className="text-sm text-foreground leading-relaxed">
-            Your portfolio is performing well. Marina Bay Tower is ready for closing, and Sovereign Tower II title transfer is ahead of schedule. One item needs your attention: Pacific Yacht Club has 3 overdue tasks.
+            Your portfolio is performing well. Marina Bay Tower is ready for closing, and Pinnacle Tower II title transfer is ahead of schedule. One item needs your attention: Solaris Yacht Club has 3 overdue tasks.
           </p>
         </div>
       </FadeIn>
@@ -1891,12 +1891,12 @@ function ClientDocumentsView() {
   const DOCS = [
     { name: "Marina Bay Tower — Purchase Agreement", type: "Legal", date: "Mar 28, 2026", status: "signed" as const, size: "2.4 MB" },
     { name: "Q1 2026 Portfolio Report", type: "Report", date: "Mar 31, 2026", status: "ready" as const, size: "1.8 MB" },
-    { name: "Northstar Refinery — Environmental Assessment", type: "Compliance", date: "Mar 15, 2026", status: "pending" as const, size: "4.1 MB" },
+    { name: "Ironclad Refinery — Environmental Assessment", type: "Compliance", date: "Mar 15, 2026", status: "pending" as const, size: "4.1 MB" },
     { name: "Dubai Creek Residences — Due Diligence Pack", type: "Legal", date: "Mar 10, 2026", status: "signed" as const, size: "8.7 MB" },
-    { name: "Pacific Yacht Club — Survey Report", type: "Technical", date: "Feb 28, 2026", status: "ready" as const, size: "3.2 MB" },
+    { name: "Solaris Yacht Club — Survey Report", type: "Technical", date: "Feb 28, 2026", status: "ready" as const, size: "3.2 MB" },
     { name: "Annual Tax Summary 2025", type: "Financial", date: "Feb 15, 2026", status: "signed" as const, size: "1.1 MB" },
-    { name: "Sovereign Tower II — Title Transfer Docs", type: "Legal", date: "Apr 02, 2026", status: "pending" as const, size: "5.6 MB" },
-    { name: "Meridian F&B Hub — Construction Progress", type: "Report", date: "Mar 20, 2026", status: "ready" as const, size: "2.9 MB" },
+    { name: "Pinnacle Tower II — Title Transfer Docs", type: "Legal", date: "Apr 02, 2026", status: "pending" as const, size: "5.6 MB" },
+    { name: "Harborview Culinary District — Construction Progress", type: "Report", date: "Mar 20, 2026", status: "ready" as const, size: "2.9 MB" },
   ];
 
   const statusCfg = {
@@ -1953,10 +1953,10 @@ function ClientDocumentsView() {
 function ClientDistributionsView() {
   const DISTRIBUTIONS = [
     { venture: "Marina Bay Tower", type: "Quarterly Dividend", amount: 2400000, date: "Mar 31, 2026", status: "pending" as const },
-    { venture: "Sovereign Tower II", type: "Capital Return", amount: 1800000, date: "Mar 15, 2026", status: "paid" as const },
-    { venture: "Meridian F&B Hub", type: "Quarterly Dividend", amount: 950000, date: "Mar 31, 2026", status: "paid" as const },
+    { venture: "Pinnacle Tower II", type: "Capital Return", amount: 1800000, date: "Mar 15, 2026", status: "paid" as const },
+    { venture: "Harborview Culinary District", type: "Quarterly Dividend", amount: 950000, date: "Mar 31, 2026", status: "paid" as const },
     { venture: "Dubai Creek Residences", type: "Interest Payment", amount: 620000, date: "Feb 28, 2026", status: "paid" as const },
-    { venture: "Northstar Refinery", type: "Quarterly Dividend", amount: 1200000, date: "Jan 15, 2026", status: "paid" as const },
+    { venture: "Ironclad Refinery", type: "Quarterly Dividend", amount: 1200000, date: "Jan 15, 2026", status: "paid" as const },
   ];
 
   const totalPaid = DISTRIBUTIONS.filter(d => d.status === "paid").reduce((s, d) => s + d.amount, 0);
@@ -2068,11 +2068,11 @@ function ClientReportsView() {
 
 function ClientMessagesView() {
   const THREADS = [
-    { from: "Shwan Jafar", role: "VENTEX Operator", subject: "Marina Bay Tower — Closing Timeline Update", preview: "Hi Ahmed, the closing documents are ready for your review. We've expedited the title transfer and expect completion within 12 days...", time: "2h ago", unread: true },
-    { from: "VENTEX AI", role: "Portfolio Assistant", subject: "Weekly Portfolio Digest", preview: "Your portfolio health score improved to 82/100 this week. Key highlights: Marina Bay Tower advancing to closing, Meridian F&B Hub construction at 68%...", time: "1d ago", unread: true },
-    { from: "Angie Reyes", role: "Finance & Distributions", subject: "Q1 Distribution Confirmation Required", preview: "Dear Ahmed, the Q1 distribution of $2.4M for Meridian F&B Hub is ready for your confirmation. Please review the attached breakdown...", time: "2d ago", unread: false },
-    { from: "Brian Chen", role: "Operations Lead", subject: "Pacific Yacht Club — Survey Rescheduled", preview: "We've rescheduled the structural survey for Pacific Yacht Club to next Tuesday. The vendor confirmed availability and we'll have results within 48 hours...", time: "3d ago", unread: false },
-    { from: "Chris Papadopoulos", role: "Legal & Compliance", subject: "KYC Renewal — Documents Received", preview: "Thank you for submitting the updated KYC documents. Everything looks good and we've updated your compliance status accordingly...", time: "5d ago", unread: false },
+    { from: "VENTEX Operator", role: "VENTEX Operator", subject: "Marina Bay Tower — Closing Timeline Update", preview: "Hi Marcus, the closing documents are ready for your review. We've expedited the title transfer and expect completion within 12 days...", time: "2h ago", unread: true },
+    { from: "VENTEX AI", role: "Portfolio Assistant", subject: "Weekly Portfolio Digest", preview: "Your portfolio health score improved to 82/100 this week. Key highlights: Marina Bay Tower advancing to closing, Harborview Culinary District at 68%...", time: "1d ago", unread: true },
+    { from: "Lena Park", role: "Finance & Distributions", subject: "Q1 Distribution Confirmation Required", preview: "Dear Marcus, the Q1 distribution of $2.4M for Harborview Culinary District is ready for your confirmation. Please review the attached breakdown...", time: "2d ago", unread: false },
+    { from: "Brian Chen", role: "Operations Lead", subject: "Solaris Yacht Club — Survey Rescheduled", preview: "We've rescheduled the structural survey for Solaris Yacht Club to next Tuesday. The vendor confirmed availability and we'll have results within 48 hours...", time: "3d ago", unread: false },
+    { from: "VENTEX Compliance", role: "Legal & Compliance", subject: "KYC Renewal — Documents Received", preview: "Thank you for submitting the updated KYC documents. Everything looks good and we've updated your compliance status accordingly...", time: "5d ago", unread: false },
   ];
 
   return (
@@ -2123,9 +2123,9 @@ function ClientSettingsView() {
           <h3 className="text-sm font-semibold text-foreground mb-4">Profile Information</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
-              { label: "Full Name", value: "Ahmed Al Rashid" },
-              { label: "Email", value: "ahmed@alrashidgroup.com" },
-              { label: "Organization", value: "Al Rashid Group" },
+              { label: "Full Name", value: "Marcus Hale" },
+              { label: "Email", value: "marcus@crestfield.com" },
+              { label: "Organization", value: "Crestfield Capital" },
               { label: "Phone", value: "+971 50 XXX XXXX" },
               { label: "Role", value: "Principal Investor" },
               { label: "Member Since", value: "January 2024" },
@@ -2441,11 +2441,11 @@ export default function DemoDashboard() {
             <div className="border-t border-border p-3">
               <div className="flex items-center gap-2.5">
                 <div className="size-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-[11px] font-semibold text-emerald-400">
-                  AR
+                  MH
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs font-medium text-foreground">Ahmed Al Rashid</span>
-                  <span className="text-[10px] text-muted-foreground">Al Rashid Group</span>
+                  <span className="text-xs font-medium text-foreground">Marcus Hale</span>
+                  <span className="text-[10px] text-muted-foreground">Crestfield Capital</span>
                 </div>
               </div>
             </div>

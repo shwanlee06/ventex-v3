@@ -2462,3 +2462,8 @@
 ## FIX — Notification Hover Transparency on Demo Dashboard
 - [x] Fix LiveNotificationToast using transparent bg-card — now uses solid #0a0a0f background
 - [x] Fix bell button hover using semi-transparent hover:bg-accent/50 — now uses solid #1a1a2e on hover
+
+## FIX — Anonymize Demo Data
+- [x] Replace all real client/venture names in demo with fictional names to prevent data leakage
+- [x] Remove any references to Royalton, real venture names, real people, or real locations
+- [x] Verify zero real client data remains in demo pages

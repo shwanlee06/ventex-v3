@@ -905,7 +905,7 @@ export default function Demo() {
                   </div>
                   <p className="text-sm text-white/70 leading-relaxed mb-4">
                     Platform is fully functional and demo-ready. Client portal live. Operator command center live.
-                    AI agents running autonomously. <span className="text-[#00ff87] font-medium">1 design partner (Royalton Venture Holding)</span> — validating the full workflow across 23 ventures and 6 sectors in a live production environment.
+                    AI agents running autonomously. <span className="text-[#00ff87] font-medium">1 design partner</span> — validating the full workflow across 23 ventures and 6 sectors in a live production environment.
                   </p>
                   {/* Pilot Metrics */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-4 border border-[#00ff87]/15 bg-[#00ff87]/[0.02]">
@@ -945,15 +945,15 @@ export default function Demo() {
                   "Before VENTEX, coordinating 23 ventures across 6 sectors meant constant email chains and spreadsheet updates. Now the agents handle follow-ups, flag stalled deals, and draft distribution notices automatically. We went from reactive to proactive in weeks."
                 </p>
                 <div className="flex items-center gap-3">
-                  <div className="size-8 bg-[#00ff87]/20 flex items-center justify-center text-[10px] font-bold text-[#00ff87]">RV</div>
+                  <div className="size-8 bg-[#00ff87]/20 flex items-center justify-center text-[10px] font-bold text-[#00ff87]">DP</div>
                   <div>
-                    <div className="text-[11px] text-white font-medium">Royalton Venture Holding</div>
+                    <div className="text-[11px] text-white font-medium">Design Partner</div>
                     <div className="text-[10px] text-white/40">Design Partner — 23 ventures, 6 sectors, live production</div>
                   </div>
                 </div>
                 <div className="mt-4 pt-3 border-t border-[#00ff87]/10">
                   <p className="text-[10px] text-white/50 leading-relaxed">
-                    Royalton is our design partner — not a paying client. We built VENTEX inside their operations to solve our own pain. This gave us 6 months of real-world product validation at zero CAC. The product works. Now we sell it.
+                    Our design partner is a UHNWI holding company — not a paying client. We built VENTEX inside their operations to solve our own pain. This gave us 6 months of real-world product validation at zero CAC. The product works. Now we sell it.
                   </p>
                 </div>
               </div>
@@ -984,7 +984,7 @@ export default function Demo() {
                     <span className="text-[10px] text-white/40">Potential pipeline value (if converted)</span>
                     <span className="text-sm font-bold text-[#FFB800] font-mono">$480K ARR</span>
                   </div>
-                  <p className="text-[9px] text-white/30 mt-2">All prospects sourced through Royalton's network. Zero paid acquisition.</p>
+                  <p className="text-[9px] text-white/30 mt-2">All prospects sourced through our design partner's network. Zero paid acquisition.</p>
                 </div>
               </div>
             </div>
@@ -1241,7 +1241,7 @@ export default function Demo() {
                 </div>
                 <div className="flex items-start gap-2">
                   <div className="size-1.5 mt-1.5 bg-[#8B8BFF] flex-shrink-0" />
-                  <p className="text-[11px] text-white/60 leading-relaxed"><span className="text-[#8B8BFF] font-medium">Built-In Distribution</span> — Our design partnership with Royalton gives us direct access to UHNWI operators, family offices, and holding companies through their network. First 10 prospects already sourced — zero paid acquisition.</p>
+                  <p className="text-[11px] text-white/60 leading-relaxed"><span className="text-[#8B8BFF] font-medium">Built-In Distribution</span> — Our design partnership gives us direct access to UHNWI operators, family offices, and holding companies through their network. First 10 prospects already sourced — zero paid acquisition.</p>
                 </div>
               </div>
             </div>
