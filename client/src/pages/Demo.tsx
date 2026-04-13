@@ -1397,6 +1397,32 @@ export default function Demo() {
               Presented By: Shwan Joung Hyo Lee
             </p>
           </RevealSection>
+
+          {/* Aurovia Logo + Link */}
+          <RevealSection delay={0.5} className="mt-16">
+            <a
+              href="https://aurovia.co"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block group transition-all duration-300 hover:scale-105"
+            >
+              <img
+                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/aurovia-logo-white_6b44be8f.png"
+                alt="Aurovia"
+                className="h-8 md:h-10 w-auto opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+              />
+            </a>
+            <p className="text-[10px] text-white/30 tracking-[0.15em] mt-3">
+              <a
+                href="https://aurovia.co"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white/60 transition-colors"
+              >
+                aurovia.co →
+              </a>
+            </p>
+          </RevealSection>
         </div>
       </section>
 
@@ -1404,13 +1430,21 @@ export default function Demo() {
       <footer className="py-12 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-bold tracking-[0.2em]" style={{ fontFamily: HEADLINE_FONT }}>
-              VENTEX
-            </span>
-            <span className="text-[10px] text-white/45">Powered by Aurovia LLC</span>
+            <a
+              href="https://aurovia.co"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
+              <img
+                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/aurovia-logo-white_6b44be8f.png"
+                alt="Aurovia"
+                className="h-5 w-auto opacity-60"
+              />
+            </a>
           </div>
           <div className="flex items-center gap-6 text-[10px] text-white/45 tracking-wide">
-            <span>aurovia.co</span>
+            <a href="https://aurovia.co" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors">aurovia.co</a>
             <a href="mailto:contact@aurovia.co" className="hover:text-white/70 transition-colors">contact@aurovia.co</a>
             <a href="tel:+15714803261" className="hover:text-white/70 transition-colors">(571) 480-3261</a>
             <span>McLean, Virginia</span>
@@ -1421,3 +1455,4 @@ export default function Demo() {
     </div>
   );
 }
+

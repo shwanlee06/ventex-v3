@@ -2467,3 +2467,5 @@
 - [x] Replace all real client/venture names in demo with fictional names to prevent data leakage
 - [x] Remove any references to Royalton, real venture names, real people, or real locations
 - [x] Verify zero real client data remains in demo pages
+
+- [x] Add Aurovia logo and interactive aurovia.co link at end of pitch deck (Demo page)
