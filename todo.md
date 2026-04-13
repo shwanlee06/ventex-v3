@@ -2469,3 +2469,4 @@
 - [x] Verify zero real client data remains in demo pages
 
 - [x] Add Aurovia logo and interactive aurovia.co link at end of pitch deck (Demo page)
+- [x] Add "Powered by Aurovia" text alongside the logo at the end of the pitch deck Demo page

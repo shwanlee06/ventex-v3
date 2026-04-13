@@ -1398,8 +1398,11 @@ export default function Demo() {
             </p>
           </RevealSection>
 
-          {/* Aurovia Logo + Link */}
+          {/* Powered by Aurovia */}
           <RevealSection delay={0.5} className="mt-16">
+            <p className="text-[11px] text-white/40 tracking-[0.2em] uppercase mb-4 font-mono">
+              Powered by
+            </p>
             <a
               href="https://aurovia.co"
               target="_blank"
