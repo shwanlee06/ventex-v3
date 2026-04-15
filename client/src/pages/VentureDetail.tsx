@@ -7,6 +7,9 @@ import { cn } from "@/lib/utils";
 import { getThemeColor } from "@/lib/data";
 import { trpc } from "@/lib/trpc";
 import { useRoute, useLocation, Link } from "wouter";
+import { usePreviewMode } from "@/contexts/PreviewMode";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { isVentexTeam } from "@/lib/ventex";
 import { useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -80,6 +83,9 @@ export default function VentureDetail() {
   const [, params] = useRoute("/ventures/:slug");
   const slug = params?.slug || "";
   const utils = trpc.useUtils();
+  const { user } = useAuth();
+  const { isPreviewMode } = usePreviewMode();
+  const isVentex = isVentexTeam(user) && !isPreviewMode;
 
   const ventureQ = trpc.ventures.getBySlug.useQuery({ slug }, { enabled: !!slug });
   const venture = ventureQ.data;
@@ -381,9 +387,11 @@ export default function VentureDetail() {
             <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => fileInputRef.current?.click()}>
               <Upload className="size-3.5 mr-1" /> <span className="hidden sm:inline">Add </span>File
             </Button>
+{isVentex && (
             <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => navigate("/agent")}>
               <MessageSquare className="size-3.5 mr-1" /> <span className="hidden sm:inline">Chat with </span>AI →
             </Button>
+            )}
           </div>
         </div>
 

@@ -2497,3 +2497,6 @@
 - [x] Remove AI chat from client portal
 - [x] Fix Draft Center (AI Communications) visibility in client portal — moved up to position 5 in page flow
 - [x] Audit full client portal flow top-to-bottom — capped all sections (5-6 items each with show more), reordered for client POV
+
+## Remove Chat with AI from Venture Detail Page (Apr 15)
+- [x] Remove Chat with AI from VentureDetail.tsx — hidden in client preview mode, still visible for admin/VENTEX operators
