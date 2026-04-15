@@ -2476,3 +2476,12 @@
 - [x] Fix 2: Wire SSE broadcast into agent runner so clients see real-time updates
 - [x] Fix 3: Expand Autonomous Task Executor regex patterns (17 → 90+) and increase MAX_PER_CYCLE from 3 to 8
 - [x] Fix 4: Auto-provision agent config for ALL active orgs that lack one (multi-client ready)
+
+## UI Declutter — Dashboard Noise Reduction
+- [x] Declutter 1: Filter LiveTicker to only show actionable events (hide "no action" messages)
+- [x] Declutter 2: Remove redundant Agent Activity KPI row from dashboard
+- [x] Declutter 3: Hide Overdue Alert Banner when nothing is overdue (already handled)
+- [x] Declutter 4: Collapse Executive Summary + Agent Execution Log into single collapsible Intelligence panel
+- [x] Declutter 5: Fix card color scheme — replace dark red/maroon with proper semantic colors for visibility
+- [x] Declutter 6: Move Client List higher — directly after KPIs, before intelligence sections
+- [x] Declutter 7: Group sidebar nav items into Operations / Intelligence / Admin sections

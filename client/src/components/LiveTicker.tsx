@@ -76,7 +76,25 @@ export default function LiveTicker({ onEventClick }: LiveTickerProps) {
 
   const tickerItems = useMemo(() => {
     if (!events || events.length === 0) return [];
-    return events.slice(0, 12).map((e: any) => {
+    // Filter out noise — only show events where agents actually DID something
+    const NOISE_PATTERNS = [
+      /no active ventures/i,
+      /no distributions scheduled/i,
+      /all tasks are on schedule/i,
+      /no overdue items/i,
+      /no action required/i,
+      /standing by/i,
+      /nothing to report/i,
+      /no.*detected/i,
+      /completed scheduled check/i,
+    ];
+    const actionableEvents = events.filter((e: any) => {
+      const msg = e.message || "";
+      return !NOISE_PATTERNS.some(p => p.test(msg));
+    });
+    // If no actionable events, show nothing (empty ticker will render "standing by")
+    if (actionableEvents.length === 0) return [];
+    return actionableEvents.slice(0, 12).map((e: any) => {
       const config = getAgentConfig(e.agentName);
       const key = resolveAgentKey(e.agentName);
       return {

@@ -46,21 +46,25 @@ interface NavItem {
   ventexOnly?: boolean;
   clientOnly?: boolean;
   partnerOnly?: boolean;
-  partnerVisible?: boolean; // visible to partners AND ventex
+  partnerVisible?: boolean;
+  group?: string; // group label for sidebar sections
 }
 
 const ALL_NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="size-[18px]" /> },
-  { label: "Activity", href: "/activity", icon: <Activity className="size-[18px]" /> },
-  { label: "Oversight", href: "/oversight", icon: <Eye className="size-[18px]" />, ventexOnly: true },
-  { label: "AI Concierge", href: "/agent", icon: <Bot className="size-[18px]" />, ventexOnly: true },
-  { label: "AI Agents", href: "/agents", icon: <Cpu className="size-[18px]" />, ventexOnly: true },
-  { label: "Blueprints", href: "/blueprints", icon: <Layers3 className="size-[18px]" />, ventexOnly: true },
-  { label: "VENTEX Team", href: "/ventex-team", icon: <Shield className="size-[18px]" />, ventexOnly: true },
-  { label: "Client Contacts", href: "/team", icon: <Users className="size-[18px]" />, ventexOnly: true },
-  { label: "Onboard Client", href: "/onboarding", icon: <UserPlus className="size-[18px]" />, ventexOnly: true },
-  { label: "Drafts", href: "/drafts", icon: <FileText className="size-[18px]" /> },
-  { label: "Settings", href: "/settings", icon: <Settings className="size-[18px]" />, ventexOnly: true },
+  // Operations
+  { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="size-[18px]" />, group: "Operations" },
+  { label: "Activity", href: "/activity", icon: <Activity className="size-[18px]" />, group: "Operations" },
+  { label: "Oversight", href: "/oversight", icon: <Eye className="size-[18px]" />, ventexOnly: true, group: "Operations" },
+  { label: "Drafts", href: "/drafts", icon: <FileText className="size-[18px]" />, group: "Operations" },
+  // Intelligence
+  { label: "AI Concierge", href: "/agent", icon: <Bot className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },
+  { label: "AI Agents", href: "/agents", icon: <Cpu className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },
+  { label: "Blueprints", href: "/blueprints", icon: <Layers3 className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },
+  // Admin
+  { label: "VENTEX Team", href: "/ventex-team", icon: <Shield className="size-[18px]" />, ventexOnly: true, group: "Admin" },
+  { label: "Client Contacts", href: "/team", icon: <Users className="size-[18px]" />, ventexOnly: true, group: "Admin" },
+  { label: "Onboard Client", href: "/onboarding", icon: <UserPlus className="size-[18px]" />, ventexOnly: true, group: "Admin" },
+  { label: "Settings", href: "/settings", icon: <Settings className="size-[18px]" />, ventexOnly: true, group: "Admin" },
   // Partner-only
   { label: "My Portfolio", href: "/partner", icon: <Briefcase className="size-[18px]" />, partnerOnly: true },
   { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-[18px]" />, partnerOnly: true },
@@ -192,45 +196,61 @@ export default function AppSidebar() {
           )}
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 py-2 px-1.5 space-y-0.5 overflow-y-auto">
-          {navItems.map((item) => {
-            const active = isActive(item.href);
-            return expanded ? (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md text-[13px] transition-colors",
-                  active
-                    ? "text-foreground bg-accent/60 font-medium"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
-                )}
-              >
-                <span className="flex-shrink-0">{item.icon}</span>
-                <span className="truncate">{item.label}</span>
-              </Link>
-            ) : (
-              <Tooltip key={item.href} delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "flex items-center justify-center p-2 rounded-md transition-colors",
-                      active
-                        ? "text-foreground bg-accent/60"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
-                    )}
-                  >
-                    {item.icon}
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="text-xs">
-                  {item.label}
-                </TooltipContent>
-              </Tooltip>
-            );
-          })}
+        {/* Nav — grouped by section */}
+        <nav className="flex-1 py-2 px-1.5 overflow-y-auto">
+          {(() => {
+            let lastGroup = "";
+            return navItems.map((item) => {
+              const active = isActive(item.href);
+              const showGroupLabel = expanded && isVentex && item.group && item.group !== lastGroup;
+              if (item.group) lastGroup = item.group;
+              return (
+                <div key={item.href}>
+                  {showGroupLabel && (
+                    <div className={cn(
+                      "px-3 pt-4 pb-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/50",
+                      item.group === "Operations" && "pt-1"
+                    )}>
+                      {item.group}
+                    </div>
+                  )}
+                  {expanded ? (
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-md text-[13px] transition-colors",
+                        active
+                          ? "text-foreground bg-accent/60 font-medium"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                      )}
+                    >
+                      <span className="flex-shrink-0">{item.icon}</span>
+                      <span className="truncate">{item.label}</span>
+                    </Link>
+                  ) : (
+                    <Tooltip delayDuration={0}>
+                      <TooltipTrigger asChild>
+                        <Link
+                          href={item.href}
+                          className={cn(
+                            "flex items-center justify-center p-2 rounded-md transition-colors",
+                            active
+                              ? "text-foreground bg-accent/60"
+                              : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                          )}
+                        >
+                          {item.icon}
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="text-xs">
+                        {item.label}
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
+              );
+            });
+          })()}
         </nav>
 
         {/* Client list — admin expanded only */}
@@ -388,26 +408,40 @@ export default function AppSidebar() {
                 </button>
               </div>
 
-              {/* Nav — clean flat list */}
+              {/* Nav — grouped by section */}
               <nav className="flex-1 overflow-y-auto py-2 px-2">
-                {navItems.map((item) => {
-                  const active = isActive(item.href);
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-md text-[14px] transition-colors",
-                        active
-                          ? "text-foreground bg-accent/60 font-medium"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
-                      )}
-                    >
-                      <span className={cn("flex-shrink-0", active && "text-primary")}>{item.icon}</span>
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                })}
+                {(() => {
+                  let lastGroup = "";
+                  return navItems.map((item) => {
+                    const active = isActive(item.href);
+                    const showGroupLabel = isVentex && item.group && item.group !== lastGroup;
+                    if (item.group) lastGroup = item.group;
+                    return (
+                      <div key={item.href}>
+                        {showGroupLabel && (
+                          <div className={cn(
+                            "px-3 pt-4 pb-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/50",
+                            item.group === "Operations" && "pt-1"
+                          )}>
+                            {item.group}
+                          </div>
+                        )}
+                        <Link
+                          href={item.href}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2.5 rounded-md text-[14px] transition-colors",
+                            active
+                              ? "text-foreground bg-accent/60 font-medium"
+                              : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+                          )}
+                        >
+                          <span className={cn("flex-shrink-0", active && "text-primary")}>{item.icon}</span>
+                          <span>{item.label}</span>
+                        </Link>
+                      </div>
+                    );
+                  });
+                })()}
               </nav>
 
               {/* User — minimal */}

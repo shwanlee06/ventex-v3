@@ -61,7 +61,6 @@ import { exportCSV, VENTURE_COLUMNS } from "@/lib/export";
 import OverdueAlertBanner from "@/components/OverdueAlertBanner";
 import LivePresenceWidget from "@/components/LivePresenceWidget";
 import VelocityIntelligenceCard from "@/components/VelocityIntelligenceCard";
-import VelocityKPI from "@/components/VelocityKPI";
 import AgentExecutionLog from "@/components/AgentExecutionLog";
 import ExecutiveSummaryWidget from "@/components/ExecutiveSummaryWidget";
 
@@ -240,6 +239,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
   const [archiveTarget, setArchiveTarget] = useState<{ id: number; name: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
   const [aiTaskTarget, setAiTaskTarget] = useState<{ id: number; name: string } | null>(null);
+  const [intelOpen, setIntelOpen] = useState(false);
 
   // Current tab's clients
   const clients = tabMode === "active" ? activeClients : archivedClients;
@@ -438,7 +438,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: (i + 1) * 0.05, duration: 0.3 }}
-            className="bg-card border border-border rounded-lg p-5 flex flex-col gap-2 hover:border-white/15 transition-colors"
+            className="bg-card border border-border rounded-xl p-5 flex flex-col gap-2 hover:border-primary/20 transition-colors"
           >
             <div className="flex items-center justify-between">
               <span className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
@@ -481,18 +481,10 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
       {/* ── Live Presence ────────────────────────────────────── */}
       <LivePresenceWidget />
 
-      {/* ── Overdue Alert Banner ────────────────────────────────── */}
+      {/* ── Overdue Alert Banner — only shows when there are overdue items */}
       <OverdueAlertBanner onNavigate={onNavigate} />
 
-      {/* ── Agent Activity KPI ───────────────────────────────── */}
-      <VelocityKPI />
-      {/* ── Executive Summary ───────────────────────────────────── */}
-      <ExecutiveSummaryWidget />
-
-      {/* ── Agent Execution Log ─────────────────────────────────── */}
-      <AgentExecutionLog />
-
-      {/* ── Active / Archived Tabs ────────────────────────────────── */}
+      {/* ── Active / Archived Tabs — CLIENT LIST FIRST for clarity ── */}
       <div className="flex items-center gap-1 border-b border-border">
         <button
           onClick={() => { setTabMode("active"); setStatusFilter("all"); setSearchTerm(""); }}
@@ -1012,6 +1004,37 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
           ))}
         </div>
       )}
+
+      {/* ── Intelligence Panel (collapsed by default) ─────────── */}
+      <div className="border border-border rounded-xl overflow-hidden">
+        <button
+          onClick={() => setIntelOpen(!intelOpen)}
+          className="w-full flex items-center justify-between px-5 py-3 bg-card hover:bg-accent/30 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Brain className="size-4 text-primary" />
+            <span className="text-sm font-medium text-foreground">Agent Intelligence</span>
+            <span className="text-[10px] font-mono text-muted-foreground bg-secondary/50 px-1.5 py-0.5 rounded">AI Summary + Execution Log</span>
+          </div>
+          <ChevronRight className={cn("size-4 text-muted-foreground transition-transform", intelOpen && "rotate-90")} />
+        </button>
+        <AnimatePresence>
+          {intelOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="overflow-hidden"
+            >
+              <div className="p-4 space-y-4 border-t border-border">
+                <ExecutiveSummaryWidget />
+                <AgentExecutionLog />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* ── Add Client Dialog ─────────────────────────────────────── */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
