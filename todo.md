@@ -2470,3 +2470,9 @@
 
 - [x] Add Aurovia logo and interactive aurovia.co link at end of pitch deck (Demo page)
 - [x] Add "Powered by Aurovia" text alongside the logo at the end of the pitch deck Demo page
+
+## Agent Activation — 4 Technical Fixes
+- [x] Fix 1: DB connection pool resilience — add retry/reconnect logic to getDb() and agentScheduler
+- [x] Fix 2: Wire SSE broadcast into agent runner so clients see real-time updates
+- [x] Fix 3: Expand Autonomous Task Executor regex patterns (17 → 90+) and increase MAX_PER_CYCLE from 3 to 8
+- [x] Fix 4: Auto-provision agent config for ALL active orgs that lack one (multi-client ready)

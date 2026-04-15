@@ -1,20 +1,91 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2";
 import { InsertUser, users, activityLog } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let _pool: mysql.Pool | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
+/**
+ * Create a mysql2 connection pool with resilient settings.
+ * Uses the callback-based (non-promise) pool so drizzle gets the correct $client type.
+ */
+function createPool(): mysql.Pool {
+  const pool = mysql.createPool({
+    uri: process.env.DATABASE_URL,
+    waitForConnections: true,
+    connectionLimit: 10,
+    maxIdle: 5,
+    idleTimeout: 60_000,        // Close idle connections after 60s
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 10_000, // Send keep-alive every 10s to prevent stale connections
+    connectTimeout: 10_000,     // 10s connect timeout
+  });
+  return pool;
+}
+
+/**
+ * Lazily create the drizzle instance backed by a connection pool.
+ * If the pool becomes unhealthy, it is destroyed and recreated.
+ */
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+  // Fast path: pool and drizzle instance exist, verify pool health
+  if (_pool && _db) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
-    } catch (error) {
+      // Quick health check — execute a lightweight query via promise wrapper
+      await _pool.promise().query("SELECT 1");
+      return _db;
+    } catch {
+      // Pool is stale/broken — destroy and recreate
+      console.warn("[Database] Pool health check failed, recreating connection pool...");
+      try { _pool.end(() => {}); } catch { /* ignore */ }
+      _pool = null;
       _db = null;
     }
   }
-  return _db;
+
+  // Create new pool and drizzle instance
+  if (!process.env.DATABASE_URL) return null;
+
+  const MAX_RETRIES = 3;
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      _pool = createPool();
+      _db = drizzle({ client: _pool });
+
+      // Verify the connection works
+      await _pool.promise().query("SELECT 1");
+
+      if (attempt > 1) {
+        console.log(`[Database] Reconnected successfully on attempt ${attempt}`);
+      }
+      return _db;
+    } catch (error: any) {
+      console.error(`[Database] Connection attempt ${attempt}/${MAX_RETRIES} failed:`, error.message);
+      try { if (_pool) _pool.end(() => {}); } catch { /* ignore */ }
+      _pool = null;
+      _db = null;
+
+      if (attempt < MAX_RETRIES) {
+        // Exponential backoff: 1s, 2s, 4s
+        const delay = Math.pow(2, attempt - 1) * 1000;
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  console.error("[Database] All connection attempts failed. Database unavailable.");
+  return null;
+}
+
+/**
+ * Force-reset the connection pool. Call this if the scheduler detects persistent failures.
+ */
+export async function resetDbPool(): Promise<void> {
+  try { if (_pool) _pool.end(() => {}); } catch { /* ignore */ }
+  _pool = null;
+  _db = null;
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {

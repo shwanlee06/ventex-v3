@@ -1,7 +1,8 @@
 // Agent Scheduler — Automatic agent execution on configurable intervals
 // Runs all four agents (Overdue, Velocity, Distribution, Orchestrator)
+// + Intelligence engines + Proactive agents for every active organization
 
-import { getDb } from "./db";
+import { getDb, resetDbPool } from "./db";
 import {
   agentEvents,
   agentDrafts,
@@ -11,20 +12,20 @@ import {
 } from "../drizzle/schema";
 import { eq, desc, and, lt, sql, inArray } from "drizzle-orm";
 
-// Import agent runner functions — they are exported from the agents router module
-// We re-export them here so the scheduler can call them directly without tRPC context
-
 let schedulerInterval: ReturnType<typeof setInterval> | null = null;
 let lastRunAt: Date | null = null;
 let nextRunAt: Date | null = null;
 let isRunning = false;
 let totalRunCount = 0;
+let consecutiveFailures = 0;
 
 const DEFAULT_INTERVAL_MS = 2 * 60 * 60 * 1000; // 2 hours (demo mode — production should be 6h)
+const MAX_CONSECUTIVE_FAILURES = 3;
 
 /**
  * Run all agents for all active organizations.
  * This is the core function called by the scheduler.
+ * Includes connection resilience: resets pool after consecutive failures.
  */
 async function executeAgentCycle(): Promise<{
   success: boolean;
@@ -43,21 +44,65 @@ async function executeAgentCycle(): Promise<{
   let totalSignals = 0;
 
   try {
+    // If we've had consecutive failures, force-reset the connection pool before trying again
+    if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+      console.warn(`[AgentScheduler] ${consecutiveFailures} consecutive failures — resetting DB pool before retry`);
+      await resetDbPool();
+      consecutiveFailures = 0;
+    }
+
     const db = await getDb();
     if (!db) {
+      consecutiveFailures++;
       isRunning = false;
       return { success: false, orgsProcessed: 0, totalSignals: 0, errors: ["Database not available"] };
     }
 
-    // Get all active organizations (orgStatus column)
+    // Get all active organizations
     const activeOrgs = await db
       .select({ id: organizations.id, name: organizations.name })
       .from(organizations)
       .where(eq(organizations.status, "active"));
 
+    // Auto-provision: create agent configs for any active org that doesn't have one yet
+    // This ensures new clients get agents working from day one (multi-client ready)
+    try {
+      const existingConfigs = await db
+        .select({ organizationId: clientAgentConfig.organizationId })
+        .from(clientAgentConfig);
+      const configOrgIds = new Set(existingConfigs.map(c => c.organizationId));
+      const missingOrgs = activeOrgs.filter(o => !configOrgIds.has(o.id));
+
+      for (const org of missingOrgs) {
+        await db.insert(clientAgentConfig).values({
+          organizationId: org.id,
+          velocityAgentEnabled: true,
+          complianceAgentEnabled: true,
+          dealFlowAgentEnabled: true,
+          orchestratorEnabled: true,
+          overdueDaysThreshold: 7,
+          distributionWarningDays: 14,
+          healthScoreAlertThreshold: 30,
+          autoAdvanceEnabled: true,
+          pollingIntervalMinutes: 30,
+        });
+        console.log(`[AgentScheduler] Auto-provisioned agent config for org ${org.id} (${org.name})`);
+      }
+    } catch (provisionErr: any) {
+      console.error("[AgentScheduler] Config auto-provision error:", provisionErr.message);
+    }
 
     // Dynamically import agent functions to avoid circular dependencies
     const { runAgentsForOrg } = await import("./agentRunner");
+
+    // Also import SSE broadcast for real-time client updates
+    let broadcastSSE: ((event: any) => void) | null = null;
+    try {
+      const sseModule = await import("./routes/sseEvents");
+      broadcastSSE = sseModule.broadcastSSE;
+    } catch {
+      // SSE not available — non-critical
+    }
 
     for (const org of activeOrgs) {
       try {
@@ -71,6 +116,22 @@ async function executeAgentCycle(): Promise<{
         const result = await runAgentsForOrg(db, org.id, config || null);
         totalSignals += result.signalCount;
         orgsProcessed++;
+
+        // Broadcast agent activity via SSE so connected clients see updates in real-time
+        if (broadcastSSE && result.signalCount > 0) {
+          broadcastSSE({
+            type: "agent_activity" as const,
+            data: {
+              organizationId: org.id,
+              organizationName: org.name,
+              signalCount: result.signalCount,
+              tasksCompleted: result.proactive?.tasksCompleted || 0,
+              tasksCreated: result.proactive?.tasksCreated || 0,
+              timestamp: Date.now(),
+            },
+            organizationId: org.id,
+          });
+        }
 
       } catch (err: any) {
         const errMsg = `Org ${org.id} (${org.name}): ${err.message}`;
@@ -92,6 +153,7 @@ async function executeAgentCycle(): Promise<{
         );
       const deletedCount = (deleted as any)[0]?.affectedRows || 0;
       if (deletedCount > 0) {
+        console.log(`[AgentScheduler] Cleaned up ${deletedCount} old drafts`);
       }
     } catch (cleanupErr: any) {
       console.error("[AgentScheduler] Draft cleanup error:", cleanupErr.message);
@@ -99,9 +161,11 @@ async function executeAgentCycle(): Promise<{
 
     lastRunAt = new Date();
     totalRunCount++;
+    consecutiveFailures = 0; // Reset on success
     nextRunAt = new Date(Date.now() + DEFAULT_INTERVAL_MS);
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`[AgentScheduler] Cycle #${totalRunCount} complete: ${orgsProcessed} orgs, ${totalSignals} signals, ${elapsed}s`);
 
     // SOC 2 audit trail — log every agent cycle
     try {
@@ -124,8 +188,16 @@ async function executeAgentCycle(): Promise<{
 
     return { success: true, orgsProcessed, totalSignals, errors };
   } catch (err: any) {
+    consecutiveFailures++;
     errors.push(err.message);
-    console.error("[AgentScheduler] Fatal cycle error:", err.message);
+    console.error(`[AgentScheduler] Fatal cycle error (failure #${consecutiveFailures}):`, err.message);
+
+    // If this is a connection error, reset the pool for next attempt
+    if (err.message?.includes("Failed query") || err.message?.includes("ECONNREFUSED") || err.message?.includes("PROTOCOL_CONNECTION_LOST") || err.message?.includes("ETIMEDOUT")) {
+      console.warn("[AgentScheduler] Connection error detected — will reset pool on next cycle");
+      await resetDbPool();
+    }
+
     return { success: false, orgsProcessed, totalSignals, errors };
   } finally {
     isRunning = false;
@@ -133,7 +205,7 @@ async function executeAgentCycle(): Promise<{
 }
 
 /**
- * Start the agent scheduler with the default 6-hour interval.
+ * Start the agent scheduler with the default interval.
  * Called once during server startup.
  */
 export function startAgentScheduler(): void {
@@ -141,6 +213,7 @@ export function startAgentScheduler(): void {
     return;
   }
 
+  console.log(`[AgentScheduler] Starting with ${DEFAULT_INTERVAL_MS / 1000 / 60 / 60}h interval`);
   nextRunAt = new Date(Date.now() + DEFAULT_INTERVAL_MS);
 
   schedulerInterval = setInterval(() => {
@@ -151,6 +224,7 @@ export function startAgentScheduler(): void {
 
   // Also run once 30 seconds after server start to populate fresh data
   setTimeout(() => {
+    console.log("[AgentScheduler] Running initial cycle (30s after startup)...");
     executeAgentCycle().catch(err => {
       console.error("[AgentScheduler] Initial cycle error:", err);
     });
@@ -165,6 +239,7 @@ export function stopAgentScheduler(): void {
     clearInterval(schedulerInterval);
     schedulerInterval = null;
     nextRunAt = null;
+    console.log("[AgentScheduler] Stopped");
   }
 }
 
@@ -178,6 +253,7 @@ export function getSchedulerStatus() {
     lastRunAt: lastRunAt?.toISOString() || null,
     nextRunAt: nextRunAt?.toISOString() || null,
     totalRunCount,
+    consecutiveFailures,
     intervalHours: DEFAULT_INTERVAL_MS / 1000 / 60 / 60,
   };
 }
