@@ -8,7 +8,7 @@ import { ArrowLeft } from "lucide-react";
 import { useLocation } from "wouter";
 
 const EFFECTIVE_DATE = "April 8, 2026";
-const COMPANY = "Royalton Venture Holding";
+const COMPANY = "Aurovia LLC";
 const PRODUCT = "VENTEX";
 const CONTACT_EMAIL = "privacy@aurovia.co";
 

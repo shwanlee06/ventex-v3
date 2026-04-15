@@ -95,7 +95,7 @@ export default function AcceptInvite() {
 
   // Typewriter effects
   const ventexText = useTypewriter("V E N T E X", 80, 200);
-  const subtitleText = useTypewriter("ROYALTON VENTURE HOLDING", 30, 1200);
+  const subtitleText = useTypewriter(orgName ? orgName.toUpperCase() : "VENTURE VELOCITY PLATFORM", 30, 1200);
   const inviteText = useTypewriter(
     invitedBy
       ? `${invitedBy.toUpperCase()} HAS INVITED YOU TO JOIN`

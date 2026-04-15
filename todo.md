@@ -2493,3 +2493,4 @@
 - [x] Add Draft Center tab/section to client portal (AI Communications section with pending/sent filter, expand/approve/dismiss)
 - [x] Client portal: review, approve, send, dismiss AI-drafted communications
 - [x] Replace admin draft badge with aggregate "AI Comms" KPI on dashboard (totalSent, pending, sentThisMonth)
+- [x] Remove all hardcoded Royalton references from source code (it's just a client, not the product)
