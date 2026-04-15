@@ -219,9 +219,11 @@ export default function SettingsPage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-mono text-muted-foreground hidden sm:inline">{displaySpvs.length} deals</span>
-            <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => setAddOpen(true)}>
-              <Plus className="size-3.5 mr-1" /> New Deal
-            </Button>
+            {isVentex && (
+              <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => setAddOpen(true)}>
+                <Plus className="size-3.5 mr-1" /> New Deal
+              </Button>
+            )}
           </div>
         </div>
 
@@ -276,22 +278,32 @@ export default function SettingsPage() {
                     {sc && <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />}
                   </div>
 
-                  {spv.currentStatus && (
+                  {isVentex && spv.currentStatus && (
                     <p className="text-[11px] text-muted-foreground mb-3 line-clamp-2">{spv.currentStatus}</p>
                   )}
 
                   <div className="flex items-center gap-4 pt-3 border-t border-border">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); cyclePriority(spv.id); }}
-                      className={cn("text-[10px] font-medium px-2 py-1 rounded cursor-pointer hover:opacity-80 transition-opacity touch-manipulation",
+                    {isVentex ? (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); cyclePriority(spv.id); }}
+                        className={cn("text-[10px] font-medium px-2 py-1 rounded cursor-pointer hover:opacity-80 transition-opacity touch-manipulation",
+                          spv.priority === "High" ? "bg-red-500/10 text-red-400" :
+                          spv.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
+                          "bg-secondary text-muted-foreground"
+                        )}
+                      >
+                        {spv.priority}
+                      </button>
+                    ) : (
+                      <span className={cn("text-[10px] font-medium px-2 py-1 rounded",
                         spv.priority === "High" ? "bg-red-500/10 text-red-400" :
                         spv.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
                         "bg-secondary text-muted-foreground"
-                      )}
-                    >
-                      {spv.priority}
-                    </button>
-                    {spv.nextStep && (
+                      )}>
+                        {spv.priority}
+                      </span>
+                    )}
+                    {isVentex && spv.nextStep && (
                       <span className="text-[10px] text-muted-foreground truncate flex-1">Next: {spv.nextStep}</span>
                     )}
                   </div>
@@ -343,16 +355,26 @@ export default function SettingsPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); cyclePriority(spv.id); }}
-                            className={cn("text-[10px] font-medium px-2 py-1 rounded cursor-pointer hover:opacity-80 transition-opacity touch-manipulation",
+                          {isVentex ? (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); cyclePriority(spv.id); }}
+                              className={cn("text-[10px] font-medium px-2 py-1 rounded cursor-pointer hover:opacity-80 transition-opacity touch-manipulation",
+                                spv.priority === "High" ? "bg-red-500/10 text-red-400" :
+                                spv.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
+                                "bg-secondary text-muted-foreground"
+                              )}
+                            >
+                              {spv.priority}
+                            </button>
+                          ) : (
+                            <span className={cn("text-[10px] font-medium px-2 py-1 rounded",
                               spv.priority === "High" ? "bg-red-500/10 text-red-400" :
                               spv.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
                               "bg-secondary text-muted-foreground"
-                            )}
-                          >
-                            {spv.priority}
-                          </button>
+                            )}>
+                              {spv.priority}
+                            </span>
+                          )}
                         </TableCell>
                         <TableCell onClick={() => setSpvModalId(spv.id)}>
                           {sc && <StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} />}
@@ -448,38 +470,50 @@ export default function SettingsPage() {
               <div className="space-y-3 py-2">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Priority</span>
-                  <button
-                    onClick={() => cyclePriority(spvModal.id)}
-                    className={cn("text-[10px] font-medium px-2 py-1 rounded cursor-pointer touch-manipulation",
+                  {isVentex ? (
+                    <button
+                      onClick={() => cyclePriority(spvModal.id)}
+                      className={cn("text-[10px] font-medium px-2 py-1 rounded cursor-pointer touch-manipulation",
+                        spvModal.priority === "High" ? "bg-red-500/10 text-red-400" :
+                        spvModal.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
+                        "bg-secondary text-muted-foreground"
+                      )}
+                    >
+                      {spvModal.priority} (tap to cycle)
+                    </button>
+                  ) : (
+                    <span className={cn("text-[10px] font-medium px-2 py-1 rounded",
                       spvModal.priority === "High" ? "bg-red-500/10 text-red-400" :
                       spvModal.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
                       "bg-secondary text-muted-foreground"
-                    )}
-                  >
-                    {spvModal.priority} (tap to cycle)
-                  </button>
+                    )}>
+                      {spvModal.priority}
+                    </span>
+                  )}
                 </div>
-                {spvModal.currentStatus && (
+                {isVentex && spvModal.currentStatus && (
                   <div>
                     <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Current Status</span>
                     <p className="text-xs text-foreground bg-secondary/30 rounded-md p-2">{spvModal.currentStatus}</p>
                   </div>
                 )}
-                {spvModal.nextStep && (
+                {isVentex && spvModal.nextStep && (
                   <div>
                     <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Next Step</span>
                     <p className="text-xs text-foreground bg-secondary/30 rounded-md p-2">{spvModal.nextStep}</p>
                   </div>
                 )}
-                <div>
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Update Stage</span>
-                  <Select value={spvModal.stage || "Active deal"} onValueChange={(val) => updateStage(spvModal.id, val)}>
-                    <SelectTrigger className="h-9 min-h-[36px] text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {ALL_STAGES.filter(s => s !== "All").map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {isVentex && (
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Update Stage</span>
+                    <Select value={spvModal.stage || "Active deal"} onValueChange={(val) => updateStage(spvModal.id, val)}>
+                      <SelectTrigger className="h-9 min-h-[36px] text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {ALL_STAGES.filter(s => s !== "All").map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
               <DialogFooter className="flex-col sm:flex-row gap-2">
                 <Link href={`/spvs/${spvModal.slug}`}>
@@ -530,7 +564,7 @@ export default function SettingsPage() {
                     )}
                   </div>
                 </div>
-                {distModal.notes && (
+                {isVentex && distModal.notes && (
                   <div>
                     <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Notes</span>
                     <p className="text-xs text-foreground bg-secondary/30 rounded-md p-2">{distModal.notes}</p>

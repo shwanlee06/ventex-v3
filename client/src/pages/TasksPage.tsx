@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { isVentexTeam } from "@/lib/ventex";
+import { usePreviewMode } from "@/contexts/PreviewMode";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ListChecks, Plus, CheckCircle2, Clock, AlertTriangle,
@@ -57,14 +58,20 @@ function formatDate(d: string | null): string {
 export default function TasksPage() {
   const utils = trpc.useUtils();
   const { user } = useAuth();
-  const isAdmin = isVentexTeam(user);
+  const { isPreviewMode } = usePreviewMode();
+  const isAdmin = isVentexTeam(user) && !isPreviewMode;
 
   const tasksQ = trpc.tasks.list.useQuery();
   const metricsQ = trpc.tasks.metrics.useQuery();
   const teamQ = trpc.team.list.useQuery();
   const venturesQ = trpc.ventures.list.useQuery();
 
-  const tasks = tasksQ.data || [];
+  const rawTasks = tasksQ.data || [];
+  // Strip "AI Generated:" prefix for client view
+  const tasks = isAdmin ? rawTasks : rawTasks.map(t => ({
+    ...t,
+    title: t.title.replace(/^AI Generated:\s*/i, ''),
+  }));
   const team = teamQ.data || [];
   const ventures = venturesQ.data || [];
   const metrics = metricsQ.data || { total: 0, open: 0, complete: 0, overdue: 0 };
@@ -404,9 +411,11 @@ export default function TasksPage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-mono text-muted-foreground hidden sm:inline">{displayTasks.length} tasks</span>
-            <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => setAddOpen(true)}>
-              <Plus className="size-3.5 mr-1" /> Add Task
-            </Button>
+            {isAdmin && (
+              <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => setAddOpen(true)}>
+                <Plus className="size-3.5 mr-1" /> Add Task
+              </Button>
+            )}
           </div>
         </div>
 

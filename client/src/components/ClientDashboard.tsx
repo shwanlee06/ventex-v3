@@ -331,7 +331,12 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
   const allSpvs = spvsQ.data || [];
   const allDists = distQ.data || [];
   const allTasks = tasksQ.data || [];
-  const activityLogs = activityQ.data || [];
+  const activityLogsRaw = activityQ.data || [];
+  // Filter out internal ops and system entries for client view
+  const activityLogs = activityLogsRaw.filter(e => {
+    const src = (e as any).activitySource;
+    return src !== "atlas_ops" && src !== "system";
+  });
 
   // Derived stats
   const totalDistAmount = allDists.reduce((s, d) => s + (d.amount || 0), 0);

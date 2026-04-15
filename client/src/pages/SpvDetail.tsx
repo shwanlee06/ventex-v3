@@ -5,6 +5,9 @@ import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { isVentexTeam } from "@/lib/ventex";
+import { usePreviewMode } from "@/contexts/PreviewMode";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Briefcase, Users, Link2, Building2, Edit2, Save, X,
@@ -82,6 +85,9 @@ export default function SpvDetail() {
   const [, navigate] = useLocation();
   const slug = params?.slug || "";
   const utils = trpc.useUtils();
+  const { user } = useAuth();
+  const { isPreviewMode } = usePreviewMode();
+  const isSpvAdmin = isVentexTeam(user) && !isPreviewMode;
 
   const spvQ = trpc.spvs.getBySlug.useQuery({ slug }, { enabled: !!slug });
   const spv = spvQ.data;
@@ -354,28 +360,34 @@ export default function SpvDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <Select value={spv.stage || "Active deal"} onValueChange={handleStageChange}>
-              <SelectTrigger className="h-9 min-h-[36px] text-xs w-[140px] sm:w-[160px]"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {ALL_STAGES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => fileInputRef.current?.click()}>
-              <Upload className="size-3.5 mr-1" /> <span className="hidden sm:inline">Add </span>File
-            </Button>
-            {!editing ? (
-              <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={startEdit}>
-                <Edit2 className="size-3.5 mr-1" /> Edit
+            {isSpvAdmin && (
+              <Select value={spv.stage || "Active deal"} onValueChange={handleStageChange}>
+                <SelectTrigger className="h-9 min-h-[36px] text-xs w-[140px] sm:w-[160px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ALL_STAGES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+            {isSpvAdmin && (
+              <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => fileInputRef.current?.click()}>
+                <Upload className="size-3.5 mr-1" /> <span className="hidden sm:inline">Add </span>File
               </Button>
-            ) : (
-              <div className="flex gap-1">
-                <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={saveEdit} disabled={updateSpv.isPending}>
-                  <Save className="size-3.5 mr-1" /> Save
+            )}
+            {isSpvAdmin && (
+              !editing ? (
+                <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={startEdit}>
+                  <Edit2 className="size-3.5 mr-1" /> Edit
                 </Button>
-                <Button variant="ghost" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => setEditing(false)}>
-                  <X className="size-3.5" />
-                </Button>
-              </div>
+              ) : (
+                <div className="flex gap-1">
+                  <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={saveEdit} disabled={updateSpv.isPending}>
+                    <Save className="size-3.5 mr-1" /> Save
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => setEditing(false)}>
+                    <X className="size-3.5" />
+                  </Button>
+                </div>
+              )
             )}
           </div>
         </div>
@@ -419,12 +431,16 @@ export default function SpvDetail() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-muted-foreground hidden sm:inline">Max 5MB</span>
-                  <Button size="sm" variant="outline" className="text-xs h-8 min-h-[32px] touch-manipulation" onClick={() => setCreateFolderOpen(true)}>
-                    <FolderPlus className="size-3 mr-1" /> <span className="hidden sm:inline">New </span>Folder
-                  </Button>
-                  <Button size="sm" variant="outline" className="text-xs h-8 min-h-[32px] touch-manipulation" onClick={() => fileInputRef.current?.click()}>
-                    <Plus className="size-3 mr-1" /> <span className="hidden sm:inline">Attach </span>File
-                  </Button>
+                  {isSpvAdmin && (
+                    <Button size="sm" variant="outline" className="text-xs h-8 min-h-[32px] touch-manipulation" onClick={() => setCreateFolderOpen(true)}>
+                      <FolderPlus className="size-3 mr-1" /> <span className="hidden sm:inline">New </span>Folder
+                    </Button>
+                  )}
+                  {isSpvAdmin && (
+                    <Button size="sm" variant="outline" className="text-xs h-8 min-h-[32px] touch-manipulation" onClick={() => fileInputRef.current?.click()}>
+                      <Plus className="size-3 mr-1" /> <span className="hidden sm:inline">Attach </span>File
+                    </Button>
+                  )}
                 </div>
                 <input
                   ref={fileInputRef}
@@ -472,21 +488,23 @@ export default function SpvDetail() {
                         >
                           <div className="flex items-start justify-between">
                             <FolderOpen className="size-5" style={{ color: folder.color || "#3b82f6" }} />
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
-                                <button className="size-6 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-accent transition-all">
-                                  <MoreHorizontal className="size-3.5 text-muted-foreground" />
-                                </button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-36">
-                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setRenameFolderIdState(folder.id); setRenameFolderName(folder.name); }}>
-                                  <Edit2 className="size-3.5 mr-2" /> Rename
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteFolder(folder.id); }} className="text-red-400 focus:text-red-400">
-                                  <Trash2 className="size-3.5 mr-2" /> Delete
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            {isSpvAdmin && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
+                                  <button className="size-6 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-accent transition-all">
+                                    <MoreHorizontal className="size-3.5 text-muted-foreground" />
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-36">
+                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setRenameFolderIdState(folder.id); setRenameFolderName(folder.name); }}>
+                                    <Edit2 className="size-3.5 mr-2" /> Rename
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteFolder(folder.id); }} className="text-red-400 focus:text-red-400">
+                                    <Trash2 className="size-3.5 mr-2" /> Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
                           </div>
                           <p className="text-xs font-medium text-foreground mt-2 truncate">{folder.name}</p>
                           <p className="text-[10px] font-mono text-muted-foreground mt-0.5">{folderFileCount} file{folderFileCount !== 1 ? "s" : ""}</p>
@@ -554,9 +572,11 @@ export default function SpvDetail() {
                         <button onClick={() => handleDownloadFile(file.fileUrl, file.filename)} className="size-8 sm:size-7 rounded-md flex items-center justify-center hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 transition-colors touch-manipulation" title="Download">
                           <Download className="size-3.5" />
                         </button>
-                        <button onClick={() => handleDeleteFile(file.id, file.filename)} className="size-8 sm:size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors touch-manipulation" title="Remove">
-                          <Trash2 className="size-3.5" />
-                        </button>
+                        {isSpvAdmin && (
+                          <button onClick={() => handleDeleteFile(file.id, file.filename)} className="size-8 sm:size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors touch-manipulation" title="Remove">
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}

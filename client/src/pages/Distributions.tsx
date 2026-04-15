@@ -6,6 +6,9 @@ import StatusBadge from "@/components/StatusBadge";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { isVentexTeam } from "@/lib/ventex";
+import { usePreviewMode } from "@/contexts/PreviewMode";
 import {
   DIST_STATUS_CONFIG, formatCurrency, formatDate,
 } from "@/lib/data";
@@ -32,6 +35,9 @@ import type { Distribution } from "@/lib/data";
 
 export default function DistributionsPage() {
   const { activeOrg, activeOrgId } = useWorkspace();
+  const { user } = useAuth();
+  const { isPreviewMode } = usePreviewMode();
+  const isAdmin = isVentexTeam(user) && !isPreviewMode;
 
   // Fetch distributions scoped to active org
   const distQ = trpc.distributions.list.useQuery(
@@ -210,9 +216,11 @@ export default function DistributionsPage() {
             }}>
               <FileDown className="size-3.5 mr-1" /> Export
             </Button>
-            <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => setAddOpen(true)}>
-              <Plus className="size-3.5 mr-1" /> New
-            </Button>
+            {isAdmin && (
+              <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => setAddOpen(true)}>
+                <Plus className="size-3.5 mr-1" /> New
+              </Button>
+            )}
           </div>
         </div>
 

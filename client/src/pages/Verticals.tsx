@@ -7,6 +7,7 @@ import { getThemeColor } from "@/lib/data";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { isVentexTeam } from "@/lib/ventex";
+import { usePreviewMode } from "@/contexts/PreviewMode";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Layers3, MapPin, ListChecks, AlertTriangle, Plus, X,
@@ -60,7 +61,8 @@ export default function VerticalsPage() {
   const [, navigate] = useLocation();
   const utils = trpc.useUtils();
   const { user } = useAuth();
-  const isAdmin = isVentexTeam(user);
+  const { isPreviewMode } = usePreviewMode();
+  const isAdmin = isVentexTeam(user) && !isPreviewMode;
 
   const venturesQ = trpc.ventures.listWithOrgs.useQuery();
   const tasksQ = trpc.tasks.list.useQuery();
@@ -324,16 +326,18 @@ export default function VerticalsPage() {
             />
           </div>
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
-            <Select value={clientFilter} onValueChange={setClientFilter}>
-              <SelectTrigger className="h-9 min-h-[36px] text-xs w-[130px] flex-shrink-0">
-                <Building2 className="size-3 mr-1 text-muted-foreground" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Clients</SelectItem>
-                {clientNames.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            {isAdmin && (
+              <Select value={clientFilter} onValueChange={setClientFilter}>
+                <SelectTrigger className="h-9 min-h-[36px] text-xs w-[130px] flex-shrink-0">
+                  <Building2 className="size-3 mr-1 text-muted-foreground" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All Clients</SelectItem>
+                  {clientNames.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
             <Select value={themeFilter} onValueChange={setThemeFilter}>
               <SelectTrigger className="h-9 min-h-[36px] text-xs w-[120px] flex-shrink-0"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -365,12 +369,14 @@ export default function VerticalsPage() {
               {collapsedClients.size > 0 ? "Expand all" : "Collapse all"}
             </button>
             <span className="text-[10px] font-mono text-muted-foreground">
-              {clientGroups.length} client{clientGroups.length !== 1 ? "s" : ""} · {totalVentures} venture{totalVentures !== 1 ? "s" : ""}
+              {(() => { const visibleGroups = isAdmin ? clientGroups : clientGroups.filter(g => g.orgId !== null); const visibleVentureCount = isAdmin ? totalVentures : visibleGroups.reduce((sum, g) => sum + g.ventures.length, 0); return isAdmin ? `${visibleGroups.length} client${visibleGroups.length !== 1 ? 's' : ''} · ${visibleVentureCount} venture${visibleVentureCount !== 1 ? 's' : ''}` : `${visibleVentureCount} venture${visibleVentureCount !== 1 ? 's' : ''}`; })()}
             </span>
           </div>
-          <Button size="sm" className="text-xs h-9 min-h-[36px]" onClick={() => setAddOpen(true)}>
-            <Plus className="size-3.5 mr-1" /> Add Venture
-          </Button>
+          {isAdmin && (
+            <Button size="sm" className="text-xs h-9 min-h-[36px]" onClick={() => setAddOpen(true)}>
+              <Plus className="size-3.5 mr-1" /> Add Venture
+            </Button>
+          )}
         </div>
 
         {/* Loading state */}
@@ -401,7 +407,7 @@ export default function VerticalsPage() {
         )}
 
         {/* Client sub-sections */}
-        {!loading && clientGroups.map((group, gi) => {
+        {!loading && clientGroups.filter(g => isAdmin || g.orgId !== null).map((group, gi) => {
           const key = String(group.orgId ?? "__unassigned__");
           const isCollapsed = collapsedClients.has(key);
 
@@ -450,7 +456,7 @@ export default function VerticalsPage() {
                       <span className="text-xs font-mono font-medium text-red-400">{group.overdueTasks}</span>
                     </div>
                   )}
-                  {group.orgSlug && (
+                  {isAdmin && group.orgSlug && (
                     <span
                       role="link"
                       tabIndex={0}

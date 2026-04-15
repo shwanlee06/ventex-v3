@@ -15,6 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { isVentexTeam } from "@/lib/ventex";
+import { usePreviewMode } from "@/contexts/PreviewMode";
 
 
 const ENTITY_ICONS: Record<string, React.ReactNode> = {
@@ -92,7 +94,8 @@ function getSourceBadge(source: string | null) {
 
 export default function ActivityLog() {
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
+  const { isPreviewMode } = usePreviewMode();
+  const isAdmin = isVentexTeam(user) && !isPreviewMode;
 
   const activityQ = trpc.activity.recent.useQuery({ limit: 300 });
   const entries = activityQ.data || [];
@@ -102,9 +105,18 @@ export default function ActivityLog() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showCount, setShowCount] = useState(50);
 
+  // For clients, filter out internal ops and system entries entirely
+  const clientSafeEntries = useMemo(() => {
+    if (isAdmin) return entries;
+    return entries.filter(e => {
+      const src = (e as any).activitySource;
+      return src !== "atlas_ops" && src !== "system";
+    });
+  }, [entries, isAdmin]);
+
   const sourceCounts = useMemo(() => {
     const counts = { atlas_ops: 0, client_business: 0, system: 0, other: 0 };
-    entries.forEach(e => {
+    clientSafeEntries.forEach(e => {
       const src = (e as any).activitySource;
       if (src === "atlas_ops") counts.atlas_ops++;
       else if (src === "client_business") counts.client_business++;
@@ -112,10 +124,10 @@ export default function ActivityLog() {
       else counts.other++;
     });
     return counts;
-  }, [entries]);
+  }, [clientSafeEntries]);
 
   const filtered = useMemo(() => {
-    let result = entries;
+    let result = clientSafeEntries;
 
     // Source filter
     if (sourceFilter !== "all") {
@@ -137,7 +149,7 @@ export default function ActivityLog() {
       );
     }
     return result;
-  }, [entries, sourceFilter, typeFilter, searchQuery]);
+  }, [clientSafeEntries, sourceFilter, typeFilter, searchQuery]);
 
   const displayed = filtered.slice(0, showCount);
   const hasMore = filtered.length > showCount;
@@ -155,8 +167,8 @@ export default function ActivityLog() {
 
   const typeCounts = useMemo(() => {
     const base = sourceFilter !== "all"
-      ? entries.filter(e => (e as any).activitySource === sourceFilter)
-      : entries;
+      ? clientSafeEntries.filter(e => (e as any).activitySource === sourceFilter)
+      : clientSafeEntries;
     const counts: Record<string, number> = {};
     base.forEach(e => {
       counts[e.entityType] = (counts[e.entityType] || 0) + 1;
@@ -240,26 +252,28 @@ export default function ActivityLog() {
             </div>
           </motion.button>
 
-          {/* System / AI */}
-          <motion.button
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: isAdmin ? 0.09 : 0.06 }}
-            onClick={() => { setSourceFilter("system"); setTypeFilter("all"); }}
-            className={cn(
-              "bg-card border rounded-lg p-3 text-left transition-all touch-manipulation active:scale-[0.97]",
-              sourceFilter === "system" ? SOURCE_STYLES.system.bgActive : "border-border hover:border-cyan-400/20"
-            )}
-          >
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <Bot className="size-3.5 text-cyan-400" />
-              <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">System</span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl font-mono font-semibold text-foreground">{sourceCounts.system}</span>
-              <span className="text-[10px] font-mono text-cyan-400">auto</span>
-            </div>
-          </motion.button>
+          {/* System / AI — admin only */}
+          {isAdmin && (
+            <motion.button
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.09 }}
+              onClick={() => { setSourceFilter("system"); setTypeFilter("all"); }}
+              className={cn(
+                "bg-card border rounded-lg p-3 text-left transition-all touch-manipulation active:scale-[0.97]",
+                sourceFilter === "system" ? SOURCE_STYLES.system.bgActive : "border-border hover:border-cyan-400/20"
+              )}
+            >
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Bot className="size-3.5 text-cyan-400" />
+                <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">System</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-xl font-mono font-semibold text-foreground">{sourceCounts.system}</span>
+                <span className="text-[10px] font-mono text-cyan-400">auto</span>
+              </div>
+            </motion.button>
+          )}
         </div>
 
         {/* ── Source description ──────────────────────────────────────── */}

@@ -2500,3 +2500,20 @@
 
 ## Remove Chat with AI from Venture Detail Page (Apr 15)
 - [x] Remove Chat with AI from VentureDetail.tsx — hidden in client preview mode, still visible for admin/VENTEX operators
+
+## Full Client Journey A-to-Z Audit (Apr 15)
+- [x] Audit Step A: Landing page / login flow — SpyOps cipher animation, AUTHORIZED ACCESS button, redirects to dashboard
+- [x] Audit Step B: Client dashboard — Welcome, Stats, VENTEX Activity, Quick Actions, Velocity Feed, Distributions, Progress, Recent Activity
+- [x] Audit Step C: Sidebar — Dashboard, Activity, Ventures, SPVs & Deals, Tasks, Distributions (no admin items)
+- [x] Audit Step D: Ventures — No Add Venture, no All Clients filter, no View client link, no Unassigned group
+- [x] Audit Step E: Venture detail — No Edit, no Add File, no Process Overrides, no Assign Member, no Chat with AI, no file/folder delete
+- [x] Audit Step F: SPVs — No New Deal, no internal notes, no priority cycling, no stage change, no file management
+- [x] Audit Step G: Tasks — No Add Task button (REMAINING: AI Generated prefix visible, test data visible, 185 total not scoped to org)
+- [x] Audit Step H: Distributions — Clean, scoped to client org, no New button, Export available
+- [x] Audit Step I: Client Portal — AI Comms moved up, all sections capped, no chat bubble
+- [x] Fix admin button hiding across all pages (Verticals, TasksPage, Distributions, ActivityLog, VentureDetail, SpvDetail, Settings)
+- [x] Fix Activity Log — hide VENTEX OPS and SYSTEM tabs, sanitize entry text for clients
+- [x] Fix Client Dashboard — filter out system/ops activity logs
+- [x] REMAINING: Strip 'AI Generated:' prefix from task titles in client view
+- [ ] REMAINING: Scope tasks/ventures metrics to client's org in preview mode
+- [ ] REMAINING: Clean up test data (OrgLinked Venture, Test Venture, Test task from vitest)

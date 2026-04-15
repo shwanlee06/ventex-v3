@@ -381,12 +381,16 @@ export default function VentureDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => isEditing ? handleSaveDetails() : startEditing()}>
-              {isEditing ? <><Save className="size-3.5 mr-1" /> Save</> : <><Edit3 className="size-3.5 mr-1" /> Edit</>}
-            </Button>
-            <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => fileInputRef.current?.click()}>
-              <Upload className="size-3.5 mr-1" /> <span className="hidden sm:inline">Add </span>File
-            </Button>
+            {isVentex && (
+              <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => isEditing ? handleSaveDetails() : startEditing()}>
+                {isEditing ? <><Save className="size-3.5 mr-1" /> Save</> : <><Edit3 className="size-3.5 mr-1" /> Edit</>}
+              </Button>
+            )}
+            {isVentex && (
+              <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => fileInputRef.current?.click()}>
+                <Upload className="size-3.5 mr-1" /> <span className="hidden sm:inline">Add </span>File
+              </Button>
+            )}
 {isVentex && (
             <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => navigate("/agent")}>
               <MessageSquare className="size-3.5 mr-1" /> <span className="hidden sm:inline">Chat with </span>AI →
@@ -479,9 +483,11 @@ export default function VentureDetail() {
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
                 <div className="bg-card border border-border rounded-lg p-4">
                   <BlueprintJourneyTracker ventureId={ventureId} />
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <VentureOverrides ventureId={ventureId} />
-                  </div>
+                  {isVentex && (
+                    <div className="mt-4 pt-4 border-t border-border">
+                      <VentureOverrides ventureId={ventureId} />
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -495,12 +501,16 @@ export default function VentureDetail() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-muted-foreground">Max 5MB</span>
-                  <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setCreateFolderOpen(true)}>
-                    <FolderPlus className="size-3 mr-1" /> New Folder
-                  </Button>
-                  <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => fileInputRef.current?.click()}>
-                    <Plus className="size-3 mr-1" /> Attach File
-                  </Button>
+                  {isVentex && (
+                    <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setCreateFolderOpen(true)}>
+                      <FolderPlus className="size-3 mr-1" /> New Folder
+                    </Button>
+                  )}
+                  {isVentex && (
+                    <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => fileInputRef.current?.click()}>
+                      <Plus className="size-3 mr-1" /> Attach File
+                    </Button>
+                  )}
                 </div>
                 <input
                   ref={fileInputRef}
@@ -548,21 +558,23 @@ export default function VentureDetail() {
                         >
                           <div className="flex items-start justify-between">
                             <FolderOpen className="size-5" style={{ color: folder.color || "#3b82f6" }} />
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
-                                <button className="size-6 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-accent transition-all">
-                                  <MoreHorizontal className="size-3.5 text-muted-foreground" />
-                                </button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-36">
-                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setRenameFolderIdState(folder.id); setRenameFolderName(folder.name); }}>
-                                  <Edit3 className="size-3.5 mr-2" /> Rename
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteFolder(folder.id); }} className="text-red-400 focus:text-red-400">
-                                  <Trash2 className="size-3.5 mr-2" /> Delete
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            {isVentex && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
+                                  <button className="size-6 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-accent transition-all">
+                                    <MoreHorizontal className="size-3.5 text-muted-foreground" />
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-36">
+                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setRenameFolderIdState(folder.id); setRenameFolderName(folder.name); }}>
+                                    <Edit3 className="size-3.5 mr-2" /> Rename
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteFolder(folder.id); }} className="text-red-400 focus:text-red-400">
+                                    <Trash2 className="size-3.5 mr-2" /> Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
                           </div>
                           <p className="text-xs font-medium text-foreground mt-2 truncate">{folder.name}</p>
                           <p className="text-[10px] font-mono text-muted-foreground mt-0.5">{folderFileCount} file{folderFileCount !== 1 ? "s" : ""}</p>
@@ -580,7 +592,7 @@ export default function VentureDetail() {
                   <p className="text-xs text-muted-foreground mb-1">
                     {currentFolderId ? "This folder is empty." : "No files attached yet."}
                   </p>
-                  <p className="text-[10px] text-muted-foreground/60">Click "Attach File" to upload documents, images, and spreadsheets.</p>
+                  <p className="text-[10px] text-muted-foreground/60">{isVentex ? 'Click "Attach File" to upload documents, images, and spreadsheets.' : 'Documents will appear here once uploaded by the team.'}</p>
                 </div>
               ) : (
                 <div className="divide-y divide-border">
@@ -638,9 +650,11 @@ export default function VentureDetail() {
                         <button onClick={() => handleDownloadFile(file.fileUrl, file.filename)} className="size-8 sm:size-7 rounded-md flex items-center justify-center hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 transition-colors touch-manipulation" title="Download">
                           <Download className="size-3.5" />
                         </button>
-                        <button onClick={() => handleDeleteFile(file.id, file.filename)} className="size-8 sm:size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors touch-manipulation" title="Remove">
-                          <Trash2 className="size-3.5" />
-                        </button>
+                        {isVentex && (
+                          <button onClick={() => handleDeleteFile(file.id, file.filename)} className="size-8 sm:size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors touch-manipulation" title="Remove">
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -845,9 +859,11 @@ export default function VentureDetail() {
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-card border border-border rounded-lg">
               <div className="px-4 py-3 border-b border-border flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-foreground">Assigned Team</h2>
-                <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setAssignModalOpen(true)}>
-                  <Plus className="size-3 mr-1" /> Assign Member
-                </Button>
+                {isVentex && (
+                  <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setAssignModalOpen(true)}>
+                    <Plus className="size-3 mr-1" /> Assign Member
+                  </Button>
+                )}
               </div>
               {assignedTeam.length === 0 ? (
                 <div className="p-8 text-center">
@@ -870,9 +886,11 @@ export default function VentureDetail() {
                           </div>
                         </div>
                       </div>
-                      <button onClick={() => handleRemoveMember(member.memberId)} className="size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors">
-                        <X className="size-3.5" />
-                      </button>
+                      {isVentex && (
+                        <button onClick={() => handleRemoveMember(member.memberId)} className="size-7 rounded-md flex items-center justify-center hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors">
+                          <X className="size-3.5" />
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
