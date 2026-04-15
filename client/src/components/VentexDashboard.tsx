@@ -28,6 +28,7 @@ import {
   ArrowUp,
   ArrowDown,
   Minus,
+  Mail,
   Brain,
   Bot,
   Download,
@@ -176,6 +177,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
   // Fetch archived clients separately
   const archivedClientsQ = trpc.organizations.listWithMetrics.useQuery({ includeArchived: true });
   const utils = trpc.useUtils();
+  const draftStatsQ = trpc.agents.draftStats.useQuery();
 
   const invalidateAll = () => {
     activeClientsQ.refetch();
@@ -420,17 +422,21 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
             progressColor: kpis.overallCompletion >= 70 ? "#4ADE80" : kpis.overallCompletion >= 40 ? "#F59E0B" : "#EF4444",
           },
           {
-            label: "Overdue",
-            value: kpis.totalOverdue,
-            sub: kpis.totalOverdue > 0 ? "require action" : "none pending",
-            icon: <AlertTriangle className="size-4" />,
-            color: "#EF4444",
-            trendLabel: kpis.totalOverdue > 0
-              ? `${kpis.clientsNeedingAttention} client${kpis.clientsNeedingAttention !== 1 ? "s" : ""} affected`
-              : "all clear",
-            trendColor: kpis.totalOverdue === 0 ? "text-emerald-400" : "text-red-400",
-            progressPct: kpis.totalTasks > 0 ? Math.round((kpis.totalOverdue / kpis.totalTasks) * 100) : 0,
-            progressColor: "#EF4444",
+            label: "AI Comms",
+            value: draftStatsQ.data?.totalSent ?? 0,
+            sub: (draftStatsQ.data?.totalPending ?? 0) > 0
+              ? `${draftStatsQ.data?.totalPending} pending client review`
+              : "all reviewed",
+            icon: <Mail className="size-4" />,
+            color: "#06B6D4",
+            trendLabel: (draftStatsQ.data?.sentThisMonth ?? 0) > 0
+              ? `${draftStatsQ.data?.sentThisMonth} sent this month`
+              : "none this month",
+            trendColor: (draftStatsQ.data?.sentThisMonth ?? 0) > 0 ? "text-emerald-400" : "text-muted-foreground",
+            progressPct: (draftStatsQ.data?.totalSent ?? 0) + (draftStatsQ.data?.totalPending ?? 0) > 0
+              ? Math.round(((draftStatsQ.data?.totalSent ?? 0) / ((draftStatsQ.data?.totalSent ?? 0) + (draftStatsQ.data?.totalPending ?? 0))) * 100)
+              : 0,
+            progressColor: "#06B6D4",
           },
         ].map((m, i) => (
           <motion.div

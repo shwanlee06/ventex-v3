@@ -1261,7 +1261,7 @@
 - [ ] Cross-client oversight feed (what agents did, what clients acted on, what's unactioned)
 - [ ] 48-hour escalation flags for unactioned items
 - [ ] Nudge button to send email to client primary contact
-- [ ] Remove Draft Center from operator view (move to client)
+- [x] Remove Draft Center from operator view (moved to client portal)
 - [ ] Keep: Orchestrator signals, agent health, client response rates, velocity compression
 
 ## FIX — VelocityFeed "events is not iterable" error
@@ -2485,3 +2485,11 @@
 - [x] Declutter 5: Fix card color scheme — replace dark red/maroon with proper semantic colors for visibility
 - [x] Declutter 6: Move Client List higher — directly after KPIs, before intelligence sections
 - [x] Declutter 7: Group sidebar nav items into Operations / Intelligence / Admin sections
+
+## Draft Center — Move to Client Portal
+- [x] Remove Draft Center from admin sidebar nav
+- [x] Remove "pending drafts" badge from admin Topbar
+- [x] Remove /drafts route from admin App.tsx
+- [x] Add Draft Center tab/section to client portal (AI Communications section with pending/sent filter, expand/approve/dismiss)
+- [x] Client portal: review, approve, send, dismiss AI-drafted communications
+- [x] Replace admin draft badge with aggregate "AI Comms" KPI on dashboard (totalSent, pending, sentThisMonth)

@@ -3,7 +3,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { isVentexTeam } from "@/lib/ventex";
 import { usePreviewMode } from "@/contexts/PreviewMode";
 import { useAgents } from "@/contexts/AgentContext";
-import { Bell, Search, User, Settings, LogOut, Eye, EyeOff, X, FileText, Building2 } from "lucide-react";
+import { Bell, Search, User, Settings, LogOut, Eye, EyeOff, X, Building2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -38,12 +38,10 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
   // Agent context for severity-based bell badge
   let criticalUnread = 0;
   let warningUnread = 0;
-  let pendingDraftCount = 0;
   try {
     const agents = useAgents();
     criticalUnread = agents.criticalUnread;
     warningUnread = agents.warningUnread;
-    pendingDraftCount = agents.pendingDraftCount;
   } catch {
     // AgentProvider may not be mounted yet
   }
@@ -90,7 +88,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
   }, [isPreviewMode, togglePreview, exitPreview, navigate]);
 
   // Severity-based bell badge
-  const totalBadge = unreadCount + criticalUnread + pendingDraftCount;
+  const totalBadge = unreadCount + criticalUnread;
   const bellBadgeColor = criticalUnread > 0
     ? "bg-red-500 animate-pulse"
     : warningUnread > 0
@@ -163,17 +161,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
             </button>
           )}
 
-          {/* Drafts indicator — visible to all authenticated users */}
-          {pendingDraftCount > 0 && (
-            <button
-              onClick={() => navigate("/drafts")}
-              className="flex items-center justify-center gap-1.5 min-h-[44px] min-w-[44px] sm:h-9 sm:min-w-0 sm:px-3 rounded-lg text-xs transition-colors bg-purple-500/10 text-purple-400 hover:bg-purple-500/20"
-              title={`${pendingDraftCount} pending drafts`}
-            >
-              <FileText className="size-4" />
-              <span className="hidden sm:inline">{pendingDraftCount}</span>
-            </button>
-          )}
+
 
           {/* Search — icon only on mobile, expanded on desktop */}
           <button

@@ -1454,6 +1454,33 @@ export const agentsRouter = router({
 
 
   /**
+   * Aggregate draft stats across all orgs — for admin dashboard KPI
+   */
+  draftStats: protectedProcedure
+    .query(async () => {
+      const db = await getDb();
+      if (!db) return { totalSent: 0, totalPending: 0, sentThisMonth: 0 };
+
+      const allDrafts = await db
+        .select({
+          status: agentDrafts.status,
+          sentAt: agentDrafts.sentAt,
+        })
+        .from(agentDrafts);
+
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      const totalSent = allDrafts.filter(d => d.status === "sent").length;
+      const totalPending = allDrafts.filter(d => d.status === "pending").length;
+      const sentThisMonth = allDrafts.filter(d =>
+        d.status === "sent" && d.sentAt && new Date(d.sentAt) >= monthStart
+      ).length;
+
+      return { totalSent, totalPending, sentThisMonth };
+    }),
+
+  /**
    * Get velocity metrics — avg days per stage advance — org-scoped
    */
   velocityMetrics: protectedProcedure

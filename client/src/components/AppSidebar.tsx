@@ -55,7 +55,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="size-[18px]" />, group: "Operations" },
   { label: "Activity", href: "/activity", icon: <Activity className="size-[18px]" />, group: "Operations" },
   { label: "Oversight", href: "/oversight", icon: <Eye className="size-[18px]" />, ventexOnly: true, group: "Operations" },
-  { label: "Drafts", href: "/drafts", icon: <FileText className="size-[18px]" />, group: "Operations" },
+
   // Intelligence
   { label: "AI Concierge", href: "/agent", icon: <Bot className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },
   { label: "AI Agents", href: "/agents", icon: <Cpu className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },

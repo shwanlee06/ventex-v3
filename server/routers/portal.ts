@@ -14,6 +14,7 @@ import {
   agentEvents,
   tasks,
   distributions,
+  agentDrafts,
 } from "../../drizzle/schema";
 import { isVentexTeam } from "../security/rbac";
 import { onClientPortalAction, onTaskCompleted, onStageAdvanced } from "../intelligence/realtimeTriggers";
@@ -1095,5 +1096,98 @@ ${scopedContext}`;
           message: "AI response failed. Please try again.",
         });
       }
+    }),
+
+  /**
+   * Get AI-drafted communications for this org (client-facing)
+   */
+  getDrafts: protectedProcedure
+    .input(z.object({
+      orgSlug: z.string().min(1),
+      status: z.enum(["pending", "sent", "dismissed"]).optional(),
+    }))
+    .query(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+      const [org] = await db.select().from(organizations).where(eq(organizations.slug, input.orgSlug)).limit(1);
+      if (!org) throw new TRPCError({ code: "NOT_FOUND", message: "Organization not found" });
+      const isAdmin = isVentexTeam(ctx.user);
+      if (!isAdmin && ctx.user.organizationId !== org.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+      const conditions: any[] = [eq(agentDrafts.organizationId, org.id)];
+      if (input.status) {
+        conditions.push(eq(agentDrafts.status, input.status));
+      }
+      const drafts = await db
+        .select()
+        .from(agentDrafts)
+        .where(and(...conditions))
+        .orderBy(desc(agentDrafts.createdAt))
+        .limit(50);
+      return drafts;
+    }),
+
+  /**
+   * Approve and send a draft (client action)
+   */
+  approveDraft: protectedProcedure
+    .input(z.object({
+      draftId: z.number(),
+      editedBody: z.string().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+      const [draft] = await db.select().from(agentDrafts).where(eq(agentDrafts.id, input.draftId)).limit(1);
+      if (!draft) throw new TRPCError({ code: "NOT_FOUND", message: "Draft not found" });
+      const isAdmin = isVentexTeam(ctx.user);
+      if (!isAdmin && ctx.user.organizationId !== draft.organizationId) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+      const updates: Record<string, unknown> = {
+        status: "sent",
+        sentAt: new Date(),
+        sentBy: ctx.user.name || ctx.user.email || "Client",
+      };
+      if (input.editedBody) {
+        updates.body = input.editedBody;
+      }
+      await db.update(agentDrafts).set(updates as any).where(eq(agentDrafts.id, input.draftId));
+      // Mark related agent events as action_taken
+      const events = await db
+        .select()
+        .from(agentEvents)
+        .where(and(eq(agentEvents.actionType, "draft"), eq(agentEvents.actionTaken, false)))
+        .limit(50);
+      for (const evt of events) {
+        const payload = evt.actionPayload as Record<string, unknown> | null;
+        if (payload && payload.draftId === input.draftId) {
+          await db.update(agentEvents).set({
+            actionTaken: true,
+            actionTakenAt: new Date(),
+            actionTakenBy: ctx.user.name || "Client",
+          }).where(eq(agentEvents.id, evt.id));
+        }
+      }
+      return { success: true, message: "Communication approved and sent" };
+    }),
+
+  /**
+   * Dismiss a draft (client action)
+   */
+  dismissDraft: protectedProcedure
+    .input(z.object({ draftId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+      const [draft] = await db.select().from(agentDrafts).where(eq(agentDrafts.id, input.draftId)).limit(1);
+      if (!draft) throw new TRPCError({ code: "NOT_FOUND", message: "Draft not found" });
+      const isAdmin = isVentexTeam(ctx.user);
+      if (!isAdmin && ctx.user.organizationId !== draft.organizationId) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+      await db.update(agentDrafts).set({ status: "dismissed" } as any).where(eq(agentDrafts.id, input.draftId));
+      return { success: true };
     }),
 };

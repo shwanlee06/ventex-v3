@@ -31,7 +31,6 @@ import ClientDetail from "./pages/ClientDetail";
 import VentexTeam from "./pages/VentexTeam";
 import AcceptInvite from "./pages/AcceptInvite";
 import AgentsPage from "./pages/Agents";
-import DraftsPage from "./pages/Drafts";
 import OnboardingWizard from "./pages/OnboardingWizard";
 import BlueprintsPage from "./pages/Blueprints";
 import ClientPortal from "./pages/ClientPortal";
@@ -184,9 +183,7 @@ function Router() {
       <Route path="/agents">
         <RequireAuth><RequireVentex><AgentsPage /></RequireVentex></RequireAuth>
       </Route>
-      <Route path="/drafts">
-        <RequireAuth><DraftsPage /></RequireAuth>
-      </Route>
+      {/* Draft Center moved to client portal */}
       <Route path="/onboarding">
         <RequireAuth><RequireVentex><OnboardingWizard /></RequireVentex></RequireAuth>
       </Route>
