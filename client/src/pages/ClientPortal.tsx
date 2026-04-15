@@ -52,11 +52,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
-import { MessageSquare, X as XIcon, Sparkles, FileText, Mail, Trash2 } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
-import { Streamdown } from "streamdown";
+import { FileText, Mail, Trash2 } from "lucide-react";
 
 const SECTOR_ICONS: Record<string, React.ReactNode> = {
   "Real Estate": <Building2 className="size-4" />,
@@ -115,6 +113,11 @@ export default function ClientPortal() {
   const [advancingIds, setAdvancingIds] = useState<Set<number>>(new Set());
   const [resolvingIds, setResolvingIds] = useState<Set<number>>(new Set());
   const [watchingExpanded, setWatchingExpanded] = useState(false);
+  const [showAllCompleted, setShowAllCompleted] = useState(false);
+  const [showAllWatching, setShowAllWatching] = useState(false);
+  const [showAllPortfolio, setShowAllPortfolio] = useState(false);
+  const [showAllForecasts, setShowAllForecasts] = useState(false);
+  const [showAllSignals, setShowAllSignals] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<{
     eventId: number;
     actionFlow: string;
@@ -125,12 +128,6 @@ export default function ClientPortal() {
   const [taskDrawer, setTaskDrawer] = useState<{ ventureId: number; ventureName: string } | null>(null);
   const [completingTaskIds, setCompletingTaskIds] = useState<Set<number>>(new Set());
 
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
-  const [chatInput, setChatInput] = useState("");
-  const [chatLoading, setChatLoading] = useState(false);
-  const chatScrollRef = useRef<HTMLDivElement>(null);
-  const aiChatMutation = trpc.portal.aiChat.useMutation();
 
   // Draft Center state
   const [draftFilter, setDraftFilter] = useState<"pending" | "sent" | undefined>("pending");
@@ -156,28 +153,6 @@ export default function ClientPortal() {
     onError: (err) => toast.error(err.message || "Failed to dismiss"),
   });
 
-  useEffect(() => {
-    if (chatScrollRef.current) {
-      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
-    }
-  }, [chatMessages, chatLoading]);
-
-  const handleSendChat = useCallback(async () => {
-    const msg = chatInput.trim();
-    if (!msg || chatLoading) return;
-    const newMessages = [...chatMessages, { role: "user" as const, content: msg }];
-    setChatMessages(newMessages);
-    setChatInput("");
-    setChatLoading(true);
-    try {
-      const result = await aiChatMutation.mutateAsync({ orgSlug, messages: newMessages });
-      setChatMessages(prev => [...prev, { role: "assistant", content: result.content }]);
-    } catch (e: any) {
-      setChatMessages(prev => [...prev, { role: "assistant", content: "I apologize, but I encountered an error. Please try again." }]);
-    } finally {
-      setChatLoading(false);
-    }
-  }, [chatInput, chatLoading, chatMessages, orgSlug, aiChatMutation]);
 
   const { data, isLoading, error } = trpc.portal.getData.useQuery(
     { orgSlug },
@@ -606,7 +581,7 @@ export default function ClientPortal() {
             </div>
 
             <div className="bg-card border border-emerald-500/15 rounded-xl divide-y divide-border">
-              {completedCards.map((item, i) => (
+              {(showAllCompleted ? completedCards : completedCards.slice(0, 5)).map((item, i) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, x: -8 }}
@@ -633,6 +608,14 @@ export default function ClientPortal() {
                 </motion.div>
               ))}
             </div>
+            {completedCards.length > 5 && (
+              <button
+                onClick={() => setShowAllCompleted(!showAllCompleted)}
+                className="mt-2 w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-2"
+              >
+                {showAllCompleted ? "Show less" : `Show all ${completedCards.length} completed updates`}
+              </button>
+            )}
           </motion.section>
         )}
 
@@ -672,7 +655,7 @@ export default function ClientPortal() {
                   className="overflow-hidden"
                 >
                   <div className="bg-card border border-border/50 rounded-xl divide-y divide-border/50">
-                    {watchingCards.map((item, i) => (
+                    {(showAllWatching ? watchingCards : watchingCards.slice(0, 5)).map((item, i) => (
                       <div
                         key={item.id}
                         className="p-3 flex items-start gap-3"
@@ -696,6 +679,14 @@ export default function ClientPortal() {
                       </div>
                     ))}
                   </div>
+                  {watchingCards.length > 5 && (
+                    <button
+                      onClick={() => setShowAllWatching(!showAllWatching)}
+                      className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-2"
+                    >
+                      {showAllWatching ? "Show less" : `Show all ${watchingCards.length} watching items`}
+                    </button>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -723,9 +714,187 @@ export default function ClientPortal() {
             </div>
           </motion.section>
         )}
-
-        {/* ── Your Portfolio ───────────────────────────────────────── */}
+        {/* ── AI Communications (Draft Center) ──────────────────── */}
         <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12, duration: 0.3 }}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Mail className="size-4 text-primary" />
+            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+              AI Communications
+            </h2>
+            {drafts && drafts.length > 0 && draftFilter === "pending" && (
+              <span className="text-[11px] text-amber-400 ml-auto font-medium">
+                {drafts.length} pending
+              </span>
+            )}
+          </div>
+
+          {/* Filter tabs */}
+          <div className="flex items-center gap-2 mb-4">
+            <button
+              onClick={() => setDraftFilter("pending")}
+              className={cn(
+                "text-xs px-3 py-1.5 rounded-full transition-colors",
+                draftFilter === "pending"
+                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                  : "text-muted-foreground hover:text-foreground bg-secondary/30"
+              )}
+            >
+              Pending Review
+            </button>
+            <button
+              onClick={() => setDraftFilter("sent")}
+              className={cn(
+                "text-xs px-3 py-1.5 rounded-full transition-colors",
+                draftFilter === "sent"
+                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  : "text-muted-foreground hover:text-foreground bg-secondary/30"
+              )}
+            >
+              Sent
+            </button>
+          </div>
+
+          {draftsLoading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 rounded-xl" />
+              ))}
+            </div>
+          ) : !drafts || drafts.length === 0 ? (
+            <div className="bg-card border border-border rounded-xl p-5 text-center">
+              <FileText className="size-5 text-muted-foreground/30 mx-auto mb-2" />
+              <p className="text-xs text-muted-foreground">
+                {draftFilter === "pending"
+                  ? "No pending communications. AI agents will draft follow-ups when action is needed."
+                  : "No sent communications yet."}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {drafts.map((draft, i) => (
+                <motion.div
+                  key={draft.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.03, duration: 0.2 }}
+                  className={cn(
+                    "bg-card border rounded-xl transition-all",
+                    draft.status === "pending"
+                      ? "border-amber-500/20 hover:border-amber-500/30"
+                      : "border-border"
+                  )}
+                >
+                  <button
+                    onClick={() => setExpandedDraft(expandedDraft === draft.id ? null : draft.id)}
+                    className="w-full text-left p-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={cn(
+                        "size-2 rounded-full mt-2 flex-shrink-0",
+                        draft.status === "pending" ? "bg-amber-400" : "bg-emerald-400"
+                      )} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className={cn(
+                            "text-[10px] px-1.5 py-0.5 rounded font-medium",
+                            draft.draftType === "follow_up" ? "bg-amber-500/10 text-amber-400" :
+                            draft.draftType === "lp_notice" ? "bg-blue-500/10 text-blue-400" :
+                            "bg-muted text-muted-foreground"
+                          )}>
+                            {draft.draftType === "follow_up" ? "Follow-up" :
+                             draft.draftType === "lp_notice" ? "LP Notice" :
+                             draft.draftType}
+                          </span>
+                          {draft.ventureName && (
+                            <span className="text-[10px] text-muted-foreground">
+                              {draft.ventureName}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {draft.subject || "AI-drafted communication"}
+                        </p>
+                        <div className="flex items-center gap-3 mt-1">
+                          {draft.recipientName && (
+                            <span className="text-[10px] text-muted-foreground">
+                              To: {draft.recipientName}
+                              {draft.recipientRole ? ` (${draft.recipientRole})` : ""}
+                            </span>
+                          )}
+                          <span className="text-[10px] text-muted-foreground/50">
+                            {friendlyDate(draft.createdAt)}
+                          </span>
+                        </div>
+                      </div>
+                      <ChevronDown className={cn(
+                        "size-4 text-muted-foreground transition-transform flex-shrink-0",
+                        expandedDraft === draft.id && "rotate-180"
+                      )} />
+                    </div>
+                  </button>
+
+                  <AnimatePresence>
+                    {expandedDraft === draft.id && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-4 pb-4 border-t border-border pt-3">
+                          <div className="bg-secondary/30 rounded-lg p-3 mb-3">
+                            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                              {draft.body}
+                            </p>
+                          </div>
+                          {draft.status === "pending" && (
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20"
+                                disabled={approveDraftMutation.isPending}
+                                onClick={() => approveDraftMutation.mutate({ draftId: draft.id })}
+                              >
+                                {approveDraftMutation.isPending ? (
+                                  <Loader2 className="size-3 animate-spin mr-1.5" />
+                                ) : (
+                                  <Send className="size-3 mr-1.5" />
+                                )}
+                                Approve & Send
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-muted-foreground hover:text-foreground"
+                                disabled={dismissDraftMutation.isPending}
+                                onClick={() => dismissDraftMutation.mutate({ draftId: draft.id })}
+                              >
+                                <Trash2 className="size-3 mr-1.5" />
+                                Dismiss
+                              </Button>
+                            </div>
+                          )}
+                          {draft.status === "sent" && draft.sentAt && (
+                            <p className="text-[10px] text-emerald-400">
+                              Sent {friendlyDate(draft.sentAt)} by {draft.sentBy || "Client"}
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </motion.section>
+
+        {/* ── Your Portfolio ─────────────────────────────────────────── */}        <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.3 }}
@@ -750,8 +919,9 @@ export default function ClientPortal() {
               </p>
             </div>
           ) : (
+            <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {portfolio.map((v, i) => (
+              {(showAllPortfolio ? portfolio : portfolio.slice(0, 6)).map((v, i) => (
                 <motion.div
                   key={v.id}
                   initial={{ opacity: 0, y: 8 }}
@@ -861,7 +1031,16 @@ export default function ClientPortal() {
                 </motion.div>
               ))}
             </div>
-          )}
+            {portfolio.length > 6 && (
+              <button
+                onClick={() => setShowAllPortfolio(!showAllPortfolio)}
+                className="mt-3 w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-2 border border-border/50 rounded-lg hover:border-border"
+              >
+                {showAllPortfolio ? "Show less" : `View all ${portfolio.length} ventures`}
+              </button>
+            )}
+            </>)}
+          
         </motion.section>
 
         {/* ── Portfolio Health Score ─────────────────────────────── */}
@@ -942,7 +1121,7 @@ export default function ClientPortal() {
               </span>
             </div>
             <div className="space-y-2">
-              {forecasts.map((f: any, i: number) => (
+              {(showAllForecasts ? forecasts : forecasts.slice(0, 6)).map((f: any, i: number) => (
                 <motion.div
                   key={f.ventureId}
                   initial={{ opacity: 0, x: -8 }}
@@ -989,6 +1168,14 @@ export default function ClientPortal() {
                 </motion.div>
               ))}
             </div>
+            {forecasts.length > 6 && (
+              <button
+                onClick={() => setShowAllForecasts(!showAllForecasts)}
+                className="mt-3 w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-2 border border-border/50 rounded-lg hover:border-border"
+              >
+                {showAllForecasts ? "Show less" : `View all ${forecasts.length} forecasts`}
+              </button>
+            )}
           </motion.section>
         )}
 
@@ -1009,7 +1196,7 @@ export default function ClientPortal() {
               </span>
             </div>
             <div className="space-y-2">
-              {marketSignals.map((s: any, i: number) => (
+              {(showAllSignals ? marketSignals : marketSignals.slice(0, 5)).map((s: any, i: number) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, x: -8 }}
@@ -1042,190 +1229,16 @@ export default function ClientPortal() {
                 </motion.div>
               ))}
             </div>
+            {marketSignals.length > 5 && (
+              <button
+                onClick={() => setShowAllSignals(!showAllSignals)}
+                className="mt-3 w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-2 border border-border/50 rounded-lg hover:border-border"
+              >
+                {showAllSignals ? "Show less" : `View all ${marketSignals.length} signals`}
+              </button>
+            )}
           </motion.section>
         )}
-
-        {/* ── Draft Center (AI Communications) ──────────────────── */}
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25, duration: 0.3 }}
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <Mail className="size-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-              AI Communications
-            </h2>
-            {drafts && drafts.length > 0 && draftFilter === "pending" && (
-              <span className="text-[11px] text-amber-400 ml-auto font-medium">
-                {drafts.length} pending
-              </span>
-            )}
-          </div>
-
-          {/* Filter tabs */}
-          <div className="flex items-center gap-2 mb-4">
-            <button
-              onClick={() => setDraftFilter("pending")}
-              className={cn(
-                "text-xs px-3 py-1.5 rounded-full transition-colors",
-                draftFilter === "pending"
-                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                  : "text-muted-foreground hover:text-foreground bg-secondary/30"
-              )}
-            >
-              Pending Review
-            </button>
-            <button
-              onClick={() => setDraftFilter("sent")}
-              className={cn(
-                "text-xs px-3 py-1.5 rounded-full transition-colors",
-                draftFilter === "sent"
-                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                  : "text-muted-foreground hover:text-foreground bg-secondary/30"
-              )}
-            >
-              Sent
-            </button>
-          </div>
-
-          {draftsLoading ? (
-            <div className="space-y-2">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-20 rounded-xl" />
-              ))}
-            </div>
-          ) : !drafts || drafts.length === 0 ? (
-            <div className="bg-card border border-border rounded-xl p-6 text-center">
-              <FileText className="size-6 text-muted-foreground/30 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">
-                {draftFilter === "pending"
-                  ? "No pending communications. Your AI agents will draft follow-ups when action is needed."
-                  : "No sent communications yet."}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {drafts.map((draft, i) => (
-                <motion.div
-                  key={draft.id}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.03, duration: 0.2 }}
-                  className={cn(
-                    "bg-card border rounded-xl transition-all",
-                    draft.status === "pending"
-                      ? "border-amber-500/20 hover:border-amber-500/30"
-                      : "border-border"
-                  )}
-                >
-                  {/* Draft header — always visible */}
-                  <button
-                    onClick={() => setExpandedDraft(expandedDraft === draft.id ? null : draft.id)}
-                    className="w-full text-left p-4"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={cn(
-                        "size-2 rounded-full mt-2 flex-shrink-0",
-                        draft.status === "pending" ? "bg-amber-400" : "bg-emerald-400"
-                      )} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <span className={cn(
-                            "text-[10px] px-1.5 py-0.5 rounded font-medium",
-                            draft.draftType === "follow_up" ? "bg-amber-500/10 text-amber-400" :
-                            draft.draftType === "lp_notice" ? "bg-blue-500/10 text-blue-400" :
-                            "bg-muted text-muted-foreground"
-                          )}>
-                            {draft.draftType === "follow_up" ? "Follow-up" :
-                             draft.draftType === "lp_notice" ? "LP Notice" :
-                             draft.draftType}
-                          </span>
-                          {draft.ventureName && (
-                            <span className="text-[10px] text-muted-foreground">
-                              {draft.ventureName}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm font-medium text-foreground truncate">
-                          {draft.subject || "AI-drafted communication"}
-                        </p>
-                        <div className="flex items-center gap-3 mt-1">
-                          {draft.recipientName && (
-                            <span className="text-[10px] text-muted-foreground">
-                              To: {draft.recipientName}
-                              {draft.recipientRole ? ` (${draft.recipientRole})` : ""}
-                            </span>
-                          )}
-                          <span className="text-[10px] text-muted-foreground/50">
-                            {friendlyDate(draft.createdAt)}
-                          </span>
-                        </div>
-                      </div>
-                      <ChevronDown className={cn(
-                        "size-4 text-muted-foreground transition-transform flex-shrink-0",
-                        expandedDraft === draft.id && "rotate-180"
-                      )} />
-                    </div>
-                  </button>
-
-                  {/* Expanded body */}
-                  <AnimatePresence>
-                    {expandedDraft === draft.id && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="px-4 pb-4 border-t border-border pt-3">
-                          <div className="bg-secondary/30 rounded-lg p-3 mb-3">
-                            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-                              {draft.body}
-                            </p>
-                          </div>
-                          {draft.status === "pending" && (
-                            <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20"
-                                disabled={approveDraftMutation.isPending}
-                                onClick={() => approveDraftMutation.mutate({ draftId: draft.id })}
-                              >
-                                {approveDraftMutation.isPending ? (
-                                  <Loader2 className="size-3 animate-spin mr-1.5" />
-                                ) : (
-                                  <Send className="size-3 mr-1.5" />
-                                )}
-                                Approve & Send
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-muted-foreground hover:text-foreground"
-                                disabled={dismissDraftMutation.isPending}
-                                onClick={() => dismissDraftMutation.mutate({ draftId: draft.id })}
-                              >
-                                <Trash2 className="size-3 mr-1.5" />
-                                Dismiss
-                              </Button>
-                            </div>
-                          )}
-                          {draft.status === "sent" && draft.sentAt && (
-                            <p className="text-[10px] text-emerald-400">
-                              Sent {friendlyDate(draft.sentAt)} by {draft.sentBy || "Client"}
-                            </p>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </motion.section>
 
         {/* Footer */}
         <div className="pt-8 pb-12 text-center">
@@ -1426,111 +1439,7 @@ export default function ClientPortal() {
         )}
       </Dialog>
 
-      {/* ── AI Portfolio Assistant ─────────────────────────────────── */}
-      <AnimatePresence>
-        {chatOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="fixed bottom-20 right-4 md:right-8 w-[380px] max-w-[calc(100vw-2rem)] bg-card border border-border rounded-xl shadow-2xl flex flex-col z-50"
-            style={{ maxHeight: "min(520px, calc(100vh - 8rem))" }}
-          >
-            {/* Chat header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-              <div className="flex items-center gap-2">
-                <Sparkles className="size-4 text-primary" />
-                <span className="text-sm font-semibold text-foreground">Portfolio Assistant</span>
-              </div>
-              <button onClick={() => setChatOpen(false)} className="text-muted-foreground hover:text-foreground transition-colors">
-                <XIcon className="size-4" />
-              </button>
-            </div>
 
-            {/* Messages */}
-            <div ref={chatScrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3" style={{ minHeight: 200 }}>
-              {chatMessages.length === 0 && (
-                <div className="text-center py-8">
-                  <Sparkles className="size-8 text-primary/30 mx-auto mb-3" />
-                  <p className="text-sm text-muted-foreground">Ask me anything about your portfolio</p>
-                  <div className="mt-4 space-y-2">
-                    {["What's the status of my ventures?", "Which tasks are overdue?", "Summarize my distributions"].map(q => (
-                      <button
-                        key={q}
-                        onClick={() => { setChatInput(q); }}
-                        className="block w-full text-left text-xs text-muted-foreground hover:text-foreground bg-secondary/30 hover:bg-secondary/50 rounded-lg px-3 py-2 transition-colors"
-                      >
-                        {q}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {chatMessages.map((m, i) => (
-                <div key={i} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
-                  <div className={cn(
-                    "max-w-[85%] rounded-lg px-3 py-2 text-sm",
-                    m.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary/50 text-foreground"
-                  )}>
-                    {m.role === "assistant" ? <Streamdown>{m.content}</Streamdown> : m.content}
-                  </div>
-                </div>
-              ))}
-              {chatLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-secondary/50 rounded-lg px-3 py-2">
-                    <div className="flex items-center gap-1.5">
-                      <div className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <div className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <div className="size-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "300ms" }} />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Input */}
-            <div className="border-t border-border px-3 py-2">
-              <div className="flex items-end gap-2">
-                <Textarea
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendChat(); } }}
-                  placeholder="Ask about your portfolio..."
-                  className="min-h-[36px] max-h-[100px] resize-none text-sm bg-transparent border-0 focus-visible:ring-0 p-1"
-                  rows={1}
-                />
-                <Button
-                  size="sm"
-                  onClick={handleSendChat}
-                  disabled={!chatInput.trim() || chatLoading}
-                  className="shrink-0 h-8 w-8 p-0"
-                >
-                  <Send className="size-3.5" />
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Floating chat button */}
-      <motion.button
-        onClick={() => setChatOpen(prev => !prev)}
-        className={cn(
-          "fixed bottom-4 right-4 md:right-8 z-50 flex items-center justify-center size-12 rounded-full shadow-lg transition-colors",
-          chatOpen
-            ? "bg-secondary text-foreground"
-            : "bg-primary text-primary-foreground hover:bg-primary/90"
-        )}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        {chatOpen ? <XIcon className="size-5" /> : <MessageSquare className="size-5" />}
-      </motion.button>
     </div>
   );
 }
