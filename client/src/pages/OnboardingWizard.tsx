@@ -117,9 +117,9 @@ export default function OnboardingWizard() {
   const recalcHealth = trpc.blueprints.recalculateHealthScores.useMutation();
 
   const canProceed = useCallback(() => {
-    if (step === 1) return clientName.trim().length > 0;
+    if (step === 1) return clientName.trim().length > 0 && selectedSectors.length > 0;
     return true; // Steps 2-4 are optional (skip allowed)
-  }, [step, clientName]);
+  }, [step, clientName, selectedSectors]);
 
   const handleNext = useCallback(async () => {
     if (step === 1) {
@@ -218,16 +218,29 @@ export default function OnboardingWizard() {
     if (step < 5) setStep(step + 1);
   }, [step, clientName, description, contactName, contactEmail, aumRange, selectedSectors, tier, ventures, invites, agentConfig, createdOrgId, createOrg, addVentures, sendInvitations, configureAgents]);
 
+  const runInitialDiagnostic = trpc.diagnostics.runDiagnostic.useMutation();
+
   const handleLaunch = useCallback(async () => {
     // Connection 4: Recalculate health scores on launch
     if (createdOrgId) {
       try {
         await recalcHealth.mutateAsync({ organizationId: createdOrgId });
       } catch { /* non-blocking */ }
+
+      // Connection 5: Run initial structural diagnostic
+      runInitialDiagnostic.mutate(
+        { organizationId: createdOrgId },
+        {
+          onSuccess: () => {
+            toast.success("Initial diagnostic complete", { description: "Structural health scores are now available." });
+          },
+          onError: () => { /* non-blocking — can be run later from Diagnostics tab */ },
+        }
+      );
     }
     toast.success(`${clientName} is now live!`, { description: "Client portal is ready for access." });
     navigate("/dashboard");
-  }, [clientName, createdOrgId, navigate, recalcHealth]);
+  }, [clientName, createdOrgId, navigate, recalcHealth, runInitialDiagnostic]);
 
   const addVentureEntry = () => {
     if (!newVenture.name.trim()) return;
@@ -397,8 +410,9 @@ export default function OnboardingWizard() {
                   </div>
 
                   <div className="md:col-span-2">
-                    <Label>Sectors</Label>
-                    <div className="flex flex-wrap gap-2 mt-1.5">
+                    <Label>Sectors *</Label>
+                    <p className="text-[10px] text-muted-foreground mb-1.5">Select at least one sector to generate starter blueprints</p>
+                    <div className="flex flex-wrap gap-2">
                       {SECTORS.map(s => (
                         <Badge
                           key={s}
@@ -410,6 +424,9 @@ export default function OnboardingWizard() {
                         </Badge>
                       ))}
                     </div>
+                    {selectedSectors.length === 0 && (
+                      <p className="text-[10px] text-amber-400 mt-1.5">At least one sector is required</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -578,10 +595,10 @@ export default function OnboardingWizard() {
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Agent Toggles</h3>
                   <div className="space-y-3">
                     {[
-                      { key: "velocityAgentEnabled" as const, label: "Velocity Agent", desc: "Tracks venture progress and momentum" },
-                      { key: "complianceAgentEnabled" as const, label: "Compliance Agent", desc: "Monitors overdue tasks and deadlines" },
-                      { key: "dealFlowAgentEnabled" as const, label: "Deal Flow Agent", desc: "Watches distribution schedules" },
-                      { key: "orchestratorEnabled" as const, label: "Orchestrator", desc: "Coordinates all agents and generates briefs" },
+                      { key: "velocityAgentEnabled" as const, label: "Velocity Agent", desc: "Monitors task completion rates, identifies bottlenecks, and calculates real-time velocity scores for each venture. Sends alerts when progress stalls." },
+                      { key: "complianceAgentEnabled" as const, label: "Overdue Agent", desc: "Tracks every task deadline across all ventures. Escalates after 24h (warning) and 48h (critical). Auto-drafts follow-up emails to responsible parties." },
+                      { key: "dealFlowAgentEnabled" as const, label: "Distribution Sentinel", desc: "Watches capital distribution schedules and investor payment timelines. Flags missed or late distributions before they become compliance issues." },
+                      { key: "orchestratorEnabled" as const, label: "Orchestrator", desc: "The master coordinator. Synthesizes signals from all agents into executive briefs, prioritizes actions, and ensures nothing falls through the cracks." },
                     ].map(agent => (
                       <div key={agent.key} className="flex items-center justify-between">
                         <div>

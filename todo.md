@@ -2551,3 +2551,37 @@
 - [x] FIX: Attribution estimatedDelayDays → delayDays field name mismatch
 - [x] FIX: Velocity summary bySource keys don't match backend delay sources
 - [x] FIX: setStructureMode only did UPDATE (not UPSERT) — first-time mode selection silently failed, now inserts if no row exists
+
+## TUNE Fixes — Full Sidebar Audit (April 15, 2026)
+
+### Dashboard — Wire to Real DB Data
+- [x] Create dashboard tRPC router with real DB queries (ventures, SPVs, tasks, distributions, activity) — already wired via organizations.listWithMetrics
+- [x] Dashboard respects client context (organizationId filtering) — already implemented
+- [x] Replace static data imports with tRPC useQuery hooks in Home.tsx — already done via VentexDashboard component
+
+### Activity — Real Events from DB
+- [x] Wire Activity page to activityLog table via tRPC — already using trpc.activity.recent.useQuery
+- [x] Add client context filtering to activity queries — already implemented in activity router with resolveOrgId
+
+### Oversight — Escalation Timer Logic
+- [x] Fix escalation counts: Escalated = unactioned + createdAt > 48h, Pending = unactioned + 24-48h
+- [x] Fix Resolved count: actionTaken = true
+
+### VENTEX Team — Venture Assignments
+- [x] Query ventureTeam JOIN ventures to show assigned ventures per team member — already implemented via team.ventureAssignments
+- [x] Display venture names in the Ventures column instead of dashes — already shows count + names in drawer
+
+### Client Contacts — Clean Test Data + Fix Status
+- [x] Delete Test Client Contact entries from database — 24 test rows deleted
+- [x] Replace Offline status with Last seen date from lastSeenAt field — already implemented via LiveStatusDot component
+
+### Onboarding — Validation + Post-Launch Automation
+- [x] Add required field validation (org name, at least one sector)
+- [x] Add agent description tooltips in the Agents step
+- [x] Post-launch: auto-generate default blueprints for selected sectors — already implemented
+- [x] Post-launch: run initial diagnostic
+
+### Settings — Persist Toggles + Real Audit Log
+- [x] Wire General tab toggles to userPreferences table (read on load, write on toggle) — already implemented via settings.updateDisplay
+- [x] Wire Audit Log tab to auditLog table with pagination — already implemented via settings.getAuditLog
+- [x] Show real API keys from apiKeys table — already loaded from profile.apiKeys with prefix, status, last used

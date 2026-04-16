@@ -2261,7 +2261,8 @@ export const agentsRouter = router({
         let escalationLevel: "critical" | "warning" | "normal" | "resolved" = "normal";
         if (e.actionTaken) {
           escalationLevel = "resolved";
-        } else if (e.requiresClientAction) {
+        } else if (!e.clientDismissed) {
+          // Escalation applies to ALL unactioned events, not just requiresClientAction
           const eventTime = new Date(e.createdAt);
           if (eventTime < cutoff48h) escalationLevel = "critical";
           else if (eventTime < cutoff24h) escalationLevel = "warning";
@@ -2274,8 +2275,8 @@ export const agentsRouter = router({
         };
       });
 
-      // Compute stats
-      const unactioned = events.filter(e => e.requiresClientAction && !e.actionTaken && !e.clientDismissed);
+      // Compute stats — escalation applies to ALL unactioned events
+      const unactioned = events.filter(e => !e.actionTaken && !e.clientDismissed);
       const critical = unactioned.filter(e => new Date(e.createdAt) < cutoff48h).length;
       const pending = unactioned.filter(e => new Date(e.createdAt) >= cutoff48h && new Date(e.createdAt) < cutoff24h).length;
       const resolved = events.filter(e => e.actionTaken).length;
