@@ -255,36 +255,35 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
   // Current tab's clients
   const clients = tabMode === "active" ? activeClients : archivedClients;
 
-  // Velocity = agent-completed tasks / (overdue + open) * 100
-  // Same formula used in both the table and the KPI aggregation
+  // Velocity = weighted composite of completion rate, overdue penalty, and health
+  // Completion (50%) + Overdue penalty (30%) + Health (20%)
+  const computeVelocity = (c: typeof clients[0]) => {
+    if (c.ventureCount === 0 && c.totalTasks === 0) return -1;
+    // Completion component: % of tasks completed (0-100)
+    const completionScore = c.totalTasks > 0
+      ? (c.completedTasks / c.totalTasks) * 100
+      : 0;
+    // Overdue penalty: ratio of overdue to total non-complete tasks
+    const nonComplete = c.totalTasks - c.completedTasks;
+    const overdueRatio = nonComplete > 0 ? c.overdueTasks / nonComplete : 0;
+    const overdueScore = (1 - overdueRatio) * 100; // 100 = no overdue, 0 = all overdue
+    // Health component: average venture health (already 0-100)
+    const healthScore = c.avgHealth ?? 50;
+    // Weighted composite
+    const velocity = Math.round(
+      completionScore * 0.50 + overdueScore * 0.30 + healthScore * 0.20
+    );
+    return Math.min(100, Math.max(0, velocity));
+  };
+
   const clientsWithVelocity = useMemo(() => {
-    return clients.map(c => {
-      const agentCompleted = (c as { agentCompletedTasks?: number }).agentCompletedTasks ?? 0;
-      // -1 means N/A (no ventures or tasks to measure)
-      if (c.ventureCount === 0 && c.totalTasks === 0) {
-        return { ...c, velocity: -1 };
-      }
-      const denominator = c.overdueTasks + c.openTasks;
-      const velocity = denominator > 0
-        ? Math.min(100, Math.round((agentCompleted / denominator) * 100))
-        : (agentCompleted > 0 ? 100 : (c.completionRate >= 100 ? 100 : 0));
-      return { ...c, velocity };
-    });
+    return clients.map(c => ({ ...c, velocity: computeVelocity(c) }));
   }, [clients]);
 
   const kpis = useMemo(() => {
-    const activeWithVelocity = activeClients.map(c => {
-      // Velocity = (agent-completed tasks) / (total overdue + open) * 100
-      const denominator = c.overdueTasks + c.openTasks;
-      const agentCompleted = (c as { agentCompletedTasks?: number }).agentCompletedTasks ?? 0;
-      if (c.ventureCount === 0 && c.totalTasks === 0) {
-        return { ...c, velocity: -1 };
-      }
-      const velocity = denominator > 0
-        ? Math.min(100, Math.round((agentCompleted / denominator) * 100))
-        : (agentCompleted > 0 ? 100 : (c.completionRate >= 100 ? 100 : 0));
-      return { ...c, velocity };
-    });
+    const activeWithVelocity = activeClients.map(c => ({
+      ...c, velocity: computeVelocity(c),
+    }));
 
     const totalClients = activeClients.length;
     const totalVentures = activeClients.reduce((s, c) => s + c.ventureCount, 0);

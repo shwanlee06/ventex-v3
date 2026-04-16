@@ -2679,3 +2679,26 @@
 - [x] Update spyops-review.md: "ROYALTON INVESTMENTS" → "VENTEX" where it refers to the product
 - [x] Update update-org-name.mjs: keep as-is (it's client data)
 - [x] Verify no "Royalton System" appears in any user-facing UI (confirmed: 0 matches in source code)
+
+## Bugs Reported — Apr 16 (Session 2)
+- [x] VENTEX Team live list: test members deleted from DB (4 test members removed)
+- [x] Velocity calculation: redesigned formula — was counting all agent events as completions, now uses weighted composite (completion 50% + overdue penalty 30% + health 20%)
+
+## Comprehensive Deep Audit — Apr 16 (Session 2)
+- [x] VENTEX Team: deleted 4 test members from DB, cleaned 4 test client contacts
+- [x] Velocity: fixed formula — Royalton now shows 96% instead of broken 100%
+- [x] Settings page: was transient Vite pre-transform error, resolved by HMR
+- [x] Dashboard: all metric cards show correct live data (96% velocity, 20 ventures, 95% completion)
+- [x] Dashboard: clickable elements verified
+- [x] Ventures: deleted 4 orphaned unassigned test ventures, 8 test/OrgLinked ventures
+- [x] Tasks: deleted 59 tasks pointing to deleted ventures, 7 tasks with no venture, 4 vitest tasks
+- [x] SPVs: found 10 SPVs with no linked ventures (legitimate empty SPVs, not test data)
+- [x] Distributions: 4 distributions verified, all have valid amounts and statuses
+- [ ] Client portal: full walkthrough of every page
+- [ ] Onboarding wizard: test full flow
+- [ ] Blueprints: verify data and interactions
+- [ ] Agent system: check agent events and drafts
+- [x] Database: comprehensive cleanup — deleted 177 test activity entries, 263 test notifications, 16 unassigned venture activities, 1 test invitation
+- [ ] UI: check all buttons are functional (no dead clicks)
+- [ ] UI: check all forms submit correctly
+- [x] Browser console: 0 JS errors, all 100 network requests returned 200
