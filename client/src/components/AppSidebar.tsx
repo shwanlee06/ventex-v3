@@ -6,6 +6,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { isVentexTeam, isPartner } from "@/lib/ventex";
 import { usePreviewMode } from "@/contexts/PreviewMode";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useAgents } from "@/contexts/AgentContext";
 import { trpc } from "@/lib/trpc";
 import {
   LayoutDashboard,
@@ -31,6 +32,7 @@ import {
   Eye,
   Menu,
   LogOut,
+  Mail,
 } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useState, useMemo, useEffect } from "react";
@@ -49,6 +51,7 @@ interface NavItem {
   partnerOnly?: boolean;
   partnerVisible?: boolean;
   group?: string; // group label for sidebar sections
+  badgeKey?: string; // key for dynamic badge count
 }
 
 const ALL_NAV_ITEMS: NavItem[] = [
@@ -74,6 +77,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Distributions", href: "/distributions", icon: <DollarSign className="size-[18px]" />, partnerOnly: true },
   // Client-only
   { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-[18px]" />, clientOnly: true },
+  { label: "Draft Center", href: "/drafts", icon: <Mail className="size-[18px]" />, clientOnly: true, badgeKey: "pendingDrafts" },
   { label: "SPVs & Deals", href: "/spvs", icon: <Briefcase className="size-[18px]" />, clientOnly: true },
   { label: "Tasks", href: "/tasks", icon: <ListChecks className="size-[18px]" />, clientOnly: true },
   { label: "Distributions", href: "/distributions", icon: <DollarSign className="size-[18px]" />, clientOnly: true },
@@ -89,6 +93,14 @@ export default function AppSidebar() {
   const [showAddClient, setShowAddClient] = useState(false);
   const [newClientName, setNewClientName] = useState("");
   const [addingClient, setAddingClient] = useState(false);
+
+  // Draft badge count for client sidebar
+  const agentCtx = useAgents();
+  const pendingDraftCount = agentCtx?.pendingDraftCount ?? 0;
+
+  const badgeCounts: Record<string, number> = {
+    pendingDrafts: pendingDraftCount,
+  };
 
   const createOrg = trpc.organizations.create.useMutation({
     onSuccess: (created) => {
@@ -227,7 +239,12 @@ export default function AppSidebar() {
                       )}
                     >
                       <span className="flex-shrink-0">{item.icon}</span>
-                      <span className="truncate">{item.label}</span>
+                      <span className="truncate flex-1">{item.label}</span>
+                      {item.badgeKey && badgeCounts[item.badgeKey] > 0 && (
+                        <span className="ml-auto flex-shrink-0 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-mono font-semibold px-1">
+                          {badgeCounts[item.badgeKey]}
+                        </span>
+                      )}
                     </Link>
                   ) : (
                     <Tooltip delayDuration={0}>
@@ -235,13 +252,18 @@ export default function AppSidebar() {
                         <Link
                           href={item.href}
                           className={cn(
-                            "flex items-center justify-center p-2 rounded-md transition-colors",
+                            "flex items-center justify-center p-2 rounded-md transition-colors relative",
                             active
                               ? "text-foreground bg-accent/60"
                               : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
                           )}
                         >
                           {item.icon}
+                          {item.badgeKey && badgeCounts[item.badgeKey] > 0 && (
+                            <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-amber-500 text-[8px] font-bold text-black px-0.5">
+                              {badgeCounts[item.badgeKey]}
+                            </span>
+                          )}
                         </Link>
                       </TooltipTrigger>
                       <TooltipContent side="right" className="text-xs">

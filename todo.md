@@ -2617,3 +2617,12 @@
 - [x] ClientDashboard (e as any) type safety — replaced with proper typed access
 - [x] Cleaned up 12 test ventures ("OrgLinked Venture" with timestamp names)
 - [x] Cleaned up 13 test organizations + 4420 orphaned agent events
+
+## Draft Center — Standalone Client Page (Apr 16)
+- [x] Create standalone DraftCenter.tsx page with premium design
+- [x] Add Draft Center to client sidebar navigation with pending count badge
+- [x] Add route for /drafts in App.tsx
+- [x] Enhanced UX: group drafts by venture, show urgency indicators, preview body inline
+- [x] Replace inline Draft Center in ClientPortal with compact summary widget linking to /drafts
+- [x] Wrap DraftCenter in DashboardLayout for consistent sidebar/topbar
+- [x] Test full approve/dismiss flow end-to-end in client preview mode

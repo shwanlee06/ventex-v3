@@ -54,7 +54,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
-import { FileText, Mail, Trash2 } from "lucide-react";
+import { Mail } from "lucide-react";
 
 const SECTOR_ICONS: Record<string, React.ReactNode> = {
   "Real Estate": <Building2 className="size-4" />,
@@ -129,29 +129,11 @@ export default function ClientPortal() {
   const [completingTaskIds, setCompletingTaskIds] = useState<Set<number>>(new Set());
 
 
-  // Draft Center state
-  const [draftFilter, setDraftFilter] = useState<"pending" | "sent" | undefined>("pending");
-  const [expandedDraft, setExpandedDraft] = useState<number | null>(null);
-  const { data: drafts, isLoading: draftsLoading } = trpc.portal.getDrafts.useQuery(
-    { orgSlug, status: draftFilter },
+  // Draft Center summary — just fetch pending count for the widget
+  const { data: drafts } = trpc.portal.getDrafts.useQuery(
+    { orgSlug, status: "pending" },
     { enabled: !!orgSlug && !!user }
   );
-  const approveDraftMutation = trpc.portal.approveDraft.useMutation({
-    onSuccess: () => {
-      toast.success("Communication approved and sent");
-      utils.portal.getDrafts.invalidate({ orgSlug });
-      setExpandedDraft(null);
-    },
-    onError: (err) => toast.error(err.message || "Failed to send"),
-  });
-  const dismissDraftMutation = trpc.portal.dismissDraft.useMutation({
-    onSuccess: () => {
-      toast.success("Draft dismissed");
-      utils.portal.getDrafts.invalidate({ orgSlug });
-      setExpandedDraft(null);
-    },
-    onError: (err) => toast.error(err.message || "Failed to dismiss"),
-  });
 
 
   const { data, isLoading, error } = trpc.portal.getData.useQuery(
@@ -714,185 +696,39 @@ export default function ClientPortal() {
             </div>
           </motion.section>
         )}
-        {/* ── AI Communications (Draft Center) ──────────────────── */}
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.12, duration: 0.3 }}
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <Mail className="size-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-              AI Communications
-            </h2>
-            {drafts && drafts.length > 0 && draftFilter === "pending" && (
-              <span className="text-[11px] text-amber-400 ml-auto font-medium">
-                {drafts.length} pending
-              </span>
-            )}
-          </div>
-
-          {/* Filter tabs */}
-          <div className="flex items-center gap-2 mb-4">
+        {/* ── AI Communications — Summary Widget (links to full Draft Center) ── */}
+        {drafts && drafts.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12, duration: 0.3 }}
+          >
             <button
-              onClick={() => setDraftFilter("pending")}
-              className={cn(
-                "text-xs px-3 py-1.5 rounded-full transition-colors",
-                draftFilter === "pending"
-                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                  : "text-muted-foreground hover:text-foreground bg-secondary/30"
-              )}
+              onClick={() => navigate("/drafts")}
+              className="w-full bg-card border border-amber-500/20 rounded-xl p-4 hover:border-amber-500/30 transition-all group text-left"
             >
-              Pending Review
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center size-9 rounded-lg bg-amber-500/10">
+                  <Mail className="size-4 text-amber-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-foreground">
+                      {drafts.length} pending communication{drafts.length !== 1 ? "s" : ""}
+                    </span>
+                    <span className="bg-amber-500/20 text-amber-400 text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded">
+                      {drafts.length}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    AI-drafted communications awaiting your review
+                  </p>
+                </div>
+                <ArrowRight className="size-4 text-muted-foreground group-hover:text-amber-400 transition-colors" />
+              </div>
             </button>
-            <button
-              onClick={() => setDraftFilter("sent")}
-              className={cn(
-                "text-xs px-3 py-1.5 rounded-full transition-colors",
-                draftFilter === "sent"
-                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                  : "text-muted-foreground hover:text-foreground bg-secondary/30"
-              )}
-            >
-              Sent
-            </button>
-          </div>
-
-          {draftsLoading ? (
-            <div className="space-y-2">
-              {Array.from({ length: 2 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 rounded-xl" />
-              ))}
-            </div>
-          ) : !drafts || drafts.length === 0 ? (
-            <div className="bg-card border border-border rounded-xl p-5 text-center">
-              <FileText className="size-5 text-muted-foreground/30 mx-auto mb-2" />
-              <p className="text-xs text-muted-foreground">
-                {draftFilter === "pending"
-                  ? "No pending communications. AI agents will draft follow-ups when action is needed."
-                  : "No sent communications yet."}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {drafts.map((draft, i) => (
-                <motion.div
-                  key={draft.id}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.03, duration: 0.2 }}
-                  className={cn(
-                    "bg-card border rounded-xl transition-all",
-                    draft.status === "pending"
-                      ? "border-amber-500/20 hover:border-amber-500/30"
-                      : "border-border"
-                  )}
-                >
-                  <button
-                    onClick={() => setExpandedDraft(expandedDraft === draft.id ? null : draft.id)}
-                    className="w-full text-left p-4"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={cn(
-                        "size-2 rounded-full mt-2 flex-shrink-0",
-                        draft.status === "pending" ? "bg-amber-400" : "bg-emerald-400"
-                      )} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <span className={cn(
-                            "text-[10px] px-1.5 py-0.5 rounded font-medium",
-                            draft.draftType === "follow_up" ? "bg-amber-500/10 text-amber-400" :
-                            draft.draftType === "lp_notice" ? "bg-blue-500/10 text-blue-400" :
-                            "bg-muted text-muted-foreground"
-                          )}>
-                            {draft.draftType === "follow_up" ? "Follow-up" :
-                             draft.draftType === "lp_notice" ? "LP Notice" :
-                             draft.draftType}
-                          </span>
-                          {draft.ventureName && (
-                            <span className="text-[10px] text-muted-foreground">
-                              {draft.ventureName}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm font-medium text-foreground truncate">
-                          {draft.subject || "AI-drafted communication"}
-                        </p>
-                        <div className="flex items-center gap-3 mt-1">
-                          {draft.recipientName && (
-                            <span className="text-[10px] text-muted-foreground">
-                              To: {draft.recipientName}
-                              {draft.recipientRole ? ` (${draft.recipientRole})` : ""}
-                            </span>
-                          )}
-                          <span className="text-[10px] text-muted-foreground/50">
-                            {friendlyDate(draft.createdAt)}
-                          </span>
-                        </div>
-                      </div>
-                      <ChevronDown className={cn(
-                        "size-4 text-muted-foreground transition-transform flex-shrink-0",
-                        expandedDraft === draft.id && "rotate-180"
-                      )} />
-                    </div>
-                  </button>
-
-                  <AnimatePresence>
-                    {expandedDraft === draft.id && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="px-4 pb-4 border-t border-border pt-3">
-                          <div className="bg-secondary/30 rounded-lg p-3 mb-3">
-                            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-                              {draft.body}
-                            </p>
-                          </div>
-                          {draft.status === "pending" && (
-                            <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20"
-                                disabled={approveDraftMutation.isPending}
-                                onClick={() => approveDraftMutation.mutate({ draftId: draft.id })}
-                              >
-                                {approveDraftMutation.isPending ? (
-                                  <Loader2 className="size-3 animate-spin mr-1.5" />
-                                ) : (
-                                  <Send className="size-3 mr-1.5" />
-                                )}
-                                Approve & Send
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-muted-foreground hover:text-foreground"
-                                disabled={dismissDraftMutation.isPending}
-                                onClick={() => dismissDraftMutation.mutate({ draftId: draft.id })}
-                              >
-                                <Trash2 className="size-3 mr-1.5" />
-                                Dismiss
-                              </Button>
-                            </div>
-                          )}
-                          {draft.status === "sent" && draft.sentAt && (
-                            <p className="text-[10px] text-emerald-400">
-                              Sent {friendlyDate(draft.sentAt)} by {draft.sentBy || "Client"}
-                            </p>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </motion.section>
+          </motion.section>
+        )}
 
         {/* ── Your Portfolio ─────────────────────────────────────────── */}        <motion.section
           initial={{ opacity: 0, y: 12 }}

@@ -36,6 +36,7 @@ import BlueprintsPage from "./pages/Blueprints";
 import BlueprintDiagnosticsPage from "./pages/BlueprintDiagnostics";
 import ClientPortal from "./pages/ClientPortal";
 import OversightPage from "./pages/Oversight";
+import DraftCenter from "./pages/DraftCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import { AgentProvider } from "./contexts/AgentContext";
@@ -184,7 +185,9 @@ function Router() {
       <Route path="/agents">
         <RequireAuth><RequireVentex><AgentsPage /></RequireVentex></RequireAuth>
       </Route>
-      {/* Draft Center moved to client portal */}
+      <Route path="/drafts">
+        <RequireAuth><DraftCenter /></RequireAuth>
+      </Route>
       <Route path="/onboarding">
         <RequireAuth><RequireVentex><OnboardingWizard /></RequireVentex></RequireAuth>
       </Route>
