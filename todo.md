@@ -2927,3 +2927,19 @@
 - [x] AppSidebar already has mobile hamburger drawer (md:hidden)
 - [x] Topbar already has min-h-[44px] touch targets with hidden labels on mobile
 - [x] 0 TypeScript errors confirmed
+
+## Pitch Deck & Demo Alignment Fixes (Apr 16)
+- [x] Fix "SOC 2 compliant" → "SOC 2 ready" in Demo.tsx
+- [x] Update test count 750+ → 950+ in Demo.tsx (PRODUCT_STATS + Now section)
+- [x] Update DB tables 46 → 54 in Demo.tsx PRODUCT_STATS
+- [x] Update API routers 22 → 45+ backend modules in Demo.tsx PRODUCT_STATS
+- [x] Update pages count 32 → 34 in Demo.tsx PRODUCT_STATS
+- [x] Update components count 134 → 125 in Demo.tsx PRODUCT_STATS
+- [x] Update security modules 15 → 12 (actual count) in Demo.tsx
+- [x] Add SAML SSO, SCIM 2.0, IP allowlist, AI safety framework to Enterprise Security description
+- [x] Add multi-currency, mobile-responsive, SSO/SCIM, AI safety to "Now — Live & Shipping" description
+- [x] Rename "Compliance Watcher" → "Orchestrator" in DemoDashboard.tsx (8 references updated)
+- [x] Update Orchestrator agent description to match actual built functionality
+- [x] Update all demo feed, activity log, live events to use Orchestrator language
+- [x] Update guided tour narration to reference Orchestrator instead of Compliance Watcher
+- [x] 0 TypeScript errors confirmed

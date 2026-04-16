@@ -72,7 +72,7 @@ const PRODUCT_STATS = [
   { value: "6", label: "sectors automated" },
   { value: "3", label: "continents, one platform" },
   { value: "<3mo", label: "concept to deployment" },
-  { value: "750+", label: "automated test cases" },
+  { value: "950+", label: "automated test cases" },
   { value: "SOC 2", label: "readiness architecture" },
 ];
 
@@ -783,19 +783,19 @@ export default function Demo() {
                 <div className="border border-white/8 p-5">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                     <div className="text-center">
-                      <div className="text-lg font-bold text-[#00cc6a] font-mono">46</div>
+                      <div className="text-lg font-bold text-[#00cc6a] font-mono">54</div>
                       <div className="text-[10px] text-white/50">DB tables</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-[#00cc6a] font-mono">22</div>
-                      <div className="text-[10px] text-white/50">API routers</div>
+                      <div className="text-lg font-bold text-[#00cc6a] font-mono">45+</div>
+                      <div className="text-[10px] text-white/50">backend modules</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-[#00cc6a] font-mono">32</div>
+                      <div className="text-lg font-bold text-[#00cc6a] font-mono">34</div>
                       <div className="text-[10px] text-white/50">pages built</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-[#00cc6a] font-mono">134</div>
+                      <div className="text-lg font-bold text-[#00cc6a] font-mono">125</div>
                       <div className="text-[10px] text-white/50">React components</div>
                     </div>
                   </div>
@@ -846,7 +846,7 @@ export default function Demo() {
                 <div className="border border-white/8 p-5">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                     <div className="text-center">
-                      <div className="text-lg font-bold text-[#00cc6a] font-mono">15</div>
+                      <div className="text-lg font-bold text-[#00cc6a] font-mono">12</div>
                       <div className="text-[10px] text-white/50">security modules</div>
                     </div>
                     <div className="text-center">
@@ -865,7 +865,8 @@ export default function Demo() {
                   <p className="text-sm text-white/70 leading-relaxed">
                     Enterprise-grade security layer: AES-256 encrypted storage, role-based access control,
                     cross-tenant isolation, rate limiting, audit middleware, data retention policies,
-                    session management with idle timeouts, and full audit trails.
+                    session management with idle timeouts, full audit trails, SAML SSO with SCIM 2.0
+                    provisioning, IP allowlist enforcement, and AI safety framework with confidence scoring.
                   </p>
                 </div>
               </div>
@@ -887,12 +888,12 @@ export default function Demo() {
                       <div className="text-[10px] text-white/50">sectors</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-[#00ff87] font-mono">750+</div>
+                      <div className="text-lg font-bold text-[#00ff87] font-mono">950+</div>
                       <div className="text-[10px] text-white/50">tests passing</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-[#00ff87] font-mono">SOC 2</div>
-                      <div className="text-[10px] text-white/50">compliant</div>
+                      <div className="text-[10px] text-white/50">ready</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-[#00ff87] font-mono">3</div>
@@ -904,8 +905,9 @@ export default function Demo() {
                     </div>
                   </div>
                   <p className="text-sm text-white/70 leading-relaxed mb-4">
-                    Platform is fully functional and demo-ready. Client portal live. Operator command center live.
-                    AI agents running autonomously. <span className="text-[#00ff87] font-medium">1 design partner</span> — validating the full workflow across 23 ventures and 6 sectors in a live production environment.
+                    Platform is fully functional and demo-ready. Client portal live (mobile-responsive). Operator command center live.
+                    AI agents running autonomously with safety framework. Multi-currency support (15 currencies). SAML SSO + SCIM provisioning.
+                    <span className="text-[#00ff87] font-medium">1 design partner</span> — validating the full workflow across 23 ventures and 6 sectors in a live production environment.
                   </p>
                   {/* Pilot Metrics */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-4 border border-[#00ff87]/15 bg-[#00ff87]/[0.02]">

@@ -93,7 +93,7 @@ describe("Demo Dashboard", () => {
       expect(source).toContain("Velocity Agent");
       expect(source).toContain("Overdue Agent");
       expect(source).toContain("Distribution Sentinel");
-      expect(source).toContain("Compliance Watcher");
+      expect(source).toContain("Orchestrator");
     });
 
     it("includes KPI data (DEMO_KPI)", () => {
@@ -118,7 +118,7 @@ describe("Demo Dashboard", () => {
       expect(source).toContain("Overdue Agent");
       expect(source).toContain("Velocity Agent");
       expect(source).toContain("Distribution Sentinel");
-      expect(source).toContain("Compliance Watcher");
+      expect(source).toContain("Orchestrator");
     });
 
     it("includes team data (DEMO_TEAM)", () => {

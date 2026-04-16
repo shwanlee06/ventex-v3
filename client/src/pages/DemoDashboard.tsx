@@ -35,10 +35,10 @@ const DEMO_FEED = [
   { id: 1, action: "Velocity Agent", detail: "Advanced 'Marina Bay Tower' from Due Diligence → Closing", time: "2m ago", color: "#22D3EE" },
   { id: 2, action: "Overdue Agent", detail: "Sent follow-up to Crestfield Capital — permit review 3 days overdue", time: "8m ago", color: "#EF4444" },
   { id: 3, action: "Distribution Sentinel", detail: "Flagged $2.4M distribution for Harborview Group — awaiting approval", time: "14m ago", color: "#A855F7" },
-  { id: 4, action: "Compliance Watcher", detail: "KYC renewal triggered for Ironclad Partners — 30 days remaining", time: "22m ago", color: "#F59E0B" },
+  { id: 4, action: "Orchestrator", detail: "Cross-venture risk signal: Ironclad Partners KYC renewal due in 30 days", time: "22m ago", color: "#F59E0B" },
   { id: 5, action: "Velocity Agent", detail: "Stall detected: 'Dubai Creek Residences' — no activity for 7 days", time: "35m ago", color: "#22D3EE" },
   { id: 6, action: "Overdue Agent", detail: "Task completed: Legal review for Solaris Holdings yacht acquisition", time: "1h ago", color: "#EF4444" },
-  { id: 7, action: "Compliance Watcher", detail: "Annual audit documents uploaded for Pinnacle Trust", time: "2h ago", color: "#F59E0B" },
+  { id: 7, action: "Orchestrator", detail: "Portfolio insight: Pinnacle Trust compliance status upgraded after audit upload", time: "2h ago", color: "#F59E0B" },
 ];
 
 const DEMO_KPI = [
@@ -60,20 +60,20 @@ const DEMO_ACTIVITY = [
   { id: 1, type: "venture", action: "Stage advanced", detail: "Marina Bay Tower moved from Due Diligence to Closing", user: "Velocity Agent", time: "2 minutes ago", icon: <Zap className="size-3.5" />, color: "text-cyan-400" },
   { id: 2, type: "task", action: "Task overdue", detail: "Permit review for Crestfield Capital is 3 days overdue", user: "Overdue Agent", time: "8 minutes ago", icon: <AlertTriangle className="size-3.5" />, color: "text-red-400" },
   { id: 3, type: "distribution", action: "Distribution flagged", detail: "$2.4M distribution for Harborview Group flagged for approval", user: "Distribution Sentinel", time: "14 minutes ago", icon: <DollarSign className="size-3.5" />, color: "text-purple-400" },
-  { id: 4, type: "compliance", action: "KYC renewal", detail: "Ironclad Partners KYC renewal triggered — 30 days remaining", user: "Compliance Watcher", time: "22 minutes ago", icon: <ShieldCheck className="size-3.5" />, color: "text-amber-400" },
+  { id: 4, type: "compliance", action: "Cross-venture signal", detail: "Ironclad Partners KYC renewal triggered — 30 days remaining", user: "Orchestrator", time: "22 minutes ago", icon: <ShieldCheck className="size-3.5" />, color: "text-amber-400" },
   { id: 5, type: "venture", action: "Stall detected", detail: "Dubai Creek Residences — no activity for 7 days", user: "Velocity Agent", time: "35 minutes ago", icon: <AlertTriangle className="size-3.5" />, color: "text-cyan-400" },
   { id: 6, type: "task", action: "Task completed", detail: "Legal review for Solaris Holdings yacht acquisition", user: "Nate Calloway", time: "1 hour ago", icon: <CheckCircle2 className="size-3.5" />, color: "text-emerald-400" },
   { id: 7, type: "document", action: "Document uploaded", detail: "Annual audit documents for Pinnacle Trust", user: "Lena Park", time: "2 hours ago", icon: <FileText className="size-3.5" />, color: "text-blue-400" },
   { id: 8, type: "venture", action: "New venture created", detail: "Palm Jumeirah Residences added to Crestfield Capital portfolio", user: "Shwan Lee", time: "3 hours ago", icon: <Plus className="size-3.5" />, color: "text-emerald-400" },
   { id: 9, type: "task", action: "Task assigned", detail: "Prepare investor deck for Vanguard Maritime yacht project", user: "Shwan Lee", time: "4 hours ago", icon: <ListChecks className="size-3.5" />, color: "text-blue-400" },
-  { id: 10, type: "compliance", action: "Compliance check passed", detail: "Vanguard Maritime annual compliance review approved", user: "Compliance Watcher", time: "5 hours ago", icon: <ShieldCheck className="size-3.5" />, color: "text-emerald-400" },
+  { id: 10, type: "compliance", action: "Portfolio insight", detail: "Vanguard Maritime annual compliance review approved", user: "Orchestrator", time: "5 hours ago", icon: <ShieldCheck className="size-3.5" />, color: "text-emerald-400" },
 ];
 
 const DEMO_AGENTS = [
   { name: "Overdue Agent", status: "running" as const, actions: 47, uptime: "99.8%", lastAction: "Sent follow-up to Crestfield Capital", lastActionTime: "8m ago", color: "#EF4444", description: "Monitors all tasks for overdue deadlines. Sends automated follow-ups and escalates to team leads after 48 hours." },
   { name: "Velocity Agent", status: "running" as const, actions: 23, uptime: "99.9%", lastAction: "Advanced Marina Bay Tower stage", lastActionTime: "2m ago", color: "#22D3EE", description: "Tracks venture pipeline velocity. Detects stalls, suggests stage advances, and optimizes deal flow timing." },
   { name: "Distribution Sentinel", status: "monitoring" as const, actions: 12, uptime: "100%", lastAction: "Flagged $2.4M distribution", lastActionTime: "14m ago", color: "#A855F7", description: "Watches all distribution events. Validates amounts, flags anomalies, and ensures compliance before payouts." },
-  { name: "Compliance Watcher", status: "running" as const, actions: 8, uptime: "99.7%", lastAction: "KYC renewal triggered", lastActionTime: "22m ago", color: "#F59E0B", description: "Monitors regulatory deadlines. Auto-triggers KYC renewals, audit reminders, and license expiration alerts." },
+  { name: "Orchestrator", status: "running" as const, actions: 31, uptime: "99.7%", lastAction: "Cross-venture risk analysis completed", lastActionTime: "22m ago", color: "#F59E0B", description: "Portfolio-wide intelligence engine. Cross-references signals from all agents, generates market insights by sector, detects cross-venture patterns, and surfaces compliance risks across the entire portfolio." },
 ];
 
 const DEMO_TEAM = [
@@ -125,11 +125,11 @@ const LIVE_EVENTS = [
   { action: "Velocity Agent", detail: "Detected momentum shift: Dubai Creek Residences velocity up 8% this week", color: "#22D3EE" },
   { action: "Overdue Agent", detail: "Auto-escalated: Solaris Holdings permit review — now 5 days overdue", color: "#EF4444" },
   { action: "Distribution Sentinel", detail: "Verified $1.8M distribution for Pinnacle Trust — cleared", color: "#A855F7" },
-  { action: "Compliance Watcher", detail: "Vanguard Maritime license renewal — 45 days remaining, auto-reminder queued", color: "#F59E0B" },
+  { action: "Orchestrator", detail: "Cross-portfolio signal: Vanguard Maritime license renewal — 45 days remaining", color: "#F59E0B" },
   { action: "Velocity Agent", detail: "Palm Jumeirah Residences advanced from Negotiation → Due Diligence", color: "#22D3EE" },
   { action: "Overdue Agent", detail: "Follow-up sent to Harborview Group — board meeting agenda 2 days overdue", color: "#EF4444" },
   { action: "Distribution Sentinel", detail: "Q2 distribution forecast generated for Crestfield Capital — $3.1M projected", color: "#A855F7" },
-  { action: "Compliance Watcher", detail: "Environmental compliance check passed for Ironclad Refinery", color: "#F59E0B" },
+  { action: "Orchestrator", detail: "Sector insight: Oil & Gas compliance metrics improving — Ironclad Refinery passed environmental review", color: "#F59E0B" },
   { action: "Velocity Agent", detail: "Benchmark analysis: Portfolio velocity 18% above industry average", color: "#22D3EE" },
   { action: "Overdue Agent", detail: "Task auto-completed: Pinnacle Tower II title transfer docs received", color: "#EF4444" },
 ];
@@ -157,7 +157,7 @@ const TOUR_STEPS: TourStep[] = [
   { view: "admin", tab: "activity", title: "Activity Log", narration: "A complete audit trail of every action — human and AI. Filter by type to see exactly what happened, when, and by whom. Full transparency for compliance and accountability.", duration: 8 },
   { view: "admin", tab: "oversight", title: "Portfolio Oversight", narration: "AI-powered risk monitoring across all clients. Health matrices, risk alerts, and compliance tracking update in real-time. The system flags issues before they become problems.", duration: 8 },
   { view: "admin", tab: "concierge", title: "AI Concierge", narration: "A conversational AI that understands the entire portfolio. Ask about any venture, client, or deadline — get instant answers. It can draft emails, generate reports, and brief the team.", duration: 8 },
-  { view: "admin", tab: "agents", title: "Autonomous AI Agents", narration: "Four AI agents run 24/7 — Velocity Agent tracks momentum, Overdue Agent escalates delays, Distribution Sentinel verifies payments, Compliance Watcher monitors deadlines. They never sleep.", duration: 9 },
+  { view: "admin", tab: "agents", title: "Autonomous AI Agents", narration: "Four AI agents run 24/7 — Velocity Agent tracks momentum, Overdue Agent escalates delays, Distribution Sentinel verifies payments, and the Orchestrator cross-references all signals for portfolio-wide intelligence. They never sleep.", duration: 9 },
   { view: "admin", tab: "blueprints", title: "Venture Pipeline", narration: "A visual kanban showing every venture across stages — from Negotiation through Due Diligence to Active and Closing. Drag-and-drop simplicity with AI-projected timelines.", duration: 8 },
   { view: "admin", tab: "team", title: "VENTEX Team", narration: "Team management with real-time status, venture assignments, and task loads. See who's available, how work is distributed, and reassign with one click.", duration: 7 },
   { view: "admin", tab: "contacts", title: "Client Directory", narration: "A centralized contact directory organized by organization. One-click access to email and phone for every stakeholder across all client portfolios.", duration: 7 },
