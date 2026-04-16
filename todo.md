@@ -2668,3 +2668,14 @@
 - [x] Update drafts.test.ts: Sidebar label "Drafts" → "Draft Center"
 - [x] Update drafts.test.ts: Draft indicator moved from Topbar to sidebar badge
 - [x] All 754 tests passing across 44 test files
+
+## Rebrand: royalton-system → ventex-system (Apr 16)
+- [x] Rename package.json name from "royalton-system" to "ventex-system"
+- [x] Update SOC2-Compliance-Audit.md: "Royalton System" → "VENTEX Platform"
+- [x] Update ideas.md header: "Royalton System" → "VENTEX Platform"
+- [x] Update seed-blueprints.mjs: remove "Royalton" from comments, use org slug reference
+- [x] Update seed-mvp-data.mjs: remove "Royalton" from comments
+- [x] Update seed-orgs.mjs: keep "Royalton Venture Holding" as client data name only (no change needed)
+- [x] Update spyops-review.md: "ROYALTON INVESTMENTS" → "VENTEX" where it refers to the product
+- [x] Update update-org-name.mjs: keep as-is (it's client data)
+- [x] Verify no "Royalton System" appears in any user-facing UI (confirmed: 0 matches in source code)

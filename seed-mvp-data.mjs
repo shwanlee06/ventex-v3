@@ -65,7 +65,7 @@ async function main() {
     { title: "Venezuela Mining — Export permit application", ventureId: 20, status: "open", dueDate: daysFromNow(14), priority: "high", assignees: "Shwan Lee" },
     { title: "Bagatelle — Marina berth allocation contract", ventureId: 12, status: "overdue", dueDate: daysAgo(3), priority: "medium", assignees: "Najib" },
     
-    // Royalton Venture Holding ventures (cross-portfolio)
+    // Cross-portfolio ventures
     { title: "Zarka City — Master plan review with architects", ventureId: 7, status: "in_progress", dueDate: daysFromNow(2), priority: "high", assignees: "Shwan Lee" },
   ];
   

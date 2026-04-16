@@ -1,15 +1,15 @@
-# SOC 2 Compliance Audit — Royalton System by VENTEX
+# SOC 2 Compliance Audit — VENTEX Platform by Aurovia LLC
 
 **Prepared for:** Shwan Lee, CEO & Founder, VENTEX  
 **Date:** April 1, 2026  
-**System:** Royalton System (atlasops.manus.space)  
+**System:** VENTEX Platform (ventexdemo.manus.space)  
 **Audit scope:** Application-layer controls only (infrastructure managed by Manus platform)
 
 ---
 
 ## Executive Summary
 
-The Royalton System implements a substantial portion of the technical controls required for SOC 2 Type II readiness. The codebase includes role-based access control with six defined roles, automatic audit logging on every mutation, AES-256-GCM encryption at the application layer, session management with device fingerprinting, and multi-tenant data isolation. However, SOC 2 certification requires more than code — it requires organizational policies, formal risk assessments, vendor management, employee training, and a third-party audit by a licensed CPA firm.
+The VENTEX Platform implements a substantial portion of the technical controls required for SOC 2 Type II readiness. The codebase includes role-based access control with six defined roles, automatic audit logging on every mutation, AES-256-GCM encryption at the application layer, session management with device fingerprinting, and multi-tenant data isolation. However, SOC 2 certification requires more than code — it requires organizational policies, formal risk assessments, vendor management, employee training, and a third-party audit by a licensed CPA firm.
 
 **The honest answer: the system is approximately 60% of the way to SOC 2 readiness.** The technical controls are strong. The organizational and procedural controls are not yet in place.
 

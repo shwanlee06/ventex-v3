@@ -1,4 +1,4 @@
-// Seed default blueprints for Royalton's 6 active sectors
+// Seed default blueprints for client's 6 active sectors
 // Each sector gets 5-8 standard process steps that agents use for operational context
 import 'dotenv/config';
 import mysql from 'mysql2/promise';
@@ -16,7 +16,7 @@ const conn = await mysql.createConnection({
   ssl: { rejectUnauthorized: true },
 });
 
-// Royalton Venture Holding = org id 2
+// Client org id (Royalton Venture Holding = first pilot client)
 const ORG_ID = 2;
 
 const BLUEPRINTS = [
@@ -103,7 +103,7 @@ const BLUEPRINTS = [
   },
 ];
 
-console.log("Seeding blueprints for Royalton Venture Holding (org_id=2)...\n");
+console.log("Seeding blueprints for client org (org_id=2)...\n");
 
 for (const bp of BLUEPRINTS) {
   // Insert template using actual DB columns

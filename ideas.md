@@ -1,4 +1,4 @@
-# Royalton System — Design Brainstorm
+# VENTEX Platform — Design Brainstorm
 
 ## Context
 AI-powered venture task automation platform for UHNWI/HNWI holding companies. Enterprise ops dashboard with dark aesthetic, 5 venture verticals, AI agent chat, compliance tracking, client onboarding.
