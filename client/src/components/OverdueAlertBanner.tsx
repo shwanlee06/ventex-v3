@@ -125,7 +125,7 @@ export default function OverdueAlertBanner({ onNavigate }: OverdueAlertBannerPro
     >
       {/* ── Collapsed summary bar ────────────────────────────────── */}
       <div
-        className="flex items-center gap-3 px-4 py-3 cursor-pointer"
+        className="flex items-center gap-3 px-5 py-3.5 cursor-pointer"
         onClick={() => setExpanded(!expanded)}
       >
         <div className={cn(
@@ -181,7 +181,7 @@ export default function OverdueAlertBanner({ onNavigate }: OverdueAlertBannerPro
               {/* Table */}
               <div className="bg-card/50 border border-border/50 rounded-lg overflow-hidden">
                 {/* Header */}
-                <div className="grid grid-cols-[1fr_140px_100px_80px_80px_100px] gap-2 px-3 py-2 border-b border-border/30 text-[10px] uppercase tracking-[0.08em] text-foreground/40 font-medium">
+                <div className="grid grid-cols-[1fr_140px_100px_80px_80px_100px] gap-3 px-5 py-2.5 border-b border-border/30 text-[10px] uppercase tracking-[0.08em] text-foreground/40 font-medium">
                   <span>Task</span>
                   <span>Venture</span>
                   <span>Sector</span>
@@ -199,7 +199,7 @@ export default function OverdueAlertBanner({ onNavigate }: OverdueAlertBannerPro
                     <div
                       key={task.id}
                       className={cn(
-                        "grid grid-cols-[1fr_140px_100px_80px_80px_100px] gap-2 px-3 py-2.5 items-center text-xs",
+                        "grid grid-cols-[1fr_140px_100px_80px_80px_100px] gap-3 px-5 py-3 items-center text-[13px]",
                         i < allOverdueTasks.length - 1 && "border-b border-border/20",
                         isLongest && "border-l-2 border-l-red-500",
                         "hover:bg-accent/20 transition-colors"

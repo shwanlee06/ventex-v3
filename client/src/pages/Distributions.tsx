@@ -65,7 +65,7 @@ function FxRateManagement() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card border border-border rounded-lg">
-      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+      <div className="px-5 py-3.5 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ArrowRightLeft className="size-4 text-primary" />
           <h2 className="text-sm font-semibold text-foreground">FX Rate Management</h2>
@@ -292,7 +292,7 @@ export default function DistributionsPage() {
 
   return (
     <DashboardLayout title="Distributions" subtitle={`${clientLabel} · LP PAYOUTS & DIVIDENDS`}>
-      <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
+      <div className="p-4 sm:p-5 md:p-8 space-y-5 sm:space-y-8 pb-24 md:pb-8">
 
         {/* Client indicator */}
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
@@ -302,7 +302,7 @@ export default function DistributionsPage() {
         </div>
 
         {/* Summary metrics — clickable filter cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {loading ? (
             Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 sm:h-24 rounded-lg" />)
           ) : (
@@ -316,7 +316,7 @@ export default function DistributionsPage() {
                   transition={{ delay: i * 0.05, duration: 0.3 }}
                   onClick={() => setActiveMetric(isActive ? null : m.key)}
                   className={cn(
-                    "bg-card border rounded-lg p-3 sm:p-4 cursor-pointer transition-all active:scale-[0.97]",
+                    "bg-card border rounded-xl p-4 sm:p-5 cursor-pointer transition-all active:scale-[0.97]",
                     isActive ? `${m.activeColor} bg-card/80` : "border-border hover:border-primary/20"
                   )}
                 >
@@ -437,7 +437,7 @@ export default function DistributionsPage() {
         {/* Table View (desktop) */}
         {viewMode === "table" && !loading && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card border border-border rounded-lg overflow-hidden">
-            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+            <div className="px-5 py-3.5 border-b border-border flex items-center justify-between">
               <h2 className="text-sm font-semibold text-foreground">{clientLabel} Distributions</h2>
               <span className="text-[10px] font-mono text-emerald-400">{formatCurrency(totalDistributed)} total</span>
             </div>

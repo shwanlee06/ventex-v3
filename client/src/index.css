@@ -101,6 +101,22 @@
   --sidebar-accent-foreground: oklch(88% .004 264);
   --sidebar-border: oklch(88% .004 264/.10);
   --sidebar-ring: oklch(88% .004 264/.3);
+
+  /* ── Density Zone Spacing Tokens ───────────────────────── */
+  /* HERO ZONE: generous, narrative, marketing */
+  --space-hero-section: 8rem;        /* py-32 */
+  --space-hero-section-mobile: 4rem; /* py-16 */
+  --space-hero-card: 2.5rem;         /* p-10 */
+  --space-hero-card-sm: 2rem;        /* p-8 */
+  --space-hero-grid-gap: 2rem;       /* gap-8 */
+  --space-hero-stack: 1.5rem;        /* space-y-6 */
+
+  /* DATA ZONE: compact, reference, analytics */
+  --space-data-card: 1.25rem;        /* p-5 */
+  --space-data-grid-gap: 1rem;       /* gap-4 */
+  --space-data-row-h: 3.5rem;        /* min-h-[56px] */
+  --space-data-cell: 1rem 1.5rem;    /* py-4 px-6 */
+  --space-data-stack: 0.75rem;       /* space-y-3 */
 }
 
 /* ── Dark Mode ──────────────────────────────────────────────────── */
@@ -178,6 +194,45 @@
     }
   }
 
+  /* ── Typography Rhythm ─────────────────────────────────── */
+  /* HERO ZONE typography — generous, narrative */
+  .hero-zone h1,
+  h1.hero-headline {
+    font-family: "Space Grotesk", "IBM Plex Mono", sans-serif;
+    font-size: clamp(2.5rem, 5vw, 5rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+  .hero-zone h2,
+  h2.section-headline {
+    font-family: "Space Grotesk", "IBM Plex Mono", sans-serif;
+    font-size: clamp(1.75rem, 3.5vw, 3rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+  .hero-zone h3,
+  h3.card-title {
+    font-family: "Space Grotesk", "IBM Plex Mono", sans-serif;
+    font-size: clamp(1.25rem, 2vw, 1.75rem);
+    font-weight: 500;
+    line-height: 1.2;
+  }
+  /* Body copy on dark backgrounds needs more line-height */
+  .hero-zone p,
+  .hero-zone .body-copy {
+    font-size: 1.0625rem;
+    line-height: 1.7;
+  }
+  /* Micro labels — terminal aesthetic */
+  .micro-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
   /* Tabular nums for ALL financial figures */
   .tabular-nums,
   [data-financial],
@@ -201,10 +256,10 @@
     letter-spacing: 0.02em;
   }
 
-  /* FIX 10 — Focus states: custom outline */
+  /* ── Focus States — Premium amber ring ─────────────────── */
   *:focus-visible {
-    outline: 1px solid rgba(255, 255, 255, 0.3);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: 0 0 0 1px oklch(0.75 0.18 85 / 0.5), 0 0 0 3px oklch(6% .003 264);
   }
   *:focus:not(:focus-visible) {
     outline: none;
@@ -254,6 +309,30 @@
       max-width: 1280px;
     }
   }
+  @media (min-width: 1536px) {
+    .container {
+      max-width: 1440px;
+    }
+  }
+
+  /* ── Zone Density Classes ──────────────────────────────── */
+  /* HERO ZONE — generous spacing for narrative/marketing content */
+  .hero-zone {
+    --zone-card-padding: 2.5rem;
+    --zone-grid-gap: 2rem;
+    --zone-stack-gap: 1.5rem;
+  }
+  .hero-zone > .app-card,
+  .hero-zone > .client-card {
+    padding: var(--zone-card-padding);
+  }
+
+  /* DATA ZONE — compact spacing for reference/analytics content */
+  .data-zone {
+    --zone-card-padding: 1.25rem;
+    --zone-grid-gap: 1rem;
+    --zone-stack-gap: 0.75rem;
+  }
 
   /* Touch target minimum size */
   .touch-target {
@@ -261,14 +340,14 @@
     min-width: 44px;
   }
 
-  /* ── FIX 2 — Uppercase label tracking ───────────────────── */
+  /* ── Uppercase label tracking ──────────────────────────── */
   .uppercase {
     letter-spacing: 0.08em !important;
   }
 
-  /* ── FIX 3 — Unified Status Badge System ────────────────── */
+  /* ── Unified Status Badge System ────────────────────────── */
   .status-badge {
-    @apply inline-flex items-center px-2 py-0.5 text-xs font-medium whitespace-nowrap;
+    @apply inline-flex items-center px-2.5 py-1 text-xs font-medium whitespace-nowrap;
     border-radius: 0px;
   }
   /* In progress — always teal/green */
@@ -340,33 +419,33 @@
     border-radius: 0px;
   }
 
-  /* ── FIX 4+5 — Card System ──────────────────────────────── */
+  /* ── Card System — HERO ZONE density ────────────────────── */
   .app-card {
-    background-color: var(--card);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 8px;
-    padding: 20px;
-    transition: border-color 150ms ease, background-color 150ms ease;
+    padding: 2rem;
+    transition: border-color 200ms ease, background-color 200ms ease;
   }
   .app-card-hover {
-    background-color: var(--card);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 8px;
-    padding: 20px;
-    transition: border-color 150ms ease, background-color 150ms ease;
+    padding: 2rem;
+    transition: border-color 200ms ease, background-color 200ms ease;
     cursor: pointer;
   }
   .app-card-hover:hover {
-    border-color: rgba(255, 255, 255, 0.15);
-    background-color: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.12);
+    background-color: rgba(255, 255, 255, 0.04);
   }
 
   /* Colored left-border cards */
   .card-accent-left {
     border-left: 3px solid var(--accent-color, rgba(255,255,255,0.2));
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   }
 
   /* Skeleton loader */
@@ -417,15 +496,15 @@
     font-variant-numeric: tabular-nums;
   }
   .client-portal .client-card {
-    background-color: var(--card);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 8px;
-    padding: 1.5rem;
-    transition: border-color 150ms ease, background-color 150ms ease;
+    padding: 2.5rem;
+    transition: border-color 200ms ease, background-color 200ms ease;
   }
   .client-portal .client-card:hover {
-    border-color: rgba(255, 255, 255, 0.15);
-    background-color: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.12);
+    background-color: rgba(255, 255, 255, 0.04);
   }
   .client-portal .gold-accent {
     color: oklch(0.75 0.18 155);
@@ -448,21 +527,22 @@
   /* VENTEX ADMIN — Dense Analytics Design System  */
   /* ============================================ */
   .ventex-admin .kpi-card {
-    background-color: var(--card);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 8px;
-    padding: 20px;
-    transition: border-color 150ms ease, background-color 150ms ease;
+    padding: 2rem;
+    transition: border-color 200ms ease, background-color 200ms ease;
   }
   .ventex-admin .kpi-card:hover {
-    border-color: rgba(255, 255, 255, 0.15);
-    background-color: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.12);
+    background-color: rgba(255, 255, 255, 0.04);
   }
   .ventex-admin .data-table-row {
-    transition: background-color 100ms ease;
+    transition: background-color 200ms ease;
+    min-height: 3.5rem;
   }
   .ventex-admin .data-table-row:hover {
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: rgba(255, 255, 255, 0.02);
   }
 
   /* Velocity indicator */
@@ -471,10 +551,10 @@
 
   /* Chart container */
   .chart-container {
-    background-color: var(--card);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 8px;
-    padding: 20px;
+    padding: 2rem;
   }
 
   /* Mini sparkline area */
@@ -483,10 +563,24 @@
     stroke: oklch(0.75 0.18 155);
     stroke-width: 1.5;
   }
+
+  /* ── Premium Dividers ──────────────────────────────────── */
+  .divider-subtle {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+  .divider-section {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+  }
 }
 
 /* ================================================================== */
-/* FIX 9 — Scrollbar Styling (thin, subtle, barely visible)           */
+/* Scrollbar Styling (thin, subtle, barely visible)                   */
 /* ================================================================== */
 ::-webkit-scrollbar {
   width: 4px;
@@ -532,31 +626,31 @@
 }
 
 
-/* ── MOTION-2: Card Hover States ──────────────────────────── */
+/* ── Card Hover States ───────────────────────────────────── */
 /* Subtle border + bg brightening on interactive cards */
 /* Only apply hover when the card is NOT behind an open dialog/sheet overlay */
 .bg-card {
-  transition: border-color 150ms ease, background-color 150ms ease;
+  transition: border-color 200ms ease, background-color 200ms ease;
 }
 .bg-card:hover:not([data-slot]) {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.12);
   background-color: rgba(255, 255, 255, 0.02);
 }
 /* Disable hover effects on elements behind open overlays */
 body[data-scroll-locked] .bg-card:hover {
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
   background-color: var(--card) !important;
 }
 body[data-scroll-locked] .app-card-hover:hover {
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
   background-color: var(--card) !important;
 }
 body[data-scroll-locked] .client-card:hover {
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
   background-color: var(--card) !important;
 }
 body[data-scroll-locked] .kpi-card:hover {
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
   background-color: var(--card) !important;
 }
 body[data-scroll-locked] .data-table-row:hover {
@@ -568,24 +662,23 @@ body[data-scroll-locked] [role="button"]:active {
   transform: none !important;
 }
 .client-card {
-  transition: border-color 150ms ease, background-color 150ms ease;
+  transition: border-color 200ms ease, background-color 200ms ease;
 }
 .client-card:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.12);
   background-color: rgba(255, 255, 255, 0.02);
 }
 
-/* ── MOTION-3: Button Press States ────────────────────────── */
+/* ── Button Press States ─────────────────────────────────── */
 button, [role="button"], a.inline-flex {
-  transition: opacity 100ms ease, transform 100ms ease;
+  transition: opacity 150ms ease, transform 100ms ease;
 }
 button:active, [role="button"]:active, a.inline-flex:active {
-  opacity: 0.75;
+  opacity: 0.8;
   transform: scale(0.98);
 }
 
-
-/* ── MOTION-4: Badge Entrance Scale Animation ────────────── */
+/* ── Badge Entrance Scale Animation ──────────────────────── */
 @keyframes badge-pop {
   0% { transform: scale(0.6); opacity: 0; }
   60% { transform: scale(1.15); opacity: 1; }
@@ -595,7 +688,7 @@ button:active, [role="button"]:active, a.inline-flex:active {
   animation: badge-pop 250ms ease-out;
 }
 
-/* ── MOTION-5: Subtle Pulse for Live Indicators ──────────── */
+/* ── Subtle Pulse for Live Indicators ────────────────────── */
 @keyframes subtle-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }

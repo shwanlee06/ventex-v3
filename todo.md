@@ -2943,3 +2943,44 @@
 - [x] Update all demo feed, activity log, live events to use Orchestrator language
 - [x] Update guided tour narration to reference Orchestrator instead of Compliance Watcher
 - [x] 0 TypeScript errors confirmed
+
+## UI Density & Breathing Room Refinement (Apr 16)
+### Global
+- [x] Update CSS tokens / spacing scale (8px base, hero-zone/data-zone tokens, card p-8/10, form space-y-6, grid gap-6/8)
+- [x] Update container max-widths (landing max-w-7xl/2xl, container 1440px@2xl, px-8/12)
+- [x] Update typography rhythm (H1 clamp 2.5-5rem, H2 clamp 1.75-3rem, H3 clamp 1.25-1.75rem, body leading-[1.7], .micro-label class)
+- [x] Update component library (app-card p-8, client-card p-10, kpi-card p-8, status-badge px-2.5 py-1, divider-subtle/section)
+- [x] Micro-details: border-white/[0.06], bg-white/[0.02-0.04], hover duration-200, focus ring amber/50, dividers my-8/12
+
+### Landing Page
+- [x] Hero section: badge mb-48, headline lineHeight 0.92, subtext fontSize 14 mt-36, CTA mt-44 padding 16px 36px
+- [x] Sector grid: card padding 36px, gap 1px, icon 28px, title 36px, section py-120
+- [x] Methodology: section py-120, heading clamp 52-96px, step padding 24px, body fontSize 14 mt-32
+- [x] Officer Hours: section py-120, heading clamp 52-96px mb-56, card padding 28px
+- [x] SPV Pipeline: section py-120, header mb-48, th padding 14px 20px
+- [x] Coordinates: section py-120, clock clamp 64-140px, block mb-32
+- [x] Footer: py-64/80, grid gap 48, bottom bar mt-48 pt-24
+- [x] Nav bar: height 56px, padding 32px, build version VTX-2026.04.16
+
+### Admin Dashboard
+- [x] Sidebar: py-3 nav items, pt-5 group labels, px-2 nav container, p-2.5 collapsed icons
+- [x] Topbar: h-16, px-6, title text-[16px], action buttons gap-3.5
+- [x] VentexDashboard: p-5 md:p-8 main, KPI cards p-6 gap-5, table rows px-5 py-4
+- [x] VentexDashboard grid cards: p-6, gap-5, mb-5 sections, pt-4 footer
+- [x] VelocityIntelligenceCard: p-6 rounded-xl, text-[1.75rem] score, gap-2
+- [x] OverdueAlertBanner: px-5 py-3.5 header, px-5 py-3 rows, gap-3, text-[13px]
+- [x] AgentExecutionLog: px-5 py-4 items, text-[13px] message, p-4 footer
+- [x] ExecutiveSummaryWidget: px-5 py-3.5 header, p-4 grid, p-3.5 cards, gap-3
+
+### Client Portal
+- [x] ClientDashboard: px-6 md:px-10 py-10, hero card p-7 sm:p-10, action cards pl-5 py-5 pr-5
+- [x] ClientDashboard: grid gap-4, activity feed py-4, portfolio breakdown p-5
+- [x] ClientPortal: px-6 md:px-8 py-10, space-y-10, velocity summary px-6 py-5
+- [x] ClientPortal: velocity feed cards p-4 sm:p-5, venture cards p-4 sm:p-5
+- [x] ClientPortal: portfolio health p-6, forecast/market cards p-5, header py-5
+- [x] ClientPortal: dashboard wrapper p-5 md:p-8
+- [x] Distributions: p-5 md:p-8 space-y-8, metric cards p-4 sm:p-5 gap-4
+- [x] Distributions: FX panel px-5 py-3.5 header, table header px-5 py-3.5
+
+### Documentation
+- [x] Write /docs/design/density-system.md explaining zone contrast rule, spacing scale, typography, component density, responsive breakpoints, micro-details

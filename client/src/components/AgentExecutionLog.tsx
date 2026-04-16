@@ -244,7 +244,7 @@ export default function AgentExecutionLog({ organizationId, limit = 25, compact 
                       initial={{ opacity: 0, x: -4 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.02, duration: 0.2 }}
-                      className="px-4 py-3 hover:bg-accent/20 transition-colors group"
+                      className="px-5 py-4 hover:bg-accent/20 transition-colors group"
                     >
                       <div className="flex gap-3">
                         {/* Timeline dot */}
@@ -271,7 +271,7 @@ export default function AgentExecutionLog({ organizationId, limit = 25, compact 
                             )}
                           </div>
 
-                          <p className="text-xs text-foreground mt-1 leading-relaxed">
+                          <p className="text-[13px] text-foreground mt-1.5 leading-relaxed">
                             {event.message}
                           </p>
 
@@ -328,7 +328,7 @@ export default function AgentExecutionLog({ organizationId, limit = 25, compact 
 
             {/* Show more */}
             {events.length > limit && !showAll && (
-              <div className="p-3 border-t border-border">
+              <div className="p-4 border-t border-border">
                 <Button
                   variant="ghost"
                   size="sm"

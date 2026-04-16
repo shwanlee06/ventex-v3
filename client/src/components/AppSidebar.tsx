@@ -211,7 +211,7 @@ export default function AppSidebar() {
         </div>
 
         {/* Nav — grouped by section */}
-        <nav className="flex-1 py-2 px-1.5 overflow-y-auto">
+        <nav className="flex-1 py-3 px-2 overflow-y-auto">
           {(() => {
             let lastGroup = "";
             return navItems.map((item) => {
@@ -222,7 +222,7 @@ export default function AppSidebar() {
                 <div key={item.href}>
                   {showGroupLabel && (
                     <div className={cn(
-                      "px-3 pt-4 pb-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/50",
+                      "px-3 pt-5 pb-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/50",
                       item.group === "Operations" && "pt-1"
                     )}>
                       {item.group}
@@ -232,7 +232,7 @@ export default function AppSidebar() {
                     <Link
                       href={item.href}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-md text-[13px] transition-colors",
+                        "flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] transition-colors",
                         active
                           ? "text-foreground bg-accent/60 font-medium"
                           : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
@@ -252,7 +252,7 @@ export default function AppSidebar() {
                         <Link
                           href={item.href}
                           className={cn(
-                            "flex items-center justify-center p-2 rounded-md transition-colors relative",
+                            "flex items-center justify-center p-2.5 rounded-md transition-colors relative",
                             active
                               ? "text-foreground bg-accent/60"
                               : "text-muted-foreground hover:text-foreground hover:bg-accent/30"

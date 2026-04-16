@@ -377,9 +377,9 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
 
   if (pageLoading) {
     return (
-      <div className="client-portal px-3 sm:px-5 md:px-8 py-6 sm:py-8 space-y-6 pb-28 md:pb-8 max-w-3xl mx-auto">
-        <Skeleton className="h-40 rounded-2xl" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="client-portal px-3 sm:px-6 md:px-10 py-8 sm:py-10 space-y-8 pb-28 md:pb-10 max-w-3xl mx-auto">
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {Array.from({ length: 2 }).map((_, i) => (
             <Skeleton key={i} className="h-32 rounded-2xl" />
           ))}
@@ -391,14 +391,14 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
   }
 
   return (
-    <div className="client-portal px-3 sm:px-5 md:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 pb-28 md:pb-8 max-w-3xl mx-auto">
+    <div className="client-portal px-3 sm:px-6 md:px-10 py-8 sm:py-10 space-y-8 sm:space-y-10 pb-28 md:pb-10 max-w-3xl mx-auto">
 
       {/* -- Hero Greeting ------------------------------------------- */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="rounded-2xl border border-border bg-card p-6 sm:p-8"
+        className="rounded-2xl border border-border bg-card p-7 sm:p-10"
       >
         <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-3 font-light">
           Welcome back
@@ -412,7 +412,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
 
         <button
           onClick={() => setShowPortfolioBreakdown(true)}
-          className="mt-6 flex items-end gap-6 sm:gap-8 w-full text-left group cursor-pointer hover:opacity-90 transition-opacity"
+          className="mt-8 flex items-end gap-6 sm:gap-8 w-full text-left group cursor-pointer hover:opacity-90 transition-opacity"
         >
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1 font-light">Active Ventures</p>
@@ -460,7 +460,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
       <VentexActivitySection />
 
       {/* -- Action Cards (Section 9A) ----------------------------- */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Card 1: Tasks need attention */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -469,8 +469,8 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
           className="client-card relative overflow-hidden"
         >
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500 rounded-l-2xl" />
-          <div className="pl-4 py-4 pr-4">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="pl-5 py-5 pr-5">
+            <div className="flex items-center gap-2.5 mb-2.5">
               <ListChecks className="size-4 text-amber-400" />
               <span className="text-xs font-medium text-foreground">
                 {openTasks.length} task{openTasks.length !== 1 ? "s" : ""} need attention
@@ -501,8 +501,8 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
           className="client-card relative overflow-hidden"
         >
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-2xl" />
-          <div className="pl-4 py-4 pr-4">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="pl-5 py-5 pr-5">
+            <div className="flex items-center gap-2.5 mb-2.5">
               <Briefcase className="size-4 text-blue-400" />
               <span className="text-xs font-medium text-foreground">
                 {allVentures.length} venture{allVentures.length !== 1 ? "s" : ""} in portfolio
@@ -530,8 +530,8 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
           className="client-card relative overflow-hidden"
         >
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500 rounded-l-2xl" />
-          <div className="pl-4 py-4 pr-4">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="pl-5 py-5 pr-5">
+            <div className="flex items-center gap-2.5 mb-2.5">
               <DollarSign className="size-4 text-emerald-400" />
               <span className="text-xs font-medium text-foreground">
                 {formatCurrency(paidDistAmount)} distributed
@@ -646,7 +646,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
             activityLogs.slice(0, 5).map((log, i) => {
               const tc = getThemeColor(log.sector || "Others");
               return (
-                <div key={log.id} className="flex gap-4 py-3 border-b border-border/30 last:border-0">
+                <div key={log.id} className="flex gap-4 py-4 border-b border-border/30 last:border-0">
                   <div className="flex flex-col items-center">
                     <div className="size-2 rounded-full mt-1.5" style={{ backgroundColor: tc.color }} />
                     {i < activityLogs.length - 1 && <div className="w-px flex-1 bg-border/30 mt-1" />}
@@ -746,7 +746,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
                 </div>
 
                 {/* Distribution summary */}
-                <div className="bg-secondary/30 rounded-xl p-4">
+                <div className="bg-secondary/30 rounded-xl p-5">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs text-muted-foreground">Total Distributed</span>
                     <span className="text-sm font-medium text-emerald-400 tabular-nums">{formatCurrency(paidDistAmount)}</span>

@@ -121,17 +121,17 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
         </div>
       )}
 
-      <header className="h-14 border-b border-border flex items-center justify-between pl-12 pr-3 md:pl-5 md:pr-5 sticky top-0 z-30" style={{ backgroundColor: 'var(--background)' }}>
+      <header className="h-16 border-b border-border flex items-center justify-between pl-12 pr-4 md:pl-6 md:pr-6 sticky top-0 z-30" style={{ backgroundColor: 'var(--background)' }}>
         {/* Left: Title + subtitle */}
         <div className="flex flex-col justify-center min-w-0">
-          <h1 className="text-[15px] font-medium text-foreground leading-tight truncate" style={{ letterSpacing: '0.03em' }}>{title}</h1>
+          <h1 className="text-[16px] font-medium text-foreground leading-tight truncate" style={{ letterSpacing: '0.03em' }}>{title}</h1>
           {subtitle && (
             <p className="text-[10px] font-normal uppercase tracking-[0.12em] text-muted-foreground leading-tight truncate">{subtitle}</p>
           )}
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3.5 flex-shrink-0">
           {/* Client Switcher — only visible to real VENTEX team */}
           {isReallyVentex && !isPreviewMode && (
             <button

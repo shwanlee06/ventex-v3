@@ -375,7 +375,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
 
   if (isLoading) {
     return (
-      <div className="p-4 sm:p-5 md:p-6 space-y-5">
+      <div className="p-5 sm:p-6 md:p-8 space-y-6">
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
           {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
         </div>
@@ -388,10 +388,10 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
   }
 
   return (
-    <div className="p-4 sm:p-5 md:p-6 space-y-5 pb-24 md:pb-6">
+    <div className="p-5 sm:p-6 md:p-8 space-y-6 pb-24 md:pb-8">
 
       {/* ── Velocity System KPIs ──────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {/* Velocity Intelligence Card — Upgrade 1 */}
         <VelocityIntelligenceCard
           avgVelocity={kpis.avgVelocity}
@@ -460,7 +460,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: (i + 1) * 0.05, duration: 0.3 }}
-            className="bg-card border border-border rounded-xl p-5 flex flex-col gap-2 hover:border-primary/20 transition-colors"
+            className="bg-card border border-border rounded-xl p-6 flex flex-col gap-3 hover:border-primary/20 transition-colors"
           >
             <div className="flex items-center justify-between">
               <span className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
@@ -469,7 +469,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
               <span className="opacity-50" style={{ color: m.color }}>{m.icon}</span>
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-2xl font-semibold tracking-tight text-foreground" style={{ fontVariantNumeric: 'tabular-nums' }}>
+              <span className="text-[1.75rem] font-semibold tracking-tight text-foreground" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {typeof m.value === 'number' ? (
                   <AnimatedCounter value={m.value} duration={1000} />
                 ) : (
@@ -684,7 +684,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
       ) : viewMode === "table" ? (
         /* ── Table View ──────────────────────────────────────────── */
         <div className="bg-card border border-border rounded-xl overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-[13px]">
             <thead>
               <tr className="border-b border-border">
                 {[
@@ -698,7 +698,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                   <th
                     key={col.field}
                     onClick={() => toggleSort(col.field)}
-                    className="text-left text-[11px] uppercase tracking-wider text-muted-foreground font-medium p-3 sm:p-4 cursor-pointer hover:text-foreground transition-colors select-none align-middle"
+                    className="text-left text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium px-4 py-3.5 sm:px-5 sm:py-4 cursor-pointer hover:text-foreground transition-colors select-none align-middle"
                   >
                     <div className="flex items-center gap-1">
                       {col.label}
@@ -706,10 +706,10 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                     </div>
                   </th>
                 ))}
-                <th className="p-3 sm:p-4 text-left text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+                <th className="px-4 py-3.5 sm:px-5 sm:py-4 text-left text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
                   Agent
                 </th>
-                <th className="p-3 sm:p-4 text-right text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+                <th className="px-4 py-3.5 sm:px-5 sm:py-4 text-right text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
                   Actions
                 </th>
               </tr>
@@ -728,7 +728,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                   )}
                 >
                   {/* Client name + sectors */}
-                  <td className="p-3 sm:p-4">
+                  <td className="px-4 py-3.5 sm:px-5 sm:py-4">
                     <div className="flex items-center gap-3">
                       <div className="relative">
                         <ProgressRing value={client.velocity < 0 ? 0 : client.velocity} size={36} />
@@ -754,7 +754,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                   </td>
 
                   {/* Ventures */}
-                  <td className="p-3 sm:p-4">
+                  <td className="px-4 py-3.5 sm:px-5 sm:py-4">
                     <div className="flex items-center gap-1.5">
                       <Layers3 className="size-3 text-muted-foreground" />
                       <span className="font-mono text-foreground">{client.ventureCount}</span>
@@ -762,12 +762,12 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                   </td>
 
                   {/* Velocity */}
-                  <td className="p-3 sm:p-4">
+                  <td className="px-4 py-3.5 sm:px-5 sm:py-4">
                     <VelocityBadge rate={client.velocity} />
                   </td>
 
                   {/* Completion */}
-                  <td className="p-3 sm:p-4">
+                  <td className="px-4 py-3.5 sm:px-5 sm:py-4">
                     <div className="flex items-center gap-2">
                       <div className="w-16 h-1.5 rounded-full bg-secondary overflow-hidden">
                         <div
@@ -783,12 +783,12 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                   </td>
 
                   {/* Overdue */}
-                  <td className="p-3 sm:p-4">
+                  <td className="px-4 py-3.5 sm:px-5 sm:py-4">
                     <OverdueBadge count={client.overdueTasks} />
                   </td>
 
                   {/* Health */}
-                  <td className="p-3 sm:p-4">
+                  <td className="px-4 py-3.5 sm:px-5 sm:py-4">
                     <div className="flex items-center gap-2">
                       <div className="flex-1 max-w-[60px] h-1.5 rounded-full bg-secondary overflow-hidden">
                         <div
@@ -815,7 +815,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                   </td>
 
                   {/* Agent */}
-                  <td className="p-3 sm:p-4">
+                  <td className="px-4 py-3.5 sm:px-5 sm:py-4">
                     <AgentIndicator
                       action={(client as any).lastAgentAction}
                       agentName={(client as any).lastAgentName}
@@ -824,7 +824,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                   </td>
 
                   {/* Actions */}
-                  <td className="p-3 sm:p-4">
+                  <td className="px-4 py-3.5 sm:px-5 sm:py-4">
                     <div className="flex items-center justify-end gap-1.5">
                       {client.status === "archived" ? (
                         <>
@@ -871,7 +871,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
         </div>
       ) : (
         /* ── Grid View ───────────────────────────────────────────── */
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredClients.map((client, i) => (
             <motion.div
               key={client.id}
@@ -880,7 +880,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
               transition={{ delay: i * 0.03, duration: 0.3 }}
               onClick={() => onNavigate(`/clients/${client.slug}`)}
               className={cn(
-                "bg-card border border-border rounded-xl p-5 cursor-pointer hover:border-primary/30 transition-all group relative",
+                "bg-card border border-border rounded-xl p-6 cursor-pointer hover:border-primary/30 transition-all group relative",
                 client.status === "archived" && "opacity-60 border-dashed"
               )}
             >
@@ -924,7 +924,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
               </div>
 
               {/* Header with velocity ring */}
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-3.5 mb-5">
                 <div className="relative">
                   <ProgressRing value={client.velocity < 0 ? 0 : client.velocity} size={44} />
                   <span className="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-bold text-foreground">
@@ -946,7 +946,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
               </div>
 
               {/* Velocity + Completion bar */}
-              <div className="mb-4 space-y-2">
+              <div className="mb-5 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Velocity</span>
                   <VelocityBadge rate={client.velocity} />
@@ -966,7 +966,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
               </div>
 
               {/* Metrics grid */}
-              <div className="grid grid-cols-3 gap-3 mb-3">
+              <div className="grid grid-cols-3 gap-4 mb-4">
                 <div>
                   <span className="text-lg font-mono font-semibold text-foreground">{client.ventureCount}</span>
                   <p className="text-[10px] text-muted-foreground">Ventures</p>
@@ -992,7 +992,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
               )}
 
               {/* Health + Overdue */}
-              <div className="pt-3 border-t border-border/50 flex items-center justify-between">
+              <div className="pt-4 border-t border-border/50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-12 h-1 rounded-full bg-secondary overflow-hidden">
                     <div

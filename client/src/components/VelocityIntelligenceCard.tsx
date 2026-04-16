@@ -122,7 +122,7 @@ export default function VelocityIntelligenceCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0, duration: 0.3 }}
-      className="bg-card border border-border rounded-lg p-5 flex flex-col gap-1.5 hover:border-white/15 transition-colors"
+      className="bg-card border border-border rounded-xl p-6 flex flex-col gap-2 hover:border-white/15 transition-colors"
     >
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -137,7 +137,7 @@ export default function VelocityIntelligenceCard({
       {/* Large score */}
       <div className="flex items-baseline gap-2">
         <span
-          className="text-2xl font-semibold tracking-tight font-mono"
+          className="text-[1.75rem] font-semibold tracking-tight font-mono"
           style={{ color: velocityColor }}
         >
           {avgVelocity}%

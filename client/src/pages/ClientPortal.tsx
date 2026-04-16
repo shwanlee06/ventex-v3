@@ -320,13 +320,13 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
   const portalContent = (
     <>
       {/* Content */}
-      <main className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8 space-y-6 sm:space-y-8 pb-24 sm:pb-8">
+      <main className="max-w-4xl mx-auto px-3 sm:px-6 md:px-8 py-8 sm:py-10 space-y-8 sm:space-y-10 pb-24 sm:pb-10">
         {/* ── Velocity Summary ─────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="bg-card/50 border border-border/50 rounded-xl px-3 sm:px-5 py-3 sm:py-4 flex items-start gap-3"
+          className="bg-card/50 border border-border/50 rounded-xl px-4 sm:px-6 py-4 sm:py-5 flex items-start gap-3.5"
         >
           <Zap className="size-4 text-primary mt-0.5 flex-shrink-0" />
           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -371,7 +371,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 8, height: 0 }}
                       transition={{ delay: i * 0.03, duration: 0.2 }}
-                      className="bg-card border border-amber-500/20 rounded-xl p-3 sm:p-4"
+                      className="bg-card border border-amber-500/20 rounded-xl p-4 sm:p-5"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
                         <div className="hidden sm:block size-2 rounded-full bg-amber-400 mt-2 flex-shrink-0" />
@@ -537,7 +537,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1 + i * 0.03, duration: 0.2 }}
-                  className="p-4 flex items-start gap-3"
+                  className="p-5 flex items-start gap-3.5"
                 >
                   <div className="size-1.5 rounded-full mt-2 flex-shrink-0 bg-emerald-400" />
                   <div className="flex-1 min-w-0">
@@ -673,7 +673,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
           >
             <button
               onClick={() => navigate("/drafts")}
-              className="w-full bg-card border border-amber-500/20 rounded-xl p-4 hover:border-amber-500/30 transition-all group text-left"
+              className="w-full bg-card border border-amber-500/20 rounded-xl p-5 hover:border-amber-500/30 transition-all group text-left"
             >
               <div className="flex items-center gap-3">
                 <div className="flex items-center justify-center size-9 rounded-lg bg-amber-500/10">
@@ -731,7 +731,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 + i * 0.03, duration: 0.25 }}
-                  className="bg-card border border-border rounded-xl p-3 sm:p-4 hover:border-primary/20 transition-colors group active:scale-[0.98] touch-manipulation"
+                  className="bg-card border border-border rounded-xl p-4 sm:p-5 hover:border-primary/20 transition-colors group active:scale-[0.98] touch-manipulation"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -860,7 +860,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                 Portfolio Health
               </h2>
             </div>
-            <div className="bg-card border border-border rounded-xl p-5">
+            <div className="bg-card border border-border rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <div className="flex items-baseline gap-2">
@@ -931,7 +931,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + i * 0.04, duration: 0.25 }}
-                  className="bg-card border border-border rounded-xl p-4"
+                  className="bg-card border border-border rounded-xl p-5"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div>
@@ -1006,7 +1006,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.35 + i * 0.04, duration: 0.25 }}
-                  className="bg-card border border-border rounded-xl p-4"
+                  className="bg-card border border-border rounded-xl p-5"
                 >
                   <div className="flex items-start justify-between mb-1">
                     <div className="flex items-center gap-2">
@@ -1250,7 +1250,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
   if (useDashboard) {
     return (
       <DashboardLayout title={orgName} subtitle="MANAGED BY VENTEX">
-        <div className="p-4 md:p-6">
+        <div className="p-5 md:p-8">
           {portalContent}
         </div>
       </DashboardLayout>
@@ -1270,7 +1270,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
 
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold text-foreground tracking-tight">
               {orgName}

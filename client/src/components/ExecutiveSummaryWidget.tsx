@@ -68,7 +68,7 @@ export default function ExecutiveSummaryWidget() {
       className="bg-card border border-border rounded-xl overflow-hidden"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border/30">
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-border/30">
         <div className="flex items-center gap-2">
           <div className="flex items-center justify-center size-7 rounded-md bg-primary/10">
             <Crown className="size-4 text-primary" />
@@ -87,7 +87,7 @@ export default function ExecutiveSummaryWidget() {
       </div>
 
       {/* Executive cards */}
-      <div className="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2">
+      <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
         {executives.map((exec, i) => (
           <motion.div
             key={exec.id}
@@ -95,7 +95,7 @@ export default function ExecutiveSummaryWidget() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 + i * 0.04, duration: 0.2 }}
             onClick={() => navigate(`/ventex-team/${exec.id}`)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent/30 transition-colors cursor-pointer group"
+            className="flex items-center gap-3.5 p-3.5 rounded-lg hover:bg-accent/30 transition-colors cursor-pointer group"
           >
             {/* Avatar */}
             {exec.avatarUrl || exec.photoUrl ? (

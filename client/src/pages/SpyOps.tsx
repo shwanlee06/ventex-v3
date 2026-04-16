@@ -1055,14 +1055,14 @@ export default function SpyOps() {
           top: 0,
           left: 0,
           right: 0,
-          height: 52,
+          height: 56,
           background: "#000",
           borderBottom: "1px solid rgba(255,255,255,0.15)",
           zIndex: 1000,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "0 24px",
+          padding: "0 32px",
         }}
       >
         {/* FIX 8: scroll progress bar overlay */}
@@ -1161,7 +1161,7 @@ export default function SpyOps() {
           minHeight: "100vh",
           position: "relative",
           overflow: "hidden",
-          paddingTop: 52,
+          paddingTop: 56,
         }}
       >
         {/* Particle Globe — right side */}
@@ -1228,16 +1228,16 @@ export default function SpyOps() {
         >
           <div style={{ maxWidth: 700 }}>
             {/* Classified badge */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 32 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 48 }}>
               <span
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 6,
-                  padding: "4px 10px",
+                  gap: 8,
+                  padding: "6px 14px",
                   fontSize: 10,
                   fontFamily: "'IBM Plex Mono', monospace",
-                  letterSpacing: "0.1em",
+                  letterSpacing: "0.12em",
                   background: "rgba(0,255,135,0.08)",
                   color: "#00ff87",
                   border: "1px solid rgba(0,255,135,0.25)",
@@ -1249,7 +1249,7 @@ export default function SpyOps() {
                 style={{
                   fontSize: 10,
                   fontFamily: "'IBM Plex Mono', monospace",
-                  letterSpacing: "0.1em",
+                  letterSpacing: "0.12em",
                   color: "#555",
                 }}
               >
@@ -1261,8 +1261,8 @@ export default function SpyOps() {
               style={{
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontSize: "clamp(56px, 9vw, 130px)",
-                letterSpacing: "-0.01em",
-                lineHeight: 0.95,
+                letterSpacing: "-0.02em",
+                lineHeight: 0.92,
                 margin: 0,
               }}
             >
@@ -1276,11 +1276,11 @@ export default function SpyOps() {
             <p
               style={{
                 fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 13,
+                fontSize: 14,
                 color: "rgba(255,255,255,0.55)",
-                maxWidth: 420,
+                maxWidth: 440,
                 lineHeight: 1.8,
-                marginTop: 28,
+                marginTop: 36,
               }}
             >
               <span style={{ color: "#fff", fontWeight: 500 }}>V</span>elocity{" "}
@@ -1295,7 +1295,7 @@ export default function SpyOps() {
               </span>
             </p>
 
-            <div style={{ display: "flex", gap: 12, marginTop: 32, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 16, marginTop: 44, flexWrap: "wrap" }}>
               {/* ENTER COMMAND CENTER — auth-aware */}
               <button
                 onClick={() => { setScrollUnlocked(true); isAuthenticated ? navigate("/dashboard") : handleSignIn(); }}
@@ -1307,7 +1307,7 @@ export default function SpyOps() {
                   background: "#fff",
                   color: "#000",
                   border: "none",
-                  padding: "14px 28px",
+                  padding: "16px 36px",
                   cursor: "none",
                 }}
               >
@@ -1324,7 +1324,7 @@ export default function SpyOps() {
                   background: "transparent",
                   color: "#00ff87",
                   border: "1px solid rgba(0,255,135,0.4)",
-                  padding: "14px 28px",
+                  padding: "16px 36px",
                   cursor: "none",
                   transition: "border-color 0.2s, background 0.2s",
                 }}
@@ -1350,7 +1350,7 @@ export default function SpyOps() {
                   background: "transparent",
                   color: "#fff",
                   border: "1px solid rgba(255,255,255,0.3)",
-                  padding: "14px 28px",
+                  padding: "16px 36px",
                   cursor: "none",
                 }}
               >
@@ -1364,8 +1364,8 @@ export default function SpyOps() {
                 fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 10,
                 color: "#333",
-                letterSpacing: "0.1em",
-                marginTop: 48,
+                letterSpacing: "0.12em",
+                marginTop: 64,
               }}
             >
               DOC-VTX-2026-001 // EYES ONLY // VENTURE INTELLIGENCE DIVISION
@@ -1485,14 +1485,14 @@ export default function SpyOps() {
       {/* FIX 1: removed excessive paddingBottom to eliminate blank gap */}
       <Section
         id="sectors"
-        style={{ padding: "80px 6vw", paddingBottom: 80 }}
+        style={{ padding: "120px 6vw", paddingBottom: 120 }}
       >
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: 40,
+            marginBottom: 56,
           }}
         >
           <span
@@ -1524,7 +1524,7 @@ export default function SpyOps() {
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: 0,
+            gap: 1,
           }}
         >
           {SECTORS.map((s) => (
@@ -1540,13 +1540,13 @@ export default function SpyOps() {
               >
                 +
               </div>
-              <div style={{ fontSize: 24, marginBottom: 12 }}>{s.icon}</div>
+              <div style={{ fontSize: 28, marginBottom: 16, opacity: 0.9 }}>{s.icon}</div>
               <div
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
-                  fontSize: 32,
+                  fontSize: 36,
                   letterSpacing: "0.1em",
-                  marginBottom: 12,
+                  marginBottom: 16,
                 }}
               >
                 {s.name}_
@@ -1607,7 +1607,7 @@ export default function SpyOps() {
       </Section>
 
       {/* ═══ SECTION 6 — METHODOLOGY ═══ */}
-      <Section id="methodology" style={{ padding: "80px 6vw", position: "relative", paddingBottom: 80 }}>
+      <Section id="methodology" style={{ padding: "120px 6vw", position: "relative", paddingBottom: 120 }}>
         {/* faint background number */}
         <div
           style={{
@@ -1637,7 +1637,7 @@ export default function SpyOps() {
             <h2
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: "clamp(48px, 6vw, 80px)",
+                fontSize: "clamp(52px, 7vw, 96px)",
                 lineHeight: 1,
                 margin: 0,
                 letterSpacing: "0.05em",
@@ -1652,10 +1652,10 @@ export default function SpyOps() {
             <p
               style={{
                 fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 13,
-                color: "rgba(255,255,255,0.7)",
-                lineHeight: 1.8,
-                marginTop: 24,
+                fontSize: 14,
+                color: "rgba(255,255,255,0.65)",
+                lineHeight: 1.85,
+                marginTop: 32,
               }}
             >
               Built for holding companies operating across multiple venture
@@ -1670,7 +1670,7 @@ export default function SpyOps() {
                 style={{
                   borderBottom:
                     i < STEPS.length - 1 ? "1px solid #fff" : "none",
-                  padding: "20px 0",
+                  padding: "24px 0",
                 }}
               >
                 <div
@@ -1713,7 +1713,7 @@ export default function SpyOps() {
       {/* FIX 3: removed excessive paddingBottom to eliminate blank gap */}
       <Section
         id="command"
-        style={{ padding: "80px 6vw", borderTop: "1px solid #fff", paddingBottom: 80 }}
+        style={{ padding: "120px 6vw", borderTop: "1px solid #fff", paddingBottom: 120 }}
       >
         <div
           style={{
@@ -1729,9 +1729,9 @@ export default function SpyOps() {
         <div
           style={{
             fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: "clamp(48px, 8vw, 80px)",
-            textAlign: "center",
-            marginBottom: 40,
+              fontSize: "clamp(52px, 8vw, 96px)",
+              textAlign: "center",
+              marginBottom: 56,
             letterSpacing: "0.1em",
           }}
         >
@@ -1751,7 +1751,7 @@ export default function SpyOps() {
               key={o.name}
               style={{
                 border: "1px solid #fff",
-                padding: 20,
+                padding: 28,
                 background: "#000",
               }}
             >
@@ -1815,14 +1815,14 @@ export default function SpyOps() {
       </Section>
 
       {/* ═══ SECTION 8 — SPV PIPELINE ═══ */}
-      <Section id="pipeline" style={{ padding: "80px 6vw", paddingBottom: 80 }}>
+      <Section id="pipeline" style={{ padding: "120px 6vw", paddingBottom: 120 }}>
         <div
           style={{
             fontFamily: "'Share Tech Mono', monospace",
             fontSize: 10,
             color: "#666",
             letterSpacing: "0.2em",
-            marginBottom: 32,
+            marginBottom: 48,
           }}
         >
           // ACTIVE DEAL PIPELINE
@@ -1849,7 +1849,7 @@ export default function SpyOps() {
                         color: "#666",
                         textTransform: "uppercase",
                         textAlign: "left",
-                        padding: "12px 16px",
+                        padding: "14px 20px",
                         borderBottom: "1px solid #fff",
                         borderTop: "1px solid #fff",
                         fontWeight: 400,
@@ -1986,8 +1986,8 @@ export default function SpyOps() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          padding: "80px 6vw",
-          paddingBottom: 80,
+          padding: "120px 6vw",
+          paddingBottom: 120,
         }}
       >
         <div
@@ -1996,7 +1996,7 @@ export default function SpyOps() {
             fontSize: 10,
             color: "#666",
             letterSpacing: "0.2em",
-            marginBottom: 40,
+            marginBottom: 56,
           }}
         >
           // TERMINAL COORDINATES — CLASSIFIED
@@ -2011,7 +2011,7 @@ export default function SpyOps() {
           {/* FIX 9: TypewriterLine with staggered delays for each coordinate */}
           {/* FIX 10: All 4 coordinate nodes rendered */}
           {COORDS.map((c, i) => (
-            <div key={c.label} style={{ marginBottom: 24 }}>
+            <div key={c.label} style={{ marginBottom: 32 }}>
               <div style={{ fontSize: 12, color: "#888" }}>
                 <TypewriterLine text={c.label} delay={i * 200} speed={25} />
               </div>
@@ -2036,9 +2036,9 @@ export default function SpyOps() {
         <div
           style={{
             fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: "clamp(60px, 10vw, 120px)",
+            fontSize: "clamp(64px, 10vw, 140px)",
             color: "#fff",
-            marginTop: 40,
+            marginTop: 56,
           }}
         >
           {clock}
@@ -2081,8 +2081,8 @@ export default function SpyOps() {
         id="footer"
         style={{
           borderTop: "1px solid #fff",
-          padding: "40px 6vw",
-          paddingBottom: 68,
+          padding: "64px 6vw",
+          paddingBottom: 80,
         }}
       >
         <div
@@ -2090,7 +2090,7 @@ export default function SpyOps() {
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 32,
+            gap: 48,
           }}
         >
           {/* col 1 */}
@@ -2206,8 +2206,8 @@ export default function SpyOps() {
           style={{
             display: "flex",
             justifyContent: "space-between",
-            marginTop: 32,
-            paddingTop: 16,
+            marginTop: 48,
+            paddingTop: 24,
             borderTop: "1px solid rgba(255,255,255,0.15)",
             fontFamily: "'Share Tech Mono', monospace",
             fontSize: 10,
@@ -2215,7 +2215,7 @@ export default function SpyOps() {
           }}
         >
           <span>CLASSIFICATION: CONFIDENTIAL</span>
-          <span>BUILD: VTX-2026.03.15</span>
+          <span>BUILD: VTX-2026.04.16</span>
         </div>
       </footer>
 
@@ -2292,7 +2292,7 @@ export default function SpyOps() {
         /* FIX 13: sector card instant hover inversion — no transition */
         .spyops-sector-card {
           border: 1px solid #fff;
-          padding: 28px;
+          padding: 36px;
           background: #000;
           color: #fff;
           position: relative;
