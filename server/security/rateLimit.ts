@@ -1,5 +1,5 @@
 /**
- * In-Memory Rate Limiter — SOC 2 Compliant
+ * In-Memory Rate Limiter — SOC 2 Type II readiness
  *
  * Token-bucket style rate limiting for sensitive endpoints.
  * Tracks requests by IP + route key with automatic cleanup.

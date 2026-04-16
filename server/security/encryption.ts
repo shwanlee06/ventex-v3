@@ -1,7 +1,7 @@
 /**
  * AES-256-GCM Envelope Encryption Module
  * 
- * SOC 2 compliant application-level encryption.
+ * Application-level encryption (SOC 2 Type II readiness in progress).
  * Data is encrypted before entering the database or S3.
  * Even with DB/S3 access, data is unreadable without the master key.
  */

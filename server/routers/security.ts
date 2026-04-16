@@ -1,6 +1,6 @@
 /**
  * Security Router — RBAC Management, Audit Log, Session Management
- * SOC 2 compliant security administration
+ * Security administration (SOC 2 Type II readiness in progress)
  */
 
 import { z } from "zod";

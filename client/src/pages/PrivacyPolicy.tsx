@@ -96,7 +96,7 @@ export default function PrivacyPolicy() {
           <h3 className="text-sm font-semibold text-foreground">4. Data Retention</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
             We retain your data according to our Data Retention Policy, which is designed to meet
-            SOC 2 compliance requirements:
+            enterprise security standards and SOC 2 Type II readiness requirements:
           </p>
           <ul className="text-sm text-muted-foreground leading-relaxed list-disc list-inside space-y-1 pl-2">
             <li>Audit logs: 365 days (regulatory minimum)</li>

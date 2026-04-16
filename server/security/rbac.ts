@@ -1,7 +1,7 @@
 /**
  * Role-Based Access Control (RBAC) Middleware
  * 
- * SOC 2 compliant permission system with 7 roles:
+ * Permission system (SOC 2 Type II readiness in progress) with 7 roles:
  * 
  * VENTEX INTERNAL TEAM:
  * - owner: Full system access, can manage all settings and users

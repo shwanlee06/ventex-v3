@@ -2702,3 +2702,17 @@
 - [ ] UI: check all buttons are functional (no dead clicks)
 - [ ] UI: check all forms submit correctly
 - [x] Browser console: 0 JS errors, all 100 network requests returned 200
+
+## GAP CLOSURE BUILD — Workstream 1: Tenant Isolation Hardening (P0)
+- [x] Audit every tRPC procedure and DB helper for org scoping → produce /docs/security/tenant-isolation-audit.md (209 procs, 44 critical, 10 warning, 154 OK)
+- [x] Add tRPC middleware guard (tenantGuard.ts) + tenantScopedProcedure in trpc.ts + 21 unit tests passing
+- [x] Cross-tenant authorization tests for every tRPC endpoint (70 tests: 12 cross-org rejections, 4 viewer rejections, 2 user-in-Org_C rejections, 3 unassigned rejections, 4 same-org allows, 4 VENTEX team allows, 12 critical procedure scenarios, 10 resolveOrgId tests, 3 assertTenantScope tests, 4 edge cases, 12 original resolveOrgId tests)
+- [x] Produce /docs/architecture/rls-migration-plan.md (Postgres RLS evaluation — recommends hardening app-layer first, defer PostgreSQL migration)
+- [x] Add CI check (scripts/check-tenant-scoping.mjs) — scans all routers/db.ts for unscoped queries, report + strict modes, added to package.json
+
+## GAP CLOSURE BUILD — Non-Negotiable Rules
+- [x] Rule 1: Remove all "SOC 2 compliant/certified" language → replaced in Demo.tsx, SecurityPage.tsx, SettingsPage.tsx, PrivacyPolicy.tsx, schema.ts, security.ts, audit.ts, encryption.ts, mfa.ts, rateLimit.ts, rbac.ts, vendor-management-policy.md
+- [ ] Rule 2: Enforce human-approval step on all AI outputs going to clients
+- [ ] Rule 3: Every change includes tests (unit, integration, cross-tenant, audit_log)
+- [ ] Rule 4: Legal-dependent features behind feature flags OFF + [LEGAL REVIEW REQUIRED] tags
+- [ ] Rule 5: Status report at end of every session

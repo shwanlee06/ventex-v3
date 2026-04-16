@@ -39,7 +39,7 @@ const SOC2_ITEMS = [
   { id: "audit", label: "Audit logging enabled", done: true },
   { id: "backup", label: "Automated daily backups", done: true },
   { id: "pentest", label: "Annual penetration testing", done: false },
-  { id: "soc2cert", label: "SOC 2 Type II certification", done: false },
+  { id: "soc2cert", label: "SOC 2 Type II audit window scheduled", done: false },
   { id: "gdpr", label: "GDPR compliance review", done: false },
 ];
 

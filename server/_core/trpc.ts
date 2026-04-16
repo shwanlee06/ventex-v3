@@ -3,6 +3,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import type { TrpcContext } from "./context";
 import { createAutoAuditMiddleware } from "../security/auditMiddleware";
+import { createTenantGuard } from "../security/tenantGuard";
 
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
@@ -29,6 +30,19 @@ const requireUser = t.middleware(async opts => {
 const autoAudit = t.middleware(createAutoAuditMiddleware());
 
 export const protectedProcedure = t.procedure.use(requireUser).use(autoAudit);
+
+const tenantGuard = t.middleware(createTenantGuard());
+
+/**
+ * Tenant-scoped procedure — enforces org isolation for all non-VENTEX users.
+ * After this middleware, ctx contains:
+ *   ctx.tenantOrgId: number | null (null only for VENTEX team in "view all" mode)
+ *   ctx.isCrossTenantAccess: boolean
+ * 
+ * Use this for ANY procedure that touches tenant-specific data.
+ * System-level procedures (auth, settings) should use protectedProcedure instead.
+ */
+export const tenantScopedProcedure = t.procedure.use(requireUser).use(tenantGuard).use(autoAudit);
 
 export const adminProcedure = t.procedure.use(
   t.middleware(async opts => {

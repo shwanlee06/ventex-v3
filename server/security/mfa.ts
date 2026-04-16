@@ -1,5 +1,5 @@
 /**
- * MFA / TOTP Module — SOC 2 Compliant Two-Factor Authentication
+ * MFA / TOTP Module — Two-Factor Authentication (SOC 2 Type II readiness in progress)
  *
  * Uses TOTP (RFC 6238) with:
  * - AES-256-GCM encrypted secrets at rest

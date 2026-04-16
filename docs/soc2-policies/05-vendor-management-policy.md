@@ -11,7 +11,7 @@
 
 ## 1. Purpose
 
-This Vendor Management Policy establishes the framework for evaluating, selecting, monitoring, and managing third-party vendors and service providers that support the VENTEX platform. It ensures that vendors meet the security, privacy, and compliance standards required to protect client data and maintain SOC 2 compliance, addressing Trust Services Criteria CC9.2 (risk assessment of third parties).
+This Vendor Management Policy establishes the framework for evaluating, selecting, monitoring, and managing third-party vendors and service providers that support the VENTEX platform. It ensures that vendors meet the security, privacy, and compliance standards required to protect client data and advance SOC 2 Type II readiness, addressing Trust Services Criteria CC9.2 (risk assessment of third parties).
 
 ## 2. Scope
 

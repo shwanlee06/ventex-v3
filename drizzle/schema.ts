@@ -447,7 +447,7 @@ export const userVentureAccess = mysqlTable("user_venture_access", {
 
 export type UserVentureAccess = typeof userVentureAccess.$inferSelect;
 
-// SOC 2 compliant audit trail of all access and mutations
+// Audit trail for compliance readiness of all access and mutations
 export const auditLog = mysqlTable("audit_log", {
   id: int("id").autoincrement().primaryKey(),
   organizationId: int("organizationId"),

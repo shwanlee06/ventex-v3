@@ -1,4 +1,4 @@
-// Security Page — SOC 2 Compliance Dashboard
+// Security Page — Security & Compliance Dashboard
 // Tabs: Overview · Users & Roles · Audit Log · Access Control
 
 import DashboardLayout from "@/components/DashboardLayout";
@@ -74,7 +74,7 @@ export default function SecurityPage() {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
   return (
-    <DashboardLayout title="Security" subtitle="SOC 2 COMPLIANCE">
+    <DashboardLayout title="Security" subtitle="COMPLIANCE & CONTROLS">
       <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
         {/* Tab Bar — horizontal scroll on mobile */}
         <div className="flex items-center gap-1 bg-card border border-border rounded-lg p-1 overflow-x-auto -mx-3 sm:mx-0 scrollbar-hide">
@@ -165,13 +165,13 @@ function OverviewTab() {
             <AlertTriangle className="size-6 text-amber-400" />
           )}
           <h2 className="text-sm sm:text-lg font-semibold text-foreground">
-            {status?.compliance.soc2Ready ? "SOC 2 Compliance Ready" : "SOC 2 Compliance — Setup In Progress"}
+            {status?.compliance.soc2Ready ? "Security Controls Active" : "SOC 2 Type II Readiness — In Progress"}
           </h2>
         </div>
         <p className="text-sm text-muted-foreground">
           {status?.compliance.soc2Ready
-            ? "All security controls are active. AES-256 encryption, RBAC, zero-trust validation, and audit logging are fully operational."
-            : "Some security controls need configuration. Complete the setup below to achieve full SOC 2 readiness."
+            ? "All technical security controls are active. AES-256 encryption, RBAC, zero-trust validation, and audit logging are fully operational. SOC 2 Type II audit window targeted."
+            : "Some security controls need configuration. Complete the setup below to advance SOC 2 Type II readiness."
           }
         </p>
       </div>

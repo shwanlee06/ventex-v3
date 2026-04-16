@@ -73,7 +73,7 @@ const PRODUCT_STATS = [
   { value: "3", label: "continents, one platform" },
   { value: "<3mo", label: "concept to deployment" },
   { value: "750+", label: "automated test cases" },
-  { value: "SOC 2", label: "compliant architecture" },
+  { value: "SOC 2", label: "readiness architecture" },
 ];
 
 const GTM_STAGES = [
@@ -153,7 +153,7 @@ const TEAM = [
     color: "#00ff87",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee-new_e321fa79.webp",
     linkedin: "https://www.linkedin.com/in/shwan-lee-93b486356/",
-    bio: "Shwan Lee is a full-stack architect who saw the problem firsthand inside a UHNWI holding company — 20+ ventures across 6 sectors coordinated on spreadsheets and email chains. As Founder and CEO of Aurovia, he designed and built the entire VENTEX platform in under 90 days: 5 AI intelligence engines, SOC 2-compliant architecture, and an enterprise-grade system targeting a $6 trillion market. He owns the product, the vision, and every line of code behind it.",
+    bio: "Shwan Lee is a full-stack architect who saw the problem firsthand inside a UHNWI holding company — 20+ ventures across 6 sectors coordinated on spreadsheets and email chains. As Founder and CEO of Aurovia, he designed and built the entire VENTEX platform in under 90 days: 5 AI intelligence engines, enterprise-grade security architecture (SOC 2 Type II readiness in progress), and a system targeting a $6 trillion market. He owns the product, the vision, and every line of code behind it.",
     quote: "We didn't raise money to build the product. We built the product to raise money.",
     stats: [
       { label: "AI Engines", value: "5" },

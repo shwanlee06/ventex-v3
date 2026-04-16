@@ -1,6 +1,6 @@
 /**
  * Audit Router — Top-level audit.list endpoint
- * Required for SOC 2 compliance.
+ * Required for compliance readiness.
  * 
  * Exposes audit log as `audit.list` (the expected tRPC path).
  * Restricted to VENTEX team (owner, admin, partner roles).
