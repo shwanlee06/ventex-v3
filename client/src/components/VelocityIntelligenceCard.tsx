@@ -93,9 +93,9 @@ export default function VelocityIntelligenceCard({
   // Velocity = green spectrum; low velocity gets amber warning but base is green
   const velocityColor = avgVelocity >= 40 ? "#4ADE80" : avgVelocity >= 20 ? "#34D399" : "#F59E0B";
 
-  // Stalled = clients with velocity < 10
+  // Stalled = clients with velocity < 10 (exclude N/A clients with velocity = -1)
   const stalledCount = useMemo(
-    () => clients.filter(c => c.velocity < 10).length,
+    () => clients.filter(c => c.velocity >= 0 && c.velocity < 10).length,
     [clients]
   );
 

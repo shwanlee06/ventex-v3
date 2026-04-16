@@ -1577,9 +1577,21 @@ export const agentsRouter = router({
         .orderBy(desc(agentEvents.createdAt))
         .limit(input?.limit ?? 30);
 
-      const actionNeeded = events.filter(e => e.requiresClientAction && !e.actionTaken);
-      const completed = events.filter(e => e.actionTaken);
-      const watching = events.filter(e => !e.requiresClientAction && !e.actionTaken);
+      // Filter out noise messages that don't add value for clients
+      const isNoise = (msg: string) => {
+        const lower = msg.toLowerCase();
+        return (
+          lower.includes("no active ventures") ||
+          lower.includes("no distributions scheduled") ||
+          lower.includes("no distributions recorded") ||
+          (lower.includes("all tasks are on schedule") && lower.includes("no overdue"))
+        );
+      };
+      const meaningful = events.filter(e => !isNoise(e.message ?? ""));
+
+      const actionNeeded = meaningful.filter(e => e.requiresClientAction && !e.actionTaken);
+      const completed = meaningful.filter(e => e.actionTaken);
+      const watching = meaningful.filter(e => !e.requiresClientAction && !e.actionTaken);
 
       return { actionNeeded, completed, watching };
     }),

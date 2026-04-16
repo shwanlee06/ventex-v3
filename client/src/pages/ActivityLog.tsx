@@ -98,7 +98,8 @@ export default function ActivityLog() {
   const isAdmin = isVentexTeam(user) && !isPreviewMode;
 
   const activityQ = trpc.activity.recent.useQuery({ limit: 300 });
-  const entries = activityQ.data || [];
+  type ActivityEntry = NonNullable<typeof activityQ.data>[number];
+  const entries: (ActivityEntry & { activitySource?: string })[] = activityQ.data || [];
 
   const [sourceFilter, setSourceFilter] = useState<SourceKey>("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -109,7 +110,7 @@ export default function ActivityLog() {
   const clientSafeEntries = useMemo(() => {
     if (isAdmin) return entries;
     return entries.filter(e => {
-      const src = (e as any).activitySource;
+      const src = e.activitySource;
       return src !== "atlas_ops" && src !== "system";
     });
   }, [entries, isAdmin]);
@@ -117,7 +118,7 @@ export default function ActivityLog() {
   const sourceCounts = useMemo(() => {
     const counts = { atlas_ops: 0, client_business: 0, system: 0, other: 0 };
     clientSafeEntries.forEach(e => {
-      const src = (e as any).activitySource;
+      const src = e.activitySource;
       if (src === "atlas_ops") counts.atlas_ops++;
       else if (src === "client_business") counts.client_business++;
       else if (src === "system") counts.system++;
@@ -131,7 +132,7 @@ export default function ActivityLog() {
 
     // Source filter
     if (sourceFilter !== "all") {
-      result = result.filter(e => (e as any).activitySource === sourceFilter);
+      result = result.filter(e => e.activitySource === sourceFilter);
     }
 
     // Type filter
@@ -167,7 +168,7 @@ export default function ActivityLog() {
 
   const typeCounts = useMemo(() => {
     const base = sourceFilter !== "all"
-      ? clientSafeEntries.filter(e => (e as any).activitySource === sourceFilter)
+      ? clientSafeEntries.filter(e => e.activitySource === sourceFilter)
       : clientSafeEntries;
     const counts: Record<string, number> = {};
     base.forEach(e => {
@@ -304,7 +305,7 @@ export default function ActivityLog() {
           <div className="flex gap-1 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide flex-shrink-0">
             {typeChips.map(chip => {
               const count = chip.type === "all"
-                ? (sourceFilter !== "all" ? entries.filter(e => (e as any).activitySource === sourceFilter).length : entries.length)
+                ? (sourceFilter !== "all" ? entries.filter(e => e.activitySource === sourceFilter).length : entries.length)
                 : (typeCounts[chip.type] || 0);
               if (chip.type !== "all" && count === 0) return null;
               return (
@@ -372,7 +373,7 @@ export default function ActivityLog() {
                 </div>
                 <div className="space-y-1">
                   {items.map((entry, i) => {
-                    const source = (entry as any).activitySource as string | null;
+                    const source = entry.activitySource as string | null;
                     const badge = getSourceBadge(source);
                     return (
                       <motion.div

@@ -331,10 +331,10 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
   const allSpvs = spvsQ.data || [];
   const allDists = distQ.data || [];
   const allTasks = tasksQ.data || [];
-  const activityLogsRaw = activityQ.data || [];
+  const activityLogsRaw: (typeof activityQ.data extends (infer T)[] | undefined ? (T & { activitySource?: string }) : never)[] = activityQ.data || [];
   // Filter out internal ops and system entries for client view
   const activityLogs = activityLogsRaw.filter(e => {
-    const src = (e as any).activitySource;
+    const src = e.activitySource;
     return src !== "atlas_ops" && src !== "system";
   });
 

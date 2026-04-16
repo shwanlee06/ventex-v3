@@ -92,6 +92,7 @@ export default function DistributionsPage() {
   }, [distributions]);
 
   const handleAdd = useCallback(() => {
+    if (!activeOrgId) { toast.error("Please select a client first"); return; }
     if (!newName.trim()) { toast.error("Name is required"); return; }
     if (!newAmount.trim() || isNaN(Number(newAmount))) { toast.error("Valid amount is required"); return; }
     createDist.mutate({

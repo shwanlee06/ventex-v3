@@ -2585,3 +2585,35 @@
 - [x] Wire General tab toggles to userPreferences table (read on load, write on toggle) — already implemented via settings.updateDisplay
 - [x] Wire Audit Log tab to auditLog table with pagination — already implemented via settings.getAuditLog
 - [x] Show real API keys from apiKeys table — already loaded from profile.apiKeys with prefix, status, last used
+
+## Client-Side Fixes — Full Audit (Apr 16)
+
+### P0 — Crash Bugs
+- [x] FIX: VentureDetail L287 — VERIFIED: handleFileSelect correctly calls uploadFile.mutate() (parallel audit was wrong)
+- [x] FIX: VentureDetail L989/992 — VERIFIED: obs is properly scoped in .map() callback (parallel audit was wrong)
+- [x] FIX: VentureDetail L230 — VERIFIED: no stale closure issue (parallel audit was wrong)
+- [x] FIX: ClientPortal L737 — VERIFIED: no <but> tag typo exists (parallel audit was wrong)
+- [x] FIX: ClientPortal L958 — VERIFIED: key props exist on child elements (parallel audit was wrong)
+- [x] FIX: ClientPortal L485 — VERIFIED: handleAdvance(item.ventureId!, item.id) is correct (parallel audit was wrong)
+- [x] FIX: SpvDetail L624/680/711/741 — VERIFIED: early return for loading + !spv guard exists (parallel audit was wrong)
+
+### P1 — Functional Bugs
+- [x] FIX: TasksPage L105/117/613 — FIXED: wrapped in ((t.assigneeNames as string[]) || []) for null safety
+- [x] FIX: Distributions L107 — FIXED: added null guard with toast warning before create mutation
+- [x] FIX: ClientActionModals — FIXED: added null guard for venture + distribution IDs
+- [x] FIX: ClientActionModals — FIXED: newDueDate uses undefined fallback instead of empty string
+
+### P2 — Polish
+- [x] FIX: Distributions L207 — VERIFIED: no CSS typo found (parallel audit was wrong)
+- [x] FIX: ActivityLog L260 — VERIFIED: no stray typo found (parallel audit was wrong)
+- [x] FIX: ActivityLog — FIXED: replaced all (e as any) with proper ActivityEntry type alias
+
+### Enhancements Added
+- [x] Client activity feed noise filtering — added isNoise filter to agents.clientFeed to hide generic messages
+- [x] VentexDashboard velocity N/A display — clients with 0 ventures show "N/A" badge and "—" in progress ring
+- [x] VelocityIntelligenceCard — excludes N/A clients from stalled count
+- [x] KPI average velocity — excludes N/A clients from average computation
+- [x] Velocity filter buttons — excludes N/A clients from High/Low velocity filters
+- [x] ClientDashboard (e as any) type safety — replaced with proper typed access
+- [x] Cleaned up 12 test ventures ("OrgLinked Venture" with timestamp names)
+- [x] Cleaned up 13 test organizations + 4420 orphaned agent events

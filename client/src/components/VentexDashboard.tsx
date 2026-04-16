@@ -74,6 +74,15 @@ interface VentexDashboardProps {
 }
 
 function VelocityBadge({ rate }: { rate: number }) {
+  if (rate < 0) {
+    return (
+      <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-secondary">
+          <span className="text-[11px] font-mono font-medium text-muted-foreground">N/A</span>
+        </div>
+      </div>
+    );
+  }
   if (rate >= 70) {
     return (
       <div className="flex items-center gap-1">
@@ -250,11 +259,15 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
   // Same formula used in both the table and the KPI aggregation
   const clientsWithVelocity = useMemo(() => {
     return clients.map(c => {
+      const agentCompleted = (c as { agentCompletedTasks?: number }).agentCompletedTasks ?? 0;
+      // -1 means N/A (no ventures or tasks to measure)
+      if (c.ventureCount === 0 && c.totalTasks === 0) {
+        return { ...c, velocity: -1 };
+      }
       const denominator = c.overdueTasks + c.openTasks;
-      const agentCompleted = (c as any).agentCompletedTasks ?? 0;
       const velocity = denominator > 0
         ? Math.min(100, Math.round((agentCompleted / denominator) * 100))
-        : (agentCompleted > 0 ? 100 : 0);
+        : (agentCompleted > 0 ? 100 : (c.completionRate >= 100 ? 100 : 0));
       return { ...c, velocity };
     });
   }, [clients]);
@@ -263,10 +276,13 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
     const activeWithVelocity = activeClients.map(c => {
       // Velocity = (agent-completed tasks) / (total overdue + open) * 100
       const denominator = c.overdueTasks + c.openTasks;
-      const agentCompleted = (c as any).agentCompletedTasks ?? 0;
+      const agentCompleted = (c as { agentCompletedTasks?: number }).agentCompletedTasks ?? 0;
+      if (c.ventureCount === 0 && c.totalTasks === 0) {
+        return { ...c, velocity: -1 };
+      }
       const velocity = denominator > 0
         ? Math.min(100, Math.round((agentCompleted / denominator) * 100))
-        : (agentCompleted > 0 ? 100 : 0);
+        : (agentCompleted > 0 ? 100 : (c.completionRate >= 100 ? 100 : 0));
       return { ...c, velocity };
     });
 
@@ -277,11 +293,12 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
     const totalCompleted = activeClients.reduce((s, c) => s + c.completedTasks, 0);
     const totalTasks = activeClients.reduce((s, c) => s + c.totalTasks, 0);
     const overallCompletion = totalTasks > 0 ? Math.round((totalCompleted / totalTasks) * 100) : 0;
-    const avgVelocity = activeWithVelocity.length > 0
-      ? Math.round(activeWithVelocity.reduce((s, c) => s + c.velocity, 0) / activeWithVelocity.length)
+    const measurableClients = activeWithVelocity.filter(c => c.velocity >= 0);
+    const avgVelocity = measurableClients.length > 0
+      ? Math.round(measurableClients.reduce((s, c) => s + c.velocity, 0) / measurableClients.length)
       : 0;
-    const highVelocity = activeWithVelocity.filter(c => c.velocity >= 70).length;
-    const lowVelocity = activeWithVelocity.filter(c => c.velocity < 40).length;
+    const highVelocity = measurableClients.filter(c => c.velocity >= 70).length;
+    const lowVelocity = measurableClients.filter(c => c.velocity < 40).length;
     const clientsNeedingAttention = activeClients.filter(c => c.overdueTasks > 0).length;
 
     return {
@@ -308,7 +325,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
       if (statusFilter === "high-velocity") {
         list = list.filter(c => c.velocity >= 70);
       } else if (statusFilter === "low-velocity") {
-        list = list.filter(c => c.velocity < 40);
+        list = list.filter(c => c.velocity >= 0 && c.velocity < 40);
       } else if (statusFilter === "overdue") {
         list = list.filter(c => c.overdueTasks > 0);
       }
@@ -545,7 +562,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
             {[
               { key: "all", label: "All", count: activeClients.length },
               { key: "high-velocity", label: "High Velocity", count: clientsWithVelocity.filter(c => c.velocity >= 70 && c.status !== "archived").length },
-              { key: "low-velocity", label: "Low Velocity", count: clientsWithVelocity.filter(c => c.velocity < 40 && c.status !== "archived").length },
+              { key: "low-velocity", label: "Low Velocity", count: clientsWithVelocity.filter(c => c.velocity >= 0 && c.velocity < 40 && c.status !== "archived").length },
               { key: "overdue", label: "Overdue", count: activeClients.filter(c => c.overdueTasks > 0).length },
             ].map(f => (
               <button
@@ -715,9 +732,9 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                   <td className="p-3 sm:p-4">
                     <div className="flex items-center gap-3">
                       <div className="relative">
-                        <ProgressRing value={client.velocity} size={36} />
+                        <ProgressRing value={client.velocity < 0 ? 0 : client.velocity} size={36} />
                         <span className="absolute inset-0 flex items-center justify-center text-[8px] font-mono font-bold text-foreground">
-                          {client.velocity}
+                          {client.velocity < 0 ? "—" : client.velocity}
                         </span>
                       </div>
                       <div>
@@ -910,9 +927,9 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
               {/* Header with velocity ring */}
               <div className="flex items-center gap-3 mb-4">
                 <div className="relative">
-                  <ProgressRing value={client.velocity} size={44} />
+                  <ProgressRing value={client.velocity < 0 ? 0 : client.velocity} size={44} />
                   <span className="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-bold text-foreground">
-                    {client.velocity}
+                    {client.velocity < 0 ? "—" : client.velocity}
                   </span>
                 </div>
                 <div>

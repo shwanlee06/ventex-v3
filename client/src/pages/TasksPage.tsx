@@ -102,7 +102,7 @@ export default function TasksPage() {
 
   const allAssignees = useMemo(() => {
     const names = new Set<string>();
-    tasks.forEach(t => (t.assigneeNames as string[] || []).forEach(n => names.add(n)));
+    tasks.forEach(t => ((t.assigneeNames || []) as string[]).forEach(n => names.add(n)));
     return ["All", ...Array.from(names)];
   }, [tasks]);
 
@@ -114,7 +114,7 @@ export default function TasksPage() {
       if (statusFilter === "complete" && resolved !== "complete") return false;
       if (statusFilter === "overdue" && resolved !== "overdue") return false;
       if (priorityFilter !== "All" && t.priority !== priorityFilter) return false;
-      if (assigneeFilter !== "All" && !(t.assigneeNames as string[] || []).includes(assigneeFilter)) return false;
+      if (assigneeFilter !== "All" && !((t.assigneeNames || []) as string[]).includes(assigneeFilter)) return false;
       return true;
     });
     // Default sort: most overdue first, then by due date
@@ -485,7 +485,7 @@ export default function TasksPage() {
                             )}>{task.priority}</span>
                           </TableCell>
                         )}
-                        <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{(task.assigneeNames as string[] || []).join(", ") || "—"}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{((task.assigneeNames || []) as string[]).join(", ") || "—"}</TableCell>
                         <TableCell className="text-xs text-primary/70 italic hidden lg:table-cell">{task.ventureLink || "—"}</TableCell>
                         <TableCell><StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} /></TableCell>
                       </TableRow>
@@ -610,7 +610,7 @@ export default function TasksPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Assignees</span>
-                  <span className="text-xs text-foreground">{(editTask.assigneeNames as string[] || []).join(", ") || "Unassigned"}</span>
+                  <span className="text-xs text-foreground">{((editTask.assigneeNames || []) as string[]).join(", ") || "Unassigned"}</span>
                 </div>
                 {editTask.ventureLink && (
                   <div className="flex items-center gap-2">

@@ -273,7 +273,7 @@ function ApproveFollowUpFlow({ detail, onSubmit, isSubmitting }: FlowProps) {
 function ReassignTaskFlow({ detail, onSubmit, isSubmitting }: FlowProps) {
   const { event, task, availableTeam } = detail;
   const [selectedAssignee, setSelectedAssignee] = useState("");
-  const [newDueDate, setNewDueDate] = useState(task?.dueDate || "");
+  const [newDueDate, setNewDueDate] = useState(task?.dueDate || new Date().toISOString().split("T")[0]);
   const [note, setNote] = useState("");
 
   const selectedMember = useMemo(
@@ -484,7 +484,7 @@ function ConfirmDistributionFlow({ detail, onSubmit, isSubmitting }: FlowProps) 
         <Button
           onClick={() =>
             onSubmit({
-              distributionId: distribution?.id || Number(event.agentEntityId),
+              distributionId: distribution?.id || (event.agentEntityId ? Number(event.agentEntityId) : 0),
               draftId: draft?.id,
               sendEmail,
               editedBody: editedBody !== draft?.body ? editedBody : undefined,
@@ -706,7 +706,7 @@ function UnblockVentureFlow({ detail, onSubmit, isSubmitting }: FlowProps) {
         <Button
           onClick={() =>
             onSubmit({
-              ventureId: venture?.id || Number(event.agentEntityId),
+              ventureId: venture?.id || (event.agentEntityId ? Number(event.agentEntityId) : 0),
               unblockAction: selectedOption,
               taskTitle: selectedOption === "assign_task" ? taskTitle : undefined,
               taskAssignee: selectedMember?.name,
