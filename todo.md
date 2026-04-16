@@ -2531,3 +2531,23 @@
 - [ ] UI: Client-facing velocity report — shows where delays originate (client vs VENTEX)
 - [ ] Wire diagnostic scoring into blueprint generation flow
 - [x] Test end-to-end: verified diagnostic runs on Royalton org, scores populate, friction flags display, all 3 tabs render correctly
+
+## Blueprint Diagnostics — Client-Ready Testing (Apr 15)
+- [x] Test: Run Diagnostic button works, scores persist on page reload
+- [x] Test: Re-analyze button works, updates scores
+- [ ] Test: Switch org dropdown updates diagnostic data
+- [x] Test: Operating Model — select each mode, verify persistence
+- [x] Test: Operating Model — friction warnings show when Client Custom selected
+- [ ] Test: Velocity Attribution — create attribution, verify it appears in list
+- [ ] Test: Velocity Attribution — resolve attribution, verify counts update
+- [x] Test: All server errors handled gracefully with user-facing messages
+- [x] Fix all bugs found during testing
+
+## Blueprint Diagnostics — Bug Fixes (Apr 15)
+- [x] FIX: Operating Model — isActive check broken (no isActive field in schema, check mode match instead)
+- [x] FIX: Velocity Attribution — status field doesn't exist (check resolvedAt instead)
+- [x] FIX: Delay source labels mismatched (ventex_engine → ventex_processing, add client_approval/regulatory/market_condition)
+- [x] FIX: Friction flag categories — handle unmapped categories gracefully
+- [x] FIX: Attribution estimatedDelayDays → delayDays field name mismatch
+- [x] FIX: Velocity summary bySource keys don't match backend delay sources
+- [x] FIX: setStructureMode only did UPDATE (not UPSERT) — first-time mode selection silently failed, now inserts if no row exists

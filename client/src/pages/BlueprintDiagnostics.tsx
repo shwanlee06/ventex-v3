@@ -123,8 +123,12 @@ const CATEGORY_LABELS: Record<string, { label: string; icon: React.ReactNode }> 
 
 const DELAY_SOURCE_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   client_structure: { label: "Client Structure", color: "text-amber-400 bg-amber-500/10", icon: <Building2 className="size-3.5" /> },
+  client_approval: { label: "Client Approval", color: "text-amber-400 bg-amber-500/10", icon: <Building2 className="size-3.5" /> },
+  ventex_processing: { label: "VENTEX Engine", color: "text-blue-400 bg-blue-500/10", icon: <Zap className="size-3.5" /> },
   ventex_engine: { label: "VENTEX Engine", color: "text-blue-400 bg-blue-500/10", icon: <Zap className="size-3.5" /> },
   external_dependency: { label: "External", color: "text-violet-400 bg-violet-500/10", icon: <Clock className="size-3.5" /> },
+  regulatory: { label: "Regulatory", color: "text-violet-400 bg-violet-500/10", icon: <Shield className="size-3.5" /> },
+  market_condition: { label: "Market", color: "text-violet-400 bg-violet-500/10", icon: <TrendingDown className="size-3.5" /> },
   shared_responsibility: { label: "Shared", color: "text-gray-400 bg-gray-500/10", icon: <Scale className="size-3.5" /> },
 };
 
@@ -426,7 +430,7 @@ export default function BlueprintDiagnosticsPage() {
                     <div className="space-y-2">
                       {(diagnostic.frictionFlags as any[]).map((flag: any, i: number) => {
                         const sev = SEVERITY_CONFIG[flag.severity] || SEVERITY_CONFIG.medium;
-                        const cat = CATEGORY_LABELS[flag.category] || { label: flag.category, icon: <Flag className="size-3.5" /> };
+                        const cat = CATEGORY_LABELS[flag.category] || { label: flag.category.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()), icon: <Flag className="size-3.5" /> };
                         const isExpanded = expandedFlag === flag.id;
 
                         return (
@@ -550,7 +554,7 @@ export default function BlueprintDiagnosticsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className={cn(
                   "bg-card border rounded-lg p-5 cursor-pointer transition-all",
-                  structureModes?.some((m: any) => m.mode === "recommended" && m.isActive)
+                  structureModes?.some((m: any) => m.mode === "recommended")
                     ? "border-primary ring-1 ring-primary/20"
                     : "border-border hover:border-primary/30"
                 )}
@@ -564,7 +568,7 @@ export default function BlueprintDiagnosticsPage() {
                     <h3 className="text-sm font-semibold text-foreground">VENTEX Recommended</h3>
                     <p className="text-[11px] text-muted-foreground">Proven operating model</p>
                   </div>
-                  {structureModes?.some((m: any) => m.mode === "recommended" && m.isActive) && (
+                  {structureModes?.some((m: any) => m.mode === "recommended") && (
                     <Badge className="ml-auto bg-primary/10 text-primary text-[10px]">Active</Badge>
                   )}
                 </div>
@@ -584,7 +588,7 @@ export default function BlueprintDiagnosticsPage() {
                 transition={{ delay: 0.05 }}
                 className={cn(
                   "bg-card border rounded-lg p-5 cursor-pointer transition-all",
-                  structureModes?.some((m: any) => m.mode === "custom" && m.isActive)
+                  structureModes?.some((m: any) => m.mode === "custom")
                     ? "border-amber-500 ring-1 ring-amber-500/20"
                     : "border-border hover:border-amber-500/30"
                 )}
@@ -598,7 +602,7 @@ export default function BlueprintDiagnosticsPage() {
                     <h3 className="text-sm font-semibold text-foreground">Client Custom</h3>
                     <p className="text-[11px] text-muted-foreground">Their existing structure</p>
                   </div>
-                  {structureModes?.some((m: any) => m.mode === "custom" && m.isActive) && (
+                  {structureModes?.some((m: any) => m.mode === "custom") && (
                     <Badge className="ml-auto bg-amber-500/10 text-amber-400 text-[10px]">Active</Badge>
                   )}
                 </div>
@@ -619,7 +623,7 @@ export default function BlueprintDiagnosticsPage() {
               transition={{ delay: 0.1 }}
               className={cn(
                 "bg-card border rounded-lg p-5 cursor-pointer transition-all",
-                structureModes?.some((m: any) => m.mode === "hybrid" && m.isActive)
+                structureModes?.some((m: any) => m.mode === "hybrid")
                   ? "border-emerald-500 ring-1 ring-emerald-500/20"
                   : "border-border hover:border-emerald-500/30"
               )}
@@ -633,7 +637,7 @@ export default function BlueprintDiagnosticsPage() {
                   <h3 className="text-sm font-semibold text-foreground">Hybrid Model</h3>
                   <p className="text-[11px] text-muted-foreground">VENTEX backbone + client customizations</p>
                 </div>
-                {structureModes?.some((m: any) => m.mode === "hybrid" && m.isActive) && (
+                {structureModes?.some((m: any) => m.mode === "hybrid") && (
                   <Badge className="ml-auto bg-emerald-500/10 text-emerald-400 text-[10px]">Active</Badge>
                 )}
               </div>
@@ -645,7 +649,7 @@ export default function BlueprintDiagnosticsPage() {
             </motion.div>
 
             {/* Active friction warnings when custom mode is selected */}
-            {structureModes?.some((m: any) => m.mode !== "recommended" && m.isActive) && diagnostic?.frictionFlags && (diagnostic.frictionFlags as any[]).length > 0 && (
+            {structureModes?.some((m: any) => m.mode !== "recommended") && diagnostic?.frictionFlags && (diagnostic.frictionFlags as any[]).length > 0 && (
               <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <AlertTriangle className="size-4 text-amber-400" />
@@ -692,7 +696,7 @@ export default function BlueprintDiagnosticsPage() {
                     <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Client Structure</span>
                   </div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-mono font-semibold text-foreground">{velocitySummary.bySource?.client_structure?.count || 0}</span>
+                    <span className="text-2xl font-mono font-semibold text-foreground">{(velocitySummary.bySource?.client_structure?.count || 0) + (velocitySummary.bySource?.client_approval?.count || 0)}</span>
                     <span className="text-[10px] text-muted-foreground">delays</span>
                   </div>
                   <span className="text-[10px] font-mono text-amber-400">{velocitySummary.clientDelayDays || 0} total days</span>
@@ -704,7 +708,7 @@ export default function BlueprintDiagnosticsPage() {
                     <span className="text-[11px] uppercase tracking-wider text-muted-foreground">VENTEX Engine</span>
                   </div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-mono font-semibold text-foreground">{velocitySummary.bySource?.ventex_engine?.count || 0}</span>
+                    <span className="text-2xl font-mono font-semibold text-foreground">{velocitySummary.bySource?.ventex_processing?.count || velocitySummary.bySource?.ventex_engine?.count || 0}</span>
                     <span className="text-[10px] text-muted-foreground">delays</span>
                   </div>
                   <span className="text-[10px] font-mono text-blue-400">{velocitySummary.ventexDelayDays || 0} total days</span>
@@ -716,7 +720,7 @@ export default function BlueprintDiagnosticsPage() {
                     <span className="text-[11px] uppercase tracking-wider text-muted-foreground">External</span>
                   </div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-mono font-semibold text-foreground">{velocitySummary.bySource?.external_dependency?.count || 0}</span>
+                    <span className="text-2xl font-mono font-semibold text-foreground">{(velocitySummary.bySource?.external_dependency?.count || 0) + (velocitySummary.bySource?.regulatory?.count || 0) + (velocitySummary.bySource?.market_condition?.count || 0)}</span>
                     <span className="text-[10px] text-muted-foreground">delays</span>
                   </div>
                   <span className="text-[10px] font-mono text-violet-400">{velocitySummary.externalDelayDays || 0} total days</span>
@@ -783,12 +787,12 @@ export default function BlueprintDiagnosticsPage() {
                             )}
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
-                            {attr.estimatedDelayDays > 0 && (
+                            {attr.delayDays > 0 && (
                               <span className="text-[10px] font-mono text-muted-foreground">
-                                +{attr.estimatedDelayDays}d
+                                +{attr.delayDays}d
                               </span>
                             )}
-                            {attr.status === "active" && (
+                            {!attr.resolvedAt && (
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -798,7 +802,7 @@ export default function BlueprintDiagnosticsPage() {
                                 Resolve
                               </Button>
                             )}
-                            {attr.status === "resolved" && (
+                            {attr.resolvedAt && (
                               <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-emerald-500/10 text-emerald-400">
                                 <CheckCircle2 className="size-3" />
                                 Resolved

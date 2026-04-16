@@ -556,12 +556,25 @@ Generate the optimal structure for maximum deal velocity in the ${input.sector} 
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
 
-      await db.update(blueprintStructureModes)
-        .set({ mode: input.mode })
+      // Upsert: check if row exists, insert if not, update if so
+      const [existing] = await db.select()
+        .from(blueprintStructureModes)
         .where(and(
           eq(blueprintStructureModes.organizationId, validatedOrgId),
           eq(blueprintStructureModes.sector, input.sector),
         ));
+
+      if (existing) {
+        await db.update(blueprintStructureModes)
+          .set({ mode: input.mode })
+          .where(eq(blueprintStructureModes.id, existing.id));
+      } else {
+        await db.insert(blueprintStructureModes).values({
+          organizationId: validatedOrgId,
+          sector: input.sector,
+          mode: input.mode,
+        });
+      }
       return { success: true };
     }),
 
