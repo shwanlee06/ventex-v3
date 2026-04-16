@@ -271,7 +271,7 @@ export default function DraftsPage() {
               key={tab.key}
               onClick={() => { setActiveTab(tab.key); setSearchQuery(""); setTypeFilter(null); setSelectedIds(new Set()); }}
               className={cn(
-                "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px",
+                "flex items-center gap-2 px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors border-b-2 -mb-px whitespace-nowrap touch-manipulation",
                 activeTab === tab.key
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -292,8 +292,8 @@ export default function DraftsPage() {
         </div>
 
         {/* Search + Filter bar */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-[200px] max-w-[360px]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+          <div className="relative flex-1 min-w-0 sm:min-w-[200px] sm:max-w-[360px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               placeholder="Search by venture, subject, or recipient..."

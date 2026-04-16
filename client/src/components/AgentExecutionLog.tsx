@@ -5,7 +5,8 @@
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { useSSEInvalidation } from "@/hooks/useSSE";
 import {
   Activity,
   Bot,
@@ -79,14 +80,21 @@ export default function AgentExecutionLog({ organizationId, limit = 25, compact 
   // Fetch agent events — these are real execution records
   const eventsQ = trpc.agents.listEvents.useQuery(
     { organizationId: organizationId || 0, limit: 100 },
-    { enabled: !!organizationId, refetchInterval: 30_000 }
+    { enabled: !!organizationId, refetchInterval: 60_000 }
   );
 
   // Also fetch across all orgs for VENTEX admin view
   const allEventsQ = trpc.agents.listEvents.useQuery(
     { organizationId: 0, limit: 100 },
-    { enabled: !organizationId, refetchInterval: 30_000 }
+    { enabled: !organizationId, refetchInterval: 60_000 }
   );
+
+  // SSE real-time updates — refetch on agent activity instead of fast polling
+  const refetchEvents = useCallback(() => {
+    if (organizationId) eventsQ.refetch();
+    else allEventsQ.refetch();
+  }, [organizationId]);
+  useSSEInvalidation("agent_activity", refetchEvents);
 
   const events = organizationId ? (eventsQ.data || []) : (allEventsQ.data || []);
   const isLoading = organizationId ? eventsQ.isLoading : allEventsQ.isLoading;

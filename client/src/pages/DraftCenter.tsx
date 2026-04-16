@@ -157,7 +157,7 @@ export default function DraftCenter() {
 
   return (
     <DashboardLayout title="Draft Center" subtitle="AI Communications">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8 pb-24 sm:pb-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -8 }}
@@ -204,12 +204,12 @@ export default function DraftCenter() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15 }}
-          className="flex items-center gap-2 mb-6"
+          className="flex items-center gap-1.5 sm:gap-2 mb-4 sm:mb-6 overflow-x-auto"
         >
           <button
             onClick={() => setFilter("pending")}
             className={cn(
-              "px-3 py-1.5 rounded-md text-xs font-medium transition-all border",
+              "px-3 py-2 sm:py-1.5 rounded-md text-xs font-medium transition-all border whitespace-nowrap touch-manipulation",
               filter === "pending"
                 ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
                 : "bg-transparent text-muted-foreground border-transparent hover:text-foreground"
@@ -226,7 +226,7 @@ export default function DraftCenter() {
           <button
             onClick={() => setFilter("sent")}
             className={cn(
-              "px-3 py-1.5 rounded-md text-xs font-medium transition-all border",
+              "px-3 py-2 sm:py-1.5 rounded-md text-xs font-medium transition-all border whitespace-nowrap touch-manipulation",
               filter === "sent"
                 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                 : "bg-transparent text-muted-foreground border-transparent hover:text-foreground"
@@ -238,7 +238,7 @@ export default function DraftCenter() {
           <button
             onClick={() => setFilter("dismissed")}
             className={cn(
-              "px-3 py-1.5 rounded-md text-xs font-medium transition-all border",
+              "px-3 py-2 sm:py-1.5 rounded-md text-xs font-medium transition-all border whitespace-nowrap touch-manipulation",
               filter === "dismissed"
                 ? "bg-secondary text-foreground border-border"
                 : "bg-transparent text-muted-foreground border-transparent hover:text-foreground"
@@ -332,7 +332,7 @@ export default function DraftCenter() {
                           {/* Draft header — click to expand */}
                           <button
                             onClick={() => setExpandedId(isExpanded ? null : draft.id)}
-                            className="w-full p-4 flex items-start gap-3 text-left hover:bg-accent/20 transition-colors"
+                            className="w-full p-3 sm:p-4 flex items-start gap-2 sm:gap-3 text-left hover:bg-accent/20 transition-colors touch-manipulation"
                           >
                             {/* Status dot */}
                             <div
@@ -420,10 +420,10 @@ export default function DraftCenter() {
 
                                   {/* Action buttons */}
                                   {draft.status === "pending" && (
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                                       <Button
                                         size="sm"
-                                        className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20"
+                                        className="min-h-[44px] sm:min-h-0 touch-manipulation active:scale-[0.97] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20"
                                         disabled={isBusy}
                                         onClick={() => {
                                           approveMutation.mutate({
@@ -472,7 +472,7 @@ export default function DraftCenter() {
                                       <Button
                                         size="sm"
                                         variant="ghost"
-                                        className="text-muted-foreground hover:text-red-400 ml-auto"
+                                        className="min-h-[44px] sm:min-h-0 touch-manipulation text-muted-foreground hover:text-red-400 sm:ml-auto"
                                         disabled={isBusy}
                                         onClick={() => dismissMutation.mutate({ draftId: draft.id })}
                                       >

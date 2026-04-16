@@ -2850,3 +2850,80 @@
 - [x] Export button added to SecurityPage Audit Log tab (Download icon + CSV trigger)
 - [x] 90-day retention cleanup via purgeExpiredAuditLogs with dry-run safety
 - [x] All 922 tests passing across 49 files, 0 TypeScript errors
+
+## Tier 1a — WorkOS SAML SSO + SCIM 2.0 (Apr 16)
+- [x] Create SSO service module (server/security/sso.ts) with SAML 2.0 flow
+- [x] Add SAML routes: SP metadata, login redirect, ACS callback (server/routes/ssoRoutes.ts)
+- [x] Create SCIM 2.0 provisioning endpoints: List, Get, Create, Update (PUT), Patch, Delete Users
+- [x] JIT (Just-In-Time) user provisioning from SAML assertions
+- [x] Enforce <60s session termination on SCIM deprovision (terminateUserSessions + SSE broadcast)
+- [x] SCIM bearer token authentication middleware
+- [x] All SCIM operations audit-logged to immutable trail
+- [x] Write vitest tests for SSO and SCIM (10 tests passing)
+- [x] 0 TypeScript errors
+
+## Tier 1b — Pen Test Engagement Package (Apr 16)
+- [x] Create docs/security/pentest-engagement-package.md — full engagement scope, 6 test types, rules of engagement, test accounts, timeline
+- [x] Create docs/security/asset-inventory.md — 14 REST endpoints, 200+ tRPC procedures, 5 data stores, 5 integrations, 13 security controls
+- [x] Create docs/security/threat-model.md — STRIDE analysis across 5 trust boundaries, 28 threats analyzed, 3 partially mitigated items flagged
+
+## Tier 1c — SOC 2 Type II Preparation (Apr 16)
+- [x] Create docs/compliance/soc2-controls-mapping.md — all 5 TSC categories mapped (Security CC1-CC9, Availability A1, Processing Integrity PI1, Confidentiality C1, Privacy P1-P8)
+- [x] Create docs/compliance/evidence-collection-guide.md — automated collection methods, archive structure, audit partner recommendations
+- [x] Automated evidence collection already exists via security.getSecurityStatus, security.getAuditStats, security.exportAuditLogCsv, security.getRetentionStats
+- [x] Create docs/compliance/soc2-readiness-checklist.md — 20 technical controls verified, 17 documents complete, 8 pre-audit actions identified
+
+## Tier 2a — Data Retention Cron Job (Apr 16)
+- [x] Already implemented in server/security/dataRetention.ts with comprehensive purge (audit 365d, activity 180d, sessions 30d, events 180d, notifications 90d)
+- [x] Runs daily via setInterval in server/_core/index.ts, initial run 2min after startup
+- [x] Tests exist in server/security/dataRetention.test.ts
+- [x] Retention purge already logs to audit_log before deletion (line 219)
+
+## Tier 2b — Automated Backup Verification (Apr 16)
+- [x] Create scripts/backup-verify.sh — 6 verification categories (connectivity, schema, migrations, health, storage, security)
+- [x] Generates markdown report in reports/backup-verification/ — 10 PASS, 3 WARN, 0 FAIL
+- [x] Health endpoints already serve as backup status monitoring (/api/health, /api/health/db)
+- [x] Backup verification runbook documented in docs/security/bcp-dr-plan.md Section 4
+
+## Tier 2c — Client Portal Enhancements (Apr 16)
+- [x] Add document_downloads table (10 columns) + distribution_read_receipts table (6 columns) — migration 0030
+- [x] Add trackDownload + getDownloadHistory procedures (VENTEX-only history view)
+- [x] Add markDistributionRead + getDistributionReceipts procedures (upsert, VENTEX-only receipts)
+- [x] 932 tests passing across 50 files, 0 TypeScript errors
+- [ ] Add watermark overlay for sensitive document previews (frontend enhancement)
+
+## Tier 3a — Real-Time Notifications via SSE (Apr 16)
+- [x] SSE endpoint already exists (server/routes/sseEvents.ts) with 8 event types, org/user filtering, heartbeat
+- [x] useSSE hook already exists (client/src/hooks/useSSE.ts) with auto-reconnect, exponential backoff
+- [x] Already integrated: NotificationPanel (notification events), VelocityFeed (feed_update events)
+- [x] Newly integrated: AgentExecutionLog (agent_activity), AgentContext (agent_activity), Oversight (agent_activity), VentexActivitySection (agent_activity), OverdueAlertBanner (task_update)
+- [x] Connection status captured in DashboardLayout via useSSEConnection()
+- [x] 0 TypeScript errors
+
+## Tier 3b — Multi-Currency Support (Apr 16)
+- [x] Add currency field to distributions schema
+- [x] Add FX rate tracking table (fx_rates, migration 0031)
+- [x] server/currency.ts helper module (getLatestRate, convertCurrency, formatAmount, saveRate, 15 currencies)
+- [x] FX procedures in distributions router (listFxRates, setFxRate, convertAmount, supportedCurrencies)
+- [x] Update distribution UI to show currency badge and conversion
+- [x] Add currency selector to distribution creation form
+- [x] FX Rate Management panel (admin-only, set rates, view history)
+- [x] formatCurrency updated to handle multi-currency decimals (JPY=0, BHD/KWD/OMR=3)
+- [x] 23 Vitest tests for currency module (SUPPORTED_CURRENCIES, formatAmount, getLatestRate, convertCurrency, supportedCurrencies procedure)
+
+## Tier 3c — Mobile-Responsive Client Portal (Apr 16)
+- [x] Audit all client-facing pages: ClientPortal, DraftCenter, Drafts, ClientDashboard, ClientSettings, AdvanceBanner, LiveTicker, BlueprintJourneyTracker
+- [x] Fix touch targets — min-h-[44px] on all action buttons (Apple HIG compliant)
+- [x] Responsive action cards — flex-col sm:flex-row stacking, full-width buttons on mobile
+- [x] Responsive padding — px-3 sm:px-4 md:px-8, py-6 sm:py-8 across all portal pages
+- [x] Touch manipulation + active:scale-[0.97] feedback on interactive elements
+- [x] Filter tabs — whitespace-nowrap + overflow-x-auto for horizontal scroll on small screens
+- [x] Search bar — min-w-0 on mobile, full-width stacking on small screens
+- [x] Dialogs — w-[calc(100%-2rem)] on mobile for edge-to-edge
+- [x] Sheet drawer — w-full on mobile
+- [x] AdvanceBanner — stacked layout on mobile with full-width advance button
+- [x] viewport-fit=cover added for iOS safe area/notch support
+- [x] Bottom padding (pb-24 sm:pb-8) on scrollable pages for mobile nav clearance
+- [x] AppSidebar already has mobile hamburger drawer (md:hidden)
+- [x] Topbar already has min-h-[44px] touch targets with hidden labels on mobile
+- [x] 0 TypeScript errors confirmed

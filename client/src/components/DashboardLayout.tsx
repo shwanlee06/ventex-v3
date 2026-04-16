@@ -15,7 +15,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children, title, subtitle }: DashboardLayoutProps) {
   // Establish SSE connection for real-time updates
-  useSSEConnection();
+  const { connected } = useSSEConnection();
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">

@@ -4,6 +4,7 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
+import { useSSEInvalidation } from "@/hooks/useSSE";
 import { motion } from "framer-motion";
 import {
   AlertTriangle,
@@ -68,6 +69,9 @@ export default function OversightPage() {
     undefined,
     { refetchInterval: 60000 }
   );
+
+  // SSE real-time updates
+  useSSEInvalidation("agent_activity", () => { refetch(); });
 
   const items = data?.items ?? [];
   const stats = data?.stats ?? { total: 0, unactioned: 0, critical: 0, pending: 0, resolved: 0 };

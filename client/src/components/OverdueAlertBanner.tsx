@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useSSEInvalidation } from "@/hooks/useSSE";
 
 interface OverdueAlertBannerProps {
   onNavigate: (path: string) => void;
@@ -51,6 +52,9 @@ export default function OverdueAlertBanner({ onNavigate }: OverdueAlertBannerPro
   const overdueByClientQ = trpc.tasks.overdueByClient.useQuery(undefined, {
     refetchInterval: 60000,
   });
+
+  // SSE real-time updates for task changes
+  useSSEInvalidation("task_update", () => overdueByClientQ.refetch());
 
   const [expanded, setExpanded] = useState(false);
   const [notified, setNotified] = useState<NotifiedState>({});

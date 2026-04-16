@@ -320,13 +320,13 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
   const portalContent = (
     <>
       {/* Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+      <main className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8 space-y-6 sm:space-y-8 pb-24 sm:pb-8">
         {/* ── Velocity Summary ─────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="bg-card/50 border border-border/50 rounded-xl px-5 py-4 flex items-start gap-3"
+          className="bg-card/50 border border-border/50 rounded-xl px-3 sm:px-5 py-3 sm:py-4 flex items-start gap-3"
         >
           <Zap className="size-4 text-primary mt-0.5 flex-shrink-0" />
           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -371,10 +371,10 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 8, height: 0 }}
                       transition={{ delay: i * 0.03, duration: 0.2 }}
-                      className="bg-card border border-amber-500/20 rounded-xl p-4"
+                      className="bg-card border border-amber-500/20 rounded-xl p-3 sm:p-4"
                     >
-                      <div className="flex items-start gap-3">
-                        <div className="size-2 rounded-full bg-amber-400 mt-2 flex-shrink-0" />
+                      <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
+                        <div className="hidden sm:block size-2 rounded-full bg-amber-400 mt-2 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           {item.ventureName && (
                             <h3 className="text-sm font-medium text-foreground mb-1">
@@ -397,10 +397,11 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                         </div>
 
                         {/* Action button — route to correct flow */}
+                        <div className="flex sm:block mt-2 sm:mt-0 flex-shrink-0">
                         {item.actionFlow === "advance_stage" && item.ventureId && (
                           <Button
                             size="sm"
-                            className="flex-shrink-0 bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
+                            className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 active:scale-[0.97]"
                             disabled={isBusy}
                             onClick={() => handleAdvance(item.ventureId!, item.id)}
                           >
@@ -416,7 +417,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                         {item.actionFlow === "approve_followup" && (
                           <Button
                             size="sm"
-                            className="flex-shrink-0 bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
+                            className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 active:scale-[0.97]"
                             disabled={isBusy}
                             onClick={() =>
                               setConfirmDialog({
@@ -436,7 +437,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                         {item.actionFlow === "confirm_distribution" && (
                           <Button
                             size="sm"
-                            className="flex-shrink-0 bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
+                            className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 active:scale-[0.97]"
                             disabled={isBusy}
                             onClick={() =>
                               setConfirmDialog({
@@ -456,7 +457,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                         {item.actionFlow === "unblock_venture" && (
                           <Button
                             size="sm"
-                            className="flex-shrink-0 bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
+                            className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 active:scale-[0.97]"
                             disabled={isBusy}
                             onClick={() =>
                               setConfirmDialog({
@@ -477,7 +478,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-shrink-0 text-xs"
+                            className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation text-xs active:scale-[0.97]"
                             onClick={() => setTaskDrawer({ ventureId: item.ventureId!, ventureName: item.ventureName || "Venture" })}
                           >
                             {ACTION_FLOW_ICONS["view_task"]}
@@ -489,7 +490,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-shrink-0 text-xs"
+                            className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation text-xs active:scale-[0.97]"
                             onClick={() => {
                               if (item.ventureId) {
                                 toast.info(`Navigating to ${item.ventureName || "venture"}...`);
@@ -502,6 +503,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                             <ArrowRight className="size-3 ml-1" />
                           </Button>
                         )}
+                        </div>
                       </div>
                     </motion.div>
                   );
@@ -722,14 +724,14 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
             </div>
           ) : (
             <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
               {(showAllPortfolio ? portfolio : portfolio.slice(0, 6)).map((v, i) => (
                 <motion.div
                   key={v.id}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 + i * 0.03, duration: 0.25 }}
-                  className="bg-card border border-border rounded-xl p-4 hover:border-primary/20 transition-colors group"
+                  className="bg-card border border-border rounded-xl p-3 sm:p-4 hover:border-primary/20 transition-colors group active:scale-[0.98] touch-manipulation"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -1052,7 +1054,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
 
       {/* ── Task Drawer ─────────────────────────────────────────────── */}
       <Sheet open={!!taskDrawer} onOpenChange={(open) => !open && setTaskDrawer(null)}>
-        <SheetContent className="sm:max-w-md bg-background border-border">
+        <SheetContent className="w-full sm:max-w-md bg-background border-border">
           <SheetHeader>
             <SheetTitle className="text-base font-semibold text-foreground">
               {taskDrawer?.ventureName}
@@ -1197,7 +1199,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
         onOpenChange={(open) => !open && setConfirmDialog(null)}
       >
         {confirmDialog && (
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="text-base">
                 {confirmDialog.actionLabel}
@@ -1214,13 +1216,14 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
             <DialogFooter className="mt-4 gap-2">
               <Button
                 variant="outline"
+                className="min-h-[44px] sm:min-h-0 touch-manipulation"
                 onClick={() => setConfirmDialog(null)}
                 disabled={resolvingIds.has(confirmDialog.eventId)}
               >
                 Cancel
               </Button>
               <Button
-                className="bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
+                className="min-h-[44px] sm:min-h-0 touch-manipulation bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
                 disabled={resolvingIds.has(confirmDialog.eventId)}
                 onClick={() =>
                   handleResolveAction(
@@ -1267,7 +1270,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
 
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold text-foreground tracking-tight">
               {orgName}

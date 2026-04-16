@@ -6,6 +6,7 @@ import { createContext, useContext, useMemo, useCallback, type ReactNode } from 
 import { trpc } from "@/lib/trpc";
 import { usePreviewMode } from "@/contexts/PreviewMode";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useSSEInvalidation } from "@/hooks/useSSE";
 
 
 export const AGENT_CONFIG = {
@@ -237,6 +238,9 @@ export function AgentProvider({ children }: { children: ReactNode }) {
     utils.agents.listDrafts.invalidate();
     utils.agents.velocityMetrics.invalidate();
   }, [utils]);
+
+  // SSE real-time updates — refetch agent data on server push instead of relying solely on polling
+  useSSEInvalidation("agent_activity", invalidateAll);
 
 
   const runAll = trpc.agents.runAll.useMutation({ onSuccess: invalidateAll });

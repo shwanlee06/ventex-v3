@@ -79,30 +79,32 @@ export default function AdvanceBanner({ readyVentures, onAdvanced }: AdvanceBann
             {/* Gradient background */}
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-emerald-500/8 to-blue-500/5" />
 
-            <div className="relative p-4 flex items-center gap-4">
-              {/* Icon */}
-              <div className="flex items-center justify-center size-10 rounded-xl bg-emerald-500/10 flex-shrink-0">
-                <Zap className="size-5 text-emerald-400" />
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-sm font-medium text-foreground truncate">
-                    {venture.ventureName}
-                  </span>
-                  <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full flex-shrink-0">
-                    Ready
-                  </span>
+            <div className="relative p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              {/* Icon + Content row */}
+              <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+                <div className="flex items-center justify-center size-10 rounded-xl bg-emerald-500/10 flex-shrink-0">
+                  <Zap className="size-5 text-emerald-400" />
                 </div>
-                <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                  <span className="font-mono">{venture.currentStage}</span>
-                  <ArrowRight className="size-3 text-emerald-400" />
-                  <span className="font-mono font-medium text-foreground">{venture.nextStage}</span>
-                  <span className="text-muted-foreground/50">·</span>
-                  <span>{venture.completedTasks} tasks completed</span>
-                  <span className="text-muted-foreground/50">·</span>
-                  <span>{venture.daysInStage}d in status</span>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-sm font-medium text-foreground truncate">
+                      {venture.ventureName}
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                      Ready
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] text-muted-foreground flex-wrap">
+                    <span className="font-mono">{venture.currentStage}</span>
+                    <ArrowRight className="size-3 text-emerald-400" />
+                    <span className="font-mono font-medium text-foreground">{venture.nextStage}</span>
+                    <span className="hidden sm:inline text-muted-foreground/50">·</span>
+                    <span className="hidden sm:inline">{venture.completedTasks} tasks completed</span>
+                    <span className="hidden sm:inline text-muted-foreground/50">·</span>
+                    <span className="hidden sm:inline">{venture.daysInStage}d in status</span>
+                  </div>
                 </div>
               </div>
 
@@ -112,7 +114,7 @@ export default function AdvanceBanner({ readyVentures, onAdvanced }: AdvanceBann
                 onClick={() => handleAdvance(venture)}
                 disabled={advancingId === venture.ventureId}
                 className={cn(
-                  "h-9 gap-1.5 flex-shrink-0 text-xs font-medium",
+                  "w-full sm:w-auto min-h-[44px] sm:min-h-0 h-auto sm:h-9 gap-1.5 flex-shrink-0 text-xs font-medium touch-manipulation active:scale-[0.97]",
                   venture.isCapitalStage
                     ? "bg-amber-500 hover:bg-amber-600 text-white"
                     : "bg-emerald-500 hover:bg-emerald-600 text-white"

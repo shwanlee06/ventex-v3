@@ -15,6 +15,9 @@ import {
   tasks,
   distributions,
   agentDrafts,
+  ventureFiles,
+  documentDownloads,
+  distributionReadReceipts,
 } from "../../drizzle/schema";
 import { isVentexTeam } from "../security/rbac";
 import { onClientPortalAction, onTaskCompleted, onStageAdvanced } from "../intelligence/realtimeTriggers";
@@ -1195,5 +1198,128 @@ ${scopedContext}`;
       }
       await db.update(agentDrafts).set({ status: "dismissed" } as any).where(eq(agentDrafts.id, input.draftId));
       return { success: true };
+    }),
+
+  // ── Document Download Tracking ──────────────────────────────────────────
+  trackDownload: protectedProcedure
+    .input(z.object({
+      fileId: z.number(),
+      ventureId: z.number(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      // Verify the file exists and user has access to the venture
+      const [file] = await db.select().from(ventureFiles)
+        .where(and(eq(ventureFiles.id, input.fileId), eq(ventureFiles.ventureId, input.ventureId)))
+        .limit(1);
+      if (!file) throw new TRPCError({ code: "NOT_FOUND", message: "File not found" });
+
+      const isAdmin = isVentexTeam(ctx.user);
+      if (!isAdmin) {
+        // Verify org has access to this venture
+        const [access] = await db.select().from(orgVentureAccess)
+          .where(and(
+            eq(orgVentureAccess.organizationId, ctx.user.organizationId!),
+            eq(orgVentureAccess.ventureId, input.ventureId)
+          ))
+          .limit(1);
+        if (!access) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+
+      await db.insert(documentDownloads).values({
+        fileId: input.fileId,
+        ventureId: input.ventureId,
+        userId: ctx.user.id,
+        userName: ctx.user.name || "Unknown",
+        userRole: ctx.user.role,
+        organizationId: ctx.user.organizationId,
+        ipAddress: null,
+        userAgent: null,
+      });
+
+      return { success: true, fileUrl: file.fileUrl };
+    }),
+
+  getDownloadHistory: protectedProcedure
+    .input(z.object({
+      ventureId: z.number(),
+      limit: z.number().min(1).max(200).default(50),
+    }))
+    .query(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      // Only VENTEX team can see download history
+      if (!isVentexTeam(ctx.user)) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+
+      const downloads = await db.select()
+        .from(documentDownloads)
+        .where(eq(documentDownloads.ventureId, input.ventureId))
+        .orderBy(desc(documentDownloads.createdAt))
+        .limit(input.limit);
+
+      return downloads;
+    }),
+
+  // ── Distribution Read Receipts ──────────────────────────────────────────
+  markDistributionRead: protectedProcedure
+    .input(z.object({ distributionId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      // Verify distribution exists
+      const [dist] = await db.select().from(distributions)
+        .where(eq(distributions.id, input.distributionId))
+        .limit(1);
+      if (!dist) throw new TRPCError({ code: "NOT_FOUND", message: "Distribution not found" });
+
+      // Check access
+      const isAdmin = isVentexTeam(ctx.user);
+      if (!isAdmin && ctx.user.organizationId !== dist.organizationId) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+
+      // Upsert — don't create duplicate receipts
+      const [existing] = await db.select().from(distributionReadReceipts)
+        .where(and(
+          eq(distributionReadReceipts.distributionId, input.distributionId),
+          eq(distributionReadReceipts.userId, ctx.user.id)
+        ))
+        .limit(1);
+
+      if (!existing) {
+        await db.insert(distributionReadReceipts).values({
+          distributionId: input.distributionId,
+          userId: ctx.user.id,
+          userName: ctx.user.name || "Unknown",
+          organizationId: ctx.user.organizationId,
+        });
+      }
+
+      return { success: true };
+    }),
+
+  getDistributionReceipts: protectedProcedure
+    .input(z.object({ distributionId: z.number() }))
+    .query(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      // Only VENTEX team can see read receipts
+      if (!isVentexTeam(ctx.user)) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+
+      const receipts = await db.select()
+        .from(distributionReadReceipts)
+        .where(eq(distributionReadReceipts.distributionId, input.distributionId))
+        .orderBy(desc(distributionReadReceipts.readAt));
+
+      return receipts;
     }),
 };

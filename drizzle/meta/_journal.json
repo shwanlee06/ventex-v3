@@ -211,6 +211,20 @@
       "when": 1776368533981,
       "tag": "0029_clear_frightful_four",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "5",
+      "when": 1776375751049,
+      "tag": "0030_black_shockwave",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "5",
+      "when": 1776376551287,
+      "tag": "0031_numerous_shape",
+      "breakpoints": true
     }
   ]
 }

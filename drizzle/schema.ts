@@ -1,5 +1,5 @@
 // Schema — VENTEX System
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, bigint, json, boolean } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, bigint, json, boolean, double } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -1079,3 +1079,45 @@ export const agentApprovalLog = mysqlTable("agent_approval_log", {
 });
 export type AgentApprovalLog = typeof agentApprovalLog.$inferSelect;
 export type InsertAgentApprovalLog = typeof agentApprovalLog.$inferInsert;
+
+// Tier 2c: Document Download Tracking
+export const documentDownloads = mysqlTable("document_downloads", {
+  id: int("id").autoincrement().primaryKey(),
+  fileId: int("fileId").notNull(),
+  ventureId: int("ventureId").notNull(),
+  userId: int("userId").notNull(),
+  userName: varchar("userName", { length: 255 }).notNull(),
+  userRole: varchar("userRole", { length: 32 }).notNull(),
+  organizationId: int("organizationId"),
+  ipAddress: varchar("ipAddress", { length: 64 }),
+  userAgent: varchar("userAgent", { length: 500 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type DocumentDownload = typeof documentDownloads.$inferSelect;
+export type InsertDocumentDownload = typeof documentDownloads.$inferInsert;
+
+// Tier 2c: Distribution Read Receipts
+export const distributionReadReceipts = mysqlTable("distribution_read_receipts", {
+  id: int("id").autoincrement().primaryKey(),
+  distributionId: int("distributionId").notNull(),
+  userId: int("userId").notNull(),
+  userName: varchar("userName", { length: 255 }).notNull(),
+  organizationId: int("organizationId"),
+  readAt: timestamp("readAt").defaultNow().notNull(),
+});
+export type DistributionReadReceipt = typeof distributionReadReceipts.$inferSelect;
+export type InsertDistributionReadReceipt = typeof distributionReadReceipts.$inferInsert;
+
+// Tier 3b: FX Rate Tracking for Multi-Currency Support
+export const fxRates = mysqlTable("fx_rates", {
+  id: int("id").autoincrement().primaryKey(),
+  baseCurrency: varchar("baseCurrency", { length: 8 }).notNull().default("USD"),
+  targetCurrency: varchar("targetCurrency", { length: 8 }).notNull(),
+  rate: double("rate").notNull(), // 1 base = rate target
+  inverseRate: double("inverseRate").notNull(), // 1 target = inverseRate base
+  source: varchar("source", { length: 64 }).default("manual"), // manual | api | ecb
+  effectiveDate: varchar("effectiveDate", { length: 32 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type FxRate = typeof fxRates.$inferSelect;
+export type InsertFxRate = typeof fxRates.$inferInsert;

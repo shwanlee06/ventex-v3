@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { distributions, activityLog } from "../../drizzle/schema";
-import { eq, desc } from "drizzle-orm";
+import { distributions, activityLog, fxRates } from "../../drizzle/schema";
+import { eq, desc, and } from "drizzle-orm";
 import { isVentexTeam, logAudit } from "../security/rbac";
 import { resolveOrgId } from "../security/orgScope";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
@@ -116,6 +116,77 @@ export const distributionsRouter = router({
       });
     }
     return { success: true };
+  }),
+
+  // FX Rate management — VENTEX team only
+  listFxRates: protectedProcedure
+    .input(z.object({ baseCurrency: z.string().default("USD") }).optional())
+    .query(async ({ ctx, input }) => {
+      if (!isVentexTeam(ctx.user)) throw new Error("Only VENTEX team can view FX rates");
+      const db = await getDb();
+      if (!db) return [];
+      const base = input?.baseCurrency || "USD";
+      return db.select().from(fxRates)
+        .where(eq(fxRates.baseCurrency, base))
+        .orderBy(desc(fxRates.createdAt))
+        .limit(50);
+    }),
+
+  setFxRate: protectedProcedure
+    .input(z.object({
+      baseCurrency: z.string().default("USD"),
+      targetCurrency: z.string(),
+      rate: z.number().positive(),
+      effectiveDate: z.string(),
+      source: z.string().default("manual"),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      if (!isVentexTeam(ctx.user)) throw new Error("Only VENTEX team can set FX rates");
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      await db.insert(fxRates).values({
+        baseCurrency: input.baseCurrency,
+        targetCurrency: input.targetCurrency,
+        rate: input.rate,
+        inverseRate: 1 / input.rate,
+        source: input.source,
+        effectiveDate: input.effectiveDate,
+      });
+      await logAudit({
+        userId: ctx.user.id,
+        userName: ctx.user.name,
+        action: "fx_rate_set",
+        entityType: "fx_rate",
+        entityName: input.targetCurrency,
+        details: `Set ${input.baseCurrency}/${input.targetCurrency} = ${input.rate}`,
+      });
+      return { success: true };
+    }),
+
+  convertAmount: protectedProcedure
+    .input(z.object({
+      amount: z.number(),
+      fromCurrency: z.string(),
+      toCurrency: z.string(),
+    }))
+    .query(async ({ input }) => {
+      if (input.fromCurrency === input.toCurrency) {
+        return { convertedAmount: input.amount, rate: 1 };
+      }
+      const { getLatestRate } = await import("../currency");
+      const rate = await getLatestRate(input.fromCurrency, input.toCurrency);
+      if (rate === null) return { convertedAmount: null, rate: null, error: "No rate available" };
+      return { convertedAmount: Math.round(input.amount * rate * 100) / 100, rate };
+    }),
+
+  supportedCurrencies: publicProcedure.query(async () => {
+    const { SUPPORTED_CURRENCIES } = await import("../currency");
+    return Object.entries(SUPPORTED_CURRENCIES).map(([code, meta]: [string, any]) => ({
+      code,
+      symbol: meta.symbol,
+      name: meta.name,
+      decimals: meta.decimals,
+    }));
   }),
 
   // Metrics — scoped by org with cross-tenant isolation

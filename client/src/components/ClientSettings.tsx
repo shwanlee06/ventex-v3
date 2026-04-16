@@ -442,7 +442,7 @@ export default function ClientSettings({ orgId, orgSlug }: ClientSettingsProps) 
         <Button
           onClick={handleSaveOrg}
           disabled={!isOrgDirty || updateOrg.isPending}
-          className="h-9 px-4 text-sm"
+          className="h-11 sm:h-9 px-4 text-sm touch-manipulation active:scale-[0.97]"
         >
           {updateOrg.isPending ? (
             <Loader2 className="size-4 animate-spin mr-1.5" />
@@ -706,7 +706,7 @@ export default function ClientSettings({ orgId, orgSlug }: ClientSettingsProps) 
               <Button
                 onClick={handleSaveAgentConfig}
                 disabled={!isAgentDirty || updateAgentConfig.isPending}
-                className="h-9 px-4 text-sm"
+                className="h-11 sm:h-9 px-4 text-sm touch-manipulation active:scale-[0.97]"
               >
                 {updateAgentConfig.isPending ? (
                   <Loader2 className="size-4 animate-spin mr-1.5" />

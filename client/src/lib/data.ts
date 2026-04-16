@@ -414,8 +414,23 @@ export function formatDate(dateStr: string): string {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
+// Currency decimal config for formatCurrency
+const CURRENCY_DECIMALS: Record<string, number> = {
+  JPY: 0, BHD: 3, KWD: 3, OMR: 3,
+};
+
 export function formatCurrency(amount: number, currency: string = "USD"): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
+  const decimals = CURRENCY_DECIMALS[currency] ?? 0;
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: Math.max(decimals, 2),
+    }).format(amount);
+  } catch {
+    return `${currency} ${amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+  }
 }
 
 export function getThemeColor(theme: string): typeof THEME_COLORS[string] {

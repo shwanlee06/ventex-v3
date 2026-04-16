@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Activity, CheckCircle2, ArrowRight, Bell, FileText, TrendingUp } from "lucide-react";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSSEInvalidation } from "@/hooks/useSSE";
 
 // Map internal action types to client-friendly descriptions
 function getActionIcon(actionType: string | null) {
@@ -50,6 +51,9 @@ export default function VentexActivitySection() {
     { limit: 20 },
     { refetchInterval: 60000 }
   );
+
+  // SSE real-time updates
+  useSSEInvalidation("agent_activity", () => feedQ.refetch());
 
   // Get events from the last 7 days
   const weeklyEvents = useMemo(() => {

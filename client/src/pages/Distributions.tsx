@@ -1,5 +1,5 @@
 // Distributions Page — Per-Client Scoped via Workspace Context
-// Card/table view, detail modals, new distribution form
+// Card/table view, detail modals, new distribution form, multi-currency support
 
 import DashboardLayout from "@/components/DashboardLayout";
 import StatusBadge from "@/components/StatusBadge";
@@ -16,7 +16,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { motion, AnimatePresence } from "framer-motion";
-import { DollarSign, Clock, XCircle, CheckCircle2, Plus, FileDown, LayoutGrid, List, Loader2, GitCommitVertical, X } from "lucide-react";
+import { DollarSign, Clock, XCircle, CheckCircle2, Plus, FileDown, LayoutGrid, List, Loader2, GitCommitVertical, X, ArrowRightLeft, Settings2 } from "lucide-react";
 import { useState, useCallback, useMemo } from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -33,6 +33,141 @@ import { toast } from "sonner";
 import { exportDistributionPdf, exportAllDistributionsPdf } from "@/lib/exportPdf";
 import type { Distribution } from "@/lib/data";
 
+// ─── Currency Display Helper ───────────────────────────────────────
+function CurrencyBadge({ currency }: { currency: string }) {
+  if (!currency || currency === "USD") return null;
+  return (
+    <span className="inline-flex items-center gap-0.5 text-[9px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary/80 border border-primary/10">
+      {currency}
+    </span>
+  );
+}
+
+// ─── FX Rate Management Panel ──────────────────────────────────────
+function FxRateManagement() {
+  const fxQ = trpc.distributions.listFxRates.useQuery();
+  const currQ = trpc.distributions.supportedCurrencies.useQuery();
+  const setRate = trpc.distributions.setFxRate.useMutation({
+    onSuccess: () => {
+      fxQ.refetch();
+      toast.success("FX rate saved");
+      setNewTarget(""); setNewRate(""); setNewEffDate("");
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const [newTarget, setNewTarget] = useState("");
+  const [newRate, setNewRate] = useState("");
+  const [newEffDate, setNewEffDate] = useState("");
+
+  const currencies = currQ.data || [];
+  const rates = fxQ.data || [];
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card border border-border rounded-lg">
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <ArrowRightLeft className="size-4 text-primary" />
+          <h2 className="text-sm font-semibold text-foreground">FX Rate Management</h2>
+        </div>
+        <span className="text-[10px] font-mono text-muted-foreground">{rates.length} rates</span>
+      </div>
+
+      {/* Add new rate */}
+      <div className="p-4 border-b border-border">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div>
+            <Label className="text-[10px] mb-1 text-muted-foreground">Target Currency</Label>
+            <Select value={newTarget} onValueChange={setNewTarget}>
+              <SelectTrigger className="h-9 min-h-[36px] text-xs"><SelectValue placeholder="Select..." /></SelectTrigger>
+              <SelectContent>
+                {currencies.filter(c => c.code !== "USD").map(c => (
+                  <SelectItem key={c.code} value={c.code}>{c.code} — {c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-[10px] mb-1 text-muted-foreground">Rate (1 USD = ?)</Label>
+            <Input value={newRate} onChange={(e) => setNewRate(e.target.value)} placeholder="e.g. 3.6725" type="number" step="0.0001" className="h-9 min-h-[36px] text-xs" />
+          </div>
+          <div>
+            <Label className="text-[10px] mb-1 text-muted-foreground">Effective Date</Label>
+            <Input value={newEffDate} onChange={(e) => setNewEffDate(e.target.value)} type="date" className="h-9 min-h-[36px] text-xs" />
+          </div>
+          <div className="flex items-end">
+            <Button
+              size="sm"
+              className="text-xs h-9 min-h-[36px] w-full"
+              disabled={!newTarget || !newRate || !newEffDate || setRate.isPending}
+              onClick={() => {
+                if (!newTarget || !newRate || !newEffDate) return;
+                setRate.mutate({
+                  baseCurrency: "USD",
+                  targetCurrency: newTarget,
+                  rate: Number(newRate),
+                  effectiveDate: newEffDate,
+                  source: "manual",
+                });
+              }}
+            >
+              {setRate.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className="size-3.5 mr-1" />}
+              Set Rate
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Existing rates table */}
+      {rates.length === 0 ? (
+        <div className="p-8 text-center">
+          <ArrowRightLeft className="size-6 text-muted-foreground mx-auto mb-2 opacity-40" />
+          <p className="text-xs text-muted-foreground">No FX rates configured. Add rates above to enable multi-currency distributions.</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground">Pair</TableHead>
+                <TableHead className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground">Rate</TableHead>
+                <TableHead className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground">Inverse</TableHead>
+                <TableHead className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground">Source</TableHead>
+                <TableHead className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground">Effective</TableHead>
+                <TableHead className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground">Added</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rates.map((r) => (
+                <TableRow key={r.id} className="hover:bg-accent/20">
+                  <TableCell className="text-xs font-mono font-medium text-foreground">
+                    {r.baseCurrency}/{r.targetCurrency}
+                  </TableCell>
+                  <TableCell className="text-xs font-mono text-foreground">{r.rate.toFixed(4)}</TableCell>
+                  <TableCell className="text-xs font-mono text-muted-foreground">{r.inverseRate.toFixed(6)}</TableCell>
+                  <TableCell>
+                    <span className={cn(
+                      "text-[10px] font-medium px-1.5 py-0.5 rounded",
+                      r.source === "manual" ? "bg-amber-500/10 text-amber-400" : "bg-emerald-500/10 text-emerald-400"
+                    )}>
+                      {r.source || "manual"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-xs font-mono text-muted-foreground">{r.effectiveDate}</TableCell>
+                  <TableCell className="text-[10px] font-mono text-muted-foreground">
+                    {r.createdAt ? new Date(r.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : ""}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// ─── Main Distributions Page ───────────────────────────────────────
 export default function DistributionsPage() {
   const { activeOrg, activeOrgId } = useWorkspace();
   const { user } = useAuth();
@@ -44,6 +179,7 @@ export default function DistributionsPage() {
     activeOrgId ? { organizationId: activeOrgId } : undefined,
     { enabled: true }
   );
+  const currQ = trpc.distributions.supportedCurrencies.useQuery();
   const utils = trpc.useUtils();
 
   const createDist = trpc.distributions.create.useMutation({
@@ -58,15 +194,18 @@ export default function DistributionsPage() {
 
   const distributions = distQ.data || [];
   const loading = distQ.isLoading;
+  const currencies = currQ.data || [];
 
   const [distModal, setDistModal] = useState<typeof distributions[number] | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"card" | "table" | "timeline">("card");
   const [activeMetric, setActiveMetric] = useState<string | null>(null);
+  const [showFxPanel, setShowFxPanel] = useState(false);
 
   const [newName, setNewName] = useState("");
   const [newFund, setNewFund] = useState("");
   const [newAmount, setNewAmount] = useState("");
+  const [newCurrency, setNewCurrency] = useState("USD");
   const [newDate, setNewDate] = useState("");
   const [newType, setNewType] = useState("Profit Share");
   const [newMethod, setNewMethod] = useState("Wire Transfer");
@@ -76,6 +215,7 @@ export default function DistributionsPage() {
   const resetForm = () => {
     setNewName(""); setNewFund(""); setNewAmount(""); setNewDate(""); setNewNotes("");
     setNewType("Profit Share"); setNewMethod("Wire Transfer"); setNewStatus("Scheduled");
+    setNewCurrency("USD");
   };
 
   const totalDistributed = distributions.reduce((sum, d) => sum + (d.amount || 0), 0);
@@ -99,7 +239,7 @@ export default function DistributionsPage() {
       name: newName.trim(),
       fund: newFund.trim() || "General Fund",
       amount: Number(newAmount),
-      currency: "USD",
+      currency: newCurrency,
       type: newType,
       method: newMethod,
       status: newStatus,
@@ -107,7 +247,7 @@ export default function DistributionsPage() {
       distributionDate: newDate || new Date().toISOString().split("T")[0],
       organizationId: activeOrgId,
     });
-  }, [newName, newFund, newAmount, newDate, newType, newMethod, newStatus, newNotes, activeOrgId, createDist]);
+  }, [newName, newFund, newAmount, newCurrency, newDate, newType, newMethod, newStatus, newNotes, activeOrgId, createDist]);
 
   const metrics = [
     { key: "total", label: "Total", value: formatCurrency(totalDistributed), icon: <DollarSign className="size-4 text-primary" />, sub: `${distributions.length} dist.`, activeColor: "border-primary/50" },
@@ -143,6 +283,12 @@ export default function DistributionsPage() {
   });
 
   const clientLabel = activeOrg?.name || "All Clients";
+
+  // Helper to format amount with currency badge
+  const formatDistAmount = (dist: { amount: number | null; currency: string | null }) => {
+    const cur = dist.currency || "USD";
+    return formatCurrency(dist.amount || 0, cur);
+  };
 
   return (
     <DashboardLayout title="Distributions" subtitle={`${clientLabel} · LP PAYOUTS & DIVIDENDS`}>
@@ -210,6 +356,11 @@ export default function DistributionsPage() {
             </button>
           </div>
           <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation hidden sm:flex" onClick={() => setShowFxPanel(!showFxPanel)}>
+                <ArrowRightLeft className="size-3.5 mr-1" /> FX Rates
+              </Button>
+            )}
             <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation hidden sm:flex" onClick={() => {
               const localDists = displayDistributions.map(toLocalDist);
               exportAllDistributionsPdf(localDists);
@@ -224,6 +375,15 @@ export default function DistributionsPage() {
             )}
           </div>
         </div>
+
+        {/* FX Rate Management Panel (admin only) */}
+        <AnimatePresence>
+          {showFxPanel && isAdmin && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+              <FxRateManagement />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Card View (mobile-friendly) */}
         {viewMode === "card" && !loading && (
@@ -256,7 +416,10 @@ export default function DistributionsPage() {
                           <span className="text-sm font-normal text-foreground/85">{dist.name}</span>
                           <p className="text-[12px] text-muted-foreground/45 mt-0.5">{dist.fund}</p>
                         </div>
-                        <span className="text-lg font-semibold text-foreground flex-shrink-0 tabular-nums text-right">{formatCurrency(dist.amount || 0)}</span>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <span className="text-lg font-semibold text-foreground tabular-nums text-right">{formatDistAmount(dist)}</span>
+                          <CurrencyBadge currency={dist.currency || "USD"} />
+                        </div>
                       </div>
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
                         {dc && <StatusBadge label={dc.label} bg={dc.bg} dot={dc.dot} />}
@@ -292,6 +455,7 @@ export default function DistributionsPage() {
                       <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden md:table-cell">Fund</TableHead>
                       <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden md:table-cell">Date</TableHead>
                       <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Amount</TableHead>
+                      <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden md:table-cell">Currency</TableHead>
                       <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden lg:table-cell">Type</TableHead>
                       <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden lg:table-cell">Method</TableHead>
                       <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Status</TableHead>
@@ -310,7 +474,11 @@ export default function DistributionsPage() {
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground hidden md:table-cell">{dist.fund}</TableCell>
                           <TableCell className="text-xs font-mono text-muted-foreground hidden md:table-cell">{dist.distributionDate ? formatDate(dist.distributionDate) : ""}</TableCell>
-                          <TableCell className="text-xs font-mono font-medium text-foreground">{formatCurrency(dist.amount || 0)}</TableCell>
+                          <TableCell className="text-xs font-mono font-medium text-foreground">{formatDistAmount(dist)}</TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            <CurrencyBadge currency={dist.currency || "USD"} />
+                            {(!dist.currency || dist.currency === "USD") && <span className="text-[10px] font-mono text-muted-foreground">USD</span>}
+                          </TableCell>
                           <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{dist.type}</TableCell>
                           <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{dist.method}</TableCell>
                           <TableCell>{dc && <StatusBadge label={dc.label} bg={dc.bg} dot={dc.dot} />}</TableCell>
@@ -380,9 +548,12 @@ export default function DistributionsPage() {
                                 <span className="text-[10px] text-muted-foreground">{dist.type}</span>
                               </div>
                             </div>
-                            <span className="text-sm font-mono font-semibold text-foreground flex-shrink-0">
-                              {formatCurrency(dist.amount || 0)}
-                            </span>
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                              <span className="text-sm font-mono font-semibold text-foreground">
+                                {formatDistAmount(dist)}
+                              </span>
+                              <CurrencyBadge currency={dist.currency || "USD"} />
+                            </div>
                           </div>
                         </motion.div>
                       );
@@ -424,6 +595,7 @@ export default function DistributionsPage() {
             const ageDays = distModal.distributionDate
               ? Math.max(0, Math.floor((Date.now() - new Date(distModal.distributionDate).getTime()) / 86400000))
               : 0;
+            const cur = distModal.currency || "USD";
             return (
               <>
                 <DialogHeader>
@@ -434,7 +606,10 @@ export default function DistributionsPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Amount</span>
-                      <span className="text-sm font-mono font-semibold text-foreground">{formatCurrency(distModal.amount || 0)}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-mono font-semibold text-foreground">{formatCurrency(distModal.amount || 0, cur)}</span>
+                        <CurrencyBadge currency={cur} />
+                      </div>
                     </div>
                     <div>
                       <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Date</span>
@@ -453,8 +628,8 @@ export default function DistributionsPage() {
                       {dc && <StatusBadge label={dc.label} bg={dc.bg} dot={dc.dot} />}
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Age</span>
-                      <span className="text-xs font-mono text-foreground">{ageDays} days</span>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Currency</span>
+                      <span className="text-xs font-mono text-foreground">{cur}</span>
                     </div>
                   </div>
                   {distModal.notes && (
@@ -479,7 +654,7 @@ export default function DistributionsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Add Distribution Dialog */}
+      {/* Add Distribution Dialog — with currency selector */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -499,15 +674,40 @@ export default function DistributionsPage() {
                 <Input value={newFund} onChange={(e) => setNewFund(e.target.value)} placeholder="e.g. SPV Alpha" className="h-9 min-h-[36px] text-xs" />
               </div>
               <div>
-                <Label className="text-xs mb-1">Amount ($)</Label>
+                <Label className="text-xs mb-1">Amount</Label>
                 <Input value={newAmount} onChange={(e) => setNewAmount(e.target.value)} placeholder="250000" type="number" className="h-9 min-h-[36px] text-xs" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
+                <Label className="text-xs mb-1">Currency</Label>
+                <Select value={newCurrency} onValueChange={setNewCurrency}>
+                  <SelectTrigger className="h-9 min-h-[36px] text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {currencies.length > 0 ? (
+                      currencies.map(c => (
+                        <SelectItem key={c.code} value={c.code}>
+                          {c.symbol} {c.code}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <>
+                        <SelectItem value="USD">$ USD</SelectItem>
+                        <SelectItem value="EUR">€ EUR</SelectItem>
+                        <SelectItem value="GBP">£ GBP</SelectItem>
+                        <SelectItem value="AED">د.إ AED</SelectItem>
+                        <SelectItem value="SAR">﷼ SAR</SelectItem>
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label className="text-xs mb-1">Date</Label>
                 <Input value={newDate} onChange={(e) => setNewDate(e.target.value)} type="date" className="h-9 min-h-[36px] text-xs" />
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs mb-1">Type</Label>
                 <Select value={newType} onValueChange={setNewType}>
@@ -515,8 +715,6 @@ export default function DistributionsPage() {
                   <SelectContent>{["Profit Share", "Return of Capital", "Dividend", "Interest", "Other"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs mb-1">Method</Label>
                 <Select value={newMethod} onValueChange={setNewMethod}>
@@ -524,6 +722,8 @@ export default function DistributionsPage() {
                   <SelectContent>{["Wire Transfer", "ACH", "Check", "Crypto", "Other"].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs mb-1">Status</Label>
                 <Select value={newStatus} onValueChange={setNewStatus}>

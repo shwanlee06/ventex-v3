@@ -12,6 +12,7 @@ import { startAgentScheduler, getSchedulerStatus } from "../agentScheduler";
 import { runDataRetentionPurge } from "../security/dataRetention";
 import inviteValidationRouter from "../routes/inviteValidation";
 import { sseRouter } from "../routes/sseEvents";
+import { ssoRouter } from "../routes/ssoRoutes";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -76,6 +77,7 @@ async function startServer() {
   app.use(inviteValidationRouter);
   // SSE real-time events
   app.use(sseRouter);
+  app.use(ssoRouter);
   // tRPC API
   app.use(
     "/api/trpc",

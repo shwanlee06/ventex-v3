@@ -377,7 +377,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
 
   if (pageLoading) {
     return (
-      <div className="client-portal px-5 py-6 sm:px-8 sm:py-8 space-y-6 pb-28 md:pb-8 max-w-3xl mx-auto">
+      <div className="client-portal px-3 sm:px-5 md:px-8 py-6 sm:py-8 space-y-6 pb-28 md:pb-8 max-w-3xl mx-auto">
         <Skeleton className="h-40 rounded-2xl" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {Array.from({ length: 2 }).map((_, i) => (
@@ -391,7 +391,7 @@ export default function ClientDashboard({ onNavigate }: ClientDashboardProps) {
   }
 
   return (
-    <div className="client-portal px-5 py-6 sm:px-8 sm:py-8 space-y-6 sm:space-y-8 pb-28 md:pb-8 max-w-3xl mx-auto">
+    <div className="client-portal px-3 sm:px-5 md:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 pb-28 md:pb-8 max-w-3xl mx-auto">
 
       {/* -- Hero Greeting ------------------------------------------- */}
       <motion.div
