@@ -186,8 +186,12 @@ describe("aiTasks router", () => {
         expect(result.titles).toContain("AI Generated: Review Q2 financials");
         expect(result.titles).toContain("AI Generated: Follow up on permit renewal");
       } finally {
-        // Cleanup: delete the test org
+        // Cleanup: delete test tasks first, then the test org
         try {
+          const { db } = await import("./db");
+          const { tasks } = await import("../drizzle/schema");
+          const { eq } = await import("drizzle-orm");
+          await db.delete(tasks).where(eq(tasks.organizationId, orgId));
           await caller.organizations.delete({ id: orgId });
         } catch {
           // ignore cleanup errors
@@ -220,6 +224,10 @@ describe("aiTasks router", () => {
         expect(result.titles).toHaveLength(0);
       } finally {
         try {
+          const { db } = await import("./db");
+          const { tasks } = await import("../drizzle/schema");
+          const { eq } = await import("drizzle-orm");
+          await db.delete(tasks).where(eq(tasks.organizationId, orgId));
           await caller.organizations.delete({ id: orgId });
         } catch {
           // ignore

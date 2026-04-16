@@ -342,9 +342,15 @@ function mkHidden(e: RawEvent): TranslatedEvent {
 
 function cleanMessage(msg: string, ventureName: string | null): string {
   msg = msg.replace(/\[[^\]]*\]/g, "");
-  msg = msg.replace(/\b(Velocity Agent|Distribution Sentinel|Orchestrator|Overdue Agent)\b/gi, "");
+  msg = msg.replace(/\b(Velocity Agent|Distribution Sentinel|Orchestrator|Overdue Agent|Blueprint Agent|SPV Agent)\b/gi, "");
   msg = msg.replace(/One-click advance available\.?/gi, "");
   msg = msg.replace(/\badvance available\b/gi, "");
+  msg = msg.replace(/\bskipping duplicate\b/gi, "");
+  msg = msg.replace(/\bagent (run|cycle|scan|check)\b/gi, "");
+  msg = msg.replace(/\bno action needed\b/gi, "");
+  msg = msg.replace(/\bscheduler\b/gi, "");
+  msg = msg.replace(/\bcron\b/gi, "");
+  msg = msg.replace(/\binternal\b/gi, "");
   msg = msg.replace(/\bIn Validation\b/g, "Under Review");
   msg = msg.replace(/\bIn Fundraising\b/g, "Fundraising");
   msg = msg.replace(/\bActive ventures\b/g, "Active");

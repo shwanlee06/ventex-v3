@@ -3,6 +3,7 @@
 // Velocity Feed: 3 card types — amber (action), teal (completed), gray (watching)
 
 import { useAuth } from "@/_core/hooks/useAuth";
+import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
 import { useRoute, useLocation } from "wouter";
@@ -105,9 +106,10 @@ function friendlyDate(d: Date | string | undefined): string {
   return formatDistanceToNow(date, { addSuffix: true });
 }
 
-export default function ClientPortal() {
+export default function ClientPortal(props: { orgSlug?: string; useDashboard?: boolean; params?: { orgSlug?: string } } = {}) {
+  const { orgSlug: propOrgSlug, useDashboard = false } = props;
   const [, params] = useRoute("/portal/:orgSlug");
-  const orgSlug = params?.orgSlug || "";
+  const orgSlug = propOrgSlug || params?.orgSlug || "";
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
   const [advancingIds, setAdvancingIds] = useState<Set<number>>(new Set());
@@ -315,44 +317,8 @@ export default function ClientPortal() {
     portfolioHealth,
   } = data;
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Operator preview banner */}
-      {isOperatorPreview && (
-        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 text-center">
-          <span className="text-xs font-medium text-amber-400">
-            Operator Preview Mode
-          </span>
-        </div>
-      )}
-
-      {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-semibold text-foreground tracking-tight">
-              {orgName}
-            </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Managed by VENTEX
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground hidden sm:block">
-              {user.name || user.email}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-foreground"
-              onClick={() => logout()}
-            >
-              <LogOut className="size-4" />
-            </Button>
-          </div>
-        </div>
-      </header>
-
+  const portalContent = (
+    <>
       {/* Content */}
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
         {/* ── Velocity Summary ─────────────────────────────────────── */}
@@ -1275,7 +1241,58 @@ export default function ClientPortal() {
         )}
       </Dialog>
 
+    </>
+  );
 
+  if (useDashboard) {
+    return (
+      <DashboardLayout title={orgName} subtitle="MANAGED BY VENTEX">
+        <div className="p-4 md:p-6">
+          {portalContent}
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Operator preview banner */}
+      {isOperatorPreview && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 text-center">
+          <span className="text-xs font-medium text-amber-400">
+            Operator Preview Mode
+          </span>
+        </div>
+      )}
+
+      {/* Header */}
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-lg font-semibold text-foreground tracking-tight">
+              {orgName}
+            </h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Managed by VENTEX
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground hidden sm:block">
+              {user.name || user.email}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={() => logout()}
+            >
+              <LogOut className="size-4" />
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {portalContent}
     </div>
   );
 }

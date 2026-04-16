@@ -220,28 +220,48 @@ export default function VerticalsPage() {
 
   const displayVentures = metricFiltered ?? filtered;
 
-  // Group by client
+  // Group by client (admin) or show flat list (client/preview)
   const clientGroups = useMemo(() => {
     const groups = new Map<string, ClientGroup>();
 
-    for (const v of displayVentures) {
-      if (v.organizations.length === 0) {
-        const key = "__unassigned__";
-        if (!groups.has(key)) {
-          groups.set(key, { orgId: null, orgName: "Unassigned", orgSlug: "", ventures: [], activeCount: 0, totalTasks: 0, overdueTasks: 0 });
-        }
-        const g = groups.get(key)!;
+    if (!isAdmin) {
+      // Client view: single flat group — no org grouping needed
+      const key = "__portfolio__";
+      groups.set(key, {
+        orgId: activeOrgId ?? 0,
+        orgName: "My Portfolio",
+        orgSlug: "",
+        ventures: [],
+        activeCount: 0,
+        totalTasks: 0,
+        overdueTasks: 0,
+      });
+      const g = groups.get(key)!;
+      for (const v of displayVentures) {
         g.ventures.push(v);
         if (v.status === "In progress") g.activeCount++;
-      } else {
-        for (const org of v.organizations) {
-          const key = String(org.orgId);
+      }
+    } else {
+      // Admin view: group by org
+      for (const v of displayVentures) {
+        if (v.organizations.length === 0) {
+          const key = "__unassigned__";
           if (!groups.has(key)) {
-            groups.set(key, { orgId: org.orgId, orgName: org.orgName, orgSlug: org.orgSlug, ventures: [], activeCount: 0, totalTasks: 0, overdueTasks: 0 });
+            groups.set(key, { orgId: null, orgName: "Unassigned", orgSlug: "", ventures: [], activeCount: 0, totalTasks: 0, overdueTasks: 0 });
           }
           const g = groups.get(key)!;
           g.ventures.push(v);
           if (v.status === "In progress") g.activeCount++;
+        } else {
+          for (const org of v.organizations) {
+            const key = String(org.orgId);
+            if (!groups.has(key)) {
+              groups.set(key, { orgId: org.orgId, orgName: org.orgName, orgSlug: org.orgSlug, ventures: [], activeCount: 0, totalTasks: 0, overdueTasks: 0 });
+            }
+            const g = groups.get(key)!;
+            g.ventures.push(v);
+            if (v.status === "In progress") g.activeCount++;
+          }
         }
       }
     }
@@ -258,7 +278,7 @@ export default function VerticalsPage() {
       if (b.orgId === null) return -1;
       return a.orgName.localeCompare(b.orgName);
     });
-  }, [displayVentures, allTasks, now]);
+  }, [displayVentures, allTasks, now, isAdmin, activeOrgId]);
 
   const toggleClient = useCallback((key: string) => {
     setCollapsedClients(prev => {

@@ -106,21 +106,23 @@ describe("Draft Center — Routing & Navigation", () => {
     const fs = await import("fs");
     const sidebarSource = fs.readFileSync("./client/src/components/AppSidebar.tsx", "utf-8");
     
-    // Find the Drafts nav item — it should NOT have ventexOnly: true
-    const draftsItem = sidebarSource.match(/label:\s*"Drafts"[^}]+}/);
+    // Find the Draft Center nav item — it should NOT have ventexOnly: true
+    const draftsItem = sidebarSource.match(/label:\s*"Draft Center"[^}]+}/);
     expect(draftsItem).toBeTruthy();
     expect(draftsItem![0]).not.toContain("ventexOnly: true");
   });
 
   it("Drafts indicator in topbar should be visible to all users", async () => {
     const fs = await import("fs");
-    const topbarSource = fs.readFileSync("./client/src/components/Topbar.tsx", "utf-8");
+    const sidebarSource = fs.readFileSync("./client/src/components/AppSidebar.tsx", "utf-8");
     
-    // The drafts indicator should NOT be gated by isVentex
-    const indicator = topbarSource.match(/pendingDraftCount > 0/);
-    expect(indicator).toBeTruthy();
+    // The draft indicator is now in the sidebar badge, not the topbar
+    // Verify the sidebar has a pendingDrafts badge key
+    expect(sidebarSource).toContain('badgeKey: "pendingDrafts"');
     
-    // Should not have isVentex && pendingDraftCount
-    expect(topbarSource).not.toContain("isVentex && pendingDraftCount > 0");
+    // Should not be gated by ventexOnly
+    const draftsItem = sidebarSource.match(/label:\s*"Draft Center"[^}]+}/);
+    expect(draftsItem).toBeTruthy();
+    expect(draftsItem![0]).not.toContain("ventexOnly: true");
   });
 });

@@ -73,10 +73,13 @@ export default function TasksPage() {
   const venturesQ = trpc.ventures.list.useQuery(orgInput);
 
   const rawTasks = tasksQ.data || [];
-  // Strip "AI Generated:" prefix for client view
+  // Strip "AI Generated:" prefix and mask internal team names for client view
+  const INTERNAL_TEAM_NAMES = ["VENTEX Operations", "ATLAS Operations", "VENTEX Ops", "ATLAS Ops"];
+  const maskAssigneeName = (name: string) => INTERNAL_TEAM_NAMES.some(n => name.toLowerCase().includes(n.toLowerCase())) ? "Your team" : name;
   const tasks = isAdmin ? rawTasks : rawTasks.map(t => ({
     ...t,
     title: t.title.replace(/^AI Generated:\s*/i, ''),
+    assigneeNames: ((t.assigneeNames || []) as string[]).map(maskAssigneeName),
   }));
   const team = teamQ.data || [];
   const ventures = venturesQ.data || [];
@@ -237,12 +240,16 @@ export default function TasksPage() {
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-2.5 min-w-0 flex-1">
-            <Checkbox
-              checked={task.status === "complete"}
-              onCheckedChange={() => handleToggle(task.id)}
-              className="size-4 mt-0.5 flex-shrink-0"
-              onClick={(e) => e.stopPropagation()}
-            />
+            {isAdmin ? (
+              <Checkbox
+                checked={task.status === "complete"}
+                onCheckedChange={() => handleToggle(task.id)}
+                className="size-4 mt-0.5 flex-shrink-0"
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <div className={cn("size-4 mt-0.5 flex-shrink-0 rounded-sm border", task.status === "complete" ? "bg-emerald-500/20 border-emerald-500/40" : "border-border")} />
+            )}
             <span className={cn("text-xs font-medium text-foreground leading-tight", task.status === "complete" && "line-through opacity-50")}>
               {task.title}
             </span>
@@ -470,11 +477,15 @@ export default function TasksPage() {
                         onClick={() => setEditTaskId(task.id)}
                       >
                         <TableCell onClick={e => e.stopPropagation()}>
-                          <Checkbox
-                            checked={task.status === "complete"}
-                            onCheckedChange={() => handleToggle(task.id)}
-                            className="size-4"
-                          />
+                          {isAdmin ? (
+                            <Checkbox
+                              checked={task.status === "complete"}
+                              onCheckedChange={() => handleToggle(task.id)}
+                              className="size-4"
+                            />
+                          ) : (
+                            <div className={cn("size-4 rounded-sm border", task.status === "complete" ? "bg-emerald-500/20 border-emerald-500/40" : "border-border")} />
+                          )}
                         </TableCell>
                         <TableCell>
                           <span className={cn("text-xs font-medium text-foreground", task.status === "complete" && "line-through")}>
@@ -624,22 +635,26 @@ export default function TasksPage() {
                     <span className="text-xs text-primary">{editTask.ventureLink}</span>
                   </div>
                 )}
-                <div>
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Reassign</span>
-                  <Select onValueChange={val => handleReassign(editTask.id, val)}>
-                    <SelectTrigger className="h-9 min-h-[36px] text-xs"><SelectValue placeholder="Select team member" /></SelectTrigger>
-                    <SelectContent>
-                      {team.map(m => <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {isAdmin && (
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1">Reassign</span>
+                    <Select onValueChange={val => handleReassign(editTask.id, val)}>
+                      <SelectTrigger className="h-9 min-h-[36px] text-xs"><SelectValue placeholder="Select team member" /></SelectTrigger>
+                      <SelectContent>
+                        {team.map(m => <SelectItem key={m.id} value={m.name}>{m.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
               <DialogFooter className="flex-col sm:flex-row gap-2">
-                <Button size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={() => { handleToggle(editTask.id); setEditTaskId(null); }}>
-                  <CheckCircle2 className="size-3.5 mr-1" />
-                  {editTask.status === "complete" ? "Reopen Task" : "Mark Complete"}
-                </Button>
-                <Button variant="ghost" size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={() => setEditTaskId(null)}>Close</Button>
+                {isAdmin && (
+                  <Button size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={() => { handleToggle(editTask.id); setEditTaskId(null); }}>
+                    <CheckCircle2 className="size-3.5 mr-1" />
+                    {editTask.status === "complete" ? "Reopen Task" : "Mark Complete"}
+                  </Button>
+                )}
+                <Button variant="ghost" size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={() => setEditTaskId(null)}>{isAdmin ? "Close" : "Done"}</Button>
               </DialogFooter>
             </>
           )}

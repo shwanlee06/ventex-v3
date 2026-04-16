@@ -2632,10 +2632,39 @@
 - [x] Ensure AgentContext pendingDraftCount is org-scoped for non-admin users
 - [x] Audit all client-facing tRPC queries for cross-org data leakage
 - [x] Verify ventures, tasks, SPVs, distributions, activity are all org-scoped for clients
-- [ ] Hide admin-only controls (Add Venture, New Deal, etc.) from client view
+- [x] Hide admin-only controls (Add Venture, New Deal, etc.) from client view
 - [x] Test data isolation end-to-end in client preview mode
 
 ## Draft Data Isolation Fixes (Apr 16)
 - [x] Fix agent draft creation code to always set organizationId (already correct — both insert calls use task.organizationId / dist.organizationId)
 - [x] Clean up 18 orphaned NULL-org drafts in database (all were vitest test data)
 - [x] Fix sidebar badge to only count org-scoped drafts (added isNotNull guard + org-scoped AgentContext)
+
+## Production Readiness Audit — Zero Tolerance (Apr 16)
+- [ ] Audit client onboarding flow (create client → first login → what they see)
+- [x] Audit every client-facing page for UI issues, data leaks, broken buttons, test data
+- [ ] Audit admin side for client management, venture assignment, data integrity
+- [ ] Audit database for test data, orphaned records, inconsistencies
+- [x] Fix all critical issues found
+- [x] Fix all medium-priority issues found
+- [ ] Re-test everything end-to-end
+
+## Activity Log Client Sanitization (Apr 16)
+- [x] Fix Activity Log showing only 4 entries in client view (was filtering out all system entries)
+- [x] Include system entries (task completions, venture status changes) for client view
+- [x] Sanitize "VENTEX AI completed:" → "Completed:" for client-facing text
+- [x] Sanitize "by VENTEX Velocity Agent" → "by Your Team" for client-facing attribution
+- [x] Filter out OrgLinked Venture test data entries (22 entries hidden)
+- [x] Filter out "Delete Me" and "Member Removed" internal admin entries
+- [x] Simplify source tabs for clients: only "All Activity" and "Automated" (hide VENTEX Ops, Business, System)
+- [x] Hide source badges from individual entries in client view
+- [x] Client view now shows 113 entries (up from 4)
+
+## Test Fixes (Apr 16)
+- [x] Update demo-dashboard.test.ts: DEMO_CLIENTS names (Al Rashid → Crestfield, etc.)
+- [x] Update demo-dashboard.test.ts: DEMO_CONTACTS assertion (Ahmed Al Rashid → generic)
+- [x] Update demo-dashboard.test.ts: Client sidebar name (Ahmed Al Rashid → Marcus Hale)
+- [x] Update demo-dashboard.test.ts: ClientMessagesView (Shwan Jafar → VENTEX Operator)
+- [x] Update drafts.test.ts: Sidebar label "Drafts" → "Draft Center"
+- [x] Update drafts.test.ts: Draft indicator moved from Topbar to sidebar badge
+- [x] All 754 tests passing across 44 test files

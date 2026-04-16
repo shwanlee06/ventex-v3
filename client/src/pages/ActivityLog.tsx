@@ -92,6 +92,43 @@ function getSourceBadge(source: string | null) {
   return { label: "Other", className: "bg-secondary text-muted-foreground border-border" };
 }
 
+/**
+ * Sanitize activity entry text for client-facing view.
+ * Removes internal references like "VENTEX AI completed:", agent names, and OrgLinked venture names.
+ */
+function sanitizeForClient(text: string | null | undefined, isAdmin: boolean): string | null {
+  if (!text || isAdmin) return text ?? null;
+  let clean = text;
+  // Remove "VENTEX AI completed: " prefix
+  clean = clean.replace(/VENTEX AI completed:\s*/gi, "Completed: ");
+  // Remove "VENTEX AI created X tasks: " prefix
+  clean = clean.replace(/VENTEX AI created (\d+) tasks?:/gi, "Created $1 tasks:");
+  // Replace OrgLinked Venture references with "Venture"
+  clean = clean.replace(/OrgLinked Venture \d+/g, "Venture");
+  return clean;
+}
+
+/** Sanitize userName for client view */
+function sanitizeUserName(userName: string | null | undefined, isAdmin: boolean): string | null {
+  if (!userName || isAdmin) return userName ?? null;
+  // Replace internal agent names with "Your Team"
+  if (userName.toLowerCase().includes("ventex") || userName.toLowerCase().includes("velocity agent")) {
+    return "Your Team";
+  }
+  if (userName.toLowerCase() === "system") return "Your Team";
+  return userName;
+}
+
+/** Check if an entry should be hidden from clients (test data, internal entries) */
+function isClientVisible(entry: { entityName?: string | null; detail?: string | null; action?: string }, isAdmin: boolean): boolean {
+  if (isAdmin) return true;
+  // Hide entries referencing OrgLinked Venture (test data)
+  if (entry.entityName && /^OrgLinked Venture \d+$/.test(entry.entityName)) return false;
+  // Hide entries referencing test data
+  if (entry.entityName && /^(Test |Unassigned |Delete Me )/.test(entry.entityName)) return false;
+  return true;
+}
+
 
 export default function ActivityLog() {
   const { user } = useAuth();
@@ -110,12 +147,16 @@ export default function ActivityLog() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showCount, setShowCount] = useState(50);
 
-  // For clients, filter out internal ops and system entries entirely
+  // For clients, filter out internal ops entries but keep system entries
+  // (system entries contain task completions, venture updates, etc. that clients should see)
+  // Also filter out test data and internal entries
   const clientSafeEntries = useMemo(() => {
     if (isAdmin) return entries;
     return entries.filter(e => {
       const src = e.activitySource;
-      return src !== "atlas_ops" && src !== "system";
+      if (src === "atlas_ops") return false;
+      if (!isClientVisible(e, isAdmin)) return false;
+      return true;
     });
   }, [entries, isAdmin]);
 
@@ -194,8 +235,8 @@ export default function ActivityLog() {
     <DashboardLayout title="Activity Log">
       <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5 pb-24 md:pb-6">
 
-        {/* ── Source Tabs — Primary split (admin sees all 4, clients see 3) ── */}
-        <div className={cn("grid gap-2 sm:gap-3", isAdmin ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3")}>
+        {/* ── Source Tabs — Primary split (admin sees all 4, clients see 2) ── */}
+        <div className={cn("grid gap-2 sm:gap-3", isAdmin ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2")}>
           {/* All */}
           <motion.button
             initial={{ opacity: 0, y: 8 }}
@@ -210,7 +251,7 @@ export default function ActivityLog() {
               <Activity className="size-3.5 text-foreground" />
               <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">All Activity</span>
             </div>
-            <span className="text-xl font-mono font-semibold text-foreground">{entries.length}</span>
+            <span className="text-xl font-mono font-semibold text-foreground">{clientSafeEntries.length}</span>
           </motion.button>
 
           {/* VENTEX Ops — admin only */}
@@ -236,26 +277,51 @@ export default function ActivityLog() {
             </motion.button>
           )}
 
-          {/* Client Business */}
-          <motion.button
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: isAdmin ? 0.06 : 0.03 }}
-            onClick={() => { setSourceFilter("client_business"); setTypeFilter("all"); }}
-            className={cn(
-              "bg-card border rounded-lg p-3 text-left transition-all touch-manipulation active:scale-[0.97]",
-              sourceFilter === "client_business" ? SOURCE_STYLES.client_business.bgActive : "border-border hover:border-blue-400/20"
-            )}
-          >
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <Building2 className="size-3.5 text-blue-400" />
-              <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">{isAdmin ? "Business" : "Ventures"}</span>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl font-mono font-semibold text-foreground">{sourceCounts.client_business}</span>
-              <span className="text-[10px] font-mono text-blue-400">ventures</span>
-            </div>
-          </motion.button>
+          {/* Client Business — admin sees as "Business", clients see as "Updates" */}
+          {isAdmin && (
+            <motion.button
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.06 }}
+              onClick={() => { setSourceFilter("client_business"); setTypeFilter("all"); }}
+              className={cn(
+                "bg-card border rounded-lg p-3 text-left transition-all touch-manipulation active:scale-[0.97]",
+                sourceFilter === "client_business" ? SOURCE_STYLES.client_business.bgActive : "border-border hover:border-blue-400/20"
+              )}
+            >
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Building2 className="size-3.5 text-blue-400" />
+                <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Business</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-xl font-mono font-semibold text-foreground">{sourceCounts.client_business}</span>
+                <span className="text-[10px] font-mono text-blue-400">ventures</span>
+              </div>
+            </motion.button>
+          )}
+
+          {/* Automated Updates — for clients, shows system entries as "Automated" */}
+          {!isAdmin && (
+            <motion.button
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.03 }}
+              onClick={() => { setSourceFilter("system"); setTypeFilter("all"); }}
+              className={cn(
+                "bg-card border rounded-lg p-3 text-left transition-all touch-manipulation active:scale-[0.97]",
+                sourceFilter === "system" ? "bg-emerald-500/10 border-emerald-400/40" : "border-border hover:border-emerald-400/20"
+              )}
+            >
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <ListChecks className="size-3.5 text-emerald-400" />
+                <span className="text-[10px] uppercase tracking-[0.06em] text-muted-foreground font-medium">Automated</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-xl font-mono font-semibold text-foreground">{sourceCounts.system + sourceCounts.client_business}</span>
+                <span className="text-[10px] font-mono text-emerald-400">updates</span>
+              </div>
+            </motion.button>
+          )}
 
           {/* System / AI — admin only */}
           {isAdmin && (
@@ -309,7 +375,7 @@ export default function ActivityLog() {
           <div className="flex gap-1 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide flex-shrink-0">
             {typeChips.map(chip => {
               const count = chip.type === "all"
-                ? (sourceFilter !== "all" ? entries.filter(e => e.activitySource === sourceFilter).length : entries.length)
+                ? (sourceFilter !== "all" ? clientSafeEntries.filter(e => e.activitySource === sourceFilter).length : clientSafeEntries.length)
                 : (typeCounts[chip.type] || 0);
               if (chip.type !== "all" && count === 0) return null;
               return (
@@ -397,7 +463,9 @@ export default function ActivityLog() {
                           <div className="flex items-start sm:items-center gap-1.5 sm:gap-2 flex-col sm:flex-row">
                             <span className="text-xs font-medium text-foreground">{entry.action}</span>
                             {entry.entityName && (
-                              <span className="text-[10px] font-mono text-primary truncate max-w-[200px]">{entry.entityName}</span>
+                              <span className="text-[10px] font-mono text-primary truncate max-w-[200px]">
+                                {isAdmin ? entry.entityName : (entry.entityName.replace(/OrgLinked Venture \d+/g, "Venture"))}
+                              </span>
                             )}
                             {/* Source badge — only show in "all" view for admins */}
                             {sourceFilter === "all" && isAdmin && (
@@ -410,12 +478,16 @@ export default function ActivityLog() {
                             )}
                           </div>
                           {entry.detail && (
-                            <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 sm:truncate">{entry.detail}</p>
+                            <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 sm:truncate">
+                              {sanitizeForClient(entry.detail, isAdmin)}
+                            </p>
                           )}
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
                             <span className="text-[10px] font-mono text-muted-foreground">{formatTimestamp(entry.createdAt)}</span>
-                            {entry.userName && (
-                              <span className="text-[10px] text-muted-foreground capitalize">by {entry.userName}</span>
+                            {(isAdmin ? entry.userName : sanitizeUserName(entry.userName, isAdmin)) && (
+                              <span className="text-[10px] text-muted-foreground capitalize">
+                                by {isAdmin ? entry.userName : sanitizeUserName(entry.userName, isAdmin)}
+                              </span>
                             )}
                             {entry.sector && (
                               <span className="text-[10px] px-1 py-0.5 rounded bg-secondary text-muted-foreground">{entry.sector}</span>

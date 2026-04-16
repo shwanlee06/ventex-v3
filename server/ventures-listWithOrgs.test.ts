@@ -1,8 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterAll } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
+
+// Track IDs of created test records for cleanup
+const createdVentureIds: number[] = [];
 
 function createAdminContext(): TrpcContext {
   const user: AuthenticatedUser = {
@@ -112,7 +115,6 @@ describe("ventures.listWithOrgs", () => {
   it("does not include archived organizations in venture mappings", async () => {
     const result = await caller.ventures.listWithOrgs();
     for (const v of result) {
-      // We can't directly check org status from here, but we verify the structure is correct
       for (const org of v.organizations) {
         expect(org.orgName).toBeTruthy();
         expect(org.orgSlug).toBeTruthy();
@@ -124,7 +126,25 @@ describe("ventures.listWithOrgs", () => {
 describe("ventures.create with organizationId", () => {
   const caller = appRouter.createCaller(createAdminContext());
 
-  it("creates a venture and returns it", async () => {
+  afterAll(async () => {
+    // Clean up all test ventures created during this suite
+    for (const id of createdVentureIds) {
+      try {
+        await caller.ventures.delete({ id });
+      } catch {
+        // Venture may already be deleted or delete endpoint may not exist
+        // Fallback: direct DB cleanup
+        try {
+          const { db } = await import("./db");
+          const { ventures } = await import("../drizzle/schema");
+          const { eq } = await import("drizzle-orm");
+          await db.delete(ventures).where(eq(ventures.id, id));
+        } catch {}
+      }
+    }
+  });
+
+  it("creates a venture and cleans up", async () => {
     const result = await caller.ventures.create({
       name: "Test Venture " + Date.now(),
       sector: "Real Estate",
@@ -136,12 +156,12 @@ describe("ventures.create with organizationId", () => {
     expect(result!.name).toContain("Test Venture");
     expect(result!.sector).toBe("Real Estate");
     expect(result!.slug).toBeTruthy();
+    if (result?.id) createdVentureIds.push(result.id);
   });
 
   it("creates a venture with organizationId and auto-links to org", async () => {
-    // First get an org to link to
     const orgs = await caller.organizations.list({ includeArchived: false });
-    if (orgs.length === 0) return; // skip if no orgs
+    if (orgs.length === 0) return;
 
     const orgId = orgs[0].id;
     const ventureName = "OrgLinked Venture " + Date.now();
@@ -155,8 +175,8 @@ describe("ventures.create with organizationId", () => {
 
     expect(result).toBeTruthy();
     expect(result!.name).toBe(ventureName);
+    if (result?.id) createdVentureIds.push(result.id);
 
-    // Verify it shows up in listWithOrgs with the org
     const allVentures = await caller.ventures.listWithOrgs();
     const created = allVentures.find((v: any) => v.name === ventureName);
     expect(created).toBeTruthy();
@@ -172,8 +192,8 @@ describe("ventures.create with organizationId", () => {
     });
 
     expect(result).toBeTruthy();
+    if (result?.id) createdVentureIds.push(result.id);
 
-    // Should appear in listWithOrgs with empty organizations
     const allVentures = await caller.ventures.listWithOrgs();
     const created = allVentures.find((v: any) => v.name === ventureName);
     expect(created).toBeTruthy();

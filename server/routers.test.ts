@@ -97,15 +97,19 @@ describe("tasks router", () => {
     expect(t).toHaveProperty("status");
   });
 
-  it("creates a new task", async () => {
+  it("creates a new task and cleans up", async () => {
     const caller = createAuthCaller();
     const result = await caller.tasks.create({
-      title: "Test task from vitest",
+      title: `Vitest task ${Date.now()}`,
       priority: "Medium",
       status: "open",
       dueDate: new Date().toISOString(),
     });
     expect(result).toHaveProperty("success", true);
+    // Cleanup: delete the test task
+    if (result.id) {
+      try { await caller.tasks.delete({ id: result.id }); } catch {}
+    }
   });
 
   it("rejects unauthenticated access", async () => {

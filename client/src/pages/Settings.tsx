@@ -245,9 +245,11 @@ export default function SettingsPage() {
             ) : spvsList.length === 0 && isVentex ? (
               <>
                 <p className="text-sm text-muted-foreground">No SPVs yet.</p>
-                <Button variant="ghost" size="sm" className="text-xs mt-2 touch-manipulation gap-1" onClick={() => setAddOpen(true)}>
-                  <Plus className="size-3" /> Add first SPV
-                </Button>
+                {isVentex && (
+                  <Button variant="ghost" size="sm" className="text-xs mt-2 touch-manipulation gap-1" onClick={() => setAddOpen(true)}>
+                    <Plus className="size-3" /> Add first SPV
+                  </Button>
+                )}
               </>
             ) : (
               <>

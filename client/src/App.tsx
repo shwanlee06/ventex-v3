@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { PreviewModeProvider, usePreviewMode } from "./contexts/PreviewMode";
-import { WorkspaceProvider } from "./contexts/WorkspaceContext";
+import { WorkspaceProvider, useWorkspace } from "./contexts/WorkspaceContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import CustomCursor from "./components/CustomCursor";
 import { isVentexTeam } from "@/lib/ventex";
@@ -96,6 +96,18 @@ function RequireVentex({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/* Dashboard switcher — shows ClientPortal in preview mode, Home otherwise */
+function DashboardSwitch() {
+  const { isPreviewMode } = usePreviewMode();
+  const { activeOrg } = useWorkspace();
+
+  if (isPreviewMode && activeOrg?.slug) {
+    return <ClientPortal orgSlug={activeOrg.slug} useDashboard />;
+  }
+
+  return <Home />;
+}
+
 function Router() {
   return (
     <Switch>
@@ -124,7 +136,7 @@ function Router() {
 
       {/* Protected dashboard pages — available to all authenticated users */}
       <Route path="/dashboard">
-        <RequireAuth><Home /></RequireAuth>
+        <RequireAuth><DashboardSwitch /></RequireAuth>
       </Route>
       <Route path="/clients/:slug">
         <RequireAuth><RequireVentex><ClientDetail /></RequireVentex></RequireAuth>
