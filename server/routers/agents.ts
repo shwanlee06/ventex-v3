@@ -30,7 +30,7 @@ import {
 import { onStageAdvanced, onTaskCompleted, onTaskOverdue } from "../intelligence/realtimeTriggers";
 import { eq, desc, sql, and, ne, gte, inArray, isNotNull } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
-import { isVentexTeam, resolveVentureScope } from "../security/rbac";
+import { isVentexTeam, resolveVentureScope, getOrgVentureIds } from "../security/rbac";
 import { resolveOrgId } from "../security/orgScope";
 import { lookupBlueprintForVenture, buildBlueprintContext } from "../blueprintLookup";
 import type { User } from "../../drizzle/schema";
@@ -1460,7 +1460,7 @@ export const agentsRouter = router({
    * Aggregate draft stats across all orgs — for admin dashboard KPI
    */
   draftStats: protectedProcedure
-    .query(async () => {
+    .query(async ({ ctx }) => {
       const db = await getDb();
       if (!db) return { totalSent: 0, totalPending: 0, sentThisMonth: 0 };
 
@@ -1605,9 +1605,14 @@ export const agentsRouter = router({
    */
   clientDismiss: protectedProcedure
     .input(z.object({ eventId: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) return { success: false };
+      // TENANT_PATCHED: Verify event belongs to user's org
+      if (!isVentexTeam(ctx.user) && ctx.user.organizationId) {
+        const [ev] = await db.select({ orgId: agentEvents.organizationId }).from(agentEvents).where(eq(agentEvents.id, input.eventId)).limit(1);
+        if (ev && ev.orgId !== ctx.user.organizationId) return { success: false };
+      }
 
       await db
         .update(agentEvents)
@@ -1892,7 +1897,15 @@ export const agentsRouter = router({
    */
   getDraft: protectedProcedure
     .input(z.object({ draftId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Verify draft belongs to user's org
+      if (!isVentexTeam(ctx.user) && ctx.user.organizationId) {
+        const db2 = await getDb();
+        if (db2) {
+          const [d] = await db2.select({ orgId: agentDrafts.organizationId }).from(agentDrafts).where(eq(agentDrafts.id, input.draftId)).limit(1);
+          if (d && d.orgId !== ctx.user.organizationId) return null;
+        }
+      }
       const db = await getDb();
       if (!db) return null;
       const [draft] = await db.select().from(agentDrafts).where(eq(agentDrafts.id, input.draftId)).limit(1);
@@ -1904,7 +1917,15 @@ export const agentsRouter = router({
    */
   getEventDetail: protectedProcedure
     .input(z.object({ eventId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Verify event belongs to user's org
+      if (!isVentexTeam(ctx.user) && ctx.user.organizationId) {
+        const db2 = await getDb();
+        if (db2) {
+          const [ev] = await db2.select({ orgId: agentEvents.organizationId }).from(agentEvents).where(eq(agentEvents.id, input.eventId)).limit(1);
+          if (ev && ev.orgId !== ctx.user.organizationId) return null;
+        }
+      }
       const db = await getDb();
       if (!db) return null;
 
@@ -2006,6 +2027,11 @@ export const agentsRouter = router({
       eventId: z.number().optional(), // The "ready to advance" event to mark as actioned
     }))
     .mutation(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Verify venture belongs to user's org
+      if (!isVentexTeam(ctx.user)) {
+        const ventureIds = await getOrgVentureIds(ctx.user);
+        if (ventureIds && !ventureIds.includes(input.ventureId)) throw new Error("Access denied: venture not in your organization");
+      }
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 

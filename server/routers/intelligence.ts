@@ -472,7 +472,9 @@ export const intelligenceRouter = router({
   // Dismiss an observation
   dismissObservation: protectedProcedure
     .input(z.object({ observationId: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Only VENTEX team can dismiss observations
+      if (!isVentexTeam(ctx.user)) throw new Error("Only VENTEX team can dismiss observations");
       const db = await getDb();
       if (!db) throw new Error("Database not available");
       await db.update(aiObservations)
@@ -485,6 +487,8 @@ export const intelligenceRouter = router({
   acceptObservation: protectedProcedure
     .input(z.object({ observationId: z.number() }))
     .mutation(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Only VENTEX team can accept observations
+      if (!isVentexTeam(ctx.user)) throw new Error("Only VENTEX team can accept observations");
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 

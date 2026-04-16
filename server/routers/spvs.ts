@@ -232,7 +232,12 @@ export const spvsRouter = router({
     return { success: true };
   }),
 
-  getFiles: protectedProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
+  getFiles: protectedProcedure.input(z.object({ spvId: z.number() })).query(async ({ input, ctx }) => {
+    // TENANT_PATCHED: Verify SPV access
+    if (!isVentexTeam(ctx.user)) {
+      const spvIds = await getOrgSpvIds(ctx.user);
+      if (spvIds && !spvIds.includes(input.spvId)) return [];
+    }
     const db = await getDb();
     if (!db) return [];
     return db.select().from(spvFiles).where(eq(spvFiles.spvId, input.spvId)).orderBy(desc(spvFiles.createdAt));
@@ -246,6 +251,11 @@ export const spvsRouter = router({
     fileData: z.string(),
     folderId: z.number().optional(),
   })).mutation(async ({ input, ctx }) => {
+    // TENANT_PATCHED: Verify SPV access before upload
+    if (!isVentexTeam(ctx.user)) {
+      const spvIds = await getOrgSpvIds(ctx.user);
+      if (spvIds && !spvIds.includes(input.spvId)) throw new Error("Access denied: SPV not in your organization");
+    }
     // Rate limit: 30 uploads per 10 minutes per user
     enforceRateLimit("fileUpload", ctx.user!.id);
 
@@ -288,14 +298,27 @@ export const spvsRouter = router({
   moveFile: protectedProcedure.input(z.object({
     fileId: z.number(),
     folderId: z.number().nullable(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
+    // TENANT_PATCHED: Verify file belongs to an SPV the user can access
+    if (!isVentexTeam(ctx.user)) {
+      const [file] = await db.select({ spvId: spvFiles.spvId }).from(spvFiles).where(eq(spvFiles.id, input.fileId)).limit(1);
+      if (file) {
+        const spvIds = await getOrgSpvIds(ctx.user);
+        if (spvIds && !spvIds.includes(file.spvId)) throw new Error("Access denied: file not in your organization");
+      }
+    }
     await db.update(spvFiles).set({ folderId: input.folderId }).where(eq(spvFiles.id, input.fileId));
     return { success: true };
   }),
 
-  getFolders: protectedProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
+  getFolders: protectedProcedure.input(z.object({ spvId: z.number() })).query(async ({ input, ctx }) => {
+    // TENANT_PATCHED: Verify SPV access
+    if (!isVentexTeam(ctx.user)) {
+      const spvIds = await getOrgSpvIds(ctx.user);
+      if (spvIds && !spvIds.includes(input.spvId)) return [];
+    }
     const db = await getDb();
     if (!db) return [];
     return db.select().from(spvFolders).where(eq(spvFolders.spvId, input.spvId));
@@ -305,7 +328,12 @@ export const spvsRouter = router({
     spvId: z.number(),
     name: z.string(),
     color: z.string().default("blue"),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    // TENANT_PATCHED: Verify SPV access before creating folder
+    if (!isVentexTeam(ctx.user)) {
+      const spvIds = await getOrgSpvIds(ctx.user);
+      if (spvIds && !spvIds.includes(input.spvId)) throw new Error("Access denied: SPV not in your organization");
+    }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.insert(spvFolders).values(input);

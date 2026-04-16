@@ -62,7 +62,12 @@ export const tasksRouter = router({
     return rows[0];
   }),
 
-  getByVenture: protectedProcedure.input(z.object({ ventureId: z.number() })).query(async ({ input }) => {
+  getByVenture: protectedProcedure.input(z.object({ ventureId: z.number() })).query(async ({ input, ctx }) => {
+    // TENANT_PATCHED: Verify venture access for non-VENTEX users
+    if (!isVentexTeam(ctx.user)) {
+      const ventureIds = await getOrgVentureIds(ctx.user);
+      if (ventureIds && !ventureIds.includes(input.ventureId)) return [];
+    }
     const db = await getDb();
     if (!db) return [];
     return db.select().from(tasks).where(eq(tasks.ventureId, input.ventureId)).orderBy(desc(tasks.createdAt));

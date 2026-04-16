@@ -252,7 +252,7 @@ export const organizationsRouter = router({
   // Get a single organization by slug with full metrics
   bySlug: protectedProcedure
     .input(z.object({ slug: z.string() }))
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) return null;
 
@@ -263,6 +263,8 @@ export const organizationsRouter = router({
         .limit(1);
 
       if (!org) return null;
+      // TENANT_PATCHED: Non-VENTEX users can only look up their own org
+      if (!isVentexTeam(ctx.user) && ctx.user.organizationId !== org.id) return null;
 
       // Get venture count
       const access = await db
@@ -276,7 +278,9 @@ export const organizationsRouter = router({
   // Get ventures for a specific organization
   ventures: protectedProcedure
     .input(z.object({ organizationId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
+      // TENANT_PATCHED: Non-VENTEX users can only access their own org's ventures
+      if (!isVentexTeam(ctx.user) && ctx.user.organizationId !== input.organizationId) return [];
       const db = await getDb();
       if (!db) return [];
 

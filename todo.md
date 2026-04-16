@@ -2716,3 +2716,19 @@
 - [ ] Rule 3: Every change includes tests (unit, integration, cross-tenant, audit_log)
 - [ ] Rule 4: Legal-dependent features behind feature flags OFF + [LEGAL REVIEW REQUIRED] tags
 - [ ] Rule 5: Status report at end of every session
+
+## Remediation: 44 CRITICAL Tenant Isolation Gaps (Apr 16)
+- [x] Patch distributions router (2 gaps: create, update — isVentexTeam guards verified)
+- [x] Patch ventures router (getFiles, getFolders, uploadFile, moveFile, createFolder — getOrgVentureIds checks added)
+- [x] Patch tasks router (getByVenture — getOrgVentureIds check added)
+- [x] Patch blueprints router (15 procedures patched: getTemplateWithSteps, updateStep, deleteStep, addStep, applyToVentures, getVentureTracking, updateTrackingStep, refineFromActuals, confirmTemplate, archiveTemplate, updateTemplate, listOverrides, addOverride, removeOverride, getBlueprintForVenture)
+- [x] Patch intelligence router (dismissObservation, acceptObservation — isVentexTeam guards added)
+- [x] Patch notifications router (markRead — patched)
+- [x] Patch agents router (clientDismiss, getDraft, getEventDetail, clientAdvanceStage — org checks added)
+- [x] Patch organizations router (bySlug, ventures — org ownership checks added)
+- [x] Patch search router (global — already properly scoped via resolveVentureScope)
+- [x] Patch blueprint diagnostics (createAttribution, getAttributions — isVentexTeam + org scoping added)
+- [x] Patch spvs file/folder operations (getFiles, getFolders, uploadFile, moveFile, createFolder — getOrgSpvIds checks added)
+- [x] Run full test suite after all patches — 833 tests passing across 45 files
+- [x] TypeScript compilation: 0 errors
+- [x] 37 TENANT_PATCHED markers across 9 router files

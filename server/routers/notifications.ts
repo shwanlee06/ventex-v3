@@ -113,9 +113,19 @@ export const notificationsRouter = router({
    */
   markRead: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
+      // TENANT_PATCHED: Verify notification belongs to user or their org
+      const isAdmin = ctx.user.role === "admin" || ctx.user.role === "owner";
+      if (!isAdmin) {
+        const [notif] = await db.select({ userId: notifications.userId, organizationId: notifications.organizationId }).from(notifications).where(eq(notifications.id, input.id)).limit(1);
+        if (!notif) return { success: false };
+        const isOwn = notif.userId === ctx.user.id;
+        const isOrgMatch = notif.organizationId && ctx.user.organizationId && notif.organizationId === ctx.user.organizationId;
+        const isGlobal = !notif.userId && !notif.organizationId;
+        if (!isOwn && !isOrgMatch && !isGlobal) return { success: false };
+      }
       await db.update(notifications).set({ read: 1 }).where(eq(notifications.id, input.id));
       return { success: true };
     }),

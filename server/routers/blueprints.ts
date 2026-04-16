@@ -17,6 +17,7 @@ import { TRPCError } from "@trpc/server";
 import { invokeLLM } from "../_core/llm";
 import { storagePut } from "../storage";
 import { resolveOrgId } from "../security/orgScope";
+import { isVentexTeam, getOrgVentureIds } from "../security/rbac";
 import { onBlueprintGenerated } from "../intelligence/realtimeTriggers";
 import { enforceRateLimit } from "../security/rateLimit";
 
@@ -319,7 +320,15 @@ export const blueprintsRouter = router({
 
   getTemplateWithSteps: protectedProcedure
     .input(z.object({ templateId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Templates are org-scoped — verify ownership
+      if (!isVentexTeam(ctx.user)) {
+        const db2 = await getDb();
+        if (db2) {
+          const [tmpl] = await db2.select({ orgId: processTemplates.organizationId }).from(processTemplates).where(eq(processTemplates.id, input.templateId)).limit(1);
+          if (tmpl && tmpl.orgId !== ctx.user.organizationId) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+        }
+      }
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
@@ -344,7 +353,9 @@ export const blueprintsRouter = router({
       evidence: z.string().optional(),
       confidence: z.string().optional(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Only VENTEX team can modify blueprint steps
+      if (!isVentexTeam(ctx.user)) throw new TRPCError({ code: "FORBIDDEN", message: "Only VENTEX team can modify blueprint steps" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
@@ -362,7 +373,9 @@ export const blueprintsRouter = router({
 
   deleteStep: protectedProcedure
     .input(z.object({ stepId: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Only VENTEX team can delete blueprint steps
+      if (!isVentexTeam(ctx.user)) throw new TRPCError({ code: "FORBIDDEN", message: "Only VENTEX team can delete blueprint steps" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
@@ -381,7 +394,9 @@ export const blueprintsRouter = router({
       whoOwns: z.string().optional(),
       estimatedDays: z.number().optional(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Only VENTEX team can add blueprint steps
+      if (!isVentexTeam(ctx.user)) throw new TRPCError({ code: "FORBIDDEN", message: "Only VENTEX team can add blueprint steps" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
@@ -404,7 +419,9 @@ export const blueprintsRouter = router({
       templateId: z.number(),
       ventureIds: z.array(z.number()),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Only VENTEX team can apply blueprints to ventures
+      if (!isVentexTeam(ctx.user)) throw new TRPCError({ code: "FORBIDDEN", message: "Only VENTEX team can apply blueprints" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
@@ -471,7 +488,12 @@ export const blueprintsRouter = router({
 
   getVentureTracking: protectedProcedure
     .input(z.object({ ventureId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Verify venture access
+      if (!isVentexTeam(ctx.user)) {
+        const ventureIds = await getOrgVentureIds(ctx.user);
+        if (ventureIds && !ventureIds.includes(input.ventureId)) return [];
+      }
       const db = await getDb();
       if (!db) return [];
 
@@ -486,7 +508,9 @@ export const blueprintsRouter = router({
       status: z.enum(["pending", "in_progress", "complete", "skipped"]),
       completedBy: z.string().optional(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Only VENTEX team can update tracking steps
+      if (!isVentexTeam(ctx.user)) throw new TRPCError({ code: "FORBIDDEN", message: "Only VENTEX team can update tracking steps" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
@@ -517,7 +541,9 @@ export const blueprintsRouter = router({
 
   refineFromActuals: protectedProcedure
     .input(z.object({ templateId: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Only VENTEX team can refine blueprints
+      if (!isVentexTeam(ctx.user)) throw new TRPCError({ code: "FORBIDDEN", message: "Only VENTEX team can refine blueprints" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
@@ -1081,7 +1107,9 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
 
   confirmTemplate: protectedProcedure
     .input(z.object({ templateId: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Only VENTEX team can confirm templates
+      if (!isVentexTeam(ctx.user)) throw new TRPCError({ code: "FORBIDDEN", message: "Only VENTEX team can confirm templates" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
       await db.update(processTemplates).set({ status: "confirmed" })
@@ -1091,7 +1119,9 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
 
   archiveTemplate: protectedProcedure
     .input(z.object({ templateId: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Only VENTEX team can archive templates
+      if (!isVentexTeam(ctx.user)) throw new TRPCError({ code: "FORBIDDEN", message: "Only VENTEX team can archive templates" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
       await db.update(processTemplates).set({ status: "archived", isActive: false })
@@ -1106,7 +1136,9 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
       sector: z.string().optional(),
       confidence: z.string().optional(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Only VENTEX team can update templates
+      if (!isVentexTeam(ctx.user)) throw new TRPCError({ code: "FORBIDDEN", message: "Only VENTEX team can update templates" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
       const { templateId, ...updates } = input;
@@ -1121,7 +1153,12 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
 
   listOverrides: protectedProcedure
     .input(z.object({ ventureId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Verify venture access
+      if (!isVentexTeam(ctx.user)) {
+        const ventureIds = await getOrgVentureIds(ctx.user);
+        if (ventureIds && !ventureIds.includes(input.ventureId)) return [];
+      }
       const db = await getDb();
       if (!db) return [];
       return db.select().from(ventureProcessOverrides)
@@ -1140,6 +1177,8 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
       createdBy: z.string().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Only VENTEX team can add overrides
+      if (!isVentexTeam(ctx.user)) throw new TRPCError({ code: "FORBIDDEN", message: "Only VENTEX team can add overrides" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
       const [result] = await db.insert(ventureProcessOverrides).values({
@@ -1157,7 +1196,9 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
 
   removeOverride: protectedProcedure
     .input(z.object({ overrideId: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Only VENTEX team can remove overrides
+      if (!isVentexTeam(ctx.user)) throw new TRPCError({ code: "FORBIDDEN", message: "Only VENTEX team can remove overrides" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
       await db.delete(ventureProcessOverrides)
@@ -1169,7 +1210,12 @@ Include 4-8 specific steps per stage. Make steps realistic for ${sector}.`,
   //   Layer 3 (venture override) > Layer 2 (client blueprint) > Layer 1 (system default)
   getBlueprintForVenture: protectedProcedure
     .input(z.object({ ventureId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Verify venture access
+      if (!isVentexTeam(ctx.user)) {
+        const ventureIds = await getOrgVentureIds(ctx.user);
+        if (ventureIds && !ventureIds.includes(input.ventureId)) throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 

@@ -21,6 +21,7 @@ import { eq, and, sql, desc, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { invokeLLM } from "../_core/llm";
 import { resolveOrgId } from "../security/orgScope";
+import { isVentexTeam } from "../security/rbac";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // AI PROMPT TEMPLATES
@@ -609,7 +610,9 @@ Generate the optimal structure for maximum deal velocity in the ${input.sector} 
       delayDays: z.number().optional(),
       frictionFlagId: z.string().optional(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Only VENTEX team can create attributions
+      if (!isVentexTeam(ctx.user)) throw new TRPCError({ code: "FORBIDDEN", message: "Only VENTEX team can create attributions" });
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
 
@@ -740,7 +743,13 @@ Determine the root cause of this delay and classify it.`;
       ventureId: z.number().optional(),
       organizationId: z.number().optional(),
     }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Non-VENTEX users can only see their own org's attributions
+      if (!isVentexTeam(ctx.user)) {
+        if (!ctx.user.organizationId) return [];
+        // Force org filter to user's own org
+        input = { ...input, organizationId: ctx.user.organizationId };
+      }
       const db = await getDb();
       if (!db) return [];
 

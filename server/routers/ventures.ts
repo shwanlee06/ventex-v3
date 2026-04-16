@@ -323,7 +323,12 @@ export const venturesRouter = router({
   }),
 
   // Get files for a venture
-  getFiles: protectedProcedure.input(z.object({ ventureId: z.number() })).query(async ({ input }) => {
+  getFiles: protectedProcedure.input(z.object({ ventureId: z.number() })).query(async ({ input, ctx }) => {
+    // TENANT_PATCHED: Verify venture access
+    if (!isVentexTeam(ctx.user)) {
+      const ventureIds = await getOrgVentureIds(ctx.user);
+      if (ventureIds && !ventureIds.includes(input.ventureId)) return [];
+    }
     const db = await getDb();
     if (!db) return [];
     return db.select().from(ventureFiles).where(eq(ventureFiles.ventureId, input.ventureId)).orderBy(desc(ventureFiles.createdAt));
@@ -338,6 +343,11 @@ export const venturesRouter = router({
     fileData: z.string(), // base64
     folderId: z.number().optional(),
   })).mutation(async ({ input, ctx }) => {
+    // TENANT_PATCHED: Verify venture access before upload
+    if (!isVentexTeam(ctx.user)) {
+      const ventureIds = await getOrgVentureIds(ctx.user);
+      if (ventureIds && !ventureIds.includes(input.ventureId)) throw new Error("Access denied: venture not in your organization");
+    }
     // Rate limit: 30 uploads per 10 minutes per user
     enforceRateLimit("fileUpload", ctx.user!.id);
 
@@ -394,15 +404,28 @@ export const venturesRouter = router({
   moveFile: protectedProcedure.input(z.object({
     fileId: z.number(),
     folderId: z.number().nullable(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
+    // TENANT_PATCHED: Verify file belongs to a venture the user can access
+    if (!isVentexTeam(ctx.user)) {
+      const [file] = await db.select({ ventureId: ventureFiles.ventureId }).from(ventureFiles).where(eq(ventureFiles.id, input.fileId)).limit(1);
+      if (file) {
+        const ventureIds = await getOrgVentureIds(ctx.user);
+        if (ventureIds && !ventureIds.includes(file.ventureId)) throw new Error("Access denied: file not in your organization");
+      }
+    }
     await db.update(ventureFiles).set({ folderId: input.folderId }).where(eq(ventureFiles.id, input.fileId));
     return { success: true };
   }),
 
   // Get folders for a venture
-  getFolders: protectedProcedure.input(z.object({ ventureId: z.number() })).query(async ({ input }) => {
+  getFolders: protectedProcedure.input(z.object({ ventureId: z.number() })).query(async ({ input, ctx }) => {
+    // TENANT_PATCHED: Verify venture access
+    if (!isVentexTeam(ctx.user)) {
+      const ventureIds = await getOrgVentureIds(ctx.user);
+      if (ventureIds && !ventureIds.includes(input.ventureId)) return [];
+    }
     const db = await getDb();
     if (!db) return [];
     return db.select().from(ventureFolders).where(eq(ventureFolders.ventureId, input.ventureId));
@@ -413,7 +436,12 @@ export const venturesRouter = router({
     ventureId: z.number(),
     name: z.string(),
     color: z.string().default("blue"),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
+    // TENANT_PATCHED: Verify venture access before creating folder
+    if (!isVentexTeam(ctx.user)) {
+      const ventureIds = await getOrgVentureIds(ctx.user);
+      if (ventureIds && !ventureIds.includes(input.ventureId)) throw new Error("Access denied: venture not in your organization");
+    }
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.insert(ventureFolders).values(input);
