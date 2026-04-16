@@ -1,0 +1,63 @@
+CREATE TABLE `blueprint_diagnostics` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`organizationId` int NOT NULL,
+	`decisionVelocity` int NOT NULL DEFAULT 50,
+	`ownershipClarity` int NOT NULL DEFAULT 50,
+	`communicationDensity` int NOT NULL DEFAULT 50,
+	`capitalReadiness` int NOT NULL DEFAULT 50,
+	`executionCapacity` int NOT NULL DEFAULT 50,
+	`overallScore` int NOT NULL DEFAULT 50,
+	`frictionFlags` json,
+	`analysisPrompt` text,
+	`analysisResponse` text,
+	`dataPointsUsed` json,
+	`version` int NOT NULL DEFAULT 1,
+	`previousDiagnosticId` int,
+	`diagnosticStatus` varchar(32) NOT NULL DEFAULT 'current',
+	`calculatedAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `blueprint_diagnostics_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `blueprint_structure_modes` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`organizationId` int NOT NULL,
+	`sector` varchar(128) NOT NULL,
+	`structureMode` varchar(32) NOT NULL DEFAULT 'recommended',
+	`recommendedStructure` json,
+	`customStructure` json,
+	`structureDiff` json,
+	`overrides` json,
+	`confirmedBy` varchar(255),
+	`confirmedAt` timestamp,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `blueprint_structure_modes_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `velocity_attribution` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`organizationId` int,
+	`entityType` varchar(32) NOT NULL,
+	`entityId` int NOT NULL,
+	`entityName` varchar(255),
+	`ventureId` int,
+	`delaySource` varchar(64) NOT NULL,
+	`delayCategory` varchar(64) NOT NULL,
+	`expectedCompletionDate` varchar(32),
+	`actualCompletionDate` varchar(32),
+	`delayDays` int NOT NULL DEFAULT 0,
+	`description` text,
+	`blockedBy` varchar(255),
+	`escalationLevel` varchar(16) DEFAULT 'none',
+	`resolvedAt` timestamp,
+	`resolvedBy` varchar(255),
+	`resolution` text,
+	`aiGenerated` boolean NOT NULL DEFAULT false,
+	`confidenceScore` int,
+	`frictionFlagId` varchar(64),
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `velocity_attribution_id` PRIMARY KEY(`id`)
+);

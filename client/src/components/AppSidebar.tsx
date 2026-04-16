@@ -26,6 +26,7 @@ import {
   Shield,
   Cpu,
   FileText,
+  Gauge,
   UserPlus,
   Eye,
   Menu,
@@ -60,6 +61,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: "AI Concierge", href: "/agent", icon: <Bot className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },
   { label: "AI Agents", href: "/agents", icon: <Cpu className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },
   { label: "Blueprints", href: "/blueprints", icon: <Layers3 className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },
+  { label: "Diagnostics", href: "/diagnostics", icon: <Gauge className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },
   // Admin
   { label: "VENTEX Team", href: "/ventex-team", icon: <Shield className="size-[18px]" />, ventexOnly: true, group: "Admin" },
   { label: "Client Contacts", href: "/team", icon: <Users className="size-[18px]" />, ventexOnly: true, group: "Admin" },

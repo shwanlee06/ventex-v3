@@ -33,6 +33,7 @@ import AcceptInvite from "./pages/AcceptInvite";
 import AgentsPage from "./pages/Agents";
 import OnboardingWizard from "./pages/OnboardingWizard";
 import BlueprintsPage from "./pages/Blueprints";
+import BlueprintDiagnosticsPage from "./pages/BlueprintDiagnostics";
 import ClientPortal from "./pages/ClientPortal";
 import OversightPage from "./pages/Oversight";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -189,6 +190,9 @@ function Router() {
       </Route>
       <Route path="/blueprints">
         <RequireAuth><RequireVentex><BlueprintsPage /></RequireVentex></RequireAuth>
+      </Route>
+      <Route path="/diagnostics">
+        <RequireAuth><RequireVentex><BlueprintDiagnosticsPage /></RequireVentex></RequireAuth>
       </Route>
       <Route path="/oversight">
         <RequireAuth><RequireVentex><OversightPage /></RequireVentex></RequireAuth>

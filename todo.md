@@ -2517,3 +2517,17 @@
 - [x] REMAINING: Strip 'AI Generated:' prefix from task titles in client view
 - [ ] REMAINING: Scope tasks/ventures metrics to client's org in preview mode
 - [ ] REMAINING: Clean up test data (OrgLinked Venture, Test Venture, Test task from vitest)
+
+## Blueprint System Upgrade — Diagnostic + Structure + Velocity Attribution (Apr 15)
+- [x] DB schema: blueprint_diagnostics table (decision_velocity, ownership_clarity, communication_density, capital_readiness, overall_score, friction_flags)
+- [x] DB schema: blueprint_structure_mode (recommended vs custom per org, with override flags)
+- [x] DB schema: velocity_attribution on tasks (delay_source: client_approval | ventex_processing | external_dependency | structural_friction)
+- [x] Server: AI diagnostic scoring engine — analyzes org structure and produces health scores
+- [x] Server: Structure recommendation engine — generates VENTEX Recommended operating model vs client custom
+- [x] Server: Velocity attribution tracker — auto-tags delay sources on stalled tasks
+- [x] UI: Blueprint Diagnostic dashboard — structural health scores with gauge charts, friction flags, expandable details
+- [x] UI: Recommended vs Custom Structure toggle — 3-way card layout (VENTEX Recommended / Client Custom / Hybrid)
+- [x] UI: Velocity Attribution on tasks — 4 summary cards + attribution list with resolve actions
+- [ ] UI: Client-facing velocity report — shows where delays originate (client vs VENTEX)
+- [ ] Wire diagnostic scoring into blueprint generation flow
+- [x] Test end-to-end: verified diagnostic runs on Royalton org, scores populate, friction flags display, all 3 tabs render correctly
