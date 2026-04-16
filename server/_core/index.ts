@@ -47,8 +47,8 @@ async function startServer() {
     res.setHeader("X-Frame-Options", "DENY");
     // Enable XSS filter (legacy browsers)
     res.setHeader("X-XSS-Protection", "1; mode=block");
-    // Enforce HTTPS
-    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    // Enforce HTTPS (with preload for HSTS preload list eligibility)
+    res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
     // Referrer policy — send origin only on cross-origin requests
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
     // Content Security Policy — restrict resource loading
@@ -59,8 +59,13 @@ async function startServer() {
     // Permissions policy — disable unnecessary browser features
     res.setHeader(
       "Permissions-Policy",
-      "camera=(), microphone=(), geolocation=(), payment=()"
+      "camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"
     );
+    // Cross-Origin isolation headers
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+    res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+    // Remove server identification
+    res.removeHeader("X-Powered-By");
     next();
   });
   // OAuth callback under /api/oauth/callback

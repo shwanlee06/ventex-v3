@@ -2799,3 +2799,54 @@
 - [ ] [FUTURE] WorkOS SAML 2.0 SSO integration (requires legal review + enterprise contract)
 - [ ] [FUTURE] SCIM 2.0 provisioning endpoints (requires WorkOS integration)
 - [ ] [FUTURE] WebAuthn/passkey MFA (currently TOTP only)
+
+## WS6 — Penetration Test Prep (Apr 16)
+- [x] Audit and harden HTTP security headers — HSTS preload, COOP, CORP, expanded Permissions-Policy
+- [x] Rate limiting already active on 8 endpoint categories (login, MFA, API key, file upload, invitations, AI chat, email, general)
+- [x] Input sanitization module created (server/security/sanitize.ts) — stripHtml, escapeHtml, sanitizeFilename, sanitizePath, CIDR validation
+- [x] Security scanning script created (scripts/security-scan.sh) — 20 PASS, 0 WARN, 0 FAIL
+- [x] Pen test readiness report generated (docs/security/pentest-readiness.md)
+- [x] Security header tests already exist (server/security/headers.test.ts — 7 tests)
+
+## WS7 — Incident Response Plan (Apr 16)
+- [x] Create docs/security/incident-response-plan.md
+- [x] Define severity levels (P1-P4) with response SLAs (15min/30min/2hr/24hr)
+- [x] Define escalation matrix and communication templates (internal, tenant, regulatory)
+- [x] Define containment strategies per incident type (6 categories)
+- [x] Define eradication, recovery, and evidence preservation procedures
+- [x] Define post-incident review template with 10 required sections
+- [x] Include GDPR Article 33 notification requirements and multi-jurisdiction table
+
+## WS8 — Business Continuity / Disaster Recovery (Apr 16)
+- [x] Create docs/security/bcp-dr-plan.md (comprehensive BCP/DRP)
+- [x] Define RPO/RTO targets per service tier (Tier 1: 1hr/4hr, Tier 2: 4hr/8hr, Tier 3: 24hr/24hr)
+- [x] Document backup strategy (PITR, daily snapshots, monthly archives, S3 versioning)
+- [x] Document 5 disaster recovery scenarios with step-by-step runbooks
+- [x] Map to sub-processors from WS4 with provider SLAs and failover capabilities
+- [x] Define testing cadence (monthly backup tests, quarterly failover drills, annual full DR simulation)
+
+## WS10 — Insurance & Indemnification (Apr 16)
+- [x] Create docs/legal/cyber-insurance-requirements.md (coverage requirements, AI-specific considerations, underwriting info, carrier recommendations)
+- [x] Create docs/legal/indemnification-clauses.md (client agreement, AI output, DPA, sub-processor, liability caps, procedures)
+- [x] Define coverage scope and minimum limits (included in cyber-insurance-requirements.md)
+
+## IP Allowlist Enforcement Middleware (Apr 16)
+- [x] Create server/security/ipAllowlist.ts with CIDR matching, caching, and IP extraction
+- [x] Integrate enforceIpAllowlist into ALL procedure types (protectedProcedure, tenantScopedProcedure, adminProcedure, partnerProcedure)
+- [x] Add cache clearing on ipAllowlist update in security router
+- [x] Handle IPv6-mapped IPv4 normalization and X-Forwarded-For parsing
+- [x] Write vitest tests (16 tests passing: CIDR matching, normalization, allowlist logic)
+- [x] 0 TypeScript errors
+- [x] VENTEX team bypass handled via fail-open on no org + isVentexTeam checks in procedures
+- [x] Write vitest tests for IP allowlist enforcement (16 tests)
+
+## Audit Log Export & Retention (Apr 16)
+- [x] Add CSV export endpoint (exportAuditLogCsv) with all filters, up to 10k rows
+- [x] Add retention stats endpoint (getRetentionStats) showing total/expired records
+- [x] Add purge endpoint (purgeExpiredAuditLogs) with dry-run mode, VENTEX-only, 90-day retention
+- [x] Add Export CSV button to AuditLogTab in SecurityPage with download trigger
+- [x] Export action itself is audit-logged for compliance
+- [x] Purge action is audit-logged BEFORE deletion for immutable trail
+- [x] Export button added to SecurityPage Audit Log tab (Download icon + CSV trigger)
+- [x] 90-day retention cleanup via purgeExpiredAuditLogs with dry-run safety
+- [x] All 922 tests passing across 49 files, 0 TypeScript errors

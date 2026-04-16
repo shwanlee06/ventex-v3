@@ -6,6 +6,7 @@
 import { z } from "zod";
 import { router, protectedProcedure, adminProcedure } from "../_core/trpc";
 import { getDb } from "../db";
+import { clearAllowlistCache } from "../security/ipAllowlist";
 import {
   users,
   userVentureAccess,
@@ -497,6 +498,11 @@ export const securityRouter = router({
 
       await db.update(organizations).set(updates as any).where(eq(organizations.id, orgId));
 
+      // Clear IP allowlist cache if it was updated
+      if (input.ipAllowlist !== undefined) {
+        clearAllowlistCache(orgId);
+      }
+
       // Audit log
       await db.insert(auditLog).values({
         userId: ctx.user.id,
@@ -531,4 +537,204 @@ export const securityRouter = router({
     }).from(organizations).where(eq(organizations.id, orgId)).limit(1);
     return org || { idleTimeoutMinutes: 30, absoluteTimeoutHours: 8 };
   }),
+
+  /**
+   * Export audit log as CSV.
+   * Returns CSV string content that the frontend can download as a file.
+   * Supports the same filters as getAuditLog.
+   */
+  exportAuditLogCsv: protectedProcedure
+    .input(
+      z.object({
+        action: z.string().optional(),
+        entityType: z.string().optional(),
+        userId: z.number().optional(),
+        result: z.enum(["success", "denied", "error"]).optional(),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+        organizationId: z.number().optional(),
+        maxRows: z.number().min(1).max(10000).default(5000),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      requirePermission(ctx.user, "export_data");
+
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const effectiveOrgId = resolveOrgId(ctx.user, input.organizationId);
+
+      const conditions = [];
+      if (effectiveOrgId) conditions.push(eq(auditLog.organizationId, effectiveOrgId));
+      if (input.action) conditions.push(like(auditLog.action, `%${input.action}%`));
+      if (input.entityType) conditions.push(eq(auditLog.entityType, input.entityType));
+      if (input.userId) conditions.push(eq(auditLog.userId, input.userId));
+      if (input.result) conditions.push(eq(auditLog.result, input.result));
+      if (input.startDate) conditions.push(gte(auditLog.createdAt, new Date(input.startDate)));
+      if (input.endDate) conditions.push(lte(auditLog.createdAt, new Date(input.endDate)));
+
+      const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+      const entries = await db
+        .select()
+        .from(auditLog)
+        .where(where)
+        .orderBy(desc(auditLog.createdAt))
+        .limit(input.maxRows);
+
+      // Log the export action itself
+      await logAudit({
+        userId: ctx.user.id,
+        userName: ctx.user.name || ctx.user.email || "System",
+        action: "export_audit_log",
+        entityType: "audit_log",
+        entityId: "bulk_export",
+        details: JSON.stringify({ rowCount: entries.length, filters: input }),
+        result: "success",
+        organizationId: effectiveOrgId || undefined,
+      });
+
+      // Build CSV
+      const headers = [
+        "ID", "Timestamp", "User ID", "User Name", "Action",
+        "Entity Type", "Entity ID", "Result", "Details", "IP Address",
+        "Organization ID",
+      ];
+
+      const escCsv = (val: unknown): string => {
+        const s = String(val ?? "");
+        if (s.includes(",") || s.includes('"') || s.includes("\n")) {
+          return `"${s.replace(/"/g, '""')}"`;
+        }
+        return s;
+      };
+
+      const rows = entries.map((e) =>
+        [
+          e.id,
+          e.createdAt ? new Date(e.createdAt).toISOString() : "",
+          e.userId,
+          e.userName,
+          e.action,
+          e.entityType,
+          e.entityId,
+          e.result,
+          e.details,
+          e.ipAddress || "",
+          e.organizationId || "",
+        ]
+          .map(escCsv)
+          .join(",")
+      );
+
+      return {
+        csv: [headers.join(","), ...rows].join("\n"),
+        rowCount: entries.length,
+        exportedAt: new Date().toISOString(),
+      };
+    }),
+
+  /**
+   * Get audit log retention stats.
+   * Shows how many records exist and how many would be purged by the retention policy.
+   */
+  getRetentionStats: adminProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+
+    const RETENTION_DAYS = 90;
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - RETENTION_DAYS);
+
+    const effectiveOrgId = resolveOrgId(ctx.user, undefined);
+    const orgCondition = effectiveOrgId ? eq(auditLog.organizationId, effectiveOrgId) : undefined;
+
+    const [totalResult, expiredResult, oldestResult] = await Promise.all([
+      db.select({ count: sql<number>`count(*)` }).from(auditLog).where(orgCondition),
+      db.select({ count: sql<number>`count(*)` }).from(auditLog).where(
+        orgCondition
+          ? and(orgCondition, lte(auditLog.createdAt, cutoffDate))
+          : lte(auditLog.createdAt, cutoffDate)
+      ),
+      db.select({ oldest: sql<Date>`MIN(createdAt)` }).from(auditLog).where(orgCondition),
+    ]);
+
+    return {
+      totalRecords: totalResult[0]?.count ?? 0,
+      expiredRecords: expiredResult[0]?.count ?? 0,
+      retentionDays: RETENTION_DAYS,
+      cutoffDate: cutoffDate.toISOString(),
+      oldestRecord: oldestResult[0]?.oldest ? new Date(oldestResult[0].oldest).toISOString() : null,
+    };
+  }),
+
+  /**
+   * Purge expired audit log entries (older than 90 days).
+   * Admin-only operation. Logs the purge action before deleting.
+   */
+  purgeExpiredAuditLogs: adminProcedure
+    .input(z.object({
+      dryRun: z.boolean().default(true),
+      organizationId: z.number().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (!isVentexTeam(ctx.user)) {
+        throw new Error("Only VENTEX team can purge audit logs");
+      }
+
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const RETENTION_DAYS = 90;
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - RETENTION_DAYS);
+
+      const effectiveOrgId = resolveOrgId(ctx.user, input.organizationId);
+      const conditions = [lte(auditLog.createdAt, cutoffDate)];
+      if (effectiveOrgId) conditions.push(eq(auditLog.organizationId, effectiveOrgId));
+
+      const where = and(...conditions);
+
+      // Count how many would be purged
+      const [countResult] = await db.select({ count: sql<number>`count(*)` }).from(auditLog).where(where);
+      const purgeCount = countResult?.count ?? 0;
+
+      if (input.dryRun) {
+        return {
+          dryRun: true,
+          wouldPurge: purgeCount,
+          cutoffDate: cutoffDate.toISOString(),
+          retentionDays: RETENTION_DAYS,
+        };
+      }
+
+      // Log the purge action BEFORE deleting
+      await logAudit({
+        userId: ctx.user.id,
+        userName: ctx.user.name || ctx.user.email || "Admin",
+        action: "purge_audit_logs",
+        entityType: "audit_log",
+        entityId: "retention_cleanup",
+        details: JSON.stringify({
+          purgedCount: purgeCount,
+          cutoffDate: cutoffDate.toISOString(),
+          retentionDays: RETENTION_DAYS,
+          organizationId: effectiveOrgId,
+        }),
+        result: "success",
+        organizationId: effectiveOrgId || undefined,
+      });
+
+      // Execute the purge
+      if (purgeCount > 0) {
+        await db.delete(auditLog).where(where);
+      }
+
+      return {
+        dryRun: false,
+        purged: purgeCount,
+        cutoffDate: cutoffDate.toISOString(),
+        retentionDays: RETENTION_DAYS,
+      };
+    }),
 });

@@ -412,6 +412,31 @@ function AuditLogTab() {
   const entries = data?.entries ?? [];
   const total = data?.total ?? 0;
 
+  const exportMutation = trpc.security.exportAuditLogCsv.useMutation({
+    onSuccess: (result) => {
+      // Trigger CSV download
+      const blob = new Blob([result.csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${result.rowCount} audit log entries`);
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to export audit log");
+    },
+  });
+
+  const handleExport = () => {
+    exportMutation.mutate({
+      action: filter.action || undefined,
+      result: filter.result as any || undefined,
+      entityType: filter.entityType || undefined,
+    });
+  };
+
   const resultIcon = (result: string) => {
     switch (result) {
       case "success": return <CheckCircle2 className="size-3 text-emerald-400" />;
@@ -455,6 +480,17 @@ function AuditLogTab() {
         <Button variant="outline" size="sm" className="h-9 min-h-[36px] text-xs flex-shrink-0 touch-manipulation" onClick={() => refetch()}>
           <RefreshCw className="size-3 mr-1" />
           Refresh
+        </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-9 min-h-[36px] text-xs flex-shrink-0 touch-manipulation"
+          onClick={handleExport}
+          disabled={exportMutation.isPending}
+        >
+          <Download className="size-3 mr-1" />
+          {exportMutation.isPending ? "Exporting..." : "Export CSV"}
         </Button>
 
         <span className="text-[10px] font-mono text-muted-foreground ml-auto flex-shrink-0">
