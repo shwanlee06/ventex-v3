@@ -92,6 +92,28 @@ async function startServer() {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
+  // WS5: Health check endpoints for /trust status page
+  app.get("/api/health", (_req, res) => {
+    res.json({ status: "operational", service: "ventex", timestamp: new Date().toISOString() });
+  });
+  app.get("/api/health/db", async (_req, res) => {
+    try {
+      const { getDb } = await import("../db");
+      const db = await getDb();
+      if (!db) throw new Error("DB pool unavailable");
+      const { sql } = await import("drizzle-orm");
+      await db.execute(sql`SELECT 1`);
+      res.json({ status: "operational", service: "database", timestamp: new Date().toISOString() });
+    } catch (err: any) {
+      res.status(503).json({ status: "degraded", service: "database", error: err?.message, timestamp: new Date().toISOString() });
+    }
+  });
+  app.get("/api/health/ai", (_req, res) => {
+    // AI health is determined by whether the LLM API key is configured
+    const hasKey = Boolean(process.env.BUILT_IN_FORGE_API_KEY);
+    res.json({ status: hasKey ? "operational" : "degraded", service: "ai", timestamp: new Date().toISOString() });
+  });
+
   // Agent scheduler status endpoint
   app.get("/api/agent-scheduler/status", (_req, res) => {
     res.json(getSchedulerStatus());

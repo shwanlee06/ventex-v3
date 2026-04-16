@@ -204,6 +204,13 @@
       "when": 1776366460339,
       "tag": "0028_steep_amphibian",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "5",
+      "when": 1776368533981,
+      "tag": "0029_clear_frightful_four",
+      "breakpoints": true
     }
   ]
 }

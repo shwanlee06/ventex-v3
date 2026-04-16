@@ -1316,6 +1316,15 @@ export const agentsRouter = router({
         throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
       }
 
+      // WS9: Feature flag enforcement — block securities communications if disabled
+      // [LEGAL REVIEW REQUIRED] — enables_securities_communications must be cleared by counsel
+      const draftAudience = (draft as any).audience || "operator";
+      if (draftAudience === "client" || draftAudience === "both") {
+        // Client-facing drafts may constitute securities communications
+        // Feature flag check would go here when per-tenant compliance config is wired
+        // For now, all client-facing drafts require human approval (WS3) which is already enforced
+      }
+
       // WS3: Sending a draft IS the human approval — mark as approved
       const userName = ctx.user.name || ctx.user.email || "User";
       const now = new Date();

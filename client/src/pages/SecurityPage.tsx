@@ -21,7 +21,7 @@ import {
   Download,
   RefreshCw,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -43,13 +43,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { motion } from "framer-motion";
 
-type Tab = "overview" | "users" | "audit" | "access";
+type Tab = "overview" | "users" | "audit" | "access" | "tenant";
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "overview", label: "Overview", icon: <Shield className="size-4" /> },
   { id: "users", label: "Users & Roles", icon: <Users className="size-4" /> },
   { id: "audit", label: "Audit Log", icon: <FileText className="size-4" /> },
   { id: "access", label: "Access Control", icon: <Key className="size-4" /> },
+  { id: "tenant", label: "Tenant Settings", icon: <Lock className="size-4" /> },
 ];
 
 const ROLE_COLORS: Record<string, string> = {
@@ -100,6 +101,7 @@ export default function SecurityPage() {
         {activeTab === "users" && <UsersTab />}
         {activeTab === "audit" && <AuditLogTab />}
         {activeTab === "access" && <AccessControlTab />}
+        {activeTab === "tenant" && <TenantSecurityTab />}
       </div>
     </DashboardLayout>
   );
@@ -663,6 +665,207 @@ function AccessControlTab() {
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+// ─── WS2: Tenant Security Settings Tab ──────────────────────────────────
+
+function TenantSecurityTab() {
+  const { data: settings, isLoading } = trpc.security.getOrgSecuritySettings.useQuery({});
+  const utils = trpc.useUtils();
+  const updateSettings = trpc.security.updateOrgSecuritySettings.useMutation({
+    onSuccess: () => {
+      utils.security.getOrgSecuritySettings.invalidate();
+      toast.success("Security settings updated");
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const [idleTimeout, setIdleTimeout] = useState(30);
+  const [absoluteTimeout, setAbsoluteTimeout] = useState(8);
+  const [mfaEnforced, setMfaEnforced] = useState(false);
+  const [ipAllowlist, setIpAllowlist] = useState("");
+  const [dirty, setDirty] = useState(false);
+
+  // Sync form state when data loads
+  useEffect(() => {
+    if (settings) {
+      setIdleTimeout(settings.sessionIdleTimeoutMinutes);
+      setAbsoluteTimeout(settings.sessionAbsoluteTimeoutHours);
+      setMfaEnforced(settings.mfaEnforced);
+      setIpAllowlist(settings.ipAllowlist?.join("\n") || "");
+      setDirty(false);
+    }
+  }, [settings]);
+
+  const handleSave = () => {
+    const parsed = ipAllowlist.trim()
+      ? ipAllowlist.split("\n").map(s => s.trim()).filter(Boolean)
+      : null;
+    updateSettings.mutate({
+      sessionIdleTimeoutMinutes: idleTimeout,
+      sessionAbsoluteTimeoutHours: absoluteTimeout,
+      mfaEnforced,
+      ipAllowlist: parsed,
+    });
+    setDirty(false);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-20 bg-card border border-border rounded-lg animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
+        <h3 className="text-sm font-semibold text-foreground mb-1">Organization Security Settings</h3>
+        <p className="text-xs text-muted-foreground mb-6">
+          Configure session timeouts, MFA enforcement, and IP restrictions for <span className="font-medium text-foreground">{settings?.name || "this organization"}</span>.
+        </p>
+
+        <div className="space-y-6">
+          {/* Session Idle Timeout */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <label className="text-xs font-medium text-foreground">Idle Session Timeout</label>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Users are logged out after this many minutes of inactivity. Maximum 30 minutes.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={5}
+                max={30}
+                value={idleTimeout}
+                onChange={(e) => { setIdleTimeout(Number(e.target.value)); setDirty(true); }}
+                className="w-20 h-8 rounded-md border border-border bg-background px-2 text-sm text-foreground font-mono"
+              />
+              <span className="text-xs text-muted-foreground">min</span>
+            </div>
+          </div>
+
+          {/* Absolute Session Timeout */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <label className="text-xs font-medium text-foreground">Absolute Session Timeout</label>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Users must re-authenticate after this many hours regardless of activity. Maximum 8 hours.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={1}
+                max={8}
+                value={absoluteTimeout}
+                onChange={(e) => { setAbsoluteTimeout(Number(e.target.value)); setDirty(true); }}
+                className="w-20 h-8 rounded-md border border-border bg-background px-2 text-sm text-foreground font-mono"
+              />
+              <span className="text-xs text-muted-foreground">hr</span>
+            </div>
+          </div>
+
+          {/* MFA Enforcement */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <label className="text-xs font-medium text-foreground">Enforce MFA for Privileged Roles</label>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Require TOTP multi-factor authentication for all admin, owner, and manager roles.
+              </p>
+            </div>
+            <button
+              onClick={() => { setMfaEnforced(!mfaEnforced); setDirty(true); }}
+              className={cn(
+                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0",
+                mfaEnforced ? "bg-primary" : "bg-zinc-700"
+              )}
+            >
+              <span
+                className={cn(
+                  "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                  mfaEnforced ? "translate-x-6" : "translate-x-1"
+                )}
+              />
+            </button>
+          </div>
+
+          {/* IP Allowlist */}
+          <div>
+            <label className="text-xs font-medium text-foreground">IP Allowlist (CIDR)</label>
+            <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">
+              Restrict access to specific IP ranges. One CIDR range per line. Leave empty to allow all IPs.
+            </p>
+            <textarea
+              value={ipAllowlist}
+              onChange={(e) => { setIpAllowlist(e.target.value); setDirty(true); }}
+              placeholder={"10.0.0.0/8\n192.168.1.0/24\n203.0.113.42/32"}
+              rows={4}
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground/40 resize-none"
+            />
+          </div>
+
+          {/* SSO Status (read-only for now) */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 opacity-60">
+            <div>
+              <label className="text-xs font-medium text-foreground">Enterprise SSO (SAML 2.0)</label>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                {settings?.ssoEnabled
+                  ? `Active via ${settings.ssoProvider || "SAML"}`
+                  : "Not configured — requires legal review and WorkOS integration"}
+              </p>
+            </div>
+            <span className={cn(
+              "text-[10px] font-medium px-2 py-1 rounded",
+              settings?.ssoEnabled
+                ? "bg-emerald-500/10 text-emerald-400"
+                : "bg-zinc-500/10 text-zinc-400"
+            )}>
+              {settings?.ssoEnabled ? "Active" : "Pending"}
+            </span>
+          </div>
+
+          {/* Save Button */}
+          {dirty && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex justify-end pt-2"
+            >
+              <Button
+                onClick={handleSave}
+                disabled={updateSettings.isPending}
+                className="text-xs"
+              >
+                {updateSettings.isPending ? "Saving..." : "Save Security Settings"}
+              </Button>
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      {/* Compliance Notes */}
+      <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="size-4 text-amber-400 mt-0.5 flex-shrink-0" />
+          <div>
+            <h4 className="text-xs font-medium text-foreground mb-1">Enterprise SSO & SCIM</h4>
+            <p className="text-[10px] text-muted-foreground leading-relaxed">
+              SAML 2.0 SSO and SCIM 2.0 provisioning are planned for enterprise tenants. These features require
+              WorkOS integration and legal review before activation. Contact your account manager to begin the
+              enterprise onboarding process. Session deprovisioning SLA: 60 seconds after IdP revocation.
+            </p>
+          </div>
         </div>
       </div>
     </div>

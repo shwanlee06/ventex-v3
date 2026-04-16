@@ -38,6 +38,15 @@ export const organizations = mysqlTable("organizations", {
   sectors: json("sectors").$type<string[]>(),
   subscriptionTier: varchar("subscriptionTier", { length: 32 }).default("poc"),  // 'poc' | 'growth' | 'enterprise'
   renewalDate: varchar("renewalDate", { length: 32 }),
+  // WS2: Per-tenant security settings
+  sessionIdleTimeoutMinutes: int("sessionIdleTimeoutMinutes").default(30).notNull(),  // configurable up to 30 min
+  sessionAbsoluteTimeoutHours: int("sessionAbsoluteTimeoutHours").default(8).notNull(),  // max 8 hr absolute
+  mfaEnforced: boolean("mfaEnforced").default(false).notNull(),  // require MFA for admin/owner/manager roles
+  ipAllowlist: json("ipAllowlist").$type<string[]>(),  // CIDR ranges; null = no restriction
+  ssoEnabled: boolean("ssoEnabled").default(false).notNull(),  // [LEGAL REVIEW REQUIRED] enterprise SSO
+  ssoProvider: varchar("ssoProvider", { length: 64 }),  // 'workos' | 'auth0' | null
+  ssoMetadataUrl: varchar("ssoMetadataUrl", { length: 512 }),  // IdP metadata URL for SAML
+  allowedAuthMethods: json("allowedAuthMethods").$type<string[]>(),  // ['oauth', 'saml', 'totp']; null = all
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

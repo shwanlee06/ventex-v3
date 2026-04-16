@@ -2749,3 +2749,53 @@
 - [x] Write vitest tests for AI safety enforcement (863 tests passing)
 - [x] Create aiSafety.ts module with computeConfidenceScore, requiresHumanApproval, getDraftSafetyFields, getEventSafetyFields
 - [x] Immutable audit trail via logApprovalAction → agent_approval_log table
+
+## WS4 — Data Residency, Sub-Processors, and Cross-Border (Apr 16)
+- [x] Create /docs/security/sub-processors.md listing all third-party services
+- [x] Create /docs/security/data-flow-diagram.md with Mermaid architecture diagram
+- [x] Create /docs/legal/dpa-template.md — Data Processing Agreement template
+- [x] Build server/compliance.ts — data residency config, cross-border transfer logging, feature flags
+- [x] Per-tenant data residency configuration (US, EU, APAC)
+- [x] Cross-border transfer logging with [CROSS-BORDER TRANSFER] flag
+- [x] ComplianceMode config (technology_vendor_only vs advisory_enabled)
+- [x] Feature flags (enables_money_movement, enables_securities_communications — default OFF)
+- [x] Write vitest tests for compliance engine (887 tests passing across 47 files)
+
+## WS5 — Trust & Security Page (Apr 16)
+- [x] Create /trust page with security overview, compliance status, sub-processors, data residency, pen testing, incident response, vulnerability disclosure, system status, whitepaper sections
+- [x] Add /trust route to App.tsx (public, no auth)
+- [x] Create /.well-known/security.txt per RFC 9116
+- [x] Add REST health endpoints: /api/health, /api/health/db, /api/health/ai
+- [x] Create security whitepaper: docs/security/ventex-security-whitepaper.md
+- [x] Side navigation with anchor links for each section
+- [x] Status badges for all platform services
+
+## WS9 — Regulatory Posture Documentation (Apr 16)
+- [x] Create docs/legal/regulatory-questions.md — 35 structured questions for outside counsel
+- [x] Regulatory classification analysis (technology vendor vs. investment adviser vs. broker-dealer)
+- [x] Custody analysis (Advisers Act Rule 206(4)-2)
+- [x] Money movement analysis (FinCEN, state money transmitter)
+- [x] Securities communications analysis (FINRA Rule 2210, SEC Marketing Rule)
+- [x] Cross-border analysis (FCA, FINMA, MAS, ADGM/DIFC)
+- [x] Data protection analysis (GDPR controller vs. processor)
+- [x] AI-specific regulation analysis (Colorado AI Act, NYC AEDT, EU AI Act)
+- [x] ComplianceMode config per tenant (technology_vendor_only default) — already in compliance.ts
+- [x] Feature flag enables_money_movement defaulting OFF — [LEGAL REVIEW REQUIRED]
+- [x] Feature flag enables_securities_communications defaulting OFF — [LEGAL REVIEW REQUIRED]
+- [x] AI output labels use ComplianceMode: "Operational Suggestion" vs "Recommendation"
+- [x] Added WS9 feature flag comments to distributions.ts and agents.ts sendDraft
+- [x] All 887 tests passing after WS9 changes
+
+## WS2 — Enterprise Auth & Client Portal Hardening (Apr 16)
+- [x] Add per-tenant security settings to organizations schema (sessionIdleTimeoutMinutes, sessionAbsoluteTimeoutHours, mfaEnforced, ipAllowlist, ssoEnabled, ssoProvider, ssoMetadataUrl, allowedAuthMethods)
+- [x] Push DB migration (0029_clear_frightful_four.sql)
+- [x] Add getOrgSecuritySettings, updateOrgSecuritySettings, getSessionConfig procedures to security router
+- [x] Add SESSION_ABSOLUTE_TIMEOUT_MS constant to shared/const.ts
+- [x] Upgrade useIdleTimeout hook: org-level config, absolute timeout enforcement, session start tracking
+- [x] Wrap /portal/:orgSlug route in RequireAuth (was previously unguarded)
+- [x] Add Tenant Security Settings tab to SecurityPage (idle timeout, absolute timeout, MFA enforcement, IP allowlist, SSO status)
+- [x] Write vitest tests for tenant security settings (906 tests passing across 48 files)
+- [x] TypeScript compilation: 0 errors
+- [ ] [FUTURE] WorkOS SAML 2.0 SSO integration (requires legal review + enterprise contract)
+- [ ] [FUTURE] SCIM 2.0 provisioning endpoints (requires WorkOS integration)
+- [ ] [FUTURE] WebAuthn/passkey MFA (currently TOTP only)

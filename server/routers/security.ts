@@ -14,6 +14,7 @@ import {
   ventures,
   spvs,
   apiKeys,
+  organizations,
 } from "../../drizzle/schema";
 import { eq, desc, and, like, sql, gte, lte } from "drizzle-orm";
 import {
@@ -417,13 +418,117 @@ export const securityRouter = router({
 
     const permissions: Record<string, boolean> = {};
     for (const action of allActions) {
-      permissions[action] = hasPermission(ctx.user.role, action);
+       permissions[action] = hasPermission(ctx.user.role, action);
     }
-
     return {
       role: ctx.user.role,
       roleLevel: ROLE_HIERARCHY[ctx.user.role] ?? 0,
       permissions,
     };
+  }),
+
+  // ─── WS2: Per-Tenant Security Settings ──────────────────────────────────
+
+  /** Get org-level security settings (admin only) */
+  getOrgSecuritySettings: adminProcedure
+    .input(z.object({ organizationId: z.number().optional() }))
+    .query(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const orgId = input.organizationId || resolveOrgId(ctx.user, undefined);
+      if (!orgId) throw new Error("No organization context");
+      const [org] = await db.select({
+        id: organizations.id,
+        name: organizations.name,
+        sessionIdleTimeoutMinutes: organizations.sessionIdleTimeoutMinutes,
+        sessionAbsoluteTimeoutHours: organizations.sessionAbsoluteTimeoutHours,
+        mfaEnforced: organizations.mfaEnforced,
+        ipAllowlist: organizations.ipAllowlist,
+        ssoEnabled: organizations.ssoEnabled,
+        ssoProvider: organizations.ssoProvider,
+        ssoMetadataUrl: organizations.ssoMetadataUrl,
+        allowedAuthMethods: organizations.allowedAuthMethods,
+      }).from(organizations).where(eq(organizations.id, orgId)).limit(1);
+      if (!org) throw new Error("Organization not found");
+      return org;
+    }),
+
+  /** Update org-level security settings (admin only) */
+  updateOrgSecuritySettings: adminProcedure
+    .input(z.object({
+      organizationId: z.number().optional(),
+      sessionIdleTimeoutMinutes: z.number().min(5).max(30).optional(),
+      sessionAbsoluteTimeoutHours: z.number().min(1).max(8).optional(),
+      mfaEnforced: z.boolean().optional(),
+      ipAllowlist: z.array(z.string()).nullable().optional(),
+      // SSO fields are gated — [LEGAL REVIEW REQUIRED]
+      // ssoEnabled, ssoProvider, ssoMetadataUrl are not exposed yet
+      allowedAuthMethods: z.array(z.string()).nullable().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      if (!isVentexTeam(ctx.user)) {
+        throw new Error("Only VENTEX team can update org security settings");
+      }
+      const orgId = input.organizationId || resolveOrgId(ctx.user, undefined);
+      if (!orgId) throw new Error("No organization context");
+
+      const updates: Record<string, unknown> = {};
+      if (input.sessionIdleTimeoutMinutes !== undefined) {
+        updates.sessionIdleTimeoutMinutes = input.sessionIdleTimeoutMinutes;
+      }
+      if (input.sessionAbsoluteTimeoutHours !== undefined) {
+        updates.sessionAbsoluteTimeoutHours = input.sessionAbsoluteTimeoutHours;
+      }
+      if (input.mfaEnforced !== undefined) {
+        updates.mfaEnforced = input.mfaEnforced;
+      }
+      if (input.ipAllowlist !== undefined) {
+        updates.ipAllowlist = input.ipAllowlist;
+      }
+      if (input.allowedAuthMethods !== undefined) {
+        updates.allowedAuthMethods = input.allowedAuthMethods;
+      }
+
+      if (Object.keys(updates).length === 0) {
+        throw new Error("No settings to update");
+      }
+
+      await db.update(organizations).set(updates as any).where(eq(organizations.id, orgId));
+
+      // Audit log
+      await db.insert(auditLog).values({
+        userId: ctx.user.id,
+        userName: ctx.user.name || ctx.user.email || "Admin",
+        action: "update_org_security_settings",
+        entityType: "organization",
+        entityId: String(orgId),
+        details: JSON.stringify(updates),
+        result: "success",
+      });
+
+      const [updated] = await db.select({
+        sessionIdleTimeoutMinutes: organizations.sessionIdleTimeoutMinutes,
+        sessionAbsoluteTimeoutHours: organizations.sessionAbsoluteTimeoutHours,
+        mfaEnforced: organizations.mfaEnforced,
+        ipAllowlist: organizations.ipAllowlist,
+        ssoEnabled: organizations.ssoEnabled,
+        allowedAuthMethods: organizations.allowedAuthMethods,
+      }).from(organizations).where(eq(organizations.id, orgId)).limit(1);
+      return updated;
+    }),
+
+  /** Get the session config for the current user's org (used by frontend idle timeout) */
+  getSessionConfig: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) return { idleTimeoutMinutes: 30, absoluteTimeoutHours: 8 };
+    const orgId = ctx.user.organizationId;
+    if (!orgId) return { idleTimeoutMinutes: 30, absoluteTimeoutHours: 8 };
+    const [org] = await db.select({
+      idleTimeoutMinutes: organizations.sessionIdleTimeoutMinutes,
+      absoluteTimeoutHours: organizations.sessionAbsoluteTimeoutHours,
+    }).from(organizations).where(eq(organizations.id, orgId)).limit(1);
+    return org || { idleTimeoutMinutes: 30, absoluteTimeoutHours: 8 };
   }),
 });

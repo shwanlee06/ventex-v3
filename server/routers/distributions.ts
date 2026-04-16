@@ -46,6 +46,9 @@ export const distributionsRouter = router({
     if (!isVentexTeam(ctx.user)) {
       throw new Error("Only VENTEX team can create distributions");
     }
+    // WS9: Distribution tracking is display-only (no fund movement).
+    // [LEGAL REVIEW REQUIRED] — If money movement is ever added, check enables_money_movement flag.
+    // Current architecture: records distribution data only, does not initiate transfers.
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     await db.insert(distributions).values(input);

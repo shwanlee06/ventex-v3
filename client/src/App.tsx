@@ -39,6 +39,7 @@ import OversightPage from "./pages/Oversight";
 import DraftCenter from "./pages/DraftCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import TrustSecurity from "./pages/TrustSecurity";
 import { AgentProvider } from "./contexts/AgentContext";
 import { useHeartbeat } from "./hooks/useHeartbeat";
 import { useIdleTimeout } from "./hooks/useIdleTimeout";
@@ -114,8 +115,10 @@ function Router() {
       {/* Login / landing page is the root */}
       <Route path="/" component={SpyOps} />
 
-      {/* Client portal — standalone client-facing view */}
-      <Route path="/portal/:orgSlug" component={ClientPortal} />
+      {/* Client portal — standalone client-facing view (WS2: requires auth) */}
+      <Route path="/portal/:orgSlug">
+        {(params: { orgSlug: string }) => <RequireAuth><ClientPortal orgSlug={params.orgSlug} /></RequireAuth>}
+      </Route>
       <Route path="/portal">
         <Redirect to="/dashboard" />
       </Route>
@@ -124,9 +127,10 @@ function Router() {
       <Route path="/demo/dashboard" component={DemoDashboard} />
       <Route path="/demo" component={Demo} />
 
-      {/* Legal pages — public, no auth */}
+      {/* Legal & Trust pages — public, no auth */}
       <Route path="/privacy" component={PrivacyPolicy} />
       <Route path="/terms" component={TermsOfService} />
+      <Route path="/trust" component={TrustSecurity} />
 
       {/* Partner invite acceptance — public, no auth */}
       <Route path="/invite/:orgSlug/:token" component={InviteAccept} />
