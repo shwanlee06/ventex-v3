@@ -8,6 +8,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { isVentexTeam } from "@/lib/ventex";
 import { usePreviewMode } from "@/contexts/PreviewMode";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Layers3, MapPin, ListChecks, AlertTriangle, Plus, X,
@@ -62,12 +63,25 @@ export default function VerticalsPage() {
   const utils = trpc.useUtils();
   const { user } = useAuth();
   const { isPreviewMode } = usePreviewMode();
+  const { activeOrgId } = useWorkspace();
   const isAdmin = isVentexTeam(user) && !isPreviewMode;
 
-  const venturesQ = trpc.ventures.listWithOrgs.useQuery();
-  const tasksQ = trpc.tasks.list.useQuery();
+  // In preview mode, scope queries to the active org so admin sees client-scoped data
+  const scopedOrgId = isPreviewMode && activeOrgId ? activeOrgId : undefined;
+
+  // Both hooks must always be called (React rules of hooks) — enable only the one we need
+  const venturesWithOrgsQ = trpc.ventures.listWithOrgs.useQuery(undefined, { enabled: isAdmin });
+  const venturesScopedQ = trpc.ventures.list.useQuery(
+    scopedOrgId ? { organizationId: scopedOrgId } : undefined,
+    { enabled: !isAdmin }
+  );
+  const venturesQ = isAdmin ? venturesWithOrgsQ : venturesScopedQ;
+  const tasksQ = trpc.tasks.list.useQuery(scopedOrgId ? { organizationId: scopedOrgId } : undefined);
   const orgsQ = trpc.organizations.list.useQuery({ includeArchived: false });
-  const allVentures = (venturesQ.data || []) as VentureWithOrgs[];
+  const allVentures = (venturesQ.data || []).map((v: any) => ({
+    ...v,
+    organizations: v.organizations || [],
+  })) as VentureWithOrgs[];
   const allTasks = tasksQ.data || [];
   const activeOrgs = (orgsQ.data || []).filter((o: any) => o.status === "active");
   const loading = venturesQ.isLoading;

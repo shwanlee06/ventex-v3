@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { isVentexTeam } from "@/lib/ventex";
 import { usePreviewMode } from "@/contexts/PreviewMode";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -66,12 +67,17 @@ function formatDate(d: string | null | undefined): string {
 export default function SettingsPage() {
   const { user } = useAuth();
   const { isPreviewMode } = usePreviewMode();
+  const { activeOrgId } = useWorkspace();
   const isVentex = isVentexTeam(user) && !isPreviewMode;
   const utils = trpc.useUtils();
 
-  const spvsQ = trpc.spvs.list.useQuery();
-  const distQ = trpc.distributions.list.useQuery();
-  const distMetricsQ = trpc.distributions.metrics.useQuery();
+  // In preview mode, scope to the active org
+  const scopedOrgId = isPreviewMode && activeOrgId ? activeOrgId : undefined;
+  const orgInput = scopedOrgId ? { organizationId: scopedOrgId } : undefined;
+
+  const spvsQ = trpc.spvs.list.useQuery(orgInput);
+  const distQ = trpc.distributions.list.useQuery(orgInput);
+  const distMetricsQ = trpc.distributions.metrics.useQuery(orgInput);
 
   const spvsList = spvsQ.data || [];
   const distList = distQ.data || [];

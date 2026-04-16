@@ -2626,3 +2626,16 @@
 - [x] Replace inline Draft Center in ClientPortal with compact summary widget linking to /drafts
 - [x] Wrap DraftCenter in DashboardLayout for consistent sidebar/topbar
 - [x] Test full approve/dismiss flow end-to-end in client preview mode
+
+## Data Isolation — Client-by-Client Scoping (Apr 16)
+- [x] Fix sidebar draft badge count to be org-scoped per client (shows 19 instead of 1)
+- [x] Ensure AgentContext pendingDraftCount is org-scoped for non-admin users
+- [x] Audit all client-facing tRPC queries for cross-org data leakage
+- [x] Verify ventures, tasks, SPVs, distributions, activity are all org-scoped for clients
+- [ ] Hide admin-only controls (Add Venture, New Deal, etc.) from client view
+- [x] Test data isolation end-to-end in client preview mode
+
+## Draft Data Isolation Fixes (Apr 16)
+- [x] Fix agent draft creation code to always set organizationId (already correct — both insert calls use task.organizationId / dist.organizationId)
+- [x] Clean up 18 orphaned NULL-org drafts in database (all were vitest test data)
+- [x] Fix sidebar badge to only count org-scoped drafts (added isNotNull guard + org-scoped AgentContext)

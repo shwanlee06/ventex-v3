@@ -8,6 +8,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { isVentexTeam } from "@/lib/ventex";
 import { usePreviewMode } from "@/contexts/PreviewMode";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ListChecks, Plus, CheckCircle2, Clock, AlertTriangle,
@@ -59,12 +60,17 @@ export default function TasksPage() {
   const utils = trpc.useUtils();
   const { user } = useAuth();
   const { isPreviewMode } = usePreviewMode();
+  const { activeOrgId } = useWorkspace();
   const isAdmin = isVentexTeam(user) && !isPreviewMode;
 
-  const tasksQ = trpc.tasks.list.useQuery();
-  const metricsQ = trpc.tasks.metrics.useQuery();
-  const teamQ = trpc.team.list.useQuery();
-  const venturesQ = trpc.ventures.list.useQuery();
+  // In preview mode, scope queries to the active org
+  const scopedOrgId = isPreviewMode && activeOrgId ? activeOrgId : undefined;
+  const orgInput = scopedOrgId ? { organizationId: scopedOrgId } : undefined;
+
+  const tasksQ = trpc.tasks.list.useQuery(orgInput);
+  const metricsQ = trpc.tasks.metrics.useQuery(orgInput);
+  const teamQ = trpc.team.list.useQuery(orgInput);
+  const venturesQ = trpc.ventures.list.useQuery(orgInput);
 
   const rawTasks = tasksQ.data || [];
   // Strip "AI Generated:" prefix for client view

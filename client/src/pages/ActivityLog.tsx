@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { isVentexTeam } from "@/lib/ventex";
 import { usePreviewMode } from "@/contexts/PreviewMode";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 
 const ENTITY_ICONS: Record<string, React.ReactNode> = {
@@ -95,9 +96,12 @@ function getSourceBadge(source: string | null) {
 export default function ActivityLog() {
   const { user } = useAuth();
   const { isPreviewMode } = usePreviewMode();
+  const { activeOrgId } = useWorkspace();
   const isAdmin = isVentexTeam(user) && !isPreviewMode;
 
-  const activityQ = trpc.activity.recent.useQuery({ limit: 300 });
+  // In preview mode, scope to the active org
+  const scopedOrgId = isPreviewMode && activeOrgId ? activeOrgId : undefined;
+  const activityQ = trpc.activity.recent.useQuery({ limit: 300, organizationId: scopedOrgId });
   type ActivityEntry = NonNullable<typeof activityQ.data>[number];
   const entries: (ActivityEntry & { activitySource?: string })[] = activityQ.data || [];
 

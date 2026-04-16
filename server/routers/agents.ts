@@ -28,7 +28,7 @@ import {
   sendStageAdvancedEmail,
 } from "../emailService";
 import { onStageAdvanced, onTaskCompleted, onTaskOverdue } from "../intelligence/realtimeTriggers";
-import { eq, desc, sql, and, ne, gte, inArray } from "drizzle-orm";
+import { eq, desc, sql, and, ne, gte, inArray, isNotNull } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
 import { isVentexTeam, resolveVentureScope } from "../security/rbac";
 import { resolveOrgId } from "../security/orgScope";
@@ -1066,7 +1066,10 @@ export const agentsRouter = router({
         byAgent[e.agentName] = (byAgent[e.agentName] || 0) + 1;
       }
 
-      const draftConditions: any[] = [eq(agentDrafts.status, "pending")];
+      const draftConditions: any[] = [
+        eq(agentDrafts.status, "pending"),
+        isNotNull(agentDrafts.organizationId),
+      ];
       if (effectiveOrgId) {
         draftConditions.push(eq(agentDrafts.organizationId, effectiveOrgId));
       }
@@ -1258,7 +1261,7 @@ export const agentsRouter = router({
 
       const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
 
-      const conditions: any[] = [];
+      const conditions: any[] = [isNotNull(agentDrafts.organizationId)];
       if (effectiveOrgId) {
         conditions.push(eq(agentDrafts.organizationId, effectiveOrgId));
       }
@@ -1466,7 +1469,8 @@ export const agentsRouter = router({
           status: agentDrafts.status,
           sentAt: agentDrafts.sentAt,
         })
-        .from(agentDrafts);
+        .from(agentDrafts)
+        .where(isNotNull(agentDrafts.organizationId));
 
       const now = new Date();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);

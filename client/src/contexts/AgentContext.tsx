@@ -1,8 +1,11 @@
 // Agent Context — Velocity Build: Full agent state management
 // Events, drafts, velocity metrics, agent statuses, action execution
+// ORG-SCOPED: In preview mode or when activeOrg is set, all queries pass organizationId
 
 import { createContext, useContext, useMemo, useCallback, type ReactNode } from "react";
 import { trpc } from "@/lib/trpc";
+import { usePreviewMode } from "@/contexts/PreviewMode";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 
 export const AGENT_CONFIG = {
@@ -185,25 +188,30 @@ const AgentContext = createContext<AgentContextValue | null>(null);
 
 export function AgentProvider({ children }: { children: ReactNode }) {
   const utils = trpc.useUtils();
+  const { isPreviewMode } = usePreviewMode();
+  const { activeOrgId } = useWorkspace();
 
+  // In preview mode, always scope to the active org so admin sees client-scoped data.
+  // For real client users, the server enforces org scoping regardless.
+  const scopedOrgId = isPreviewMode && activeOrgId ? activeOrgId : undefined;
 
   const { data: events = [], isLoading: eventsLoading } = trpc.agents.list.useQuery(
-    { limit: 100 },
+    { limit: 100, organizationId: scopedOrgId },
     { refetchInterval: 30000 }
   );
 
   const { data: metrics, isLoading: metricsLoading } = trpc.agents.metrics.useQuery(
-    undefined,
+    scopedOrgId ? { organizationId: scopedOrgId } : undefined,
     { refetchInterval: 30000 }
   );
 
   const { data: drafts = [] } = trpc.agents.listDrafts.useQuery(
-    { limit: 100 },
+    { limit: 100, organizationId: scopedOrgId },
     { refetchInterval: 30000 }
   );
 
   const { data: velocityMetrics } = trpc.agents.velocityMetrics.useQuery(
-    undefined,
+    scopedOrgId ? { organizationId: scopedOrgId } : undefined,
     { refetchInterval: 60000 }
   );
 
