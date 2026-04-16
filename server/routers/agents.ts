@@ -33,6 +33,8 @@ import { invokeLLM } from "../_core/llm";
 import { isVentexTeam, resolveVentureScope, getOrgVentureIds } from "../security/rbac";
 import { resolveOrgId } from "../security/orgScope";
 import { lookupBlueprintForVenture, buildBlueprintContext } from "../blueprintLookup";
+import { getDraftSafetyFields, getEventSafetyFields, isApprovedForExecution, logApprovalAction, generateDisclaimer } from "../aiSafety";
+import { agentApprovalLog } from "../../drizzle/schema";
 import type { User } from "../../drizzle/schema";
 
 
@@ -261,6 +263,7 @@ export async function runOverdueAgent(
       `Task: "${task.title}" | Venture: ${ventureName} | Assigned to: ${assignees} | Days overdue: ${daysOverdue} | Sector: ${sector}${blueprintHint}${blueprintSourceLabel ? ` | Operating on: ${blueprintSourceLabel}` : ""}`
     );
 
+    const draftSafety = getDraftSafetyFields({ agentName: "Overdue Agent", draftType: "follow_up", hasEntityData: true, hasHistoricalData: daysOverdue > 0, hasBlueprintContext: !!blueprintHint });
     const draftResult = await db.insert(agentDrafts).values({
       organizationId: task.organizationId,
       ventureId: task.ventureId,
@@ -272,6 +275,7 @@ export async function runOverdueAgent(
       recipientRole: "Assignee",
       status: "pending",
       createdByAgent: "Overdue Agent",
+      ...draftSafety,
     });
 
     const draftId = (draftResult as any)[0]?.insertId;
@@ -794,6 +798,7 @@ export async function runDistributionSentinel(
       `${fundName} | $${amount.toLocaleString()} | Due: ${dist.distributionDate || "TBD"} | Days until: ${daysUntil ?? "Unknown"}`
     );
 
+    const draftSafety = getDraftSafetyFields({ agentName: "Distribution Sentinel", draftType: "lp_notice", hasEntityData: true, hasHistoricalData: daysUntil !== null });
     const draftResult = await db.insert(agentDrafts).values({
       organizationId: dist.organizationId,
       ventureName: fundName,
@@ -804,6 +809,7 @@ export async function runDistributionSentinel(
       recipientRole: "Limited Partner",
       status: "pending",
       createdByAgent: "Distribution Sentinel",
+      ...draftSafety,
     });
 
     const draftId = (draftResult as any)[0]?.insertId;
@@ -960,6 +966,16 @@ export async function persistSignals(
       if (existing.length > 0) continue;
     }
 
+    // WS3: Compute AI safety fields for every event
+    const eventSafety = getEventSafetyFields({
+      agentName: signal.agentName,
+      actionType: signal.actionType ?? null,
+      audience: signal.audience ?? "operator",
+      hasEntityData: !!signal.agentEntityId,
+      hasHistoricalData: !!signal.oldStatus,
+      isFinancial: signal.agentName === "Distribution Sentinel",
+    });
+
     await db.insert(agentEvents).values({
       organizationId: signal.organizationId ?? null,
       agentName: signal.agentName,
@@ -978,6 +994,7 @@ export async function persistSignals(
       requiresClientAction: signal.requiresClientAction ?? false,
       isRead: false,
       actionTaken: false,
+      ...eventSafety,
     } as any);
   }
 }
@@ -1299,10 +1316,20 @@ export const agentsRouter = router({
         throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
       }
 
+      // WS3: Sending a draft IS the human approval — mark as approved
+      const userName = ctx.user.name || ctx.user.email || "User";
+      const now = new Date();
+      const disclaimerText = generateDisclaimer(userName, now);
+      const finalBody = input.editedBody || draft.body;
+
       const updates: Record<string, unknown> = {
         status: "sent",
-        sentAt: new Date(),
-        sentBy: ctx.user.name || ctx.user.email || "User",
+        sentAt: now,
+        sentBy: userName,
+        approvalStatus: "approved",
+        approvedBy: userName,
+        approvedAt: now,
+        disclaimer: disclaimerText,
       };
 
       if (input.editedBody) {
@@ -1314,41 +1341,49 @@ export const agentsRouter = router({
         .set(updates as any)
         .where(eq(agentDrafts.id, input.draftId));
 
-      // Also mark any related agent_event as action_taken
-      const sentDraft = await db
+      // WS3: Log approval to immutable audit trail
+      await logApprovalAction({
+        entityType: "draft",
+        entityId: input.draftId,
+        action: input.editedBody ? "edited" : "approved",
+        actorId: ctx.user.id,
+        actorName: userName,
+        originalContent: draft.body,
+        finalContent: finalBody,
+        confidenceScore: draft.confidenceScore ?? undefined,
+        disclaimerApplied: disclaimerText,
+      });
+
+      // Also mark any related agent_event as action_taken + approved
+      const events = await db
         .select()
-        .from(agentDrafts)
-        .where(eq(agentDrafts.id, input.draftId))
-        .limit(1);
-
-      if (sentDraft[0]) {
-        const events = await db
-          .select()
-          .from(agentEvents)
-          .where(
-            and(
-              eq(agentEvents.actionType, "draft"),
-              eq(agentEvents.actionTaken, false)
-            )
+        .from(agentEvents)
+        .where(
+          and(
+            eq(agentEvents.actionType, "draft"),
+            eq(agentEvents.actionTaken, false)
           )
-          .limit(50);
+        )
+        .limit(50);
 
-        for (const evt of events) {
-          const payload = evt.actionPayload as Record<string, unknown> | null;
-          if (payload && payload.draftId === input.draftId) {
-            await db
-              .update(agentEvents)
-              .set({
-                actionTaken: true,
-                actionTakenAt: new Date(),
-                actionTakenBy: ctx.user.name || "Admin",
-              })
-              .where(eq(agentEvents.id, evt.id));
-          }
+      for (const evt of events) {
+        const payload = evt.actionPayload as Record<string, unknown> | null;
+        if (payload && payload.draftId === input.draftId) {
+          await db
+            .update(agentEvents)
+            .set({
+              actionTaken: true,
+              actionTakenAt: now,
+              actionTakenBy: userName,
+              approvalStatus: "approved",
+              approvedBy: userName,
+              approvedAt: now,
+            })
+            .where(eq(agentEvents.id, evt.id));
         }
       }
 
-      return { success: true };
+      return { success: true, disclaimer: disclaimerText };
     }),
 
   /**
@@ -1368,10 +1403,29 @@ export const agentsRouter = router({
         throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
       }
 
+      const userName = ctx.user.name || ctx.user.email || "User";
       await db
         .update(agentDrafts)
-        .set({ status: "dismissed" })
+        .set({
+          status: "dismissed",
+          approvalStatus: "rejected",
+          approvedBy: userName,
+          approvedAt: new Date(),
+          rejectionReason: "Dismissed by operator",
+        } as any)
         .where(eq(agentDrafts.id, input.draftId));
+
+      // WS3: Log rejection to immutable audit trail
+      await logApprovalAction({
+        entityType: "draft",
+        entityId: input.draftId,
+        action: "rejected",
+        actorId: ctx.user.id,
+        actorName: userName,
+        originalContent: draft.body,
+        reason: "Dismissed by operator",
+        confidenceScore: draft.confidenceScore ?? undefined,
+      });
 
       return { success: true };
     }),
@@ -1482,6 +1536,151 @@ export const agentsRouter = router({
       ).length;
 
       return { totalSent, totalPending, sentThisMonth };
+    }),
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // WS3: APPROVAL QUEUE — Explicit approve/reject for AI outputs
+  // ═══════════════════════════════════════════════════════════════════════
+
+  /**
+   * Get pending approvals — events and drafts requiring human review
+   */
+  pendingApprovals: protectedProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .query(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) return { events: [], drafts: [] };
+
+      const effectiveOrgId = resolveOrgId(ctx.user, input?.organizationId);
+
+      // Pending events requiring approval
+      const eventConds: any[] = [
+        eq(agentEvents.humanApprovalRequired, true),
+        eq(agentEvents.approvalStatus, "pending"),
+      ];
+      if (effectiveOrgId) eventConds.push(eq(agentEvents.organizationId, effectiveOrgId));
+
+      const pendingEvents = await db.select().from(agentEvents)
+        .where(and(...eventConds))
+        .orderBy(desc(agentEvents.createdAt))
+        .limit(100);
+
+      // Pending drafts requiring approval
+      const draftConds: any[] = [
+        eq(agentDrafts.humanApprovalRequired, true),
+        eq(agentDrafts.approvalStatus, "pending"),
+        eq(agentDrafts.status, "pending"),
+      ];
+      if (effectiveOrgId) draftConds.push(eq(agentDrafts.organizationId, effectiveOrgId));
+
+      const pendingDrafts = await db.select().from(agentDrafts)
+        .where(and(...draftConds))
+        .orderBy(desc(agentDrafts.createdAt))
+        .limit(100);
+
+      return { events: pendingEvents, drafts: pendingDrafts };
+    }),
+
+  /**
+   * Approve an agent event — marks as approved, logs to audit trail
+   */
+  approveEvent: adminProcedure
+    .input(z.object({
+      eventId: z.number(),
+      reason: z.string().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const [event] = await db.select().from(agentEvents).where(eq(agentEvents.id, input.eventId)).limit(1);
+      if (!event) throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
+
+      const userName = ctx.user.name || ctx.user.email || "Admin";
+      const now = new Date();
+
+      await db.update(agentEvents).set({
+        approvalStatus: "approved",
+        approvedBy: userName,
+        approvedAt: now,
+        disclaimer: generateDisclaimer(userName, now),
+      }).where(eq(agentEvents.id, input.eventId));
+
+      await logApprovalAction({
+        entityType: "event",
+        entityId: input.eventId,
+        action: "approved",
+        actorId: ctx.user.id,
+        actorName: userName,
+        originalContent: event.message,
+        finalContent: event.message,
+        reason: input.reason,
+        confidenceScore: event.confidenceScore ?? undefined,
+        disclaimerApplied: generateDisclaimer(userName, now),
+      });
+
+      return { success: true };
+    }),
+
+  /**
+   * Reject an agent event — marks as rejected, logs to audit trail
+   */
+  rejectEvent: adminProcedure
+    .input(z.object({
+      eventId: z.number(),
+      reason: z.string(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const [event] = await db.select().from(agentEvents).where(eq(agentEvents.id, input.eventId)).limit(1);
+      if (!event) throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
+
+      const userName = ctx.user.name || ctx.user.email || "Admin";
+
+      await db.update(agentEvents).set({
+        approvalStatus: "rejected",
+        approvedBy: userName,
+        approvedAt: new Date(),
+        rejectionReason: input.reason,
+      }).where(eq(agentEvents.id, input.eventId));
+
+      await logApprovalAction({
+        entityType: "event",
+        entityId: input.eventId,
+        action: "rejected",
+        actorId: ctx.user.id,
+        actorName: userName,
+        originalContent: event.message,
+        reason: input.reason,
+        confidenceScore: event.confidenceScore ?? undefined,
+      });
+
+      return { success: true };
+    }),
+
+  /**
+   * Get approval audit log — immutable history of all approvals/rejections
+   */
+  approvalLog: adminProcedure
+    .input(z.object({
+      entityType: z.enum(["event", "draft"]).optional(),
+      limit: z.number().min(1).max(200).default(50),
+    }).optional())
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return [];
+
+      const conditions: any[] = [];
+      if (input?.entityType) {
+        conditions.push(eq(agentApprovalLog.entityType, input.entityType));
+      }
+
+      return db.select().from(agentApprovalLog)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .orderBy(desc(agentApprovalLog.createdAt))
+        .limit(input?.limit ?? 50);
     }),
 
   /**
@@ -1737,6 +1936,11 @@ export const agentsRouter = router({
             actionTaken: true,
             actionTakenAt: new Date(),
             actionTakenBy: userName,
+            humanApprovalRequired: false,  // human-initiated action
+            approvalStatus: "approved",
+            approvedBy: userName,
+            approvedAt: new Date(),
+            confidenceScore: 100,  // human action = full confidence
           });
         }
 
@@ -1873,6 +2077,11 @@ export const agentsRouter = router({
             actionTaken: true,
             actionTakenAt: new Date(),
             actionTakenBy: userName,
+            humanApprovalRequired: false,  // human-initiated action
+            approvalStatus: "approved",
+            approvedBy: userName,
+            approvedAt: new Date(),
+            confidenceScore: 100,
           });
         }
 
@@ -2085,12 +2294,12 @@ export const agentsRouter = router({
         tasksCompletedInStage: completedTasks,
       });
 
-      // Log agent event
+      // Log agent event — human-approved stage advance
       await db.insert(agentEvents).values({
         organizationId: orgId,
         agentName: "Velocity Agent",
         eventType: "status_change",
-        message: `"${venture.name}" advanced from ${venture.stage} \u2192 ${nextStage} by ${userName} in ${daysInStage} days.`,
+        message: `"${venture.name}" advanced from ${venture.stage} → ${nextStage} by ${userName} in ${daysInStage} days.`,
         severity: "info",
         entityType: "Venture",
         agentEntityId: String(input.ventureId),
@@ -2102,6 +2311,12 @@ export const agentsRouter = router({
         actionTaken: true,
         actionTakenAt: now,
         actionTakenBy: userName,
+        humanApprovalRequired: false,  // human-initiated stage advance
+        approvalStatus: "approved",
+        approvedBy: userName,
+        approvedAt: now,
+        confidenceScore: 100,
+        disclaimer: generateDisclaimer(userName, now),
       });
 
       // Fire real-time trigger for intelligence engines

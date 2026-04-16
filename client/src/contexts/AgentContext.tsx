@@ -91,6 +91,14 @@ export interface AgentEvent {
   actionTaken: boolean;
   actionTakenAt: Date | null;
   actionTakenBy: string | null;
+  // WS3: AI Safety fields
+  humanApprovalRequired: boolean;
+  approvalStatus: string | null;
+  approvedBy: string | null;
+  approvedAt: Date | null;
+  rejectionReason: string | null;
+  confidenceScore: number | null;
+  disclaimer: string | null;
   createdAt: Date;
 }
 
@@ -107,6 +115,13 @@ export interface AgentDraft {
   createdByAgent: string;
   sentAt: Date | null;
   sentBy: string | null;
+  // WS3: AI Safety fields
+  humanApprovalRequired: boolean;
+  approvalStatus: string | null;
+  approvedBy: string | null;
+  approvedAt: Date | null;
+  confidenceScore: number | null;
+  disclaimer: string | null;
   createdAt: Date;
 }
 

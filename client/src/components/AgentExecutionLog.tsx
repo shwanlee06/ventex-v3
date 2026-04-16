@@ -278,6 +278,23 @@ export default function AgentExecutionLog({ organizationId, limit = 25, compact 
                             </p>
                           )}
 
+                          {/* WS3: Confidence score */}
+                          {(event as any).confidenceScore != null && (
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <span className={cn(
+                                "text-[9px] font-mono px-1.5 py-0.5 rounded",
+                                (event as any).confidenceScore >= 80 ? "bg-emerald-500/10 text-emerald-400" :
+                                (event as any).confidenceScore >= 60 ? "bg-amber-500/10 text-amber-400" :
+                                "bg-red-500/10 text-red-400"
+                              )}>
+                                {(event as any).confidenceScore}%
+                              </span>
+                              {(event as any).approvalStatus === "pending" && (
+                                <span className="text-[9px] font-mono text-amber-400">Pending</span>
+                              )}
+                            </div>
+                          )}
+
                           {/* Full timestamp on hover */}
                           <p className="text-[9px] text-muted-foreground/40 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                             {formatLogTimeFull(event.createdAt)}

@@ -537,6 +537,14 @@ export const agentEvents = mysqlTable("agent_events", {
   actionTakenAt: timestamp("actionTakenAt"),
   actionTakenBy: varchar("actionTakenBy", { length: 255 }),
   clientDismissed: boolean("clientDismissed").default(false).notNull(),
+  // WS3: AI Safety fields
+  humanApprovalRequired: boolean("humanApprovalRequired").default(true).notNull(),
+  approvalStatus: varchar("approvalStatus", { length: 16 }).default("pending"),  // 'pending' | 'approved' | 'rejected'
+  approvedBy: varchar("approvedBy", { length: 255 }),
+  approvedAt: timestamp("approvedAt"),
+  rejectionReason: text("rejectionReason"),
+  confidenceScore: int("confidenceScore"),  // 0-100, null if not AI-generated
+  disclaimer: text("disclaimer"),  // AI-generated disclaimer text
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -577,6 +585,14 @@ export const agentDrafts = mysqlTable("agent_drafts", {
   sentAt: timestamp("sentAt"),
   sentBy: varchar("sentBy", { length: 255 }),
   createdByAgent: varchar("createdByAgent", { length: 64 }),
+  // WS3: AI Safety fields
+  humanApprovalRequired: boolean("humanApprovalRequired").default(true).notNull(),
+  approvalStatus: varchar("approvalStatus", { length: 16 }).default("pending"),  // 'pending' | 'approved' | 'rejected'
+  approvedBy: varchar("approvedBy", { length: 255 }),
+  approvedAt: timestamp("approvedAt"),
+  rejectionReason: text("rejectionReason"),
+  confidenceScore: int("confidenceScore"),  // 0-100
+  disclaimer: text("disclaimer"),  // persisted disclaimer text
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -1018,3 +1034,39 @@ export const velocityAttribution = mysqlTable("velocity_attribution", {
 });
 export type VelocityAttribution = typeof velocityAttribution.$inferSelect;
 export type InsertVelocityAttribution = typeof velocityAttribution.$inferInsert;
+
+
+// WS3: AI Agent Evaluation Dataset — golden examples for agent quality measurement
+export const agentEvalDataset = mysqlTable("agent_eval_dataset", {
+  id: int("id").autoincrement().primaryKey(),
+  agentName: varchar("agentName", { length: 64 }).notNull(),
+  testCaseName: varchar("testCaseName", { length: 255 }).notNull(),
+  inputContext: json("inputContext").$type<Record<string, unknown>>().notNull(),  // scenario data
+  expectedOutput: json("expectedOutput").$type<Record<string, unknown>>().notNull(),  // expected agent response
+  actualOutput: json("actualOutput").$type<Record<string, unknown>>(),  // filled after eval run
+  graderScore: int("graderScore"),  // 0-100
+  graderNotes: text("graderNotes"),
+  lastRunAt: timestamp("lastRunAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type AgentEvalDataset = typeof agentEvalDataset.$inferSelect;
+export type InsertAgentEvalDataset = typeof agentEvalDataset.$inferInsert;
+
+// WS3: AI Agent Approval Log — immutable audit trail for every approval/rejection
+export const agentApprovalLog = mysqlTable("agent_approval_log", {
+  id: int("id").autoincrement().primaryKey(),
+  entityType: varchar("entityType", { length: 16 }).notNull(),  // 'event' | 'draft'
+  entityId: int("entityId").notNull(),
+  action: varchar("action", { length: 16 }).notNull(),  // 'approved' | 'rejected' | 'edited'
+  actorId: int("actorId"),
+  actorName: varchar("actorName", { length: 255 }).notNull(),
+  originalContent: text("originalContent"),  // snapshot of AI output before edit
+  finalContent: text("finalContent"),  // final approved content (may differ from original)
+  reason: text("reason"),
+  confidenceScore: int("confidenceScore"),  // AI confidence at time of review
+  disclaimerApplied: text("disclaimerApplied"),  // disclaimer text that was attached
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type AgentApprovalLog = typeof agentApprovalLog.$inferSelect;
+export type InsertAgentApprovalLog = typeof agentApprovalLog.$inferInsert;

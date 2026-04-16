@@ -2732,3 +2732,20 @@
 - [x] Run full test suite after all patches — 833 tests passing across 45 files
 - [x] TypeScript compilation: 0 errors
 - [x] 37 TENANT_PATCHED markers across 9 router files
+
+## WS3 — AI Agent Safety and Evaluation Framework (Apr 16)
+- [x] Add human_approval_required flag to agentEvents and agentDrafts schema
+- [x] Add confidence_score field to agentEvents and agentDrafts schema
+- [x] Add agent_eval_dataset table for golden examples
+- [x] Add agent_approval_log table for immutable audit trail
+- [x] Push DB migration for new fields (0028_steep_amphibian.sql)
+- [x] Enforce human_approval_required server-side: all drafts require approval, sendDraft = approval act
+- [x] Add approval queue procedures (pendingApprovals, approveEvent, rejectEvent, approvalLog)
+- [x] Add disclaimers to all AI-generated client-facing artifacts (draft modal, event cards)
+- [x] Patch all draft inserts with safety fields (Overdue Agent, Distribution Sentinel)
+- [x] Patch all event inserts with safety fields (emitSignals + 3 direct inserts)
+- [x] Add low-confidence review queue (threshold per agent: Distribution Sentinel=80, Overdue=70, Velocity=65)
+- [x] Display confidence_score in operator UI (NotificationPanel, AgentExecutionLog)
+- [x] Write vitest tests for AI safety enforcement (863 tests passing)
+- [x] Create aiSafety.ts module with computeConfidenceScore, requiresHumanApproval, getDraftSafetyFields, getEventSafetyFields
+- [x] Immutable audit trail via logApprovalAction → agent_approval_log table
