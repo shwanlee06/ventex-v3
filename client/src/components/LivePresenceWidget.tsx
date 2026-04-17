@@ -1,7 +1,10 @@
 /**
  * LivePresenceWidget — Shows VENTEX operator presence only.
  * Client team presence is their own concern, not shown here.
- * Polls team.liveStatuses every 15 seconds for real-time presence.
+ * Polls team.liveStatuses every 10 seconds for real-time presence.
+ *
+ * Must stay in sync with VentexTeam.tsx — same operator set.
+ * Both filter: type=Internal, non-deactivated, exclude "Test " prefix.
  */
 
 import { trpc } from "@/lib/trpc";
@@ -63,12 +66,17 @@ export default function LivePresenceWidget() {
   });
   const [expanded, setExpanded] = useState(false);
 
-  // Only show VENTEX operators (type=Internal)
+  // Only show VENTEX operators (type=Internal), exclude deactivated and test members.
+  // This mirrors the filtering in VentexTeam.tsx so both views show the same set.
   const operators = useMemo(() => {
     if (!liveQ.data) return [] as MemberEntry[];
     const order: Record<string, number> = { online: 0, away: 1, offline: 2, on_leave: 3, deactivated: 4 };
     return liveQ.data
-      .filter((m) => m.type === "Internal" && m.adminStatus !== "deactivated")
+      .filter((m) =>
+        m.type === "Internal" &&
+        m.adminStatus !== "deactivated" &&
+        !m.name.startsWith("Test ")
+      )
       .map((m) => ({
         id: m.id,
         name: m.name,

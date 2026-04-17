@@ -3198,3 +3198,7 @@
 
 ### Batch R — Documentation
 - [x] W5-003: Create investor demo walkthrough script (docs/investor-demo-script.md)
+
+## Bug Fix — Cookie Notice Transparency
+- [x] Fix cookie notice banner appearing transparent instead of solid background
+- [x] Fix VENTEX operators live status — connect "Live" indicator on dashboard to actual team members in the team section

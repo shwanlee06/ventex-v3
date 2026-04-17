@@ -37,7 +37,11 @@ export default function CookieConsent() {
           transition={{ duration: 0.35, ease: "easeOut" }}
           className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-md z-50"
         >
-          <div className="bg-card border border-border rounded-xl p-4 shadow-xl">
+          {/* Use inline style for solid background to prevent CSS hover rules from making it transparent */}
+          <div
+            className="border border-border rounded-xl p-4 shadow-xl"
+            style={{ backgroundColor: "oklch(0.12 0.003 264)" }}
+          >
             <div className="flex items-start gap-3">
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-foreground font-medium mb-1">
