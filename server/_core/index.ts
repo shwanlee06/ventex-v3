@@ -13,6 +13,8 @@ import { runDataRetentionPurge } from "../security/dataRetention";
 import inviteValidationRouter from "../routes/inviteValidation";
 import { sseRouter } from "../routes/sseEvents";
 import { ssoRouter } from "../routes/ssoRoutes";
+import { createSCIMRouter } from "../enterprise/scimProvisioning";
+import { startCronScheduler, getCronStatus } from "../cron";
 import { randomBytes } from "crypto";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -63,10 +65,18 @@ async function startServer() {
     const styleSrc = isDev
       ? "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com"
       : `style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com`;
+    const reportUri = isDev ? "" : "; report-uri /api/csp-report; report-to csp-endpoint";
     res.setHeader(
       "Content-Security-Policy",
-      `default-src 'self'; ${scriptSrc}; ${styleSrc}; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https: wss:; frame-ancestors 'none'`
+      `default-src 'self'; ${scriptSrc}; ${styleSrc}; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https: wss:; frame-ancestors 'none'${reportUri}`
     );
+    if (!isDev) {
+      res.setHeader("Report-To", JSON.stringify({
+        group: "csp-endpoint",
+        max_age: 86400,
+        endpoints: [{ url: "/api/csp-report" }],
+      }));
+    }
     // Permissions policy — disable unnecessary browser features
     res.setHeader(
       "Permissions-Policy",
@@ -88,6 +98,8 @@ async function startServer() {
   // SSE real-time events
   app.use(sseRouter);
   app.use(ssoRouter);
+  // SCIM 2.0 provisioning endpoint (enterprise SSO auto-provisioning)
+  app.use("/scim/v2", createSCIMRouter());
   // CSRF protection: verify Origin header on mutation requests
   app.use("/api/trpc", (req, res, next) => {
     // Only enforce on state-changing methods
@@ -160,10 +172,29 @@ async function startServer() {
     res.json(getSchedulerStatus());
   });
 
+  // Cron scheduler status endpoint
+  app.get("/api/cron/status", (_req, res) => {
+    res.json(getCronStatus());
+  });
+
+  // W5-001: CSP violation reporting endpoint
+  app.post("/api/csp-report", express.json({ type: ["application/json", "application/csp-report", "application/reports+json"] }), (req, res) => {
+    const report = req.body?.["csp-report"] || req.body;
+    if (report) {
+      const violatedDirective = report["violated-directive"] || report.violatedDirective || "unknown";
+      const blockedUri = report["blocked-uri"] || report.blockedURI || "unknown";
+      const documentUri = report["document-uri"] || report.documentURL || "unknown";
+      console.warn(`[CSP-Violation] directive=${violatedDirective} blocked=${blockedUri} document=${documentUri}`);
+    }
+    res.status(204).send();
+  });
+
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
     // Start the agent scheduler after server is ready
     startAgentScheduler();
+    // Start cron scheduler (ECB FX rates, nightly snapshots)
+    startCronScheduler();
 
     // Data retention purge — runs daily at 03:00 UTC
     const RETENTION_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours

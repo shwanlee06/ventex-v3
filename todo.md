@@ -3181,3 +3181,20 @@
 
 ### Batch O — Enterprise Features
 - [x] AH-07: Build SCIM 2.0 provisioning endpoint placeholder for enterprise SSO (full SCIM router with auth)
+
+## Wave 4 — Integration Activation (No Cost)
+
+### Batch P — SCIM & Scheduling
+- [x] W4-001: Wire SCIM endpoints to actual team_members CRUD (create, read, update, deactivate users)
+- [x] W4-002: Wire SCIM Group endpoints to organizations CRUD
+- [x] W4-003: Automate ECB FX rate fetching via server-side cron (daily at 16:00 CET)
+- [x] W4-004: Automate nightly portfolio snapshots to S3 (daily at 02:00 UTC)
+
+## Wave 5 — Production Readiness (No Cost)
+
+### Batch Q — Security & Monitoring
+- [x] W5-001: Add CSP violation reporting endpoint (/api/csp-report)
+- [x] W5-002: End-to-end client onboarding dry-run — verify and fix any issues
+
+### Batch R — Documentation
+- [x] W5-003: Create investor demo walkthrough script (docs/investor-demo-script.md)
