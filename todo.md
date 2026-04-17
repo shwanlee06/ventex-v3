@@ -2993,3 +2993,14 @@
 - [x] Added purgeStaleEvents admin mutation: removes 30-day-old events + duplicate escalations + duplicate Orchestrator summaries
 - [x] Added "Purge Duplicate Events" button in Agent Execution Log footer
 - [x] 0 TypeScript errors, 955 tests passing
+
+## FIX — Separate VENTEX Team from Client Team (Apr 16)
+- [x] VENTEX team = 4 people: Shwan Lee, Chris Phelps, Brian Chen, Michael Adenew (type=Internal, orgId=null)
+- [x] Client team = Royalton's people (Carl Frangi, Leonidas, Igor, Sohail, Ruwaida, Jimmy, Anton, Jon, Maher, Angie — orgId=2)
+- [x] Already distinguished by type field: Internal = VENTEX, everything else = Client
+- [x] Deleted 6 fake client contacts (James Harrington, Sofia Al-Rashid, etc. — orgId=480041 orphaned)
+- [x] Deleted 17 Test VENTEX Member entries and 7 Test Client Contact entries
+- [x] Rewrote LivePresenceWidget with two sections: VENTEX Operators (shield icon, amber) and Client Team (building icon, blue)
+- [x] VentexTeam page already uses team.listInternal (only VENTEX members)
+- [x] Sidebar and topbar don't mix team types — no changes needed
+- [x] 0 TypeScript errors confirmed
