@@ -59,6 +59,18 @@ export default function OversightPage() {
   const [, navigate] = useLocation();
   const [severityFilter, setSeverityFilter] = useState<"all" | "critical" | "warning" | "info">("all");
   const [hoursBack, setHoursBack] = useState(720);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
+  const bulkResolveMut = trpc.agents.bulkResolve.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Resolved ${data.count} events`);
+      setSelectedIds(new Set());
+      refetchRef.current?.();
+    },
+    onError: () => toast.error("Failed to resolve events"),
+  });
+  // Store refetch in ref so mutation callback can access it
+  const refetchRef = { current: null as (() => void) | null };
 
   const { data, isLoading, refetch, isRefetching } = trpc.agents.enhancedOversight.useQuery(
     { severity: severityFilter, hoursBack, limit: 200 },
@@ -69,6 +81,9 @@ export default function OversightPage() {
     undefined,
     { refetchInterval: 60000 }
   );
+
+  // Wire refetch for bulk resolve callback
+  refetchRef.current = refetch;
 
   // SSE real-time updates
   useSSEInvalidation("agent_activity", () => { refetch(); });
@@ -87,6 +102,21 @@ export default function OversightPage() {
     const resolved = items.filter(i => i.escalationLevel === "resolved");
     return { critical, warning, normal, resolved };
   }, [items]);
+
+  // Unresolved items for bulk select
+  const unresolvedItems = useMemo(() => items.filter(i => !i.actionTaken), [items]);
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllUnresolved = () => {
+    setSelectedIds(new Set(unresolvedItems.map(i => i.id)));
+  };
 
   return (
     <DashboardLayout title="Oversight" subtitle="OPERATOR OVERSIGHT FEED">
@@ -213,16 +243,40 @@ export default function OversightPage() {
             </Select>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={isRefetching}
-            className="h-8 text-xs"
-          >
-            {isRefetching ? <Loader2 className="size-3 animate-spin mr-1.5" /> : <RefreshCw className="size-3 mr-1.5" />}
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            {selectedIds.size > 0 && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => bulkResolveMut.mutate({ eventIds: Array.from(selectedIds) })}
+                disabled={bulkResolveMut.isPending}
+                className="h-8 text-xs"
+              >
+                {bulkResolveMut.isPending ? <Loader2 className="size-3 animate-spin mr-1.5" /> : <CheckCircle2 className="size-3 mr-1.5" />}
+                Resolve {selectedIds.size} Selected
+              </Button>
+            )}
+            {unresolvedItems.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={selectedIds.size > 0 ? () => setSelectedIds(new Set()) : selectAllUnresolved}
+                className="h-8 text-xs"
+              >
+                {selectedIds.size > 0 ? "Deselect All" : `Select All (${unresolvedItems.length})`}
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              disabled={isRefetching}
+              className="h-8 text-xs"
+            >
+              {isRefetching ? <Loader2 className="size-3 animate-spin mr-1.5" /> : <RefreshCw className="size-3 mr-1.5" />}
+              Refresh
+            </Button>
+          </div>
         </div>
 
         {/* ── Critical Escalations ──────────────────────────────────── */}
@@ -237,13 +291,13 @@ export default function OversightPage() {
             </div>
             <div className="bg-card border border-red-500/20 rounded-lg divide-y divide-border">
               {grouped.critical.map((item, i) => (
-                <EventRow key={item.id} item={item} index={i} navigate={navigate} />
+                <EventRow key={item.id} item={item} index={i} navigate={navigate} selected={selectedIds.has(item.id)} onToggle={() => toggleSelect(item.id)} />
               ))}
             </div>
           </div>
         )}
 
-        {/* ── Warning (24h+) ────────────────────────────────────────── */}
+        {/* ── Warning (24h+) ────────────────────────────────────── */}
         {grouped.warning.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
@@ -255,7 +309,7 @@ export default function OversightPage() {
             </div>
             <div className="bg-card border border-amber-500/20 rounded-lg divide-y divide-border">
               {grouped.warning.map((item, i) => (
-                <EventRow key={item.id} item={item} index={i} navigate={navigate} />
+                <EventRow key={item.id} item={item} index={i} navigate={navigate} selected={selectedIds.has(item.id)} onToggle={() => toggleSelect(item.id)} />
               ))}
             </div>
           </div>
@@ -272,7 +326,7 @@ export default function OversightPage() {
             </div>
             <div className="bg-card border border-border rounded-lg divide-y divide-border">
               {grouped.normal.map((item, i) => (
-                <EventRow key={item.id} item={item} index={i} navigate={navigate} />
+                <EventRow key={item.id} item={item} index={i} navigate={navigate} selected={selectedIds.has(item.id)} onToggle={() => toggleSelect(item.id)} />
               ))}
             </div>
           </div>
@@ -289,7 +343,7 @@ export default function OversightPage() {
             </div>
             <div className="bg-card border border-border rounded-lg divide-y divide-border">
               {grouped.resolved.slice(0, 10).map((item, i) => (
-                <EventRow key={item.id} item={item} index={i} navigate={navigate} />
+                <EventRow key={item.id} item={item} index={i} navigate={navigate} selected={selectedIds.has(item.id)} onToggle={() => toggleSelect(item.id)} />
               ))}
             </div>
           </div>
@@ -314,10 +368,14 @@ function EventRow({
   item,
   index,
   navigate,
+  selected,
+  onToggle,
 }: {
   item: any;
   index: number;
   navigate: (path: string) => void;
+  selected?: boolean;
+  onToggle?: () => void;
 }) {
   const sc = SEVERITY_CONFIG[item.escalationLevel as keyof typeof SEVERITY_CONFIG] || SEVERITY_CONFIG.normal;
 
@@ -326,7 +384,7 @@ function EventRow({
       initial={{ opacity: 0, x: -8 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.03, duration: 0.25 }}
-      className="p-3 flex items-start gap-3 hover:bg-accent/30 transition-colors cursor-pointer"
+      className={cn("p-3 flex items-start gap-3 hover:bg-accent/30 transition-colors cursor-pointer", selected && "bg-primary/5")}
       onClick={() => {
         if (item.entityType === "venture" && item.agentEntityId) {
           toast.info(`Navigating to venture ${item.agentEntityName || item.agentEntityId}`);
@@ -335,6 +393,18 @@ function EventRow({
         }
       }}
     >
+      {/* Selection checkbox */}
+      {onToggle && !item.actionTaken && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggle(); }}
+          className={cn(
+            "size-4 rounded border flex-shrink-0 mt-0.5 flex items-center justify-center transition-colors",
+            selected ? "bg-primary border-primary" : "border-border hover:border-primary/50"
+          )}
+        >
+          {selected && <CheckCircle2 className="size-3 text-primary-foreground" />}
+        </button>
+      )}
       {/* Severity dot */}
       <div className={cn("size-2 rounded-full mt-1.5 flex-shrink-0", sc.dot)} />
 

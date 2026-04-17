@@ -271,6 +271,29 @@ export default function TrustSecurity() {
               </p>
             </Section>
 
+            {/* Infrastructure Partnership */}
+            <Section id="infrastructure" icon={<Server className="size-4" />} title="Infrastructure Partnership">
+              <p>
+                {PRODUCT} is built on <strong>Manus</strong>, a SOC 2-compliant application platform that provides
+                hosting, authentication, and deployment infrastructure. This is a deliberate architectural choice
+                by {COMPANY} to leverage enterprise-grade infrastructure rather than building commodity services in-house.
+              </p>
+              <div className="mt-3 space-y-2">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="size-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs"><strong className="text-foreground">Authentication:</strong> OAuth 2.0 login is handled by Manus identity services. You may see the Manus login page during sign-in — this is expected and secure, similar to how enterprise apps use Okta or Auth0.</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="size-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs"><strong className="text-foreground">Data Isolation:</strong> All client data is logically isolated within {PRODUCT}'s dedicated database. Manus infrastructure has no access to business data.</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="size-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs"><strong className="text-foreground">Ownership:</strong> {COMPANY} retains full ownership and control of all application logic, business data, and client relationships. Manus provides infrastructure only.</p>
+                </div>
+              </div>
+            </Section>
+
             {/* Data Residency */}
             <Section id="data-residency" icon={<Globe className="size-4" />} title="Data Residency">
               <p>

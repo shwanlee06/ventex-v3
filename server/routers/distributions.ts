@@ -179,6 +179,23 @@ export const distributionsRouter = router({
       return { convertedAmount: Math.round(input.amount * rate * 100) / 100, rate };
     }),
 
+  fetchECBRates: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      if (!isVentexTeam(ctx.user)) throw new Error("Only VENTEX team can fetch ECB rates");
+      const { fetchECBRates } = await import("../currency");
+      const count = await fetchECBRates();
+      if (count === 0) return { success: false, message: "Failed to fetch ECB rates or no new rates available" };
+      await logAudit({
+        userId: ctx.user.id,
+        userName: ctx.user.name,
+        action: "ecb_rates_fetched",
+        entityType: "fx_rate",
+        entityName: "ECB",
+        details: `Fetched ${count} FX rates from ECB`,
+      });
+      return { success: true, count };
+    }),
+
   supportedCurrencies: publicProcedure.query(async () => {
     const { SUPPORTED_CURRENCIES } = await import("../currency");
     return Object.entries(SUPPORTED_CURRENCIES).map(([code, meta]: [string, any]) => ({

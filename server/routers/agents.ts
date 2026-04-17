@@ -30,6 +30,7 @@ import {
 import { onStageAdvanced, onTaskCompleted, onTaskOverdue } from "../intelligence/realtimeTriggers";
 import { eq, desc, sql, and, ne, gte, lte, inArray, isNotNull } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
+import { sanitizeLLMOutput } from "../security/llmSanitize";
 import { isVentexTeam, resolveVentureScope, getOrgVentureIds } from "../security/rbac";
 import { resolveOrgId } from "../security/orgScope";
 import { lookupBlueprintForVenture, buildBlueprintContext } from "../blueprintLookup";
@@ -94,12 +95,15 @@ async function callAgentLLM(systemPrompt: string, userPrompt: string): Promise<s
       ],
     });
     const content = result.choices?.[0]?.message?.content;
-    if (typeof content === "string") return content;
-    if (Array.isArray(content)) {
+    let text = "No analysis available.";
+    if (typeof content === "string") text = content;
+    else if (Array.isArray(content)) {
       const textPart = content.find((p: any) => typeof p === "object" && "type" in p && p.type === "text");
-      if (textPart && "text" in textPart) return (textPart as any).text;
+      if (textPart && "text" in textPart) text = (textPart as any).text;
     }
-    return "No analysis available.";
+    const sanitized = sanitizeLLMOutput(text);
+    if (sanitized.flagged) console.warn("[Agent LLM] Output flagged:", sanitized.flags);
+    return sanitized.text;
   } catch (err) {
     console.error("[Agent LLM] Error:", err);
     return "Agent analysis temporarily unavailable.";
@@ -1261,6 +1265,29 @@ export const agentsRouter = router({
         .where(eq(agentEvents.id, input.eventId));
 
       return { success: true };
+    }),
+
+  /**
+   * Bulk resolve multiple oversight events at once (F-020)
+   */
+  bulkResolve: adminProcedure
+    .input(z.object({
+      eventIds: z.array(z.number()).min(1).max(100),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      await db
+        .update(agentEvents)
+        .set({
+          actionTaken: true,
+          actionTakenAt: new Date(),
+          actionTakenBy: ctx.user.name || "Admin",
+        })
+        .where(inArray(agentEvents.id, input.eventIds));
+
+      return { success: true, count: input.eventIds.length };
     }),
 
 

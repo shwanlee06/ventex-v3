@@ -59,10 +59,11 @@ function daysAgo(days: number): Date {
 async function purgeAuditLogs(db: NonNullable<Awaited<ReturnType<typeof getDb>>>): Promise<PurgeResult> {
   const cutoff = daysAgo(RETENTION_DAYS.auditLog);
   try {
-    const result = await db.delete(auditLog).where(lt(auditLog.createdAt, cutoff));
+    // Soft-delete: archive instead of hard-delete for compliance
+    const result = await db.update(auditLog).set({ archivedAt: new Date() }).where(lt(auditLog.createdAt, cutoff));
     return {
       table: "audit_log",
-      deletedCount: (result as any)[0]?.affectedRows ?? 0,
+      deletedCount: (result as any)[0]?.affectedRows ?? 0,  // actually archived count
       cutoffDate: cutoff.toISOString(),
     };
   } catch (error: any) {

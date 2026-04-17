@@ -415,13 +415,13 @@ export function formatDate(dateStr: string): string {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-// Currency decimal config for formatCurrency
+/// Currency decimal config for formatCurrency
+// Most currencies use 2 decimal places; override for zero-decimal or 3-decimal currencies
 const CURRENCY_DECIMALS: Record<string, number> = {
-  JPY: 0, BHD: 3, KWD: 3, OMR: 3,
+  JPY: 0, KRW: 0, VND: 0, BHD: 3, KWD: 3, OMR: 3,
 };
-
 export function formatCurrency(amount: number, currency: string = "USD"): string {
-  const decimals = CURRENCY_DECIMALS[currency] ?? 0;
+  const decimals = CURRENCY_DECIMALS[currency] ?? 2;
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",

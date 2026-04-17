@@ -93,6 +93,22 @@ const PERMISSION_MATRIX: Record<string, Set<Action>> = {
 
 
 /**
+ * Roles that require MFA when the organization has mfaEnforced=true.
+ * These are privileged roles that can modify system state.
+ */
+export const MFA_REQUIRED_ROLES = new Set(["owner", "admin", "manager"]);
+
+/**
+ * Check if a user should be required to have MFA enabled.
+ * Returns true if the user's role is in MFA_REQUIRED_ROLES.
+ * The actual enforcement (blocking access if MFA not set up) should be
+ * checked at the session/context level when the org has mfaEnforced=true.
+ */
+export function requiresMFA(user: { role: string }): boolean {
+  return MFA_REQUIRED_ROLES.has(user.role);
+}
+
+/**
  * Check if a user is part of the VENTEX internal team.
  * VENTEX team sees everything; clients see only their org's data.
  * 

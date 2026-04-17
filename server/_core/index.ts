@@ -78,6 +78,30 @@ async function startServer() {
   // SSE real-time events
   app.use(sseRouter);
   app.use(ssoRouter);
+  // CSRF protection: verify Origin header on mutation requests
+  app.use("/api/trpc", (req, res, next) => {
+    // Only enforce on state-changing methods
+    if (req.method !== "GET" && req.method !== "HEAD" && req.method !== "OPTIONS") {
+      const origin = req.headers.origin;
+      const host = req.headers.host;
+      // In production, verify origin matches host; skip in dev for HMR
+      if (process.env.NODE_ENV !== "development" && origin && host) {
+        try {
+          const originHost = new URL(origin).host;
+          if (originHost !== host) {
+            res.status(403).json({ error: "Origin mismatch" });
+            return;
+          }
+        } catch {
+          // Malformed origin header
+          res.status(403).json({ error: "Invalid origin" });
+          return;
+        }
+      }
+    }
+    next();
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",

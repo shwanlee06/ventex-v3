@@ -30,6 +30,7 @@ import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { forecastVentures as getVentureForecasts, computePortfolioHealth as getPortfolioHealth } from "../intelligence/predictiveEngine";
 import { getActiveSignals as getLatestMarketSignals } from "../intelligence/marketIntelligence";
 import { invokeLLM, type Message as LLMMessage } from "../_core/llm";
+import { sanitizeLLMOutput } from "../security/llmSanitize";
 import { enforceRateLimit } from "../security/rateLimit";
 
 const STAGE_DISPLAY: Record<string, string> = {
@@ -1120,7 +1121,11 @@ ${scopedContext}`;
               ? content.filter((c: any) => c.type === "text").map((c: any) => c.text).join("")
               : "I apologize, but I was unable to generate a response. Please try again.";
 
-        return { content: textContent };
+        const sanitized = sanitizeLLMOutput(textContent);
+        if (sanitized.flagged) {
+          console.warn("[Portal AI] Output flagged:", sanitized.flags);
+        }
+        return { content: sanitized.text };
       } catch (error: unknown) {
         console.error("[Portal AI] Error:", error);
         throw new TRPCError({

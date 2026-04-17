@@ -4,7 +4,7 @@ import { getDb } from "../db";
 import { ventures, ventureTeam, teamMembers, tasks, ventureFiles, ventureFolders, activityLog, orgVentureAccess, organizations, ventureProcessTracking, processSteps, processTemplates, ventureVelocity, clientVelocityBenchmarks } from "../../drizzle/schema";
 import { invokeLLM } from "../_core/llm";
 import { eq, and, sql, desc, like, inArray, isNull, gte } from "drizzle-orm";
-import { storagePut } from "../storage";
+import { storagePut, storageGet } from "../storage";
 import { nanoid } from "nanoid";
 import { isVentexTeam, getOrgVentureIds, resolveVentureScope, logAudit } from "../security/rbac";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
@@ -41,7 +41,8 @@ export const venturesRouter = router({
     if (!db) return [];
     if (!isVentexTeam(ctx.user)) return []; // admin only
 
-    const allVentures = await db.select().from(ventures).orderBy(desc(ventures.createdAt));
+    const allVentures = (await db.select().from(ventures).orderBy(desc(ventures.createdAt)))
+      .filter(v => v.status !== "Archived"); // F-006: exclude archived ventures
     const allAccess = await db.select().from(orgVentureAccess);
     const allOrgs = await db.select().from(organizations);
 
@@ -422,6 +423,25 @@ export const venturesRouter = router({
       });
     }
     return { success: true, url };
+  }),
+
+  // Get presigned download URL for a file (DP-05: avoid exposing raw S3 URLs)
+  getDownloadUrl: protectedProcedure.input(z.object({ fileId: z.number() })).query(async ({ input, ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const [file] = await db.select().from(ventureFiles).where(eq(ventureFiles.id, input.fileId)).limit(1);
+    if (!file) throw new Error("File not found");
+    // Verify access
+    if (!isVentexTeam(ctx.user)) {
+      const ventureIds = await getOrgVentureIds(ctx.user);
+      if (ventureIds && !ventureIds.includes(file.ventureId)) throw new Error("Access denied");
+    }
+    if (file.fileKey) {
+      const { url } = await storageGet(file.fileKey);
+      return { url, filename: file.filename };
+    }
+    // Fallback to stored URL if no fileKey
+    return { url: file.fileUrl, filename: file.filename };
   }),
 
   // Delete file — VENTEX team only

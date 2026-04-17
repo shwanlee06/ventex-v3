@@ -471,6 +471,7 @@ export const auditLog = mysqlTable("audit_log", {
   userAgent: text("userAgent"),
   result: mysqlEnum("result", ["success", "denied", "error"]).default("success").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
+  archivedAt: timestamp("archivedAt"),  // soft-delete: null = active, non-null = archived
 });
 
 export type AuditLog = typeof auditLog.$inferSelect;

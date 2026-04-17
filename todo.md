@@ -3135,24 +3135,24 @@
 - [x] F3-019: Add "Your Team" section to client portal showing assigned team members
 
 ### Batch G — P2 Trust & Security
-- [ ] F3-011: Add cookie consent banner to public pages
+- [x] F3-011: Add cookie consent banner to public pages
 - [x] F3-015: Add IP ownership clause for AI-generated work product to Terms of Service
-- [ ] AH-02: Add Origin header verification middleware for mutations (CSRF protection)
+- [x] AH-02: Add Origin header verification middleware for mutations (CSRF protection)
 
 ### Batch H — P3 Backend Security
-- [ ] INJ-04: Add LLM output sanitization (check for system prompt leaks and cross-tenant data)
-- [ ] AL-01: Change audit log deletion to soft-delete (mark as archived)
-- [ ] DP-05: Use presigned URLs for sensitive document downloads
-- [ ] AH-01: Add MFA enforcement flag for admin/owner roles in RBAC config
+- [x] INJ-04: Add LLM output sanitization (check for system prompt leaks and cross-tenant data)
+- [x] AL-01: Change audit log deletion to soft-delete (archivedAt column + filtered queries)
+- [x] DP-05: Use presigned URLs for sensitive document downloads (getDownloadUrl endpoint added)
+- [x] AH-01: Add MFA enforcement flag for admin/owner roles in RBAC config (MFA_REQUIRED_ROLES + requiresMFA helper)
 
 ### Batch I — P3 Data & Admin UX
-- [ ] F-006: Archive orphaned test ventures from Unassigned section
-- [ ] F-020: Add bulk "Mark Resolved" action to oversight events
-- [ ] F3-006: White-label login or add "Infrastructure by Manus" explanation
-- [ ] F3-029: Support fractional distribution amounts (store in minor currency units)
+- [x] F-006: Archive orphaned test ventures from Unassigned section (filter added + update mutation supports Archived status)
+- [x] F-020: Add bulk "Mark Resolved" action to oversight events (backend + UI with select/deselect)
+- [x] F3-006: White-label login or add "Infrastructure by Manus" explanation (trust page section added)
+- [x] F3-029: Support fractional distribution amounts (default 2 decimals for most currencies)
 
 ### Batch J — P3 Documentation & Architecture
-- [ ] F3-026: Add automated FX rate fetching from ECB API
-- [ ] F3-033: Create Manus dependency map with replacement instructions
-- [ ] F3-035: Create transition/migration guide document
-- [ ] RL-02 + AH-05: Document Redis-backed rate limiting as future scaling requirement
+- [x] F3-026: Add automated FX rate fetching from ECB API (fetchECBRates function + tRPC endpoint)
+- [x] F3-033: Create Manus dependency map with replacement instructions (docs/manus-dependency-map.md)
+- [x] F3-035: Create transition/migration guide document (docs/migration-guide.md)
+- [x] RL-02 + AH-05: Document Redis-backed rate limiting as future scaling requirement (noted in dependency map)

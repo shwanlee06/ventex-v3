@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
+import CookieConsent from "@/components/CookieConsent";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, Redirect, useLocation } from "wouter";
@@ -241,6 +242,7 @@ function App() {
               <HeartbeatProvider>
                 <CustomCursor />
                 <Toaster />
+                <CookieConsent />
                 <Router />
               </HeartbeatProvider>
             </TooltipProvider>

@@ -158,3 +158,61 @@ export async function saveRate(params: {
 export function clearRateCache(): void {
   rateCache = new Map();
 }
+
+/**
+ * Fetch latest FX rates from the European Central Bank (ECB) daily feed.
+ * ECB provides EUR-based rates; we convert to USD-based for consistency.
+ * Returns the number of rates saved, or 0 on failure.
+ */
+export async function fetchECBRates(): Promise<number> {
+  const ECB_URL = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml";
+  try {
+    const res = await fetch(ECB_URL, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return 0;
+    const xml = await res.text();
+
+    // Parse rates from XML — format: <Cube currency="USD" rate="1.0832"/>
+    const rateRegex = /currency=['"]([A-Z]{3})['"]\s+rate=['"]([\d.]+)['"]/g;
+    const eurRates: Record<string, number> = {};
+    let match;
+    while ((match = rateRegex.exec(xml)) !== null) {
+      eurRates[match[1]] = parseFloat(match[2]);
+    }
+
+    if (!eurRates.USD) return 0; // Need USD rate to convert
+
+    const today = new Date().toISOString().slice(0, 10);
+    const usdPerEur = eurRates.USD; // e.g., 1.0832 USD per EUR
+    let saved = 0;
+
+    // Save EUR/USD rate
+    await saveRate({
+      baseCurrency: "USD",
+      targetCurrency: "EUR",
+      rate: 1 / usdPerEur,
+      source: "ecb",
+      effectiveDate: today,
+    });
+    saved++;
+
+    // Convert all EUR-based rates to USD-based
+    for (const [currency, eurRate] of Object.entries(eurRates)) {
+      if (currency === "USD") continue;
+      if (!SUPPORTED_CURRENCIES[currency]) continue; // Only save supported currencies
+      const usdRate = eurRate / usdPerEur; // How many units of currency per 1 USD
+      await saveRate({
+        baseCurrency: "USD",
+        targetCurrency: currency,
+        rate: usdRate,
+        source: "ecb",
+        effectiveDate: today,
+      });
+      saved++;
+    }
+
+    return saved;
+  } catch (err) {
+    console.error("[ECB] Failed to fetch rates:", err);
+    return 0;
+  }
+}

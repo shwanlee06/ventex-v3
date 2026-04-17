@@ -303,6 +303,8 @@ export const securityRouter = router({
       const effectiveOrgId = resolveOrgId(ctx.user, input.organizationId);
 
       const conditions = [];
+      // Exclude archived (soft-deleted) entries by default
+      conditions.push(sql`${auditLog.archivedAt} IS NULL`);
       if (effectiveOrgId) conditions.push(eq(auditLog.organizationId, effectiveOrgId));
       if (input.action) conditions.push(like(auditLog.action, `%${input.action}%`));
       if (input.entityType) conditions.push(eq(auditLog.entityType, input.entityType));
@@ -565,6 +567,8 @@ export const securityRouter = router({
       const effectiveOrgId = resolveOrgId(ctx.user, input.organizationId);
 
       const conditions = [];
+      // Exclude archived (soft-deleted) entries by default
+      conditions.push(sql`${auditLog.archivedAt} IS NULL`);
       if (effectiveOrgId) conditions.push(eq(auditLog.organizationId, effectiveOrgId));
       if (input.action) conditions.push(like(auditLog.action, `%${input.action}%`));
       if (input.entityType) conditions.push(eq(auditLog.entityType, input.entityType));
@@ -725,14 +729,14 @@ export const securityRouter = router({
         organizationId: effectiveOrgId || undefined,
       });
 
-      // Execute the purge
+      // Soft-delete: mark as archived instead of hard-deleting
       if (purgeCount > 0) {
-        await db.delete(auditLog).where(where);
+        await db.update(auditLog).set({ archivedAt: new Date() }).where(where);
       }
 
       return {
         dryRun: false,
-        purged: purgeCount,
+        archived: purgeCount,
         cutoffDate: cutoffDate.toISOString(),
         retentionDays: RETENTION_DAYS,
       };
