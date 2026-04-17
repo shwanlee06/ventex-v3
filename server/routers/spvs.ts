@@ -140,7 +140,12 @@ export const spvsRouter = router({
     return rows[0] || null;
   }),
 
-  getLinkedVentures: protectedProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
+  getLinkedVentures: protectedProcedure.input(z.object({ spvId: z.number() })).query(async ({ input, ctx }) => {
+    // TENANT_PATCHED: Verify SPV access
+    if (!isVentexTeam(ctx.user)) {
+      const spvIds = await getOrgSpvIds(ctx.user);
+      if (spvIds && !spvIds.includes(input.spvId)) return [];
+    }
     const db = await getDb();
     if (!db) return [];
     return db.select({
@@ -185,7 +190,12 @@ export const spvsRouter = router({
     return { success: true };
   }),
 
-  getTeam: protectedProcedure.input(z.object({ spvId: z.number() })).query(async ({ input }) => {
+  getTeam: protectedProcedure.input(z.object({ spvId: z.number() })).query(async ({ input, ctx }) => {
+    // TENANT_PATCHED: Verify SPV access
+    if (!isVentexTeam(ctx.user)) {
+      const spvIds = await getOrgSpvIds(ctx.user);
+      if (spvIds && !spvIds.includes(input.spvId)) return [];
+    }
     const db = await getDb();
     if (!db) return [];
     return db.select({
@@ -354,9 +364,17 @@ export const spvsRouter = router({
   renameFolder: protectedProcedure.input(z.object({
     folderId: z.number(),
     name: z.string(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
+    // TENANT_PATCHED: Verify folder belongs to an SPV the user can access
+    if (!isVentexTeam(ctx.user)) {
+      const [folder] = await db.select({ spvId: spvFolders.spvId }).from(spvFolders).where(eq(spvFolders.id, input.folderId)).limit(1);
+      if (folder) {
+        const spvIds = await getOrgSpvIds(ctx.user);
+        if (spvIds && !spvIds.includes(folder.spvId)) throw new Error("Access denied: folder not in your organization");
+      }
+    }
     await db.update(spvFolders).set({ name: input.name }).where(eq(spvFolders.id, input.folderId));
     return { success: true };
   }),

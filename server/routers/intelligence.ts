@@ -328,7 +328,12 @@ export const intelligenceRouter = router({
   // Get venture health score
   getVentureHealth: protectedProcedure
     .input(z.object({ ventureId: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Verify venture access
+      if (!isVentexTeam(ctx.user)) {
+        const scope = await resolveVentureScope(ctx.user);
+        if (scope && !scope.includes(input.ventureId)) return { score: 0 };
+      }
       const db = await getDb();
       if (!db) return { score: 50 };
       const score = await calculateVentureHealthScore(db, input.ventureId);
@@ -437,9 +442,17 @@ export const intelligenceRouter = router({
   // Dismiss a smart alert
   dismissAlert: protectedProcedure
     .input(z.object({ alertId: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
+      // TENANT_PATCHED: Verify alert belongs to user's org
+      if (!isVentexTeam(ctx.user)) {
+        const [alert] = await db.select({ organizationId: smartAlerts.organizationId }).from(smartAlerts).where(eq(smartAlerts.id, input.alertId)).limit(1);
+        if (alert?.organizationId) {
+          const effectiveOrgId = resolveOrgId(ctx.user, undefined);
+          if (effectiveOrgId && effectiveOrgId !== alert.organizationId) throw new Error("Access denied: alert not in your organization");
+        }
+      }
       await db.update(smartAlerts)
         .set({ dismissed: 1 })
         .where(eq(smartAlerts.id, input.alertId));

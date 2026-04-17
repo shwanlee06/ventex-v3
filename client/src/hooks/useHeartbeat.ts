@@ -3,16 +3,16 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { isPublicRoute } from "@/lib/publicRoutes";
 
-const HEARTBEAT_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
-const ACTIVITY_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes — if no interaction for 5 min, stop heartbeats
-const ACTIVITY_EVENTS = ["mousedown", "keydown", "touchstart", "scroll", "mousemove"] as const;
-const THROTTLE_MS = 30_000; // Only update lastActivity at most every 30s to avoid thrashing
+const HEARTBEAT_INTERVAL_MS = 30_000; // 30 seconds — real-time presence
+const ACTIVITY_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes — go idle quickly
+const ACTIVITY_EVENTS = ["mousedown", "keydown", "touchstart", "scroll", "mousemove", "pointerdown"] as const;
+const THROTTLE_MS = 10_000; // Throttle activity tracking to 10s for responsiveness
 
 /**
- * Sends a heartbeat to the server every 2 minutes while the user is:
+ * Sends a heartbeat to the server every 30 seconds while the user is:
  *   1. Authenticated
  *   2. The tab/window is visible (not hidden/minimized)
- *   3. The user has interacted with the page within the last 5 minutes
+ *   3. The user has interacted with the page within the last 2 minutes
  *   4. NOT on a public route (demo, login, legal, invite)
  *
  * This ensures live status reflects genuine activity, not just an idle open tab.

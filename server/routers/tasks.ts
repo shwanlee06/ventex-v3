@@ -134,6 +134,14 @@ export const tasksRouter = router({
   })).mutation(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
+    // TENANT_PATCHED: Verify task belongs to a venture the user can access
+    if (!isVentexTeam(ctx.user)) {
+      const [task] = await db.select({ ventureId: tasks.ventureId }).from(tasks).where(eq(tasks.id, input.id)).limit(1);
+      if (task?.ventureId) {
+        const ventureIds = await getOrgVentureIds(ctx.user);
+        if (ventureIds && !ventureIds.includes(task.ventureId)) throw new Error("Access denied: task not in your organization");
+      }
+    }
     const { id, ...data } = input;
     await db.update(tasks).set(data).where(eq(tasks.id, id));
     const rows = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);

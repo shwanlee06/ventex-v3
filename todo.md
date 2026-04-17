@@ -3004,3 +3004,82 @@
 - [x] VentexTeam page already uses team.listInternal (only VENTEX members)
 - [x] Sidebar and topbar don't mix team types — no changes needed
 - [x] 0 TypeScript errors confirmed
+
+## Operator Presence Heartbeat (Apr 16)
+- [ ] Add server-side heartbeat mutation (team.heartbeat) to update lastSeenAt
+- [ ] Add client-side useHeartbeat hook that pings every 60s on user activity
+- [ ] Auto-set liveStatus to "online" on heartbeat, "away" after 5min idle, "offline" after 15min
+- [ ] Wire heartbeat into DashboardLayout so it runs on all admin pages
+- [ ] Write vitest tests for heartbeat logic
+
+## Phase 1 — Functional QA Test Battery
+- [x] Setup test data: Meridian Holdings (Tenant A), Volkov Capital (Tenant B), Apex Partners (Tenant C)
+- [x] Admin view: Dashboard page-by-page exercise
+- [x] Admin view: Client Detail exercise
+- [x] Admin view: Ventures + Venture Detail exercise
+- [x] Admin view: SPVs & Deals exercise
+- [x] Admin view: Tasks exercise
+- [x] Admin view: Distributions exercise
+- [x] Admin view: Activity Log exercise
+- [x] Admin view: AI Concierge exercise
+- [x] Admin view: AI Agents exercise
+- [x] Admin view: Blueprints exercise
+- [x] Admin view: Blueprint Diagnostics exercise
+- [x] Admin view: Oversight exercise
+- [x] Admin view: Onboarding Wizard exercise
+- [x] Admin view: VENTEX Team exercise
+- [x] Admin view: Client Contacts exercise
+- [x] Admin view: Security exercise (blocked by captcha)
+- [x] Admin view: Access Management exercise
+- [x] Admin view: Topbar (Switcher, Cmd+K, Notifications, Preview Mode) exercise
+- [x] Client view: Client Portal exercise (via Preview Mode)
+- [x] Client view: Client Dashboard exercise
+- [x] Client view: Draft Center exercise
+- [x] Client view: Client-scoped pages (ventures, tasks, distributions) exercise
+- [x] Partner view: Partner Dashboard exercise (code review — no separate login)
+- [x] Public pages: Landing, Demo, Demo Dashboard, Trust, Privacy, Terms
+- [x] Auth pages: Invitation acceptance (invalid token tested — correct error handling)
+- [x] Produce Phase 1 summary report
+
+## Phase 2 — Security & Tenant Isolation Test Battery
+- [x] 2.1 TENANT_PATCHED audit: enumerate all 280 procedures with scoping verification (13 IDOR found)
+- [x] 2.1 Manual cross-tenant tests for unclear procedures (23/23 pass, IDOR is post-auth)
+- [x] 2.2 Cross-tenant attack battery (IDOR, tRPC, search, AI, files, audit, API keys, invitations)
+- [x] 2.3 Privilege escalation battery — NO escalation vectors found. RBAC solid.
+- [x] 2.4 Authentication hardening — MFA solid, 1 MEDIUM (sameSite=none), rate limiting comprehensive
+- [x] 2.5 AI safety enforcement — ALL PASS. Fail-safe defaults, no bypass vectors.
+- [x] 2.6 Input validation — No SQL/XSS vulns. 2 MEDIUM (CSP unsafe-inline, file type allowlist missing)
+- [x] 2.7 Rate limiting — ALL sensitive endpoints covered. 1 LOW (in-memory only)
+- [x] 2.8 Data at rest/transit — ALL PASS. 10 headers verified live. AES-256-GCM encryption solid.
+- [x] 2.9 Audit log integrity — Comprehensive coverage. autoAudit + 66 explicit calls. 1 LOW (admin delete).
+- [x] 2.10 Phase 2 security summary report produced
+
+## Phase 3 — Client-Readiness Simulation (CTO Persona)
+
+- [ ] Pre-check: Verify P0 from Phase 2 (13 IDOR procedures) status
+- [ ] 3.1 First impression audit of ventexdemo.manus.space
+- [ ] 3.2 Security diligence — CTO document request
+- [ ] 3.3 Regulatory diligence — GC document request
+- [ ] 3.4 Principal demo — 45-minute matriarch walkthrough
+- [ ] 3.5 Operator demo — 45-minute multi-client morning
+- [ ] 3.6 UHNWI edge cases
+- [ ] 3.7 Continuity conversation — what if Aurovia disappears
+- [ ] 3.8 Would I Sign memo
+- [ ] 3.9 Phase 3 summary + Master test battery report
+
+## P0 IDOR Remediation (Phase 2 → Phase 3 gate)
+
+- [x] Fix IDOR: ventures.getTasks
+- [x] Fix IDOR: ventures.getTeam
+- [x] Fix IDOR: ventures.getWithMilestones
+- [x] Fix IDOR: ventures.updateMilestone
+- [x] Fix IDOR: ventures.renameFolder
+- [x] Fix IDOR: tasks.update
+- [x] Fix IDOR: spvs.getLinkedVentures
+- [x] Fix IDOR: spvs.getTeam
+- [x] Fix IDOR: spvs.renameFolder
+- [x] Fix IDOR: team.assignToVenture
+- [x] Fix IDOR: team.removeFromVenture
+- [x] Fix IDOR: intelligence.getVentureHealth
+- [x] Fix IDOR: intelligence.dismissAlert
+- [x] Write vitest for IDOR fixes (14/14 pass)

@@ -5,7 +5,7 @@ import { teamMembers, activityLog, ventureTeam, ventures, organizations, users, 
 import crypto from "crypto";
 import { eq, desc, asc, inArray, isNull, isNotNull, and, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import { resolveVentureScope, getVentureIdsForOrg, logAudit } from "../security/rbac";
+import { resolveVentureScope, getVentureIdsForOrg, logAudit, isVentexTeam, getOrgVentureIds } from "../security/rbac";
 import { resolveOrgId } from "../security/orgScope";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { storagePut } from "../storage";
@@ -15,7 +15,7 @@ import { enforceRateLimit } from "../security/rateLimit";
 /**
  * Calculate live status from lastSeenAt timestamp and adminStatus.
  * - If adminStatus is "on_leave" or "deactivated", that takes priority.
- * - Otherwise: Online (<5min), Away (<30min), Offline (>30min or null)
+ * - Otherwise: Online (<2min), Away (<5min), Offline (>5min or null)
  */
 export function calculateLiveStatus(lastSeenAt: Date | null, adminStatus: string | null): "online" | "away" | "offline" | "on_leave" | "deactivated" {
   if (adminStatus === "on_leave") return "on_leave";
@@ -23,9 +23,9 @@ export function calculateLiveStatus(lastSeenAt: Date | null, adminStatus: string
   if (!lastSeenAt) return "offline";
   const diffMs = Date.now() - lastSeenAt.getTime();
   const diffMin = diffMs / 60000;
-  if (diffMin < 5) return "online";
-  if (diffMin < 30) return "away";
-  return "offline";
+  if (diffMin < 2) return "online";   // heartbeat every 30s, so <2min = definitely active
+  if (diffMin < 5) return "away";     // 2-5min = recently active but idle
+  return "offline";                    // >5min = gone
 }
 
 function slugify(name: string) {
@@ -318,9 +318,14 @@ export const teamRouter = router({
     ventureId: z.number(),
     memberId: z.number(),
     responsibility: z.string().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
+    // TENANT_PATCHED: Verify venture access before assigning team member
+    if (!isVentexTeam(ctx.user)) {
+      const ventureIds = await getOrgVentureIds(ctx.user);
+      if (ventureIds && !ventureIds.includes(input.ventureId)) throw new Error("Access denied: venture not in your organization");
+    }
     await db.insert(ventureTeam).values({
       ventureId: input.ventureId,
       memberId: input.memberId,
@@ -331,9 +336,17 @@ export const teamRouter = router({
 
   removeFromVenture: protectedProcedure.input(z.object({
     id: z.number(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
+    // TENANT_PATCHED: Verify venture team assignment belongs to user's org
+    if (!isVentexTeam(ctx.user)) {
+      const [assignment] = await db.select({ ventureId: ventureTeam.ventureId }).from(ventureTeam).where(eq(ventureTeam.id, input.id)).limit(1);
+      if (assignment) {
+        const ventureIds = await getOrgVentureIds(ctx.user);
+        if (ventureIds && !ventureIds.includes(assignment.ventureId)) throw new Error("Access denied: venture not in your organization");
+      }
+    }
     await db.delete(ventureTeam).where(eq(ventureTeam.id, input.id));
     return { success: true };
   }),

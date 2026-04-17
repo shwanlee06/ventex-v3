@@ -254,7 +254,12 @@ export const venturesRouter = router({
   }),
 
   // Get team members assigned to a venture
-  getTeam: protectedProcedure.input(z.object({ ventureId: z.number() })).query(async ({ input }) => {
+  getTeam: protectedProcedure.input(z.object({ ventureId: z.number() })).query(async ({ input, ctx }) => {
+    // TENANT_PATCHED: Verify venture access
+    if (!isVentexTeam(ctx.user)) {
+      const ventureIds = await getOrgVentureIds(ctx.user);
+      if (ventureIds && !ventureIds.includes(input.ventureId)) return [];
+    }
     const db = await getDb();
     if (!db) return [];
     const rows = await db.select({
@@ -316,7 +321,12 @@ export const venturesRouter = router({
   }),
 
   // Get tasks linked to a venture
-  getTasks: protectedProcedure.input(z.object({ ventureId: z.number() })).query(async ({ input }) => {
+  getTasks: protectedProcedure.input(z.object({ ventureId: z.number() })).query(async ({ input, ctx }) => {
+    // TENANT_PATCHED: Verify venture access
+    if (!isVentexTeam(ctx.user)) {
+      const ventureIds = await getOrgVentureIds(ctx.user);
+      if (ventureIds && !ventureIds.includes(input.ventureId)) return [];
+    }
     const db = await getDb();
     if (!db) return [];
     return db.select().from(tasks).where(eq(tasks.ventureId, input.ventureId)).orderBy(desc(tasks.createdAt));
@@ -464,9 +474,17 @@ export const venturesRouter = router({
   renameFolder: protectedProcedure.input(z.object({
     folderId: z.number(),
     name: z.string(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
+    // TENANT_PATCHED: Verify folder belongs to a venture the user can access
+    if (!isVentexTeam(ctx.user)) {
+      const [folder] = await db.select({ ventureId: ventureFolders.ventureId }).from(ventureFolders).where(eq(ventureFolders.id, input.folderId)).limit(1);
+      if (folder) {
+        const ventureIds = await getOrgVentureIds(ctx.user);
+        if (ventureIds && !ventureIds.includes(folder.ventureId)) throw new Error("Access denied: folder not in your organization");
+      }
+    }
     await db.update(ventureFolders).set({ name: input.name }).where(eq(ventureFolders.id, input.folderId));
     return { success: true };
   }),
@@ -504,7 +522,12 @@ export const venturesRouter = router({
 
   getWithMilestones: protectedProcedure
     .input(z.object({ id: z.number() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Verify venture access
+      if (!isVentexTeam(ctx.user)) {
+        const ventureIds = await getOrgVentureIds(ctx.user);
+        if (ventureIds && !ventureIds.includes(input.id)) return null;
+      }
       const db = await getDb();
       if (!db) return null;
       const [venture] = await db.select().from(ventures).where(eq(ventures.id, input.id)).limit(1);
@@ -542,6 +565,11 @@ export const venturesRouter = router({
       notes: z.string().optional(),
     }))
     .mutation(async ({ input, ctx }) => {
+      // TENANT_PATCHED: Verify venture access
+      if (!isVentexTeam(ctx.user)) {
+        const ventureIds = await getOrgVentureIds(ctx.user);
+        if (ventureIds && !ventureIds.includes(input.ventureId)) throw new Error("Access denied: venture not in your organization");
+      }
       const db = await getDb();
       if (!db) return { success: false };
 

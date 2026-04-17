@@ -1,0 +1,5322 @@
+[
+  {
+    "router": "access",
+    "procedure": "listOrganizations",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "access",
+    "procedure": "createOrganization",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "access",
+    "procedure": "updateOrganization",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "access",
+    "procedure": "grantOrgVentureAccess",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "access",
+    "procedure": "revokeOrgVentureAccess",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "access",
+    "procedure": "listOrgVentureAccess",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "access",
+    "procedure": "sendInvitation",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": true,
+      "enforceRateLimit": true
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "access",
+    "procedure": "listInvitations",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "access",
+    "procedure": "revokeInvitation",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "access",
+    "procedure": "validateInvitation",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "access",
+    "procedure": "acceptInvitation",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "access",
+    "procedure": "listApiKeys",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "access",
+    "procedure": "generateApiKey",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": true,
+      "enforceRateLimit": true
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "access",
+    "procedure": "revokeApiKey",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "access",
+    "procedure": "checkAccess",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "access",
+    "procedure": "lookupOrgBySlug",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "access",
+    "procedure": "getStats",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "access",
+    "procedure": "blockUser",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "access",
+    "procedure": "unblockUser",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "activity",
+    "procedure": "list",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + resolveVentureScope/resolveSpvScope + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": true,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "activity",
+    "procedure": "recent",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + resolveVentureScope/resolveSpvScope + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": true,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "activity",
+    "procedure": "metrics",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "list",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "metrics",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "runAll",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "agents",
+    "procedure": "runSingle",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "markRead",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "markAllRead",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "executeAction",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "agents",
+    "procedure": "listDrafts",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "sendDraft",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "dismissDraft",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "restoreDraft",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "deleteDraft",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "bulkDeleteDrafts",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "draftStats",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "pendingApprovals",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "approveEvent",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "agents",
+    "procedure": "rejectEvent",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "agents",
+    "procedure": "approvalLog",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "agents",
+    "procedure": "velocityMetrics",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "velocityLog",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "clientFeed",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "clientDismiss",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "clientAction",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "getDraft",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "getEventDetail",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "operatorOversight",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "agents",
+    "procedure": "clientAdvanceStage",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + getOrgVentureIds/getOrgSpvIds + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "listEvents",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "sectorBenchmarks",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "enhancedOversight",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "agents",
+    "procedure": "escalationStats",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "agents",
+    "procedure": "schedulerStatus",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "agents",
+    "procedure": "triggerCycle",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "agents",
+    "procedure": "purgeStaleEvents",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "ai",
+    "procedure": "chat",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": true
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "aiTasks",
+    "procedure": "generateSuggestions",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "aiTasks",
+    "procedure": "approveAndCreate",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "aiTasks",
+    "procedure": "exportData",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "audit",
+    "procedure": "list",
+    "type": "partnerProcedure",
+    "scoping": "partnerProcedure middleware (role gate: partner/admin/owner) + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprintDiagnostics",
+    "procedure": "runDiagnostic",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprintDiagnostics",
+    "procedure": "getCurrentDiagnostic",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprintDiagnostics",
+    "procedure": "getDiagnosticHistory",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprintDiagnostics",
+    "procedure": "generateStructureRecommendation",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprintDiagnostics",
+    "procedure": "getStructureMode",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprintDiagnostics",
+    "procedure": "setStructureMode",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprintDiagnostics",
+    "procedure": "listStructureModes",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprintDiagnostics",
+    "procedure": "createAttribution",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprintDiagnostics",
+    "procedure": "autoAttributeDelay",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprintDiagnostics",
+    "procedure": "getAttributions",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprintDiagnostics",
+    "procedure": "resolveAttribution",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "blueprintDiagnostics",
+    "procedure": "getVelocitySummary",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "extractFromDocument",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "uploadAndExtract",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": true
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "conversationExtract",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "listTemplates",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "getTemplateWithSteps",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "updateStep",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "deleteStep",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "addStep",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "applyToVentures",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "getVentureTracking",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "updateTrackingStep",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "refineFromActuals",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "getMissingSectors",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "generateStarterBlueprints",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "autoApplyToSectorVentures",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "recalculateHealthScores",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "list",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "create",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "generateFromSector",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "confirmTemplate",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "archiveTemplate",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "updateTemplate",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "listOverrides",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "addOverride",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "removeOverride",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "blueprints",
+    "procedure": "getBlueprintForVenture",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "distributions",
+    "procedure": "list",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "distributions",
+    "procedure": "create",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "distributions",
+    "procedure": "update",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "distributions",
+    "procedure": "listFxRates",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "distributions",
+    "procedure": "setFxRate",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "distributions",
+    "procedure": "convertAmount",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "distributions",
+    "procedure": "supportedCurrencies",
+    "type": "publicProcedure",
+    "scoping": "Public \u2014 no auth required (unscoped by design)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "PUBLIC"
+  },
+  {
+    "router": "distributions",
+    "procedure": "metrics",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "documentIntelligence",
+    "procedure": "processFile",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "documentIntelligence",
+    "procedure": "getByFileId",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "documentIntelligence",
+    "procedure": "getByVenture",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "documentIntelligence",
+    "procedure": "getBySpv",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "documentIntelligence",
+    "procedure": "recentFeed",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "documentIntelligence",
+    "procedure": "retryProcessing",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "documentIntelligence",
+    "procedure": "getVentureRisks",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "documentIntelligence",
+    "procedure": "updateRiskStatus",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "documentIntelligence",
+    "procedure": "getMeetingBriefs",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "documentIntelligence",
+    "procedure": "searchDocuments",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "email",
+    "procedure": "send",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": true
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "email",
+    "procedure": "sendTest",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "intelligence",
+    "procedure": "getDailyBrief",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "intelligence",
+    "procedure": "generateDailyBrief",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "intelligence",
+    "procedure": "getBriefHistory",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "intelligence",
+    "procedure": "getVentureHealth",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "intelligence",
+    "procedure": "getAllVentureHealth",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "intelligence",
+    "procedure": "refreshAllHealthScores",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "intelligence",
+    "procedure": "getSmartAlerts",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "intelligence",
+    "procedure": "refreshSmartAlerts",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "intelligence",
+    "procedure": "dismissAlert",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "intelligence",
+    "procedure": "getObservations",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "intelligence",
+    "procedure": "dismissObservation",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "intelligence",
+    "procedure": "acceptObservation",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "intelligence",
+    "procedure": "generateObservations",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "notifications",
+    "procedure": "list",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "notifications",
+    "procedure": "unreadCount",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "notifications",
+    "procedure": "markRead",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "notifications",
+    "procedure": "markAllRead",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "notifications",
+    "procedure": "delete",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "notifications",
+    "procedure": "clearRead",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "onboarding",
+    "procedure": "complete",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "organizations",
+    "procedure": "list",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "organizations",
+    "procedure": "listWithMetrics",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "organizations",
+    "procedure": "bySlug",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "organizations",
+    "procedure": "ventures",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "organizations",
+    "procedure": "create",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "organizations",
+    "procedure": "update",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "organizations",
+    "procedure": "archive",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "organizations",
+    "procedure": "restore",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "organizations",
+    "procedure": "delete",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "organizations",
+    "procedure": "addVentures",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "organizations",
+    "procedure": "sendInvitations",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "organizations",
+    "procedure": "configureAgents",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "organizations",
+    "procedure": "getAgentConfig",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "organizations",
+    "procedure": "updateAgentConfig",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "organizations",
+    "procedure": "onboardingComplete",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "portal",
+    "procedure": "getData",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "portal",
+    "procedure": "resolveAction",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "portal",
+    "procedure": "getVentureTasks",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "portal",
+    "procedure": "completeTask",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "portal",
+    "procedure": "aiChat",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": true
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "portal",
+    "procedure": "getDrafts",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "portal",
+    "procedure": "approveDraft",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "portal",
+    "procedure": "dismissDraft",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "portal",
+    "procedure": "trackDownload",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "portal",
+    "procedure": "getDownloadHistory",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "portal",
+    "procedure": "markDistributionRead",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "portal",
+    "procedure": "getDistributionReceipts",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "search",
+    "procedure": "global",
+    "type": "protectedProcedure",
+    "scoping": "resolveVentureScope/resolveSpvScope + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": true,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "security",
+    "procedure": "listUsers",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "security",
+    "procedure": "updateUserRole",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + requirePermission check",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": true,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "security",
+    "procedure": "deleteUser",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + requirePermission check",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": true,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "security",
+    "procedure": "listVentureAccess",
+    "type": "protectedProcedure",
+    "scoping": "requirePermission check",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": true,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "security",
+    "procedure": "grantAccess",
+    "type": "protectedProcedure",
+    "scoping": "requirePermission check",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": true,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "security",
+    "procedure": "revokeAccess",
+    "type": "protectedProcedure",
+    "scoping": "requirePermission check",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": true,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "security",
+    "procedure": "getAuditLog",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause + requirePermission check",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": true,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "security",
+    "procedure": "getAuditStats",
+    "type": "protectedProcedure",
+    "scoping": "requirePermission check",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": true,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "security",
+    "procedure": "getSecurityStatus",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "security",
+    "procedure": "getMyPermissions",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "security",
+    "procedure": "getOrgSecuritySettings",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "security",
+    "procedure": "updateOrgSecuritySettings",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "security",
+    "procedure": "getSessionConfig",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "security",
+    "procedure": "exportAuditLogCsv",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause + requirePermission check",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": true,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "security",
+    "procedure": "getRetentionStats",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "security",
+    "procedure": "purgeExpiredAuditLogs",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only) + isVentexTeam check + explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "settings",
+    "procedure": "getProfile",
+    "type": "protectedProcedure",
+    "scoping": "explicit organizationId WHERE clause",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "settings",
+    "procedure": "updateProfile",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "settings",
+    "procedure": "updateNotifications",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "settings",
+    "procedure": "updateDisplay",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "settings",
+    "procedure": "updateSecurity",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "settings",
+    "procedure": "getMfaStatus",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "settings",
+    "procedure": "mfaSetup",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "settings",
+    "procedure": "mfaVerify",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": true
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "settings",
+    "procedure": "mfaValidate",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": true
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "settings",
+    "procedure": "mfaDisable",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": true
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "settings",
+    "procedure": "mfaRegenerateBackupCodes",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "settings",
+    "procedure": "getAuditLog",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "settings",
+    "procedure": "getActiveSessions",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "settings",
+    "procedure": "terminateSession",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "settings",
+    "procedure": "getRetentionStats",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "settings",
+    "procedure": "runRetentionPurge",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": true
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "list",
+    "type": "protectedProcedure",
+    "scoping": "resolveVentureScope/resolveSpvScope",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": true,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "getBySlug",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "getById",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "create",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "update",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "getLinkedVentures",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "linkVenture",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "unlinkVenture",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "getTeam",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "assignTeam",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "removeTeam",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "getFiles",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "uploadFile",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": true
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "deleteFile",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "moveFile",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "getFolders",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "createFolder",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "deleteFolder",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "renameFolder",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "spvs",
+    "procedure": "metrics",
+    "type": "protectedProcedure",
+    "scoping": "resolveVentureScope/resolveSpvScope",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": true,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "tasks",
+    "procedure": "list",
+    "type": "protectedProcedure",
+    "scoping": "resolveVentureScope/resolveSpvScope",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": true,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "tasks",
+    "procedure": "getById",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "tasks",
+    "procedure": "getByVenture",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "tasks",
+    "procedure": "create",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "tasks",
+    "procedure": "update",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "tasks",
+    "procedure": "delete",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "tasks",
+    "procedure": "metrics",
+    "type": "protectedProcedure",
+    "scoping": "resolveVentureScope/resolveSpvScope",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": true,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "tasks",
+    "procedure": "listOverdue",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "tasks",
+    "procedure": "overdueByClient",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "tasks",
+    "procedure": "scanAndNotify",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "tasks",
+    "procedure": "workloadSummary",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "tasks",
+    "procedure": "sectorMetrics",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "team",
+    "procedure": "list",
+    "type": "protectedProcedure",
+    "scoping": "resolveVentureScope/resolveSpvScope",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": true,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "team",
+    "procedure": "listInternal",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "team",
+    "procedure": "listByOrganization",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "team",
+    "procedure": "getBySlug",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "team",
+    "procedure": "getById",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "team",
+    "procedure": "create",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "team",
+    "procedure": "ventureAssignments",
+    "type": "protectedProcedure",
+    "scoping": "resolveVentureScope/resolveSpvScope",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": true,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "team",
+    "procedure": "assignToVenture",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "team",
+    "procedure": "removeFromVenture",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "team",
+    "procedure": "update",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "team",
+    "procedure": "heartbeat",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "team",
+    "procedure": "liveStatuses",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "team",
+    "procedure": "setAdminStatus",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "team",
+    "procedure": "linkUser",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "team",
+    "procedure": "delete",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "team",
+    "procedure": "reorder",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "team",
+    "procedure": "uploadAvatar",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": true
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "team",
+    "procedure": "resendInvitation",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "team",
+    "procedure": "getInvitationStatus",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  },
+  {
+    "router": "ventures",
+    "procedure": "listWithOrgs",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "list",
+    "type": "protectedProcedure",
+    "scoping": "resolveVentureScope/resolveSpvScope",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": true,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "getBySlug",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "getById",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "create",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "update",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": true,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "getTeam",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "assignTeam",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "removeTeam",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "getTasks",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "getFiles",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "uploadFile",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": true
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "deleteFile",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "moveFile",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "getFolders",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "createFolder",
+    "type": "protectedProcedure",
+    "scoping": "TENANT_PATCHED marker + isVentexTeam check + getOrgVentureIds/getOrgSpvIds",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": true,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": true,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "deleteFolder",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "renameFolder",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "metrics",
+    "type": "protectedProcedure",
+    "scoping": "resolveVentureScope/resolveSpvScope",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": true,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "getWithMilestones",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "updateMilestone",
+    "type": "protectedProcedure",
+    "scoping": "protectedProcedure \u2014 AUTH ONLY, NO TENANT SCOPING DETECTED",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "UNSCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "populateIntelligence",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "ventures",
+    "procedure": "recalculateHealth",
+    "type": "protectedProcedure",
+    "scoping": "isVentexTeam check",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "SCOPED"
+  },
+  {
+    "router": "routers",
+    "procedure": "me",
+    "type": "publicProcedure",
+    "scoping": "Public \u2014 no auth required (unscoped by design)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "PUBLIC"
+  },
+  {
+    "router": "routers",
+    "procedure": "logout",
+    "type": "publicProcedure",
+    "scoping": "Public \u2014 no auth required (unscoped by design)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "PUBLIC"
+  },
+  {
+    "router": "routers",
+    "procedure": "acceptInvite",
+    "type": "publicProcedure",
+    "scoping": "Public \u2014 no auth required (unscoped by design)",
+    "patterns": {
+      "isVentexTeam": true,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "PUBLIC"
+  },
+  {
+    "router": "routers",
+    "procedure": "forgotPassword",
+    "type": "publicProcedure",
+    "scoping": "Public \u2014 no auth required (unscoped by design)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": true,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "PUBLIC"
+  },
+  {
+    "router": "routers",
+    "procedure": "resetPassword",
+    "type": "publicProcedure",
+    "scoping": "Public \u2014 no auth required (unscoped by design)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "PUBLIC"
+  },
+  {
+    "router": "systemRouter",
+    "procedure": "health",
+    "type": "publicProcedure",
+    "scoping": "Public \u2014 no auth required (unscoped by design)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "PUBLIC"
+  },
+  {
+    "router": "systemRouter",
+    "procedure": "notifyOwner",
+    "type": "adminProcedure",
+    "scoping": "adminProcedure middleware (role gate: admin/owner only)",
+    "patterns": {
+      "isVentexTeam": false,
+      "resolveVentureScope": false,
+      "getOrgVentureIds": false,
+      "checkVentureAccess": false,
+      "getAccessibleVentureIds": false,
+      "TENANT_PATCHED": false,
+      "orgId_filter": false,
+      "requirePermission": false,
+      "logAudit": false,
+      "enforceRateLimit": false
+    },
+    "category": "ADMIN_GATE_ONLY"
+  }
+]

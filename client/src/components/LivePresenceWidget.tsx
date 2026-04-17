@@ -59,7 +59,7 @@ function MemberRow({ m }: { m: MemberEntry }) {
 
 export default function LivePresenceWidget() {
   const liveQ = trpc.team.liveStatuses.useQuery(undefined, {
-    refetchInterval: 15_000,
+    refetchInterval: 10_000, // 10s polling for real-time presence
   });
   const [expanded, setExpanded] = useState(false);
 
