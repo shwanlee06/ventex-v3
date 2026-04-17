@@ -13,9 +13,10 @@ import {
   orgVentureAccess,
   users,
   ventures,
+  teamMembers,
 } from "../../drizzle/schema";
 import { eq, desc, and, sql } from "drizzle-orm";
-import { logAudit } from "../security/rbac";
+import { logAudit, isVentexTeam } from "../security/rbac";
 import { enforceRateLimit } from "../security/rateLimit";
 import crypto from "crypto";
 
@@ -67,12 +68,14 @@ export const accessRouter = router({
     // Get member counts for each org
     const result = [];
     for (const org of orgs) {
+      // Count team_members (includes invited/pending members, not just OAuth-accepted users)
       const [memberCount] = await db
         .select({ count: sql<number>`count(*)` })
-        .from(users)
-        .where(eq(users.organizationId, org.id));
+        .from(teamMembers)
+        .where(eq(teamMembers.organizationId, org.id));
+      // F-026: Use DISTINCT to avoid counting duplicate org_venture_access entries
       const [ventureCount] = await db
-        .select({ count: sql<number>`count(*)` })
+        .select({ count: sql<number>`count(distinct ${orgVentureAccess.ventureId})` })
         .from(orgVentureAccess)
         .where(eq(orgVentureAccess.organizationId, org.id));
       result.push({
@@ -471,7 +474,6 @@ export const accessRouter = router({
 
       // If this invitation is linked to a team member, update their status and link user
       if (invite.teamMemberId) {
-        const { teamMembers } = await import("../../drizzle/schema");
         await db
           .update(teamMembers)
           .set({ invitationStatus: "accepted", userId: ctx.user.id })
@@ -504,9 +506,8 @@ export const accessRouter = router({
     const db = await getDb();
     if (!db) return [];
 
-    const isAdmin = ctx.user.role === "admin" || ctx.user.role === "owner";
-
-    const condition = isAdmin ? undefined : eq(apiKeys.userId, ctx.user.id);
+    const isAdmin = isVentexTeam(ctx.user);
+    const condition = isAdmin ? undefined : eq(apiKeys.userId, ctx.user.id);;
 
     const keys = await db
       .select({

@@ -128,6 +128,7 @@ export const SPV_STAGE_CONFIG: Record<string, { label: string; color: string; bg
   "In negotiation": { label: "Negotiating", color: "text-blue-400", bg: "bg-blue-500/10 text-blue-400 border-blue-500/20", dot: "bg-blue-400" },
   "Closed deal": { label: "Closed", color: "text-muted-foreground", bg: "bg-secondary text-muted-foreground border-border", dot: "bg-muted-foreground" },
   "Dropped deal": { label: "Dropped", color: "text-red-400", bg: "bg-red-500/10 text-red-400 border-red-500/20", dot: "bg-red-400" },
+  "Pipeline": { label: "Pipeline", color: "text-zinc-400", bg: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20", dot: "bg-zinc-400" },
 };
 
 export const DIST_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string }> = {
@@ -263,7 +264,7 @@ export const VENTURES: Venture[] = [
 ];
 
 export const SPVS: SPV[] = [
-  { id: "rectbrWqAdepS7dC4", name: "Venezuela Mining Rights", stage: "Active deal", theme: "Oil & Gas", priority: "High", currentStatus: "Awaiting updated financials from founder.", nextStep: "Schedule IC prep call with team." },
+  { id: "rectbrWqAdepS7dC4", name: "Dubai Marina Development", stage: "Active deal", theme: "Oil & Gas", priority: "High", currentStatus: "Awaiting updated financials from founder.", nextStep: "Schedule IC prep call with team." },
   { id: "recxTZCzi6GGEr205", name: "Azzam - Yacht", stage: "Active deal", theme: "Yacht", priority: "Medium" },
   { id: "rec6CU1RdVpxnUyMx", name: "Crude Oil Deal", stage: "In negotiation", theme: "Oil & Gas", priority: "Medium" },
   { id: "recGkP0NHIeVTyorl", name: "Shipping Deal", stage: "Active deal", theme: "Others", priority: "Low" },
@@ -370,7 +371,7 @@ export const AGENT_LOGS: AgentLogEntry[] = [
   { id: "al1", action: "Workshop Scheduled", detail: "Zarka City vision statement workshop — Anton coordinating", timestamp: "2026-03-14T14:32:00Z", theme: "Real Estate" },
   { id: "al2", action: "Deck Drafted", detail: "Nammos Watson Island presentation deck in progress", timestamp: "2026-03-14T13:15:00Z", theme: "Real Estate" },
   { id: "al3", action: "Deal Structure", detail: "Lagonissi Nammos internal deal structure meeting scheduled", timestamp: "2026-03-14T11:48:00Z", theme: "Real Estate" },
-  { id: "al4", action: "SPV Update", detail: "Venezuela Mining Rights — awaiting updated financials", timestamp: "2026-03-14T10:22:00Z", theme: "Oil & Gas" },
+  { id: "al4", action: "SPV Update", detail: "Dubai Marina Development — awaiting updated financials", timestamp: "2026-03-14T10:22:00Z", theme: "Oil & Gas" },
   { id: "al5", action: "Distribution Paid", detail: "Q4 2025 Profit Share — $250K paid to LPs via wire", timestamp: "2026-03-14T09:05:00Z", theme: "Others" },
 ];
 

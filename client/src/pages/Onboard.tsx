@@ -189,7 +189,8 @@ export default function OnboardPage() {
   // Stats
   const ventexMembers = ventexTeamQ.data || [];
   const totalContacts = clientContactsQ.data?.length ?? 0;
-  const uniqueClients = clientOptions.length;
+  // Use organizations.list for consistent client count across pages (F-022)
+  const uniqueClients = (orgsQ.data || []).length || clientOptions.length;
   const isLoading = ventexTeamQ.isLoading || clientContactsQ.isLoading;
 
   const hasActiveFilters = clientFilter !== "all" || typeFilter !== "all" || search.trim() !== "";

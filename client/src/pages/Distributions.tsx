@@ -169,14 +169,19 @@ function FxRateManagement() {
 
 // ─── Main Distributions Page ───────────────────────────────────────
 export default function DistributionsPage() {
-  const { activeOrg, activeOrgId } = useWorkspace();
+  const { activeOrg, activeOrgId, organizations } = useWorkspace();
   const { user } = useAuth();
   const { isPreviewMode } = usePreviewMode();
   const isAdmin = isVentexTeam(user) && !isPreviewMode;
+  const [localOrgFilter, setLocalOrgFilter] = useState<number | undefined>(undefined);
+  const [showAllClients, setShowAllClients] = useState(false);
 
-  // Fetch distributions scoped to active org
+  // Admin can override org filter to see all or specific client
+  const effectiveOrgId = isAdmin && showAllClients ? undefined : (localOrgFilter ?? activeOrgId);
+
+  // Fetch distributions scoped to effective org
   const distQ = trpc.distributions.list.useQuery(
-    activeOrgId ? { organizationId: activeOrgId } : undefined,
+    effectiveOrgId ? { organizationId: effectiveOrgId } : undefined,
     { enabled: true }
   );
   const currQ = trpc.distributions.supportedCurrencies.useQuery();
@@ -218,6 +223,18 @@ export default function DistributionsPage() {
     setNewCurrency("USD");
   };
 
+  // Multi-currency aware summaries
+  const formatMultiCurrency = (dists: typeof distributions) => {
+    const byCurrency: Record<string, number> = {};
+    for (const d of dists) {
+      const cur = d.currency || "USD";
+      byCurrency[cur] = (byCurrency[cur] || 0) + (d.amount || 0);
+    }
+    const entries = Object.entries(byCurrency).filter(([, v]) => v > 0);
+    if (entries.length === 0) return formatCurrency(0);
+    if (entries.length === 1) return formatCurrency(entries[0][1], entries[0][0]);
+    return entries.map(([cur, amt]) => formatCurrency(amt, cur)).join(" + ");
+  };
   const totalDistributed = distributions.reduce((sum, d) => sum + (d.amount || 0), 0);
   const paidAmount = distributions.filter(d => d.status === "Paid").reduce((sum, d) => sum + (d.amount || 0), 0);
   const scheduledAmount = distributions.filter(d => d.status === "Scheduled").reduce((sum, d) => sum + (d.amount || 0), 0);
@@ -250,10 +267,10 @@ export default function DistributionsPage() {
   }, [newName, newFund, newAmount, newCurrency, newDate, newType, newMethod, newStatus, newNotes, activeOrgId, createDist]);
 
   const metrics = [
-    { key: "total", label: "Total", value: formatCurrency(totalDistributed), icon: <DollarSign className="size-4 text-primary" />, sub: `${distributions.length} dist.`, activeColor: "border-primary/50" },
-    { key: "paid", label: "Paid", value: formatCurrency(paidAmount), icon: <CheckCircle2 className="size-4 text-emerald-400" />, sub: `${distributions.filter(d => d.status === "Paid").length}`, activeColor: "border-emerald-500/50" },
-    { key: "scheduled", label: "Scheduled", value: formatCurrency(scheduledAmount), icon: <Clock className="size-4 text-blue-400" />, sub: `${distributions.filter(d => d.status === "Scheduled").length}`, activeColor: "border-blue-500/50" },
-    { key: "cancelled", label: "Cancelled", value: formatCurrency(cancelledAmount), icon: <XCircle className="size-4 text-muted-foreground/50" />, sub: `${distributions.filter(d => d.status === "Cancelled").length}`, activeColor: "border-muted-foreground/30" },
+    { key: "total", label: "Total", value: formatMultiCurrency(distributions), icon: <DollarSign className="size-4 text-primary" />, sub: `${distributions.length} dist.`, activeColor: "border-primary/50" },
+    { key: "paid", label: "Paid", value: formatMultiCurrency(distributions.filter(d => d.status === "Paid")), icon: <CheckCircle2 className="size-4 text-emerald-400" />, sub: `${distributions.filter(d => d.status === "Paid").length}`, activeColor: "border-emerald-500/50" },
+    { key: "scheduled", label: "Scheduled", value: formatMultiCurrency(distributions.filter(d => d.status === "Scheduled")), icon: <Clock className="size-4 text-blue-400" />, sub: `${distributions.filter(d => d.status === "Scheduled").length}`, activeColor: "border-blue-500/50" },
+    { key: "cancelled", label: "Cancelled", value: formatMultiCurrency(distributions.filter(d => d.status === "Cancelled")), icon: <XCircle className="size-4 text-muted-foreground/50" />, sub: `${distributions.filter(d => d.status === "Cancelled").length}`, activeColor: "border-muted-foreground/30" },
   ];
 
   const displayDistributions = useMemo(() => {
@@ -282,7 +299,8 @@ export default function DistributionsPage() {
     notes: d.notes || undefined,
   });
 
-  const clientLabel = activeOrg?.name || "All Clients";
+  const effectiveOrg = isAdmin && localOrgFilter ? organizations?.find(o => o.id === localOrgFilter) : activeOrg;
+  const clientLabel = isAdmin && showAllClients ? "All Clients" : (effectiveOrg?.name || "All Clients");
 
   // Helper to format amount with currency badge
   const formatDistAmount = (dist: { amount: number | null; currency: string | null }) => {
@@ -294,11 +312,38 @@ export default function DistributionsPage() {
     <DashboardLayout title="Distributions" subtitle={`${clientLabel} · LP PAYOUTS & DIVIDENDS`}>
       <div className="p-4 sm:p-5 md:p-8 space-y-5 sm:space-y-8 pb-24 md:pb-8">
 
-        {/* Client indicator */}
-        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+        {/* Client filter — admins can switch between All Clients and specific clients */}
+        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
           <span className="size-2 rounded-full bg-primary/50" />
-          Showing distributions for <span className="font-medium text-foreground">{clientLabel}</span>
-          {!activeOrgId && <span className="text-amber-400 ml-1">(select a client in the sidebar to filter)</span>}
+          {isAdmin ? (
+            <div className="flex items-center gap-2">
+              <span>Showing distributions for</span>
+              <Select
+                value={showAllClients ? "__all__" : String(effectiveOrgId || "__all__")}
+                onValueChange={(val) => {
+                  if (val === "__all__") {
+                    setShowAllClients(true);
+                    setLocalOrgFilter(undefined);
+                  } else {
+                    setShowAllClients(false);
+                    setLocalOrgFilter(Number(val));
+                  }
+                }}
+              >
+                <SelectTrigger className="h-7 w-auto min-w-[160px] text-xs bg-card border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">All Clients</SelectItem>
+                  {(organizations || []).map((org) => (
+                    <SelectItem key={org.id} value={String(org.id)}>{org.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <span>Showing distributions for <span className="font-medium text-foreground">{clientLabel}</span></span>
+          )}
         </div>
 
         {/* Summary metrics — clickable filter cards */}
@@ -390,7 +435,7 @@ export default function DistributionsPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between px-1">
               <h2 className="text-sm font-semibold text-foreground">{clientLabel} Distributions</h2>
-              <span className="text-[10px] font-mono text-emerald-400">{formatCurrency(totalDistributed)}</span>
+              <span className="text-[10px] font-mono text-emerald-400">{formatMultiCurrency(distributions)}</span>
             </div>
             {displayDistributions.length === 0 ? (
               <div className="p-12 text-center bg-card border border-border rounded-lg">
@@ -439,7 +484,7 @@ export default function DistributionsPage() {
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card border border-border rounded-lg overflow-hidden">
             <div className="px-5 py-3.5 border-b border-border flex items-center justify-between">
               <h2 className="text-sm font-semibold text-foreground">{clientLabel} Distributions</h2>
-              <span className="text-[10px] font-mono text-emerald-400">{formatCurrency(totalDistributed)} total</span>
+              <span className="text-[10px] font-mono text-emerald-400">{formatMultiCurrency(distributions)} total</span>
             </div>
             {displayDistributions.length === 0 ? (
               <div className="p-12 text-center">
@@ -579,7 +624,7 @@ export default function DistributionsPage() {
                       {displayDistributions.filter(d => (d.fund || "General") === fund).length} distribution(s)
                     </p>
                   </div>
-                  <span className="text-sm font-mono font-semibold text-foreground flex-shrink-0">{formatCurrency(amount)}</span>
+                  <span className="text-sm font-mono font-semibold text-foreground flex-shrink-0">{formatMultiCurrency(displayDistributions.filter(d => (d.fund || "General") === fund))}</span>
                 </div>
               ))}
             </div>

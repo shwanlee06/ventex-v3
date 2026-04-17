@@ -3,6 +3,7 @@ import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { notifications, users } from "../../drizzle/schema";
 import { eq, desc, and, sql, ne, isNull, or, gte } from "drizzle-orm";
+import { isVentexTeam } from "../security/rbac";
 
 export const notificationsRouter = router({
   /**
@@ -23,7 +24,7 @@ export const notificationsRouter = router({
       const db = await getDb();
       if (!db) return { items: [], nextCursor: undefined };
 
-      const isAdmin = ctx.user.role === "admin" || ctx.user.role === "owner";
+      const isAdmin = isVentexTeam(ctx.user);
       const conditions: any[] = [];
 
       // Role-based filtering
@@ -80,7 +81,7 @@ export const notificationsRouter = router({
     const db = await getDb();
     if (!db) return 0;
 
-    const isAdmin = ctx.user.role === "admin" || ctx.user.role === "owner";
+    const isAdmin = isVentexTeam(ctx.user);
     let where: any;
 
     if (!isAdmin) {
@@ -117,7 +118,7 @@ export const notificationsRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database not available");
       // TENANT_PATCHED: Verify notification belongs to user or their org
-      const isAdmin = ctx.user.role === "admin" || ctx.user.role === "owner";
+      const isAdmin = isVentexTeam(ctx.user);
       if (!isAdmin) {
         const [notif] = await db.select({ userId: notifications.userId, organizationId: notifications.organizationId }).from(notifications).where(eq(notifications.id, input.id)).limit(1);
         if (!notif) return { success: false };
@@ -137,7 +138,7 @@ export const notificationsRouter = router({
     const db = await getDb();
     if (!db) throw new Error("Database not available");
 
-    const isAdmin = ctx.user.role === "admin" || ctx.user.role === "owner";
+    const isAdmin = isVentexTeam(ctx.user);
 
     if (isAdmin) {
       await db.update(notifications).set({ read: 1 }).where(eq(notifications.read, 0));
@@ -169,7 +170,7 @@ export const notificationsRouter = router({
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
-      if (ctx.user.role !== "admin" && ctx.user.role !== "owner") {
+      if (!isVentexTeam(ctx.user)) {
         throw new Error("Only admins can delete notifications");
       }
       await db.delete(notifications).where(eq(notifications.id, input.id));
@@ -182,7 +183,7 @@ export const notificationsRouter = router({
   clearRead: protectedProcedure.mutation(async ({ ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
-    if (ctx.user.role !== "admin" && ctx.user.role !== "owner") {
+    if (!isVentexTeam(ctx.user)) {
       throw new Error("Only admins can clear notifications");
     }
     await db.delete(notifications).where(eq(notifications.read, 1));

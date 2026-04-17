@@ -16,7 +16,7 @@ const VENTURES_DATA = [
   { legacyId: "recEnlRnvbzK5WTDW", name: "Nammos - Lagonissi", sector: "Real Estate", stage: "In Validation", status: "In progress", location: "Greece", priority: "High" },
   { legacyId: "recGv6fMY6U0qawuU", name: "Muscat Bay", sector: "Real Estate", stage: "Active ventures", status: "In progress", location: "Oman" },
   { legacyId: "recLPHfRcbEJFEYpP", name: "Chekka Land - Resort", sector: "Real Estate", stage: "Active ventures", status: "In progress", location: "Lebanon" },
-  { legacyId: "recNuXb3Gg2YKWJ6U", name: "Shady Hotel", sector: "Real Estate", stage: "Active ventures", status: "In progress", location: "Oman" },
+  { legacyId: "recNuXb3Gg2YKWJ6U", name: "Muscat Grand Hotel", sector: "Real Estate", stage: "Active ventures", status: "In progress", location: "Oman" },
   { legacyId: "receY8DMb82SYrOOe", name: "Nammos - Watson Island", sector: "Real Estate", stage: "In Validation", status: "In progress", location: "USA", currentStatus: "Draft the deck", nextStep: "Draft the deck", nextMilestone: "2026-03-04" },
   { legacyId: "rechKfDosHAlsgeQP", name: "Zarka City", sector: "Real Estate", stage: "In Validation", status: "In progress", location: "Oman", currentStatus: "Distribution and finalization of the working sheet and master plan", nextStep: "Validate revenue growth assumptions with market data", nextMilestone: "2026-02-22" },
   { legacyId: "rec5p1dwm5SowncHB", name: "Berbara - Lebanon", sector: "F&B", stage: "Active ventures", status: "On-Hold", location: "Lebanon" },
@@ -28,10 +28,10 @@ const VENTURES_DATA = [
   { legacyId: "recC7kyF7o9QOzUW2", name: "Berlin", sector: "Entertainment", stage: "Active ventures", status: "Completed", location: "Malaysia" },
   { legacyId: "recOPwrJi1hnVCIq7", name: "KTL-Dubai Casino License", sector: "Entertainment", stage: "On Hold", status: "In progress", location: "UAE" },
   { legacyId: "recy3wsUgdOTh6u7j", name: "Casino - Malaysia", sector: "Entertainment", stage: "Active ventures", status: "In progress", location: "TBD" },
-  { legacyId: "rec8cJyOaDtDrFVYY", name: "Kazzafi Daughter", sector: "Others", stage: "Active ventures", status: "In progress", location: "Oman" },
-  { legacyId: "recBbe9nhPjXZH6BV", name: "Shady Project", sector: "Others", stage: "Active ventures", status: "In progress", location: "Oman" },
+  { legacyId: "rec8cJyOaDtDrFVYY", name: "North Africa Development", sector: "Others", stage: "Active ventures", status: "In progress", location: "Oman" },
+  { legacyId: "recBbe9nhPjXZH6BV", name: "Oman Luxury Resort", sector: "Others", stage: "Active ventures", status: "In progress", location: "Oman" },
   { legacyId: "recPJqBkpKXcBwLzS", name: "P430", sector: "Others", stage: "In Validation", status: "In progress", location: "TBD" },
-  { legacyId: "recOilGas1", name: "Venezuela Mining Rights", sector: "Oil & Gas", stage: "In Validation", status: "In progress", location: "Venezuela" },
+  { legacyId: "recOilGas1", name: "Dubai Marina Development", sector: "Oil & Gas", stage: "In Validation", status: "In progress", location: "Dubai" },
 ];
 
 const TEAM_DATA = [
@@ -50,7 +50,7 @@ const TEAM_DATA = [
 ];
 
 const SPVS_DATA = [
-  { legacyId: "rectbrWqAdepS7dC4", name: "Venezuela Mining Rights", sector: "Oil & Gas", priority: "High", stage: "Active deal", currentStatus: "Awaiting updated financials from founder.", nextStep: "Schedule IC prep call with team." },
+  { legacyId: "rectbrWqAdepS7dC4", name: "Dubai Marina Development", sector: "Oil & Gas", priority: "High", stage: "Active deal", currentStatus: "Awaiting updated financials from founder.", nextStep: "Schedule IC prep call with team." },
   { legacyId: "recxTZCzi6GGEr205", name: "Azzam - Yacht", sector: "Yacht", priority: "Medium", stage: "Active deal" },
   { legacyId: "rec6CU1RdVpxnUyMx", name: "Crude Oil Deal", sector: "Oil & Gas", priority: "Medium", stage: "In negotiation" },
   { legacyId: "recGkP0NHIeVTyorl", name: "Shipping Deal", sector: "Others", priority: "Low", stage: "Active deal" },
@@ -98,7 +98,7 @@ const ACTIVITY_SEED = [
   { entityType: "venture", entityName: "Zarka City", action: "Workshop Scheduled", detail: "Zarka City vision statement workshop — Anton coordinating", userName: "Anton Maghami", sector: "Real Estate" },
   { entityType: "venture", entityName: "Nammos - Watson Island", action: "Deck Drafted", detail: "Nammos Watson Island presentation deck in progress", userName: "Igor", sector: "Real Estate" },
   { entityType: "venture", entityName: "Nammos - Lagonissi", action: "Deal Structure", detail: "Lagonissi Nammos internal deal structure meeting scheduled", userName: "Jimmy Frangi", sector: "Real Estate" },
-  { entityType: "spv", entityName: "Venezuela Mining Rights", action: "SPV Update", detail: "Venezuela Mining Rights — awaiting updated financials", userName: "Anton Maghami", sector: "Oil & Gas" },
+  { entityType: "spv", entityName: "Dubai Marina Development", action: "SPV Update", detail: "Dubai Marina Development — awaiting updated financials", userName: "Anton Maghami", sector: "Oil & Gas" },
   { entityType: "distribution", entityName: "Q4 2025 Profit Share", action: "Distribution Paid", detail: "Q4 2025 Profit Share — $250K paid to LPs via wire", userName: "Jimmy Frangi", sector: "Others" },
 ];
 

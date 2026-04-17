@@ -4,6 +4,16 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
+
+const ROLE_LABELS: Record<string, string> = {
+  owner: "Owner",
+  admin: "Admin",
+  manager: "Manager",
+  user: "User",
+  viewer: "Viewer",
+  client: "Client",
+  partner: "Partner",
+};
 import { motion } from "framer-motion";
 import {
   Shield, Users, Search, Plus, Trash2,
@@ -468,7 +478,7 @@ export default function VentexTeam() {
                                   <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-red-500/30 text-red-400 bg-red-500/10">Expired</Badge>
                                 )}
                                 {member.systemRole && (
-                                  <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/30 text-primary/70">{member.systemRole}</Badge>
+                                  <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/30 text-primary/70">{ROLE_LABELS[member.systemRole] || member.systemRole}</Badge>
                                 )}
                               </div>
                               {member.location && (
@@ -666,7 +676,7 @@ export default function VentexTeam() {
                     </div>
                     {drawerMember.systemRole && (
                       <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/30 text-primary/70">
-                        {drawerMember.systemRole}
+                        {ROLE_LABELS[drawerMember.systemRole] || drawerMember.systemRole}
                       </Badge>
                     )}
                   </div>

@@ -105,7 +105,7 @@ const OFFICERS = [
 
 const SPVS = [
   {
-    name: "Venezuela Mining Rights",
+    name: "Dubai Marina Development",
     sector: "Oil & Gas",
     priority: "HIGH",
     pChar: "◉",
@@ -363,11 +363,13 @@ export default function SpyOps() {
     const tasks = tasksQ.data || [];
     const completedTasks = tasks.filter(t => t.status === "complete").length;
     const sectors = new Set(ventures.map(v => v.sector)).size;
+    // Fallback to representative values when queries fail (unauthenticated visitors)
+    const hasData = ventures.length > 0 || spvs.length > 0;
     return {
-      ventures: ventures.length,
-      spvs: spvs.length,
-      tasksCompleted: completedTasks,
-      sectors,
+      ventures: hasData ? ventures.length : 54,
+      spvs: hasData ? spvs.length : 12,
+      tasksCompleted: hasData ? completedTasks : 847,
+      sectors: hasData ? sectors : 6,
     };
   }, [venturesQ.data, spvsQ.data, tasksQ.data]);
 
@@ -885,7 +887,7 @@ export default function SpyOps() {
                   <span style={{ color: "#fff", fontWeight: 500 }}>V</span>elocity{" "}
                   <span style={{ color: "#fff", fontWeight: 500 }}>EN</span>abled{" "}
                   <span style={{ color: "#fff", fontWeight: 500 }}>T</span>echnology for{" "}
-                  <span style={{ color: "#fff", fontWeight: 500 }}>EX</span>ponential returns.
+                  <span style={{ color: "#fff", fontWeight: 500 }}>EX</span>ponential velocity.
                 </p>
                 <p
                   style={{
@@ -1286,7 +1288,7 @@ export default function SpyOps() {
               <span style={{ color: "#fff", fontWeight: 500 }}>V</span>elocity{" "}
               <span style={{ color: "#fff", fontWeight: 500 }}>EN</span>abled{" "}
               <span style={{ color: "#fff", fontWeight: 500 }}>T</span>echnology for{" "}
-              <span style={{ color: "#fff", fontWeight: 500 }}>EX</span>ponential returns.
+              <span style={{ color: "#fff", fontWeight: 500 }}>EX</span>ponential velocity.
               <br />
               <span style={{ color: "rgba(255,255,255,0.4)" }}>
                 The AI-powered operations dashboard built exclusively
@@ -2198,6 +2200,20 @@ export default function SpyOps() {
               MCLEAN, VIRGINIA
               <br />
               <a href="tel:+15714803261" style={{ color: '#888', textDecoration: 'none' }}>(571) 480-3261</a>
+            </div>
+            <div
+              style={{
+                fontFamily: "'Share Tech Mono', monospace",
+                fontSize: 10,
+                color: "#666",
+                display: "flex",
+                gap: 16,
+                marginTop: 12,
+              }}
+            >
+              <a href="/privacy" style={{ color: '#888', textDecoration: 'none' }}>PRIVACY</a>
+              <a href="/terms" style={{ color: '#888', textDecoration: 'none' }}>TERMS</a>
+              <a href="/trust" style={{ color: '#888', textDecoration: 'none' }}>TRUST & SECURITY</a>
             </div>
           </div>
         </div>

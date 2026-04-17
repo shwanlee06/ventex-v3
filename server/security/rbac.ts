@@ -13,6 +13,22 @@
  * - user: Standard access to assigned ventures (read + limited write)
  * - client: External client portal — read-only access to assigned ventures
  * - viewer: Read-only access to assigned ventures
+ *
+ * DUAL-IDENTITY MODEL (PE-01):
+ * The `user` and `manager` roles operate with a dual-identity model:
+ * - Their system role (from the `users` table) determines UI capabilities and permissions
+ * - Their organizationId (from `users` table) determines data scope
+ * - A "manager" with organizationId=5 can only access ventures assigned to org 5
+ *   via the `org_venture_access` table
+ * - A "manager" with NO organizationId (or orgId=1) is treated as VENTEX internal
+ *   and gets full Command Center access (same as admin for data visibility)
+ * - VENTEX internal roles (owner, admin) have NO organizationId constraint
+ *   and can access all data across all organizations
+ * - The `isVentexTeam()` helper checks: owner/admin = always true;
+ *   manager/user = true only if no organizationId or orgId=1
+ * - For scoped queries, `resolveVentureScope()` returns:
+ *   - null (no filter) for VENTEX admins
+ *   - array of venture IDs for org-scoped users
  */
 
 import { TRPCError } from "@trpc/server";

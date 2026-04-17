@@ -3083,3 +3083,39 @@
 - [x] Fix IDOR: intelligence.getVentureHealth
 - [x] Fix IDOR: intelligence.dismissAlert
 - [x] Write vitest for IDOR fixes (14/14 pass)
+
+## Wave 1 — Quick Wins (24 findings)
+
+### Batch A — Copy & Config
+- [x] F3-002: Change "EXponential returns" → "EXponential velocity"
+- [x] F3-003: Replace "Venezuela Mining Rights" → "Dubai Marina Development"
+- [x] F-008: Add Pipeline stage to SPV_STAGE_CONFIG
+- [x] F3-001: Update SOC 2 status text (keep "in progress")
+- [x] F3-008: Soften "100% close rate" with context
+- [x] F3-009: Change "99.5% SLA" → "targeting 99.5% uptime"
+- [x] F3-004: Fix landing page venture/SPV counters
+- [x] F3-018: Change "View Tasks" → "Review" in client portal
+- [x] F3-022: Archive test organizations (already cleaned from DB in previous session)
+
+### Batch B — Display Logic
+- [x] F-001 + F-021: Fix systemRole → display label mapping
+- [x] F-003: Filter cancelled distributions from upcoming totals
+- [x] F-009 + F-010 + F3-025: Fix multi-currency display with Intl.NumberFormat
+- [x] F-018: Fix signal count mismatch in agents header
+- [x] F-022: Align team page client count with dashboard
+- [x] F-024: Count team_members records for org member count
+- [x] F-026: Align /access venture count with /ventures grouping
+- [x] F-027: Show "System Administrator" in admin profile
+
+### Batch C — Route & Access
+- [x] F3-005: Move /trust outside auth guard (already public)
+- [x] F3-014: Move /terms outside auth guard (already public)
+- [x] F3-021: Add logo onClick to return to portal dashboard
+- [x] F3-020: Add support contact to client portal footer
+- [x] INJ-05: Add MIME type allowlist to file upload
+- [x] INJ-06: Wire sanitizeFilename() in upload mutation
+
+### Batch D — Security Quick Fixes
+- [x] PE-01: Add RBAC dual-identity documentation
+- [x] PE-06: Migrate 4 inline role checks to middleware (notifications + access routers)
+- [x] DP-04: Verify DATABASE_URL SSL parameters (confirmed ssl=true in URL)

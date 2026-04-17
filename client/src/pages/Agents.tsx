@@ -346,7 +346,7 @@ export default function AgentsPage() {
             </div>
             {metrics && (
               <div className="flex items-center gap-3 text-[10px] font-mono text-muted-foreground">
-                <span>{metrics.total} signals</span>
+                <span>{events.length} signals</span>
                 <span>·</span>
                 <span className="text-red-400">{metrics.critical} critical</span>
                 <span>·</span>

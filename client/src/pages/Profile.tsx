@@ -212,23 +212,31 @@ export default function ProfilePage() {
               <Activity className="size-4 text-primary" />
               Portfolio Summary
             </h3>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="p-3 rounded-lg bg-secondary/20 text-center">
-                <Briefcase className="size-4 text-blue-400 mx-auto mb-1" />
-                <p className="text-lg font-mono font-semibold text-foreground">{(profile as any)?.stats?.ventures ?? "—"}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Ventures</p>
+            {["admin", "owner", "manager"].includes(userRole) ? (
+              <div className="p-4 rounded-lg bg-secondary/10 border border-border/50 text-center">
+                <Shield className="size-5 text-primary mx-auto mb-2" />
+                <p className="text-sm font-medium text-foreground">{ROLE_LABELS[userRole] || userRole}</p>
+                <p className="text-xs text-muted-foreground mt-1">System-level access — no personal portfolio</p>
               </div>
-              <div className="p-3 rounded-lg bg-secondary/20 text-center">
-                <ListChecks className="size-4 text-amber-400 mx-auto mb-1" />
-                <p className="text-lg font-mono font-semibold text-foreground">{(profile as any)?.stats?.tasks ?? "—"}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Tasks</p>
+            ) : (
+              <div className="grid grid-cols-3 gap-3">
+                <div className="p-3 rounded-lg bg-secondary/20 text-center">
+                  <Briefcase className="size-4 text-blue-400 mx-auto mb-1" />
+                  <p className="text-lg font-mono font-semibold text-foreground">{(profile as any)?.stats?.ventures ?? "—"}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Ventures</p>
+                </div>
+                <div className="p-3 rounded-lg bg-secondary/20 text-center">
+                  <ListChecks className="size-4 text-amber-400 mx-auto mb-1" />
+                  <p className="text-lg font-mono font-semibold text-foreground">{(profile as any)?.stats?.tasks ?? "—"}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Tasks</p>
+                </div>
+                <div className="p-3 rounded-lg bg-secondary/20 text-center">
+                  <DollarSign className="size-4 text-emerald-400 mx-auto mb-1" />
+                  <p className="text-lg font-mono font-semibold text-foreground">{(profile as any)?.stats?.distributions ?? "—"}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Distributions</p>
+                </div>
               </div>
-              <div className="p-3 rounded-lg bg-secondary/20 text-center">
-                <DollarSign className="size-4 text-emerald-400 mx-auto mb-1" />
-                <p className="text-lg font-mono font-semibold text-foreground">{(profile as any)?.stats?.distributions ?? "—"}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Distributions</p>
-              </div>
-            </div>
+            )}
           </Card>
         </motion.div>
 

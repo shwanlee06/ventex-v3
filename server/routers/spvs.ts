@@ -8,6 +8,25 @@ import { storagePut } from "../storage";
 import { isVentexTeam, getOrgSpvIds, resolveSpvScope, logAudit } from "../security/rbac";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { enforceRateLimit } from "../security/rateLimit";
+import { sanitizeFilename } from "../security/sanitize";
+
+// INJ-05: MIME type allowlist for file uploads
+const ALLOWED_MIME_TYPES = [
+  "image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml",
+  "application/pdf",
+  "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "text/plain", "text/csv",
+  "application/zip", "application/x-zip-compressed",
+  "application/json",
+  "video/mp4", "video/quicktime",
+  "audio/mpeg", "audio/wav",
+];
+
+function isAllowedMimeType(mimeType: string): boolean {
+  return ALLOWED_MIME_TYPES.includes(mimeType) || mimeType.startsWith("image/") || mimeType.startsWith("text/");
+}
 
 function slugify(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -271,13 +290,19 @@ export const spvsRouter = router({
 
     const db = await getDb();
     if (!db) throw new Error("Database not available");
+    // INJ-05: Validate MIME type
+    if (!isAllowedMimeType(input.fileType)) {
+      throw new Error(`File type '${input.fileType}' is not permitted. Allowed types: images, PDFs, documents, spreadsheets, text files.`);
+    }
+    // INJ-06: Sanitize filename
+    const safeFilename = sanitizeFilename(input.filename);
     const buffer = Buffer.from(input.fileData, "base64");
-    const fileKey = `spvs/${input.spvId}/${nanoid()}-${input.filename}`;
+    const fileKey = `spvs/${input.spvId}/${nanoid()}-${safeFilename}`;
     const { url } = await storagePut(fileKey, buffer, input.fileType);
     await db.insert(spvFiles).values({
       spvId: input.spvId,
       folderId: input.folderId || null,
-      filename: input.filename,
+      filename: safeFilename,
       fileType: input.fileType,
       fileSize: input.fileSize,
       fileUrl: url,

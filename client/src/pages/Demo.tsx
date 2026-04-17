@@ -73,7 +73,7 @@ const PRODUCT_STATS = [
   { value: "3", label: "continents, one platform" },
   { value: "<3mo", label: "concept to deployment" },
   { value: "950+", label: "automated test cases" },
-  { value: "SOC 2", label: "readiness architecture" },
+  { value: "SOC 2", label: "readiness in progress" },
 ];
 
 const GTM_STAGES = [
@@ -95,7 +95,7 @@ const GTM_STAGES = [
     stage: "03",
     title: "Full Platform License",
     duration: "Ongoing",
-    desc: "All agents, all verticals, custom blueprints, client portal, managed services, 99.5% SLA.",
+    desc: "All agents, all verticals, custom blueprints, client portal, managed services, targeting 99.5% uptime.",
     color: "#00ff87",
   },
 ];
@@ -683,7 +683,7 @@ export default function Demo() {
                 <p className="text-[11px] text-white/50 leading-relaxed mb-3">
                   Non-refundable workflow audit. Qualifies the client, maps automation opportunities, and generates immediate revenue.
                 </p>
-                <div className="text-[9px] text-[#FFB800]/60 font-mono">ONE-TIME · 100% CLOSE RATE ON QUALIFIED LEADS</div>
+                <div className="text-[9px] text-[#FFB800]/60 font-mono">ONE-TIME · HIGH CONVERSION ON QUALIFIED LEADS</div>
               </div>
             </RevealSection>
 
@@ -693,7 +693,7 @@ export default function Demo() {
                 <div className="text-lg font-bold text-[#00ff87] mb-1" style={{ fontFamily: HEADLINE_FONT }}>Platform License</div>
                 <div className="text-2xl font-bold text-[#00ff87] font-mono mb-3">$96-180K/yr</div>
                 <p className="text-[11px] text-white/50 leading-relaxed mb-3">
-                  Annual SaaS license. All agents, all verticals, client portal, operator command center, managed services, 99.5% SLA.
+                  Annual SaaS license. All agents, all verticals, client portal, operator command center, managed services, targeting 99.5% uptime.
                 </p>
                 <div className="text-[9px] text-[#00ff87]/60 font-mono">RECURRING · 85% GROSS MARGIN</div>
               </div>
@@ -893,7 +893,7 @@ export default function Demo() {
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-[#00ff87] font-mono">SOC 2</div>
-                      <div className="text-[10px] text-white/50">ready</div>
+                      <div className="text-[10px] text-white/50">in progress</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-[#00ff87] font-mono">3</div>

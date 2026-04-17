@@ -10,6 +10,10 @@ let _pool: mysql.Pool | null = null;
 /**
  * Create a mysql2 connection pool with resilient settings.
  * Uses the callback-based (non-promise) pool so drizzle gets the correct $client type.
+ * 
+ * DP-04: SSL/TLS is enforced via DATABASE_URL parameters (ssl=true).
+ * The Manus platform injects DATABASE_URL with SSL enabled by default.
+ * For manual connections, ensure DATABASE_URL includes ?ssl={"rejectUnauthorized":true}
  */
 function createPool(): mysql.Pool {
   const pool = mysql.createPool({

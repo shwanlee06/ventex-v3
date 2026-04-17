@@ -482,7 +482,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                             onClick={() => setTaskDrawer({ ventureId: item.ventureId!, ventureName: item.ventureName || "Venture" })}
                           >
                             {ACTION_FLOW_ICONS["view_task"]}
-                            View Tasks
+                            Review
                           </Button>
                         )}
 
@@ -1045,7 +1045,11 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
         )}
 
         {/* Footer */}
-        <div className="pt-8 pb-12 text-center">
+        <div className="pt-8 pb-12 text-center space-y-2">
+          <p className="text-[11px] text-muted-foreground/60">
+            Need help? Contact your VENTEX relationship manager or reach us at{" "}
+            <a href="mailto:support@ventex.io" className="text-primary/70 hover:text-primary underline">support@ventex.io</a>
+          </p>
           <p className="text-[11px] text-muted-foreground/40">
             Managed by VENTEX · Powered by Aurovia
           </p>
@@ -1271,8 +1275,12 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-semibold text-foreground tracking-tight">
+          <div
+            className="cursor-pointer"
+            onClick={() => navigate(`/portal/${orgSlug}`)}
+            title="Return to dashboard"
+          >
+            <h1 className="text-lg font-semibold text-foreground tracking-tight hover:text-primary transition-colors">
               {orgName}
             </h1>
             <p className="text-xs text-muted-foreground mt-0.5">

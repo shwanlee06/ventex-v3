@@ -14,6 +14,7 @@ interface TeamMember {
   type: string | null;
   title?: string | null;
   role?: string | null;
+  systemRole?: string | null;
   memberFunction?: string | null;
   [key: string]: unknown;
 }
@@ -41,6 +42,16 @@ const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
   "Internal": { bg: "bg-blue-500/10", text: "text-blue-400" },
   "External Partner": { bg: "bg-emerald-500/10", text: "text-emerald-400" },
   "Advisor": { bg: "bg-amber-500/10", text: "text-amber-400" },
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  owner: "Owner",
+  admin: "Admin",
+  manager: "Manager",
+  user: "User",
+  viewer: "Viewer",
+  client: "Client",
+  partner: "Partner",
 };
 
 export default function TeamVentureAttribution({
@@ -105,6 +116,16 @@ export default function TeamVentureAttribution({
                   <span className={cn("text-[9px] font-medium px-1.5 py-0.5 rounded", typeStyle.bg, typeStyle.text)}>
                     {member.type}
                   </span>
+                  {member.systemRole && ROLE_LABELS[member.systemRole] && (
+                    <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                      {ROLE_LABELS[member.systemRole]}
+                    </span>
+                  )}
+                  {member.role && (
+                    <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">
+                      {member.role}
+                    </span>
+                  )}
                 </div>
                 {/* Venture assignments */}
                 {ventures.length > 0 ? (

@@ -38,7 +38,7 @@ function formatDate(d: string | Date | null): string {
 export default function DistributionTimeline({ distributions }: DistributionTimelineProps) {
   const { paid, upcoming, entries } = useMemo(() => {
     const paidDists = distributions.filter(d => d.status === "Paid");
-    const upcomingDists = distributions.filter(d => d.status !== "Paid");
+    const upcomingDists = distributions.filter(d => d.status !== "Paid" && d.status !== "Cancelled");
 
     const paidTotal = paidDists.reduce((s, d) => s + (d.amount || 0), 0);
     const upcomingTotal = upcomingDists.reduce((s, d) => s + (d.amount || 0), 0);
