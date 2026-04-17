@@ -111,6 +111,26 @@ export default function TasksPage() {
   const [editTaskId, setEditTaskId] = useState<number | null>(null);
   const [confirmUncheck, setConfirmUncheck] = useState<number | null>(null);
 
+  // F3-023: Batch selection state
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const toggleSelect = useCallback((id: number) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
+  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
+  const bulkUpdate = trpc.tasks.bulkUpdate.useMutation({
+    onSuccess: (data) => {
+      utils.tasks.list.invalidate();
+      utils.tasks.metrics.invalidate();
+      toast.success(`${data.count} tasks updated`);
+      clearSelection();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
   const [newTitle, setNewTitle] = useState("");
   const [newDue, setNewDue] = useState("");
   const [newPriority, setNewPriority] = useState("Medium");
@@ -248,6 +268,14 @@ export default function TasksPage() {
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-2.5 min-w-0 flex-1">
+            {isAdmin && (
+              <Checkbox
+                checked={selectedIds.has(task.id)}
+                onCheckedChange={() => toggleSelect(task.id)}
+                className="size-4 mt-0.5 flex-shrink-0 border-primary/40"
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
             {isAdmin ? (
               <Checkbox
                 checked={task.status === "complete"}
@@ -423,6 +451,22 @@ export default function TasksPage() {
             </Button>
           )}
         </div>
+
+        {/* F3-023: Batch action bar */}
+        {selectedIds.size > 0 && isAdmin && (
+          <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
+            <span className="text-xs font-medium text-primary">{selectedIds.size} selected</span>
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => bulkUpdate.mutate({ taskIds: Array.from(selectedIds), status: "complete" })} disabled={bulkUpdate.isPending}>
+              Mark Complete
+            </Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => bulkUpdate.mutate({ taskIds: Array.from(selectedIds), priority: "High" })} disabled={bulkUpdate.isPending}>
+              Set High Priority
+            </Button>
+            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={clearSelection}>
+              <X className="size-3 mr-1" /> Clear
+            </Button>
+          </div>
+        )}
 
         {/* View toggle + Add button */}
         <div className="flex items-center justify-between">

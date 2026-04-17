@@ -393,4 +393,68 @@ export const aiTasksRouter = router({
         observationCount: data.observations.length,
       };
     }),
+
+  // F3-032: Comprehensive data export — full org data for GDPR/portability compliance
+  fullExport: adminProcedure
+    .input(z.object({ organizationId: z.number() }))
+    .query(async ({ input }) => {
+      const data = await exportClientVentureData(input.organizationId);
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Get contacts for this org
+      const { contacts, auditLog } = await import("../../drizzle/schema");
+      const orgContacts = await db
+        .select()
+        .from(contacts)
+        .where(eq(contacts.organizationId, input.organizationId));
+
+      // Get audit log entries for this org
+      const orgAuditLogs = await db
+        .select()
+        .from(auditLog)
+        .where(eq(auditLog.organizationId, input.organizationId))
+        .orderBy(desc(auditLog.createdAt))
+        .limit(10000);
+
+      // Get activity log for org ventures
+      const ventureIds = data.ventures.map((v: any) => v.id);
+      const orgActivity = ventureIds.length > 0
+        ? await db
+            .select()
+            .from(activityLog)
+            .where(inArray(activityLog.entityId, ventureIds))
+            .orderBy(desc(activityLog.createdAt))
+            .limit(10000)
+        : [];
+
+      return {
+        exportMetadata: {
+          exportedAt: new Date().toISOString(),
+          organizationId: input.organizationId,
+          organizationName: data.org.name,
+          format: "VENTEX Data Export v1.0",
+          sections: ["organization", "ventures", "tasks", "spvs", "team", "distributions", "documents", "risks", "meetings", "observations", "contacts", "auditLog", "activityLog"],
+        },
+        organization: data.org,
+        ventures: data.ventures,
+        tasks: data.tasks,
+        spvs: data.spvs,
+        team: data.team,
+        distributions: data.distributions,
+        documents: data.documents,
+        risks: data.risks,
+        meetings: data.meetings,
+        observations: data.observations,
+        contacts: orgContacts.map((c: any) => ({
+          id: c.id, name: c.name, email: c.email, phone: c.phone, role: c.role, company: c.company,
+        })),
+        auditLog: orgAuditLogs.map((a: any) => ({
+          action: a.action, resource: a.resource, detail: a.detail, userId: a.userId, createdAt: a.createdAt,
+        })),
+        activityLog: orgActivity.map((a: any) => ({
+          action: a.action, detail: a.detail, entityId: a.entityId, entityName: a.entityName, createdAt: a.createdAt,
+        })),
+      };
+    }),
 });

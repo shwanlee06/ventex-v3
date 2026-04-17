@@ -73,6 +73,8 @@ const NAV_ITEMS = [
   { id: "incident-response", label: "Incident Response" },
   { id: "disclosure", label: "Vulnerability Disclosure" },
   { id: "status", label: "System Status" },
+  { id: "security-package", label: "Security Package" },
+  { id: "ai-transparency", label: "AI Transparency" },
   { id: "whitepaper", label: "Security Whitepaper" },
 ];
 
@@ -418,6 +420,106 @@ export default function TrustSecurity() {
                 <code className="bg-secondary/50 px-1 py-0.5 rounded">/api/health/db</code>,{" "}
                 <code className="bg-secondary/50 px-1 py-0.5 rounded">/api/health/ai</code>
               </p>
+            </Section>
+
+            {/* Security Package */}
+            <Section id="security-package" icon={<Lock className="size-4" />} title="Security Package">
+              <p>
+                {PRODUCT} maintains a comprehensive security package for enterprise due diligence.
+                The following documents are available upon request under NDA, or as part of our standard
+                client onboarding process.
+              </p>
+              <div className="mt-3 space-y-2">
+                {[
+                  { name: "Security Whitepaper", status: "Available", desc: "Architecture, controls, and compliance posture (12 pages)" },
+                  { name: "SOC 2 Type I Engagement", status: "In Progress", desc: "Auditor engaged \u2014 expected completion Q4 2026" },
+                  { name: "Penetration Test Report", status: "Scheduled", desc: "Third-party test scheduled for Q3 2026" },
+                  { name: "Data Processing Agreement", status: "Available", desc: "GDPR-compliant DPA template ready for execution" },
+                  { name: "Service Level Agreement", status: "Available", desc: "99.5% uptime target with defined response times" },
+                  { name: "BCP/DR Plan", status: "Available", desc: "Business continuity and disaster recovery procedures" },
+                  { name: "Incident Response Plan", status: "Available", desc: "Detection, containment, and notification procedures" },
+                  { name: "Vendor Risk Assessment", status: "Available", desc: "Sub-processor evaluation and monitoring framework" },
+                  { name: "Data Residency Statement", status: "Available", desc: "Multi-region hosting with tenant-selected residency" },
+                  { name: "Cyber Insurance Evidence", status: "In Progress", desc: "E&O and cyber liability coverage being finalized" },
+                ].map((doc) => (
+                  <div key={doc.name} className="bg-card border border-border rounded-lg p-3 flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-foreground">{doc.name}</span>
+                        <span className={cn(
+                          "text-[10px] font-mono px-1.5 py-0.5 rounded",
+                          doc.status === "Available" ? "bg-emerald-500/10 text-emerald-400" :
+                          doc.status === "In Progress" ? "bg-amber-500/10 text-amber-400" :
+                          "bg-blue-500/10 text-blue-400"
+                        )}>{doc.status}</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{doc.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-3">
+                To request the full security package, contact{" "}
+                <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary hover:underline">{CONTACT_EMAIL}</a>.
+                Documents marked \u201cAvailable\u201d can be shared within 24 hours under NDA.
+              </p>
+            </Section>
+
+            {/* AI Transparency */}
+            <Section id="ai-transparency" icon={<Eye className="size-4" />} title="AI Transparency">
+              <p>
+                {PRODUCT} uses AI agents to accelerate venture holding operations. We are committed to
+                transparency about how AI is used, what decisions it influences, and how human oversight
+                is maintained at every step.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                <div className="bg-card border border-border rounded-lg p-4 space-y-2">
+                  <h3 className="text-xs font-semibold text-foreground">Models Used</h3>
+                  <p className="text-[11px] text-muted-foreground">
+                    {PRODUCT} uses large language models (LLMs) accessed via API for text analysis, document
+                    drafting, and signal processing. Models are not fine-tuned on client data. We use
+                    commercially available foundation models with enterprise-grade data handling agreements.
+                  </p>
+                </div>
+                <div className="bg-card border border-border rounded-lg p-4 space-y-2">
+                  <h3 className="text-xs font-semibold text-foreground">Decision Scope</h3>
+                  <p className="text-[11px] text-muted-foreground">
+                    AI agents generate recommendations, draft communications, and surface insights. They do
+                    not execute financial transactions, modify legal documents, or make binding decisions.
+                    All AI outputs are clearly labeled and require human review before action.
+                  </p>
+                </div>
+                <div className="bg-card border border-border rounded-lg p-4 space-y-2">
+                  <h3 className="text-xs font-semibold text-foreground">Human-in-the-Loop</h3>
+                  <p className="text-[11px] text-muted-foreground">
+                    Every AI-generated artifact (draft, analysis, signal) passes through a human approval
+                    gate before reaching clients. Operators review, edit, and approve all AI outputs.
+                    The oversight model is documented in our AI Safety Framework.
+                  </p>
+                </div>
+                <div className="bg-card border border-border rounded-lg p-4 space-y-2">
+                  <h3 className="text-xs font-semibold text-foreground">Data Handling</h3>
+                  <p className="text-[11px] text-muted-foreground">
+                    Client data sent to AI models is scoped to the minimum necessary context. No client
+                    data is used for model training. All AI interactions are logged in the immutable audit
+                    trail with timestamps, input hashes, and output records.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-card border border-border rounded-lg p-4 mt-3">
+                <h3 className="text-xs font-semibold text-foreground mb-2">AI Liability Framework</h3>
+                <p className="text-[11px] text-muted-foreground">
+                  {COMPANY} accepts responsibility for the proper functioning of AI features within {PRODUCT}.
+                  Our Terms of Service include specific provisions for AI-generated content: (1) all AI outputs
+                  are advisory and do not constitute financial, legal, or investment advice; (2) {COMPANY}
+                  maintains errors & omissions insurance covering AI-related operational risks; (3) clients
+                  retain full control over which AI recommendations to act upon; (4) intellectual property
+                  rights for AI-generated work product are assigned to the client organization as specified
+                  in our Terms of Service.
+                </p>
+              </div>
             </Section>
 
             {/* Security Whitepaper */}

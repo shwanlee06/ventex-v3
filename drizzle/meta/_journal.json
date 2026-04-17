@@ -232,6 +232,13 @@
       "when": 1776400356596,
       "tag": "0032_tense_puck",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "5",
+      "when": 1776437282555,
+      "tag": "0033_solid_the_hunter",
+      "breakpoints": true
     }
   ]
 }

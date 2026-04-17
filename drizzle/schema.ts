@@ -47,6 +47,12 @@ export const organizations = mysqlTable("organizations", {
   ssoProvider: varchar("ssoProvider", { length: 64 }),  // 'workos' | 'auth0' | null
   ssoMetadataUrl: varchar("ssoMetadataUrl", { length: 512 }),  // IdP metadata URL for SAML
   allowedAuthMethods: json("allowedAuthMethods").$type<string[]>(),  // ['oauth', 'saml', 'totp']; null = all
+  // Entity hierarchy: trust → holding co → operating entity → venture
+  entityType: varchar("entityType", { length: 32 }),  // 'trust' | 'holding_company' | 'operating_entity' | 'fund' | 'family_office'
+  parentOrgId: int("parentOrgId"),  // self-referencing FK for hierarchy
+  jurisdiction: varchar("jurisdiction", { length: 128 }),  // legal jurisdiction (e.g., 'Delaware, USA', 'DIFC, UAE')
+  registrationNumber: varchar("registrationNumber", { length: 128 }),  // company registration / EIN
+  dataResidencyRegion: varchar("dataResidencyRegion", { length: 32 }).default("us-east-1"),  // 'us-east-1' | 'eu-west-1' | 'ap-southeast-1'
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -116,6 +122,9 @@ export const ventures = mysqlTable("ventures", {
   priority: varchar("priority", { length: 32 }).default("Medium"),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
   healthScore: int("healthScore").default(50),
+  // Entity hierarchy: link venture to operating entity
+  operatingEntityId: int("operatingEntityId"),  // FK to organizations (operating entity that owns this venture)
+  legalStructure: varchar("legalStructure", { length: 64 }),  // 'LLC' | 'LP' | 'Corp' | 'JV' | 'SPV'
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

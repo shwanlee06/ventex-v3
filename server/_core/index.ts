@@ -13,6 +13,7 @@ import { runDataRetentionPurge } from "../security/dataRetention";
 import inviteValidationRouter from "../routes/inviteValidation";
 import { sseRouter } from "../routes/sseEvents";
 import { ssoRouter } from "../routes/ssoRoutes";
+import { randomBytes } from "crypto";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -52,10 +53,19 @@ async function startServer() {
     res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
     // Referrer policy — send origin only on cross-origin requests
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-    // Content Security Policy — restrict resource loading
+    // Content Security Policy — nonce-based for production (INJ-02)
+    const nonce = randomBytes(16).toString("base64");
+    (res as any).cspNonce = nonce;  // expose nonce for HTML template injection
+    const isDev = process.env.NODE_ENV === "development";
+    const scriptSrc = isDev
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+      : `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`;
+    const styleSrc = isDev
+      ? "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com"
+      : `style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com`;
     res.setHeader(
       "Content-Security-Policy",
-      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https: wss:; frame-ancestors 'none'"
+      `default-src 'self'; ${scriptSrc}; ${styleSrc}; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https: wss:; frame-ancestors 'none'`
     );
     // Permissions policy — disable unnecessary browser features
     res.setHeader(

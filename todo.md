@@ -3156,3 +3156,28 @@
 - [x] F3-033: Create Manus dependency map with replacement instructions (docs/manus-dependency-map.md)
 - [x] F3-035: Create transition/migration guide document (docs/migration-guide.md)
 - [x] RL-02 + AH-05: Document Redis-backed rate limiting as future scaling requirement (noted in dependency map)
+
+## Wave 3 — High-Effort Fixes (14 findings)
+
+### Batch K — Trust & Compliance Documentation
+- [x] F3-010: Create Security Package with 5+ documents (10-item package on trust page)
+- [x] F3-012: Create AI transparency documentation (AI Transparency section on trust page)
+- [x] F3-013: Add AI liability framework to Terms of Service + E&O insurance documentation (in AI Transparency section)
+- [x] F3-031: Document full hosting chain with SLAs at each level (docs/hosting-chain.md)
+
+### Batch L — Architecture & Data
+- [x] F3-027: Add entity hierarchy model (schema + docs/architecture/entity-hierarchy.md)
+- [x] F3-032: Build comprehensive data export API (fullExport endpoint with 13 data sections)
+- [x] F3-030: Document data residency and add data residency section to trust page (already on trust page + schema field)
+
+### Batch M — Security Hardening
+- [x] INJ-02: Implement nonce-based CSP for production (nonce per request, strict-dynamic in prod)
+- [x] F3-028: Build sanctions screening module with external API integration placeholder
+
+### Batch N — UX Enhancements
+- [x] F3-023: Add cross-client batch task management (bulkUpdate backend + selection UI + batch action bar)
+- [x] F3-024: Add AI morning briefing card to dashboard (MorningBriefingCard component)
+- [x] F3-034: Implement graceful degradation (snapshotExport.ts with portfolio snapshot + email digest)
+
+### Batch O — Enterprise Features
+- [x] AH-07: Build SCIM 2.0 provisioning endpoint placeholder for enterprise SSO (full SCIM router with auth)

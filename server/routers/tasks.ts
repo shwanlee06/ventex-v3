@@ -483,4 +483,56 @@ export const tasksRouter = router({
       overdueRate: data.total > 0 ? Math.round((data.overdue / data.total) * 100) : 0,
     })).sort((a, b) => b.overdueVentures - a.overdueVentures);
   }),
+
+  // F3-023: Bulk update tasks (cross-client batch management)
+  bulkUpdate: protectedProcedure
+    .input(z.object({
+      taskIds: z.array(z.number()).min(1).max(100),
+      status: z.string().optional(),
+      priority: z.string().optional(),
+      assigneeNames: z.array(z.string()).optional(),
+      dueDate: z.string().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Verify access: non-admin users can only update tasks in their ventures
+      if (!isVentexTeam(ctx.user)) {
+        const ventureIds = await getOrgVentureIds(ctx.user);
+        if (ventureIds) {
+          const taskRows = await db.select({ id: tasks.id, ventureId: tasks.ventureId })
+            .from(tasks).where(inArray(tasks.id, input.taskIds));
+          for (const t of taskRows) {
+            if (t.ventureId && !ventureIds.includes(t.ventureId)) {
+              throw new Error("Access denied: one or more tasks not in your organization");
+            }
+          }
+        }
+      }
+
+      const { taskIds, ...updates } = input;
+      const updateData: Record<string, any> = {};
+      if (updates.status) updateData.status = updates.status;
+      if (updates.priority) updateData.priority = updates.priority;
+      if (updates.assigneeNames) updateData.assigneeNames = updates.assigneeNames;
+      if (updates.dueDate) updateData.dueDate = updates.dueDate;
+
+      if (Object.keys(updateData).length === 0) {
+        return { success: true, count: 0 };
+      }
+
+      await db.update(tasks).set(updateData).where(inArray(tasks.id, taskIds));
+
+      // Log activity for batch update
+      await db.insert(activityLog).values({
+        entityType: "task",
+        action: "Batch Task Update",
+        detail: `${taskIds.length} tasks updated: ${Object.keys(updateData).join(", ")} changed`,
+        userName: ctx.user.name || "System",
+        activitySource: "atlas_ops",
+      });
+
+      return { success: true, count: taskIds.length };
+    }),
 });

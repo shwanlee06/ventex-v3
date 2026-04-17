@@ -64,6 +64,7 @@ import LivePresenceWidget from "@/components/LivePresenceWidget";
 import VelocityIntelligenceCard from "@/components/VelocityIntelligenceCard";
 import AgentExecutionLog from "@/components/AgentExecutionLog";
 import ExecutiveSummaryWidget from "@/components/ExecutiveSummaryWidget";
+import MorningBriefingCard from "@/components/MorningBriefingCard";
 
 type SortField = "name" | "ventures" | "velocity" | "overdue" | "health" | "completion";
 type ViewMode = "grid" | "table";
@@ -499,6 +500,16 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
           </motion.div>
         ))}
       </div>
+
+      {/* ── F3-024: AI Morning Briefing Card ──────────────────── */}
+      <MorningBriefingCard
+        overdueTasks={kpis.totalOverdue}
+        clientsNeedingAttention={kpis.clientsNeedingAttention}
+        totalClients={kpis.totalClients}
+        totalOpenTasks={kpis.totalOpenTasks}
+        avgVelocity={kpis.avgVelocity}
+        overallCompletion={kpis.overallCompletion}
+      />
 
       {/* ── Live Presence ────────────────────────────────────── */}
       <LivePresenceWidget />
