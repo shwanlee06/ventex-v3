@@ -66,6 +66,29 @@ function formatLogTimeFull(date: Date | string | null) {
     " UTC · " + d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
+function PurgeButton() {
+  const utils = trpc.useUtils();
+  const purge = trpc.agents.purgeStaleEvents.useMutation({
+    onSuccess: (data) => {
+      utils.agents.list.invalidate();
+    },
+  });
+
+  return (
+    <div className="p-4 border-t border-border">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="w-full text-[11px] text-muted-foreground hover:text-red-400"
+        onClick={() => purge.mutate()}
+        disabled={purge.isPending}
+      >
+        {purge.isPending ? "Purging..." : purge.data ? `Purged ${purge.data.deleted} duplicates` : "Purge Duplicate Events"}
+      </Button>
+    </div>
+  );
+}
+
 interface AgentExecutionLogProps {
   organizationId?: number;
   limit?: number;
@@ -339,6 +362,9 @@ export default function AgentExecutionLog({ organizationId, limit = 25, compact 
                 </Button>
               </div>
             )}
+
+            {/* Purge duplicates */}
+            <PurgeButton />
           </motion.div>
         )}
       </AnimatePresence>

@@ -3,7 +3,7 @@
 
 import { getDb } from "../db";
 import { agentEvents, organizations, tasks, ventures } from "../../drizzle/schema";
-import { eq, and, lte, desc, sql } from "drizzle-orm";
+import { eq, and, lte, gte, desc, sql } from "drizzle-orm";
 import { sendClientNudge, sendOverdueAutoEmail } from "../emailService";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 
@@ -92,8 +92,28 @@ export async function runEscalationSweep(organizationId: number): Promise<Escala
       (e) => new Date(e.createdAt) < escalationCutoff
     );
 
+    const escalationDedupWindow = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24h dedup
+
     for (const event of escalationItems.slice(0, MAX_NUDGES_PER_SWEEP)) {
       try {
+        // Dedup: skip if this entity was already escalated within 24h
+        if (event.agentEntityId) {
+          const existingEscalation = await db
+            .select({ id: agentEvents.id })
+            .from(agentEvents)
+            .where(
+              and(
+                eq(agentEvents.agentName, "Escalation Engine"),
+                eq(agentEvents.eventType, "escalation"),
+                eq(agentEvents.agentEntityId, event.agentEntityId),
+                eq(agentEvents.organizationId, organizationId),
+                gte(agentEvents.createdAt, escalationDedupWindow),
+              )
+            )
+            .limit(1);
+          if (existingEscalation.length > 0) continue; // Already escalated recently
+        }
+
         // Create escalation agent event (visible to operators)
         await db.insert(agentEvents).values({
           organizationId,

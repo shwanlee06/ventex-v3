@@ -2984,3 +2984,12 @@
 
 ### Documentation
 - [x] Write /docs/design/density-system.md explaining zone contrast rule, spacing scale, typography, component density, responsive breakpoints, micro-details
+
+## FIX — Dashboard Member List & Sector Card Stacking (Apr 16)
+- [x] Investigated: "AI Empty Test" and "AI Test Client" are test orgs in DB, not removable from active view
+- [x] Added direct delete (trash) button on active clients in both table and grid views
+- [x] Fixed Orchestrator signal dedup: now deduplicates by agentName + eventType + org (not just agentEntityId)
+- [x] Fixed Escalation Engine dedup: 24h window check before creating duplicate escalation events
+- [x] Added purgeStaleEvents admin mutation: removes 30-day-old events + duplicate escalations + duplicate Orchestrator summaries
+- [x] Added "Purge Duplicate Events" button in Agent Execution Log footer
+- [x] 0 TypeScript errors, 955 tests passing

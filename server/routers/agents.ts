@@ -28,7 +28,7 @@ import {
   sendStageAdvancedEmail,
 } from "../emailService";
 import { onStageAdvanced, onTaskCompleted, onTaskOverdue } from "../intelligence/realtimeTriggers";
-import { eq, desc, sql, and, ne, gte, inArray, isNotNull } from "drizzle-orm";
+import { eq, desc, sql, and, ne, gte, lte, inArray, isNotNull } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
 import { isVentexTeam, resolveVentureScope, getOrgVentureIds } from "../security/rbac";
 import { resolveOrgId } from "../security/orgScope";
@@ -954,17 +954,20 @@ export async function persistSignals(
 
   for (const signal of signals) {
     // Dedup: skip if a matching signal already exists within the dedup window
+    const dedupConds: any[] = [
+      eq(agentEvents.agentName, signal.agentName),
+      gte(agentEvents.createdAt, dedupWindow),
+    ];
     if (signal.agentEntityId) {
-      const dedupConds: any[] = [
-        eq(agentEvents.agentName, signal.agentName),
-        eq(agentEvents.agentEntityId, signal.agentEntityId),
-        gte(agentEvents.createdAt, dedupWindow),
-      ];
-      if (signal.actionType) dedupConds.push(eq(agentEvents.actionType, signal.actionType));
-      if (signal.organizationId) dedupConds.push(eq(agentEvents.organizationId, signal.organizationId));
-      const existing = await db.select({ id: agentEvents.id }).from(agentEvents).where(and(...dedupConds)).limit(1);
-      if (existing.length > 0) continue;
+      dedupConds.push(eq(agentEvents.agentEntityId, signal.agentEntityId));
+    } else {
+      // For signals without entity (e.g. Orchestrator summaries), dedup by eventType
+      if (signal.eventType) dedupConds.push(eq(agentEvents.eventType, signal.eventType));
     }
+    if (signal.actionType) dedupConds.push(eq(agentEvents.actionType, signal.actionType));
+    if (signal.organizationId) dedupConds.push(eq(agentEvents.organizationId, signal.organizationId));
+    const existing = await db.select({ id: agentEvents.id }).from(agentEvents).where(and(...dedupConds)).limit(1);
+    if (existing.length > 0) continue;
 
     // WS3: Compute AI safety fields for every event
     const eventSafety = getEventSafetyFields({
@@ -2579,5 +2582,80 @@ export const agentsRouter = router({
     .mutation(async () => {
       const { triggerManualCycle } = await import("../agentScheduler");
       return await triggerManualCycle();
+    }),
+  /**
+   * Purge stale/duplicate agent events — admin only.
+   * Keeps the most recent event per (agentName, agentEntityId, eventType, organizationId)
+   * within the last 24h and removes older duplicates.
+   * Also removes all events older than 30 days.
+   */
+  purgeStaleEvents: adminProcedure
+    .mutation(async () => {
+      const db = await getDb();
+      if (!db) return { deleted: 0 };
+
+      // 1. Remove events older than 30 days
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const oldResult = await db.delete(agentEvents).where(
+        lte(agentEvents.createdAt, thirtyDaysAgo)
+      );
+
+      // 2. Remove duplicate escalation events (keep newest per entity per 24h)
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const escalations = await db
+        .select()
+        .from(agentEvents)
+        .where(
+          and(
+            eq(agentEvents.eventType, "escalation"),
+            gte(agentEvents.createdAt, twentyFourHoursAgo),
+          )
+        )
+        .orderBy(desc(agentEvents.createdAt));
+
+      const seen = new Set<string>();
+      const dupeIds: number[] = [];
+      for (const e of escalations) {
+        const key = `${e.agentName}|${e.agentEntityId || ""}|${e.organizationId || ""}`;
+        if (seen.has(key)) {
+          dupeIds.push(e.id);
+        } else {
+          seen.add(key);
+        }
+      }
+
+      // 3. Remove duplicate Orchestrator summaries (keep newest per org per 6h)
+      const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+      const orchEvents = await db
+        .select()
+        .from(agentEvents)
+        .where(
+          and(
+            eq(agentEvents.agentName, "Orchestrator"),
+            eq(agentEvents.eventType, "summary"),
+            gte(agentEvents.createdAt, sixHoursAgo),
+          )
+        )
+        .orderBy(desc(agentEvents.createdAt));
+
+      const orchSeen = new Set<string>();
+      for (const e of orchEvents) {
+        const key = `orch|${e.organizationId || ""}`;
+        if (orchSeen.has(key)) {
+          dupeIds.push(e.id);
+        } else {
+          orchSeen.add(key);
+        }
+      }
+
+      if (dupeIds.length > 0) {
+        // Delete in batches of 100
+        for (let i = 0; i < dupeIds.length; i += 100) {
+          const batch = dupeIds.slice(i, i + 100);
+          await db.delete(agentEvents).where(inArray(agentEvents.id, batch));
+        }
+      }
+
+      return { deleted: dupeIds.length, message: `Purged ${dupeIds.length} duplicate events` };
     }),
 });

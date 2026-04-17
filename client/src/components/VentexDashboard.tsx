@@ -859,6 +859,13 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                           >
                             <Archive className="size-3.5" />
                           </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: client.id, name: client.name }); }}
+                            className="p-1.5 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Permanently delete"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
                         </>
                       )}
                       <ChevronRight className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -918,6 +925,13 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                       title="Archive client"
                     >
                       <Archive className="size-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: client.id, name: client.name }); }}
+                      className="p-1.5 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                      title="Permanently delete"
+                    >
+                      <Trash2 className="size-3.5" />
                     </button>
                   </>
                 )}
