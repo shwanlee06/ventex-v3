@@ -1,6 +1,7 @@
-// Client Portal — /portal/:orgSlug
-// Premium, outcome-focused. Zero operator language.
-// Velocity Feed: 3 card types — amber (action), teal (completed), gray (watching)
+// ============================================================================
+// Client Portal — Premium Private-Banking-Grade Experience
+// Zero operator language. Outcomes only. Luxury wealth management feel.
+// ============================================================================
 
 import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -9,12 +10,10 @@ import { cn } from "@/lib/utils";
 import { useRoute, useLocation } from "wouter";
 import { getLoginUrl } from "@/const";
 import {
-  CalendarDays,
   Briefcase,
   ArrowRight,
   Clock,
   CheckCircle2,
-  ChevronRight,
   ChevronDown,
   Building2,
   Ship,
@@ -32,6 +31,14 @@ import {
   DollarSign,
   Unlock,
   Users,
+  Shield,
+  TrendingUp,
+  Activity,
+  Mail,
+  ChevronRight,
+  Sparkles,
+  BarChart3,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,10 +60,11 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatDistanceToNow } from "date-fns";
-import { useState, useCallback, useEffect } from "react";
+import { formatDistanceToNow, format } from "date-fns";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { Mail } from "lucide-react";
+
+// ── Constants ──────────────────────────────────────────────────────────────
 
 const SECTOR_ICONS: Record<string, React.ReactNode> = {
   "Real Estate": <Building2 className="size-4" />,
@@ -68,37 +76,16 @@ const SECTOR_ICONS: Record<string, React.ReactNode> = {
 };
 
 const ACTION_FLOW_ICONS: Record<string, React.ReactNode> = {
-  advance_stage: <ArrowUpRight className="size-3 mr-1.5" />,
-  approve_followup: <Send className="size-3 mr-1.5" />,
-  confirm_distribution: <DollarSign className="size-3 mr-1.5" />,
-  unblock_venture: <Unlock className="size-3 mr-1.5" />,
-  view_task: <Eye className="size-3 mr-1.5" />,
+  advance_stage: <ArrowUpRight className="size-3.5 mr-1.5" />,
+  approve_followup: <Send className="size-3.5 mr-1.5" />,
+  confirm_distribution: <DollarSign className="size-3.5 mr-1.5" />,
+  unblock_venture: <Unlock className="size-3.5 mr-1.5" />,
+  view_task: <Eye className="size-3.5 mr-1.5" />,
 };
 
 const STAGES = ["Initial Review", "Under Review", "Fundraising", "Active", "Completed"];
 
-function StageIndicator({ stage }: { stage: string }) {
-  const idx = STAGES.indexOf(stage);
-  const activeIdx = idx >= 0 ? idx : 0;
-  return (
-    <div className="flex items-center gap-1">
-      {STAGES.map((s, i) => (
-        <div
-          key={s}
-          className={cn(
-            "h-1 rounded-full flex-1 transition-all",
-            i < activeIdx
-              ? "bg-emerald-500"
-              : i === activeIdx
-                ? "bg-primary"
-                : "bg-secondary/40"
-          )}
-          style={{ minWidth: 12 }}
-        />
-      ))}
-    </div>
-  );
-}
+// ── Helpers ────────────────────────────────────────────────────────────────
 
 function friendlyDate(d: Date | string | undefined): string {
   if (!d) return "";
@@ -107,12 +94,109 @@ function friendlyDate(d: Date | string | undefined): string {
   return formatDistanceToNow(date, { addSuffix: true });
 }
 
-export default function ClientPortal(props: { orgSlug?: string; useDashboard?: boolean; params?: { orgSlug?: string } } = {}) {
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+// ── Sub-components ─────────────────────────────────────────────────────────
+
+function StageProgress({ stage }: { stage: string }) {
+  const idx = STAGES.indexOf(stage);
+  const activeIdx = idx >= 0 ? idx : 0;
+  return (
+    <div className="flex items-center gap-1.5">
+      {STAGES.map((s, i) => (
+        <div key={s} className="flex items-center gap-1.5 flex-1">
+          <div
+            className={cn(
+              "h-1 rounded-full flex-1 transition-all duration-700",
+              i < activeIdx
+                ? "bg-emerald-500/80"
+                : i === activeIdx
+                  ? "bg-emerald-400"
+                  : "bg-white/[0.06]"
+            )}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MetricCard({
+  label,
+  value,
+  sub,
+  icon,
+  accent = "emerald",
+  delay = 0,
+}: {
+  label: string;
+  value: string | number;
+  sub?: string;
+  icon: React.ReactNode;
+  accent?: "emerald" | "amber" | "blue" | "primary";
+  delay?: number;
+}) {
+  const accentMap = {
+    emerald: "from-emerald-500/8 to-transparent border-emerald-500/10",
+    amber: "from-amber-500/8 to-transparent border-amber-500/10",
+    blue: "from-blue-500/8 to-transparent border-blue-500/10",
+    primary: "from-primary/8 to-transparent border-primary/10",
+  };
+  const iconMap = {
+    emerald: "text-emerald-400",
+    amber: "text-amber-400",
+    blue: "text-blue-400",
+    primary: "text-primary",
+  };
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className={cn(
+        "relative overflow-hidden bg-gradient-to-br rounded-xl border p-5",
+        accentMap[accent]
+      )}
+    >
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground/70 font-medium mb-2">
+            {label}
+          </p>
+          <p className="text-2xl font-semibold tracking-tight text-foreground font-[family-name:var(--font-display)]">
+            {value}
+          </p>
+          {sub && (
+            <p className="text-[11px] text-muted-foreground mt-1">{sub}</p>
+          )}
+        </div>
+        <div className={cn("opacity-50", iconMap[accent])}>{icon}</div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Main Component ─────────────────────────────────────────────────────────
+
+export default function ClientPortal(
+  props: {
+    orgSlug?: string;
+    useDashboard?: boolean;
+    params?: { orgSlug?: string };
+  } = {}
+) {
   const { orgSlug: propOrgSlug, useDashboard = false } = props;
   const [, params] = useRoute("/portal/:orgSlug");
   const orgSlug = propOrgSlug || params?.orgSlug || "";
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
+
+  // State
   const [advancingIds, setAdvancingIds] = useState<Set<number>>(new Set());
   const [resolvingIds, setResolvingIds] = useState<Set<number>>(new Set());
   const [watchingExpanded, setWatchingExpanded] = useState(false);
@@ -121,6 +205,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
   const [showAllPortfolio, setShowAllPortfolio] = useState(false);
   const [showAllForecasts, setShowAllForecasts] = useState(false);
   const [showAllSignals, setShowAllSignals] = useState(false);
+  const [activeTab, setActiveTab] = useState<"overview" | "portfolio" | "intelligence">("overview");
   const [confirmDialog, setConfirmDialog] = useState<{
     eventId: number;
     actionFlow: string;
@@ -128,16 +213,17 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
     ventureName: string | null;
     summary: string;
   } | null>(null);
-  const [taskDrawer, setTaskDrawer] = useState<{ ventureId: number; ventureName: string } | null>(null);
+  const [taskDrawer, setTaskDrawer] = useState<{
+    ventureId: number;
+    ventureName: string;
+  } | null>(null);
   const [completingTaskIds, setCompletingTaskIds] = useState<Set<number>>(new Set());
 
-
-  // Draft Center summary — just fetch pending count for the widget
+  // Data
   const { data: drafts } = trpc.portal.getDrafts.useQuery(
     { orgSlug, status: "pending" },
     { enabled: !!orgSlug && !!user }
   );
-
 
   const { data, isLoading, error } = trpc.portal.getData.useQuery(
     { orgSlug },
@@ -146,12 +232,13 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
 
   const utils = trpc.useUtils();
 
-  // Task drawer query — only fires when drawer is open
-  const { data: ventureTasks, isLoading: tasksLoading } = trpc.portal.getVentureTasks.useQuery(
-    { ventureId: taskDrawer?.ventureId ?? 0 },
-    { enabled: !!taskDrawer }
-  );
+  const { data: ventureTasks, isLoading: tasksLoading } =
+    trpc.portal.getVentureTasks.useQuery(
+      { ventureId: taskDrawer?.ventureId ?? 0 },
+      { enabled: !!taskDrawer }
+    );
 
+  // Mutations
   const completeTaskMutation = trpc.portal.completeTask.useMutation({
     onSuccess: (result) => {
       if (result.autoAdvanced) {
@@ -161,7 +248,9 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
         toast.success("Task completed");
       }
       utils.portal.getData.invalidate({ orgSlug });
-      utils.portal.getVentureTasks.invalidate({ ventureId: taskDrawer?.ventureId ?? 0 });
+      utils.portal.getVentureTasks.invalidate({
+        ventureId: taskDrawer?.ventureId ?? 0,
+      });
     },
     onError: (err) => toast.error(err.message || "Failed to complete task"),
     onSettled: (_data, _err, variables) => {
@@ -177,17 +266,19 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
     (taskId: number) => {
       if (!taskDrawer) return;
       setCompletingTaskIds((prev) => new Set(prev).add(taskId));
-      completeTaskMutation.mutate({ taskId, ventureId: taskDrawer.ventureId });
+      completeTaskMutation.mutate({
+        taskId,
+        ventureId: taskDrawer.ventureId,
+      });
     },
     [taskDrawer, completeTaskMutation]
   );
 
   const advanceMutation = trpc.agents.clientAdvanceStage.useMutation({
     onSuccess: (result) => {
-      toast.success(
-        `"${result.ventureName}" advanced to ${result.toStage}`,
-        { duration: 4000 }
-      );
+      toast.success(`"${result.ventureName}" advanced to ${result.toStage}`, {
+        duration: 4000,
+      });
       utils.portal.getData.invalidate({ orgSlug });
     },
     onError: (err) => {
@@ -233,16 +324,28 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
       setResolvingIds((prev) => new Set(prev).add(eventId));
       resolveActionMutation.mutate({
         eventId,
-        actionFlow: actionFlow as "approve_followup" | "confirm_distribution" | "unblock_venture",
+        actionFlow: actionFlow as
+          | "approve_followup"
+          | "confirm_distribution"
+          | "unblock_venture",
       });
     },
     [resolveActionMutation]
   );
 
+  // ── Auth / Loading / Error States ──────────────────────────────────────
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <div className="size-12 rounded-full border-2 border-emerald-500/20 border-t-emerald-400 animate-spin" />
+          </div>
+          <p className="text-xs text-muted-foreground tracking-wider uppercase">
+            Loading your portal
+          </p>
+        </div>
       </div>
     );
   }
@@ -250,17 +353,29 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-xl font-semibold text-foreground">
-            Sign in to continue
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Access your portfolio and updates
-          </p>
-          <Button asChild>
-            <a href={getLoginUrl()}>Sign In</a>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center space-y-6 max-w-sm px-6"
+        >
+          <div className="size-16 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 flex items-center justify-center mx-auto">
+            <Shield className="size-7 text-emerald-400" />
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold text-foreground font-[family-name:var(--font-display)] mb-2">
+              Secure Access Required
+            </h1>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Sign in to access your portfolio and venture updates.
+            </p>
+          </div>
+          <Button
+            asChild
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white border-0 h-11"
+          >
+            <a href={getLoginUrl()}>Sign In to Continue</a>
           </Button>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -268,14 +383,17 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="max-w-4xl mx-auto px-4 py-12">
-          <Skeleton className="h-8 w-64 mb-2" />
-          <Skeleton className="h-4 w-40 mb-10" />
-          <div className="space-y-6">
-            <Skeleton className="h-16 rounded-xl" />
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+          <Skeleton className="h-6 w-48 mb-1" />
+          <Skeleton className="h-4 w-32 mb-10" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 rounded-xl" />
+            ))}
+          </div>
+          <div className="space-y-4">
             <Skeleton className="h-48 rounded-xl" />
             <Skeleton className="h-64 rounded-xl" />
-            <Skeleton className="h-40 rounded-xl" />
           </div>
         </div>
       </div>
@@ -285,20 +403,28 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
   if (error) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <AlertCircle className="size-8 text-destructive mx-auto" />
-          <h1 className="text-xl font-semibold text-foreground">
-            Unable to load portal
-          </h1>
-          <p className="text-sm text-muted-foreground max-w-md">
-            {error.message === "You do not have access to this portal"
-              ? "You don't have permission to view this portal."
-              : "Something went wrong. Please try again later."}
-          </p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center space-y-6 max-w-sm px-6"
+        >
+          <div className="size-16 rounded-2xl bg-gradient-to-br from-red-500/10 to-transparent border border-red-500/20 flex items-center justify-center mx-auto">
+            <AlertCircle className="size-7 text-red-400" />
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold text-foreground font-[family-name:var(--font-display)] mb-2">
+              Unable to Load Portal
+            </h1>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {error.message === "You do not have access to this portal"
+                ? "You don't have permission to view this portal."
+                : "Something went wrong. Please try again later."}
+            </p>
+          </div>
           <Button variant="outline" onClick={() => navigate("/")}>
             Go Home
           </Button>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -319,795 +445,1098 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
     assignedTeam,
   } = data;
 
+  // Derived metrics
+  const activeVentures = portfolio.filter(
+    (v) => v.stage !== "Completed"
+  ).length;
+  const completedVentures = portfolio.filter(
+    (v) => v.stage === "Completed"
+  ).length;
+  const pendingActions = actionCards.length;
+  const healthScore = portfolioHealth?.score ?? 0;
+
+  // ── Tab Navigation ─────────────────────────────────────────────────────
+
+  const tabs = [
+    { id: "overview" as const, label: "Overview", icon: <Activity className="size-3.5" /> },
+    { id: "portfolio" as const, label: "Portfolio", icon: <Briefcase className="size-3.5" /> },
+    { id: "intelligence" as const, label: "Intelligence", icon: <Sparkles className="size-3.5" /> },
+  ];
+
+  // ── Render Action Button ───────────────────────────────────────────────
+
+  function renderActionButton(item: (typeof actionCards)[0]) {
+    const isAdvancing = item.ventureId ? advancingIds.has(item.ventureId) : false;
+    const isResolving = resolvingIds.has(item.id);
+    const isBusy = isAdvancing || isResolving;
+
+    if (item.actionFlow === "advance_stage" && item.ventureId) {
+      return (
+        <Button
+          size="sm"
+          className="min-h-[44px] sm:min-h-0 touch-manipulation bg-emerald-600 hover:bg-emerald-500 text-white border-0 text-xs font-medium"
+          disabled={isBusy}
+          onClick={() => handleAdvance(item.ventureId!, item.id)}
+        >
+          {isBusy ? (
+            <Loader2 className="size-3.5 animate-spin mr-1.5" />
+          ) : (
+            ACTION_FLOW_ICONS["advance_stage"]
+          )}
+          {isBusy ? "Advancing..." : "Approve Advance"}
+        </Button>
+      );
+    }
+
+    if (item.actionFlow === "approve_followup") {
+      return (
+        <Button
+          size="sm"
+          className="min-h-[44px] sm:min-h-0 touch-manipulation bg-emerald-600 hover:bg-emerald-500 text-white border-0 text-xs font-medium"
+          disabled={isBusy}
+          onClick={() =>
+            setConfirmDialog({
+              eventId: item.id,
+              actionFlow: "approve_followup",
+              actionLabel: "Approve & Send",
+              ventureName: item.ventureName,
+              summary: item.summary,
+            })
+          }
+        >
+          {ACTION_FLOW_ICONS["approve_followup"]}
+          Review & Approve
+        </Button>
+      );
+    }
+
+    if (item.actionFlow === "confirm_distribution") {
+      return (
+        <Button
+          size="sm"
+          className="min-h-[44px] sm:min-h-0 touch-manipulation bg-emerald-600 hover:bg-emerald-500 text-white border-0 text-xs font-medium"
+          disabled={isBusy}
+          onClick={() =>
+            setConfirmDialog({
+              eventId: item.id,
+              actionFlow: "confirm_distribution",
+              actionLabel: "Confirm Distribution",
+              ventureName: item.ventureName,
+              summary: item.summary,
+            })
+          }
+        >
+          {ACTION_FLOW_ICONS["confirm_distribution"]}
+          Confirm
+        </Button>
+      );
+    }
+
+    if (item.actionFlow === "unblock_venture") {
+      return (
+        <Button
+          size="sm"
+          className="min-h-[44px] sm:min-h-0 touch-manipulation bg-amber-600 hover:bg-amber-500 text-white border-0 text-xs font-medium"
+          disabled={isBusy}
+          onClick={() =>
+            setConfirmDialog({
+              eventId: item.id,
+              actionFlow: "unblock_venture",
+              actionLabel: "Unblock Venture",
+              ventureName: item.ventureName,
+              summary: item.summary,
+            })
+          }
+        >
+          {ACTION_FLOW_ICONS["unblock_venture"]}
+          Resolve
+        </Button>
+      );
+    }
+
+    if (item.actionFlow === "view_task" && item.ventureId) {
+      return (
+        <Button
+          size="sm"
+          variant="outline"
+          className="min-h-[44px] sm:min-h-0 touch-manipulation text-xs border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/10"
+          onClick={() =>
+            setTaskDrawer({
+              ventureId: item.ventureId!,
+              ventureName: item.ventureName || "Venture",
+            })
+          }
+        >
+          {ACTION_FLOW_ICONS["view_task"]}
+          Review Tasks
+        </Button>
+      );
+    }
+
+    if (!item.actionFlow && item.actionLabel) {
+      return (
+        <Button
+          size="sm"
+          variant="outline"
+          className="min-h-[44px] sm:min-h-0 touch-manipulation text-xs"
+          onClick={() => {
+            if (item.ventureId) {
+              toast.info(`Navigating to ${item.ventureName || "venture"}...`);
+            } else {
+              toast.info(`${item.actionLabel}: ${item.summary}`);
+            }
+          }}
+        >
+          {item.actionLabel}
+          <ArrowRight className="size-3 ml-1" />
+        </Button>
+      );
+    }
+
+    return null;
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // PORTAL CONTENT
+  // ══════════════════════════════════════════════════════════════════════════
+
   const portalContent = (
     <>
-      {/* Content */}
-      <main className="max-w-4xl mx-auto px-3 sm:px-6 md:px-8 py-8 sm:py-10 space-y-8 sm:space-y-10 pb-24 sm:pb-10">
-        {/* ── Velocity Summary ─────────────────────────────────────── */}
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 sm:pb-12">
+        {/* ── Hero Greeting ───────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8"
+        >
+          <p className="text-xs text-muted-foreground/60 uppercase tracking-[0.12em] mb-1">
+            {format(new Date(), "EEEE, MMMM d, yyyy")}
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground font-[family-name:var(--font-display)] tracking-tight">
+            {getGreeting()}, {user.name?.split(" ")[0] || "there"}
+          </h1>
+        </motion.div>
+
+        {/* ── Key Metrics ─────────────────────────────────────────── */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+          <MetricCard
+            label="Active Ventures"
+            value={activeVentures}
+            sub={`${completedVentures} completed`}
+            icon={<Briefcase className="size-5" />}
+            accent="emerald"
+            delay={0.1}
+          />
+          <MetricCard
+            label="Portfolio Health"
+            value={healthScore > 0 ? `${healthScore}` : "--"}
+            sub={portfolioHealth?.trend === "improving" ? "Trending up" : portfolioHealth?.trend === "declining" ? "Needs attention" : "Stable"}
+            icon={<TrendingUp className="size-5" />}
+            accent={healthScore >= 70 ? "emerald" : healthScore >= 40 ? "amber" : "amber"}
+            delay={0.15}
+          />
+          <MetricCard
+            label="Action Items"
+            value={pendingActions}
+            sub={pendingActions === 0 ? "All clear" : "Needs your review"}
+            icon={<Activity className="size-5" />}
+            accent={pendingActions > 0 ? "amber" : "emerald"}
+            delay={0.2}
+          />
+          <MetricCard
+            label="Your Team"
+            value={assignedTeam?.length || 0}
+            sub="VENTEX operators"
+            icon={<Users className="size-5" />}
+            accent="blue"
+            delay={0.25}
+          />
+        </div>
+
+        {/* ── Tab Navigation ──────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="flex items-center gap-1 mb-8 border-b border-border/50 overflow-x-auto"
+        >
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "flex items-center gap-2 px-4 py-3 text-xs font-medium transition-all relative whitespace-nowrap",
+                activeTab === tab.id
+                  ? "text-emerald-400"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {tab.icon}
+              {tab.label}
+              {tab.id === "overview" && pendingActions > 0 && (
+                <span className="size-1.5 rounded-full bg-amber-400 animate-pulse" />
+              )}
+              {activeTab === tab.id && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-emerald-400"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                />
+              )}
+            </button>
+          ))}
+        </motion.div>
+
+        {/* ── Velocity Summary ────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="bg-card/50 border border-border/50 rounded-xl px-4 sm:px-6 py-4 sm:py-5 flex items-start gap-3.5"
+          transition={{ delay: 0.35, duration: 0.4 }}
+          className="relative overflow-hidden rounded-xl border border-emerald-500/10 bg-gradient-to-r from-emerald-500/[0.04] via-transparent to-transparent p-5 mb-8"
         >
-          <Zap className="size-4 text-primary mt-0.5 flex-shrink-0" />
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {velocitySummary}
-          </p>
+          <div className="flex items-start gap-3.5">
+            <div className="flex-shrink-0 size-8 rounded-lg bg-emerald-500/10 flex items-center justify-center mt-0.5">
+              <Zap className="size-4 text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.08em] text-emerald-400/70 font-medium mb-1">
+                Weekly Intelligence Brief
+              </p>
+              <p className="text-sm text-foreground/80 leading-relaxed">
+                {velocitySummary}
+              </p>
+            </div>
+          </div>
         </motion.div>
 
-        {/* ════════════════════════════════════════════════════════════
-            VELOCITY FEED — 3 card types: amber → teal → gray
-            ════════════════════════════════════════════════════════════ */}
+        {/* ══════════════════════════════════════════════════════════
+            OVERVIEW TAB
+            ══════════════════════════════════════════════════════════ */}
+        {activeTab === "overview" && (
+          <div className="space-y-8">
+            {/* ── Action Needed (amber) ──────────────────────────── */}
+            {actionCards.length > 0 && (
+              <motion.section
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="size-6 rounded-md bg-amber-500/10 flex items-center justify-center">
+                    <AlertCircle className="size-3.5 text-amber-400" />
+                  </div>
+                  <h2 className="text-sm font-semibold text-foreground">
+                    Action Needed
+                  </h2>
+                  <span className="ml-auto text-[10px] font-medium text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                    {actionCards.length}
+                  </span>
+                </div>
 
-        {/* ── COMING UP (amber) ─────────────────────────────────── */}
-        {actionCards.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <AlertCircle className="size-4 text-amber-400" />
-              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-                Action Needed
-              </h2>
-              <span className="text-[11px] text-amber-400 ml-auto font-medium">
-                {actionCards.length} item{actionCards.length !== 1 ? "s" : ""}
-              </span>
-            </div>
-
-            <div className="space-y-2">
-              <AnimatePresence mode="popLayout">
-                {actionCards.map((item, i) => {
-                  const isAdvancing = item.ventureId
-                    ? advancingIds.has(item.ventureId)
-                    : false;
-                  const isResolving = resolvingIds.has(item.id);
-                  const isBusy = isAdvancing || isResolving;
-
-                  return (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 8, height: 0 }}
-                      transition={{ delay: i * 0.03, duration: 0.2 }}
-                      className="bg-card border border-amber-500/20 rounded-xl p-4 sm:p-5"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
-                        <div className="hidden sm:block size-2 rounded-full bg-amber-400 mt-2 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          {item.ventureName && (
-                            <h3 className="text-sm font-medium text-foreground mb-1">
-                              {item.ventureName}
-                            </h3>
-                          )}
-                          <p className="text-sm text-muted-foreground leading-relaxed">
-                            {item.summary}
-                          </p>
-                          <div className="flex items-center gap-3 mt-2">
-                            {item.fromStage && item.toStage && (
-                              <span className="text-[11px] text-muted-foreground/70 font-mono">
-                                {item.fromStage} → {item.toStage}
-                              </span>
+                <div className="space-y-2">
+                  <AnimatePresence mode="popLayout">
+                    {actionCards.map((item, i) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 8, height: 0 }}
+                        transition={{ delay: i * 0.04, duration: 0.3 }}
+                        className="group relative overflow-hidden rounded-xl border border-amber-500/15 bg-gradient-to-r from-amber-500/[0.03] to-transparent p-5"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-start gap-3">
+                          <div className="flex-1 min-w-0">
+                            {item.ventureName && (
+                              <h3 className="text-sm font-medium text-foreground mb-1.5">
+                                {item.ventureName}
+                              </h3>
                             )}
-                            <span className="text-[11px] text-muted-foreground/50">
-                              {friendlyDate(item.date ?? undefined)}
-                            </span>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                              {item.summary}
+                            </p>
+                            <div className="flex items-center gap-3 mt-2.5">
+                              {item.fromStage && item.toStage && (
+                                <span className="text-[10px] text-muted-foreground/60 font-mono bg-white/[0.03] px-2 py-0.5 rounded">
+                                  {item.fromStage} → {item.toStage}
+                                </span>
+                              )}
+                              <span className="text-[10px] text-muted-foreground/40">
+                                {friendlyDate(item.date ?? undefined)}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex sm:block mt-1 sm:mt-0 flex-shrink-0">
+                            {renderActionButton(item)}
                           </div>
                         </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </motion.section>
+            )}
 
-                        {/* Action button — route to correct flow */}
-                        <div className="flex sm:block mt-2 sm:mt-0 flex-shrink-0">
-                        {item.actionFlow === "advance_stage" && item.ventureId && (
-                          <Button
-                            size="sm"
-                            className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 active:scale-[0.97]"
-                            disabled={isBusy}
-                            onClick={() => handleAdvance(item.ventureId!, item.id)}
-                          >
-                            {isBusy ? (
-                              <Loader2 className="size-3 animate-spin mr-1.5" />
-                            ) : (
-                              ACTION_FLOW_ICONS["advance_stage"]
-                            )}
-                            {isBusy ? "Advancing..." : "Advance Status"}
-                          </Button>
-                        )}
+            {/* ── Completed (emerald) ────────────────────────────── */}
+            {completedCards.length > 0 && (
+              <motion.section
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05, duration: 0.4 }}
+              >
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="size-6 rounded-md bg-emerald-500/10 flex items-center justify-center">
+                    <CheckCircle2 className="size-3.5 text-emerald-400" />
+                  </div>
+                  <h2 className="text-sm font-semibold text-foreground">
+                    Recently Completed
+                  </h2>
+                  <span className="ml-auto text-[10px] text-muted-foreground">
+                    {completedCards.length} update{completedCards.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
 
-                        {item.actionFlow === "approve_followup" && (
-                          <Button
-                            size="sm"
-                            className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 active:scale-[0.97]"
-                            disabled={isBusy}
-                            onClick={() =>
-                              setConfirmDialog({
-                                eventId: item.id,
-                                actionFlow: "approve_followup",
-                                actionLabel: "Approve & Send",
-                                ventureName: item.ventureName,
-                                summary: item.summary,
-                              })
-                            }
-                          >
-                            {ACTION_FLOW_ICONS["approve_followup"]}
-                            Review & Approve
-                          </Button>
-                        )}
-
-                        {item.actionFlow === "confirm_distribution" && (
-                          <Button
-                            size="sm"
-                            className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 active:scale-[0.97]"
-                            disabled={isBusy}
-                            onClick={() =>
-                              setConfirmDialog({
-                                eventId: item.id,
-                                actionFlow: "confirm_distribution",
-                                actionLabel: "Confirm Distribution",
-                                ventureName: item.ventureName,
-                                summary: item.summary,
-                              })
-                            }
-                          >
-                            {ACTION_FLOW_ICONS["confirm_distribution"]}
-                            Confirm
-                          </Button>
-                        )}
-
-                        {item.actionFlow === "unblock_venture" && (
-                          <Button
-                            size="sm"
-                            className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 active:scale-[0.97]"
-                            disabled={isBusy}
-                            onClick={() =>
-                              setConfirmDialog({
-                                eventId: item.id,
-                                actionFlow: "unblock_venture",
-                                actionLabel: "Unblock Venture",
-                                ventureName: item.ventureName,
-                                summary: item.summary,
-                              })
-                            }
-                          >
-                            {ACTION_FLOW_ICONS["unblock_venture"]}
-                            Resolve
-                          </Button>
-                        )}
-
-                        {item.actionFlow === "view_task" && item.ventureId && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation text-xs active:scale-[0.97]"
-                            onClick={() => setTaskDrawer({ ventureId: item.ventureId!, ventureName: item.ventureName || "Venture" })}
-                          >
-                            {ACTION_FLOW_ICONS["view_task"]}
-                            Review
-                          </Button>
-                        )}
-
-                        {!item.actionFlow && item.actionLabel && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="w-full sm:w-auto min-h-[44px] sm:min-h-0 touch-manipulation text-xs active:scale-[0.97]"
-                            onClick={() => {
-                              if (item.ventureId) {
-                                toast.info(`Navigating to ${item.ventureName || "venture"}...`);
-                              } else {
-                                toast.info(`${item.actionLabel}: ${item.summary}`);
-                              }
-                            }}
-                          >
-                            {item.actionLabel}
-                            <ArrowRight className="size-3 ml-1" />
-                          </Button>
-                        )}
+                <div className="rounded-xl border border-emerald-500/10 overflow-hidden divide-y divide-border/30">
+                  {(showAllCompleted
+                    ? completedCards
+                    : completedCards.slice(0, 5)
+                  ).map((item, i) => (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, x: -6 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.1 + i * 0.03, duration: 0.25 }}
+                      className="p-4 flex items-start gap-3.5 hover:bg-emerald-500/[0.02] transition-colors"
+                    >
+                      <div className="size-1.5 rounded-full mt-2 flex-shrink-0 bg-emerald-400/60" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-foreground/80 leading-relaxed">
+                          {item.summary}
+                        </p>
+                        <div className="flex items-center gap-3 mt-1.5">
+                          {item.ventureName && (
+                            <span className="text-[10px] text-muted-foreground">
+                              {item.ventureName}
+                            </span>
+                          )}
+                          <span className="text-[10px] text-muted-foreground/40">
+                            {friendlyDate(item.date ?? undefined)}
+                          </span>
                         </div>
                       </div>
                     </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-            </div>
-          </motion.section>
-        )}
-
-        {/* ── COMPLETED (teal) ────────────────────────────────────── */}
-        {completedCards.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05, duration: 0.3 }}
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <CheckCircle2 className="size-4 text-emerald-400" />
-              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-                Completed
-              </h2>
-              <span className="text-[11px] text-muted-foreground ml-auto">
-                {completedCards.length} update{completedCards.length !== 1 ? "s" : ""}
-              </span>
-            </div>
-
-            <div className="bg-card border border-emerald-500/15 rounded-xl divide-y divide-border">
-              {(showAllCompleted ? completedCards : completedCards.slice(0, 5)).map((item, i) => (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 + i * 0.03, duration: 0.2 }}
-                  className="p-5 flex items-start gap-3.5"
-                >
-                  <div className="size-1.5 rounded-full mt-2 flex-shrink-0 bg-emerald-400" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground leading-relaxed">
-                      {item.summary}
-                    </p>
-                    <div className="flex items-center gap-3 mt-1.5">
-                      {item.ventureName && (
-                        <span className="text-[11px] text-muted-foreground">
-                          {item.ventureName}
-                        </span>
-                      )}
-                      <span className="text-[11px] text-muted-foreground/60">
-                        {friendlyDate(item.date ?? undefined)}
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-            {completedCards.length > 5 && (
-              <button
-                onClick={() => setShowAllCompleted(!showAllCompleted)}
-                className="mt-2 w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-2"
-              >
-                {showAllCompleted ? "Show less" : `Show all ${completedCards.length} completed updates`}
-              </button>
-            )}
-          </motion.section>
-        )}
-
-        {/* ── WATCHING (gray, collapsed by default) ───────────────── */}
-        {watchingCards.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.3 }}
-          >
-            <button
-              onClick={() => setWatchingExpanded(!watchingExpanded)}
-              className="flex items-center gap-2 mb-4 w-full text-left group"
-            >
-              <Eye className="size-4 text-muted-foreground/60" />
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                Watching
-              </h2>
-              <span className="text-[11px] text-muted-foreground/60 ml-auto mr-1">
-                {watchingCards.length} item{watchingCards.length !== 1 ? "s" : ""}
-              </span>
-              <ChevronDown
-                className={cn(
-                  "size-3.5 text-muted-foreground/60 transition-transform",
-                  watchingExpanded && "rotate-180"
+                  ))}
+                </div>
+                {completedCards.length > 5 && (
+                  <button
+                    onClick={() => setShowAllCompleted(!showAllCompleted)}
+                    className="mt-2 w-full text-center text-[11px] text-muted-foreground hover:text-emerald-400 transition-colors py-2"
+                  >
+                    {showAllCompleted
+                      ? "Show less"
+                      : `Show all ${completedCards.length} updates`}
+                  </button>
                 )}
-              />
-            </button>
+              </motion.section>
+            )}
 
-            <AnimatePresence>
-              {watchingExpanded && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
+            {/* ── Watching (collapsed) ───────────────────────────── */}
+            {watchingCards.length > 0 && (
+              <motion.section
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.4 }}
+              >
+                <button
+                  onClick={() => setWatchingExpanded(!watchingExpanded)}
+                  className="flex items-center gap-2.5 mb-4 w-full text-left group"
                 >
-                  <div className="bg-card border border-border/50 rounded-xl divide-y divide-border/50">
-                    {(showAllWatching ? watchingCards : watchingCards.slice(0, 5)).map((item, i) => (
-                      <div
-                        key={item.id}
-                        className="p-3 flex items-start gap-3"
+                  <div className="size-6 rounded-md bg-white/[0.04] flex items-center justify-center">
+                    <Eye className="size-3.5 text-muted-foreground/50" />
+                  </div>
+                  <h2 className="text-sm font-semibold text-muted-foreground">
+                    Monitoring
+                  </h2>
+                  <span className="text-[10px] text-muted-foreground/40 ml-auto mr-1">
+                    {watchingCards.length} item{watchingCards.length !== 1 ? "s" : ""}
+                  </span>
+                  <ChevronDown
+                    className={cn(
+                      "size-3.5 text-muted-foreground/40 transition-transform duration-300",
+                      watchingExpanded && "rotate-180"
+                    )}
+                  />
+                </button>
+
+                <AnimatePresence>
+                  {watchingExpanded && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="rounded-xl border border-border/30 overflow-hidden divide-y divide-border/20">
+                        {(showAllWatching
+                          ? watchingCards
+                          : watchingCards.slice(0, 5)
+                        ).map((item, i) => (
+                          <div
+                            key={item.id}
+                            className="p-3.5 flex items-start gap-3"
+                          >
+                            <div className="size-1.5 rounded-full mt-2 flex-shrink-0 bg-muted-foreground/20" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-muted-foreground leading-relaxed">
+                                {item.summary}
+                              </p>
+                              <div className="flex items-center gap-3 mt-1">
+                                {item.ventureName && (
+                                  <span className="text-[10px] text-muted-foreground/50">
+                                    {item.ventureName}
+                                  </span>
+                                )}
+                                <span className="text-[10px] text-muted-foreground/30">
+                                  {friendlyDate(item.date ?? undefined)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {watchingCards.length > 5 && (
+                        <button
+                          onClick={() => setShowAllWatching(!showAllWatching)}
+                          className="w-full text-center text-[11px] text-muted-foreground hover:text-foreground transition-colors py-2"
+                        >
+                          {showAllWatching
+                            ? "Show less"
+                            : `Show all ${watchingCards.length} items`}
+                        </button>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.section>
+            )}
+
+            {/* ── All Clear ──────────────────────────────────────── */}
+            {actionCards.length === 0 &&
+              completedCards.length === 0 &&
+              watchingCards.length === 0 && (
+                <motion.section
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center py-12"
+                >
+                  <div className="size-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle2 className="size-6 text-emerald-400" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">
+                    All Clear
+                  </h3>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                    Nothing needs your attention right now. VENTEX is monitoring
+                    your portfolio and will notify you when something comes up.
+                  </p>
+                </motion.section>
+              )}
+
+            {/* ── Draft Communications Widget ────────────────────── */}
+            {drafts && drafts.length > 0 && (
+              <motion.section
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12, duration: 0.4 }}
+              >
+                <button
+                  onClick={() => navigate("/drafts")}
+                  className="w-full rounded-xl border border-amber-500/15 bg-gradient-to-r from-amber-500/[0.03] to-transparent p-5 hover:border-amber-500/25 transition-all group text-left"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="size-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                      <Mail className="size-4.5 text-amber-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-foreground">
+                          {drafts.length} pending communication
+                          {drafts.length !== 1 ? "s" : ""}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        AI-drafted communications awaiting your review
+                      </p>
+                    </div>
+                    <ArrowRight className="size-4 text-muted-foreground/40 group-hover:text-amber-400 transition-colors" />
+                  </div>
+                </button>
+              </motion.section>
+            )}
+
+            {/* ── Your Team ──────────────────────────────────────── */}
+            {assignedTeam && assignedTeam.length > 0 && (
+              <motion.section
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15, duration: 0.4 }}
+              >
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="size-6 rounded-md bg-blue-500/10 flex items-center justify-center">
+                    <Users className="size-3.5 text-blue-400" />
+                  </div>
+                  <h2 className="text-sm font-semibold text-foreground">
+                    Your VENTEX Team
+                  </h2>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+                  {assignedTeam.map(
+                    (
+                      member: {
+                        id: number;
+                        name: string;
+                        role: string | null;
+                        photoUrl: string | null;
+                        avatarUrl: string | null;
+                      },
+                      i: number
+                    ) => (
+                      <motion.div
+                        key={member.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 + i * 0.04, duration: 0.3 }}
+                        className="rounded-xl border border-border/30 bg-gradient-to-br from-white/[0.02] to-transparent p-4 flex items-center gap-3"
                       >
-                        <div className="size-1.5 rounded-full mt-2 flex-shrink-0 bg-muted-foreground/30" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-muted-foreground leading-relaxed">
-                            {item.summary}
-                          </p>
-                          <div className="flex items-center gap-3 mt-1">
-                            {item.ventureName && (
-                              <span className="text-[10px] text-muted-foreground/60">
-                                {item.ventureName}
-                              </span>
-                            )}
-                            <span className="text-[10px] text-muted-foreground/40">
-                              {friendlyDate(item.date ?? undefined)}
+                        {member.avatarUrl || member.photoUrl ? (
+                          <img
+                            src={member.avatarUrl || member.photoUrl || ""}
+                            alt={member.name}
+                            className="size-10 rounded-full object-cover border border-border/30"
+                          />
+                        ) : (
+                          <div className="size-10 rounded-full bg-gradient-to-br from-emerald-500/15 to-blue-500/15 border border-emerald-500/20 flex items-center justify-center">
+                            <span className="text-xs font-semibold text-emerald-400">
+                              {member.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .slice(0, 2)}
                             </span>
                           </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium text-foreground truncate">
+                            {member.name}
+                          </p>
+                          {member.role && (
+                            <p className="text-[10px] text-muted-foreground truncate">
+                              {member.role}
+                            </p>
+                          )}
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                  {watchingCards.length > 5 && (
-                    <button
-                      onClick={() => setShowAllWatching(!showAllWatching)}
-                      className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-2"
-                    >
-                      {showAllWatching ? "Show less" : `Show all ${watchingCards.length} watching items`}
-                    </button>
+                      </motion.div>
+                    )
                   )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.section>
+                </div>
+              </motion.section>
+            )}
+          </div>
         )}
 
-        {/* ── All Clear (no action cards) ─────────────────────────── */}
-        {actionCards.length === 0 && completedCards.length === 0 && watchingCards.length === 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05, duration: 0.3 }}
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <CheckCircle2 className="size-4 text-emerald-400" />
-              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-                All Clear
-              </h2>
-            </div>
-            <div className="bg-card border border-border rounded-xl p-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                Nothing needs your attention right now. We'll let you know when
-                something comes up.
-              </p>
-            </div>
-          </motion.section>
-        )}
-        {/* ── AI Communications — Summary Widget (links to full Draft Center) ── */}
-        {drafts && drafts.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12, duration: 0.3 }}
-          >
-            <button
-              onClick={() => navigate("/drafts")}
-              className="w-full bg-card border border-amber-500/20 rounded-xl p-5 hover:border-amber-500/30 transition-all group text-left"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center size-9 rounded-lg bg-amber-500/10">
-                  <Mail className="size-4 text-amber-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-foreground">
-                      {drafts.length} pending communication{drafts.length !== 1 ? "s" : ""}
-                    </span>
-                    <span className="bg-amber-500/20 text-amber-400 text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded">
-                      {drafts.length}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    AI-drafted communications awaiting your review
-                  </p>
-                </div>
-                <ArrowRight className="size-4 text-muted-foreground group-hover:text-amber-400 transition-colors" />
-              </div>
-            </button>
-          </motion.section>
-        )}
-
-        {/* ── Your Team ─────────────────────────────────────────── */}
-        {assignedTeam && assignedTeam.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12, duration: 0.3 }}
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <Users className="size-4 text-primary" />
-              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-                Your Team
-              </h2>
-              <span className="text-[11px] text-muted-foreground ml-auto">
-                {assignedTeam.length} member{assignedTeam.length !== 1 ? "s" : ""}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {assignedTeam.map((member: { id: number; name: string; role: string | null; photoUrl: string | null; avatarUrl: string | null }) => (
-                <div
-                  key={member.id}
-                  className="bg-card/50 border border-border/50 rounded-xl p-4 flex items-center gap-3"
-                >
-                  {(member.avatarUrl || member.photoUrl) ? (
-                    <img
-                      src={member.avatarUrl || member.photoUrl || ""}
-                      alt={member.name}
-                      className="size-9 rounded-full object-cover border border-border/50"
-                    />
-                  ) : (
-                    <div className="size-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                      <span className="text-xs font-semibold text-primary">
-                        {member.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+        {/* ══════════════════════════════════════════════════════════
+            PORTFOLIO TAB
+            ══════════════════════════════════════════════════════════ */}
+        {activeTab === "portfolio" && (
+          <div className="space-y-8">
+            {/* Portfolio Health Score */}
+            {portfolioHealth && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-xl border border-border/30 bg-gradient-to-r from-white/[0.02] to-transparent p-6"
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground/60 font-medium mb-1">
+                      Portfolio Health Score
+                    </p>
+                    <div className="flex items-baseline gap-2">
+                      <span
+                        className={cn(
+                          "text-4xl font-bold font-[family-name:var(--font-display)] tracking-tight",
+                          portfolioHealth.score >= 80
+                            ? "text-emerald-400"
+                            : portfolioHealth.score >= 60
+                              ? "text-amber-400"
+                              : "text-red-400"
+                        )}
+                      >
+                        {portfolioHealth.score}
+                      </span>
+                      <span className="text-sm text-muted-foreground/40">
+                        / 100
                       </span>
                     </div>
-                  )}
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium text-foreground truncate">{member.name}</p>
-                    {member.role && (
-                      <p className="text-[10px] text-muted-foreground truncate">{member.role}</p>
+                  </div>
+                  <div className="text-right">
+                    <div
+                      className={cn(
+                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium",
+                        portfolioHealth.trend === "improving"
+                          ? "bg-emerald-500/10 text-emerald-400"
+                          : portfolioHealth.trend === "declining"
+                            ? "bg-red-500/10 text-red-400"
+                            : "bg-white/[0.04] text-muted-foreground"
+                      )}
+                    >
+                      {portfolioHealth.trend === "improving"
+                        ? "↑"
+                        : portfolioHealth.trend === "declining"
+                          ? "↓"
+                          : "→"}{" "}
+                      {portfolioHealth.trend}
+                    </div>
+                    {portfolioHealth.riskCount > 0 && (
+                      <p className="text-[11px] text-amber-400 mt-1.5">
+                        {portfolioHealth.riskCount} venture
+                        {portfolioHealth.riskCount !== 1 ? "s" : ""} at risk
+                      </p>
                     )}
                   </div>
                 </div>
-              ))}
-            </div>
-          </motion.section>
-        )}
-
-        {/* ── Your Portfolio ─────────────────────────────────────────── */}
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.3 }}
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <Briefcase className="size-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-              Your Portfolio
-            </h2>
-            {portfolio.length > 0 && (
-              <span className="text-[11px] text-muted-foreground ml-auto">
-                {portfolio.length} venture{portfolio.length !== 1 ? "s" : ""}
-              </span>
+                <div className="w-full bg-white/[0.04] rounded-full h-2">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{
+                      width: `${Math.min(portfolioHealth.score, 100)}%`,
+                    }}
+                    transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
+                    className={cn(
+                      "h-2 rounded-full",
+                      portfolioHealth.score >= 80
+                        ? "bg-emerald-400"
+                        : portfolioHealth.score >= 60
+                          ? "bg-amber-400"
+                          : "bg-red-400"
+                    )}
+                  />
+                </div>
+              </motion.div>
             )}
-          </div>
 
-          {portfolio.length === 0 ? (
-            <div className="bg-card border border-border rounded-xl p-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                Your portfolio is being set up. We'll have your ventures ready
-                shortly.
-              </p>
-            </div>
-          ) : (
-            <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-              {(showAllPortfolio ? portfolio : portfolio.slice(0, 6)).map((v, i) => (
-                <motion.div
-                  key={v.id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 + i * 0.03, duration: 0.25 }}
-                  className="bg-card border border-border rounded-xl p-4 sm:p-5 hover:border-primary/20 transition-colors group active:scale-[0.98] touch-manipulation"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">
-                        {SECTOR_ICONS[v.sector] || (
-                          <Package className="size-4" />
-                        )}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {v.sector}
-                      </span>
-                    </div>
-                    <ChevronRight className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            {/* Venture Cards */}
+            {portfolio.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="size-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
+                  <Briefcase className="size-6 text-muted-foreground/40" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Your portfolio is being set up. We'll have your ventures ready
+                  shortly.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="size-6 rounded-md bg-emerald-500/10 flex items-center justify-center">
+                    <Briefcase className="size-3.5 text-emerald-400" />
                   </div>
+                  <h2 className="text-sm font-semibold text-foreground">
+                    Your Ventures
+                  </h2>
+                  <span className="ml-auto text-[10px] text-muted-foreground">
+                    {portfolio.length} venture
+                    {portfolio.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
 
-                  <h3 className="text-sm font-medium text-foreground mb-1">
-                    {v.name}
-                  </h3>
-
-                  <p className="text-xs text-muted-foreground mb-2">
-                    {v.statusLine}
-                  </p>
-
-                  {v.lastAgentAction && (
-                    <p
-                      className={cn(
-                        "text-[11px] mb-3 leading-snug",
-                        v.lastAgentActionType === "ready"
-                          ? "text-amber-400"
-                          : v.lastAgentActionType === "advanced"
-                            ? "text-emerald-400"
-                            : "text-muted-foreground/70"
-                      )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {(showAllPortfolio
+                    ? portfolio
+                    : portfolio.slice(0, 6)
+                  ).map((v, i) => (
+                    <motion.div
+                      key={v.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        delay: 0.05 + i * 0.04,
+                        duration: 0.35,
+                      }}
+                      className="group rounded-xl border border-border/30 bg-gradient-to-br from-white/[0.02] to-transparent p-5 hover:border-emerald-500/20 transition-all duration-300"
                     >
-                      {v.lastAgentAction}
-                    </p>
-                  )}
-
-                  <div className="space-y-1.5">
-                    <StageIndicator stage={v.stage} />
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-muted-foreground/60">
-                        {v.stage}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* ── Momentum Indicator ── */}
-                  {v.momentum && (
-                    <div className="mt-3 pt-3 border-t border-border">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-1.5">
-                          <Zap className={cn(
-                            "size-3",
-                            v.momentum.velocityVsBenchmark === "faster" ? "text-emerald-400" :
-                            v.momentum.velocityVsBenchmark === "slower" ? "text-red-400" :
-                            "text-amber-400"
-                          )} />
-                          <span className="text-[10px] font-medium text-foreground">
-                            {v.momentum.projectedDays}d projected
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground/60">
+                            {SECTOR_ICONS[v.sector] || (
+                              <Package className="size-4" />
+                            )}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground/60">
+                            {v.sector}
                           </span>
                         </div>
-                        <span className={cn(
-                          "text-[9px] font-medium px-1.5 py-0.5 rounded-full",
-                          v.momentum.velocityVsBenchmark === "faster" ? "bg-emerald-500/10 text-emerald-400" :
-                          v.momentum.velocityVsBenchmark === "slower" ? "bg-red-500/10 text-red-400" :
-                          "bg-amber-500/10 text-amber-400"
-                        )}>
-                          {v.momentum.velocityVsBenchmark === "faster" ? "↑ Ahead" :
-                           v.momentum.velocityVsBenchmark === "slower" ? "↓ Behind" :
-                           "→ On pace"}
-                          {v.momentum.benchmarkDays ? ` vs ${v.momentum.benchmarkDays}d avg` : ""}
-                        </span>
+                        <ChevronRight className="size-3.5 text-muted-foreground/20 group-hover:text-emerald-400/60 transition-all" />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-muted rounded-full h-1">
-                          <div
-                            className={cn(
-                              "h-1 rounded-full transition-all duration-500",
-                              v.momentum.confidence >= 70 ? "bg-emerald-400" :
-                              v.momentum.confidence >= 40 ? "bg-amber-400" : "bg-red-400"
-                            )}
-                            style={{ width: `${Math.min(v.momentum.confidence, 100)}%` }}
-                          />
+
+                      <h3 className="text-sm font-medium text-foreground mb-1">
+                        {v.name}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mb-3">
+                        {v.statusLine}
+                      </p>
+
+                      {v.lastAgentAction && (
+                        <p
+                          className={cn(
+                            "text-[11px] mb-3 leading-snug",
+                            v.lastAgentActionType === "ready"
+                              ? "text-amber-400"
+                              : v.lastAgentActionType === "advanced"
+                                ? "text-emerald-400"
+                                : "text-muted-foreground/60"
+                          )}
+                        >
+                          {v.lastAgentAction}
+                        </p>
+                      )}
+
+                      <div className="space-y-2">
+                        <StageProgress stage={v.stage} />
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-muted-foreground/50">
+                            {v.stage}
+                          </span>
                         </div>
-                        <span className="text-[9px] font-mono text-muted-foreground">
-                          {v.momentum.confidence}%
-                        </span>
                       </div>
-                      {v.momentum.riskLevel !== "low" && v.momentum.riskFactors.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1.5">
-                          {v.momentum.riskFactors.slice(0, 2).map((rf: string, j: number) => (
-                            <span key={j} className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/5 text-red-400/80">
-                              {rf}
+
+                      {/* Momentum */}
+                      {v.momentum && (
+                        <div className="mt-3 pt-3 border-t border-border/20">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-1.5">
+                              <Zap
+                                className={cn(
+                                  "size-3",
+                                  v.momentum.velocityVsBenchmark === "faster"
+                                    ? "text-emerald-400"
+                                    : v.momentum.velocityVsBenchmark ===
+                                        "slower"
+                                      ? "text-red-400"
+                                      : "text-amber-400"
+                                )}
+                              />
+                              <span className="text-[10px] font-medium text-foreground">
+                                {v.momentum.projectedDays}d projected
+                              </span>
+                            </div>
+                            <span
+                              className={cn(
+                                "text-[9px] font-medium px-1.5 py-0.5 rounded-full",
+                                v.momentum.velocityVsBenchmark === "faster"
+                                  ? "bg-emerald-500/10 text-emerald-400"
+                                  : v.momentum.velocityVsBenchmark === "slower"
+                                    ? "bg-red-500/10 text-red-400"
+                                    : "bg-amber-500/10 text-amber-400"
+                              )}
+                            >
+                              {v.momentum.velocityVsBenchmark === "faster"
+                                ? "↑ Ahead"
+                                : v.momentum.velocityVsBenchmark === "slower"
+                                  ? "↓ Behind"
+                                  : "→ On pace"}
+                              {v.momentum.benchmarkDays
+                                ? ` vs ${v.momentum.benchmarkDays}d avg`
+                                : ""}
                             </span>
-                          ))}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 bg-white/[0.04] rounded-full h-1">
+                              <div
+                                className={cn(
+                                  "h-1 rounded-full transition-all duration-500",
+                                  v.momentum.confidence >= 70
+                                    ? "bg-emerald-400"
+                                    : v.momentum.confidence >= 40
+                                      ? "bg-amber-400"
+                                      : "bg-red-400"
+                                )}
+                                style={{
+                                  width: `${Math.min(v.momentum.confidence, 100)}%`,
+                                }}
+                              />
+                            </div>
+                            <span className="text-[9px] font-mono text-muted-foreground/50">
+                              {v.momentum.confidence}%
+                            </span>
+                          </div>
+                          {v.momentum.riskLevel !== "low" &&
+                            v.momentum.riskFactors.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1.5">
+                                {v.momentum.riskFactors
+                                  .slice(0, 2)
+                                  .map((rf: string, j: number) => (
+                                    <span
+                                      key={j}
+                                      className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/5 text-red-400/70"
+                                    >
+                                      {rf}
+                                    </span>
+                                  ))}
+                              </div>
+                            )}
                         </div>
                       )}
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </div>
-            {portfolio.length > 6 && (
-              <button
-                onClick={() => setShowAllPortfolio(!showAllPortfolio)}
-                className="mt-3 w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-2 border border-border/50 rounded-lg hover:border-border"
-              >
-                {showAllPortfolio ? "Show less" : `View all ${portfolio.length} ventures`}
-              </button>
+                    </motion.div>
+                  ))}
+                </div>
+                {portfolio.length > 6 && (
+                  <button
+                    onClick={() => setShowAllPortfolio(!showAllPortfolio)}
+                    className="mt-3 w-full text-center text-[11px] text-muted-foreground hover:text-emerald-400 transition-colors py-2.5 border border-border/20 rounded-xl hover:border-emerald-500/20"
+                  >
+                    {showAllPortfolio
+                      ? "Show less"
+                      : `View all ${portfolio.length} ventures`}
+                  </button>
+                )}
+              </>
             )}
-            </>)}
-          
-        </motion.section>
+          </div>
+        )}
 
-        {/* ── Portfolio Health Score ─────────────────────────────── */}
-        {portfolioHealth && (
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.3 }}
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <Zap className="size-4 text-primary" />
-              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-                Portfolio Health
-              </h2>
-            </div>
-            <div className="bg-card border border-border rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className="flex items-baseline gap-2">
-                    <span className={cn(
-                      "text-3xl font-bold font-mono tracking-tight",
-                      portfolioHealth.score >= 80 ? "text-emerald-400" :
-                      portfolioHealth.score >= 60 ? "text-amber-400" : "text-red-400"
-                    )}>
-                      {portfolioHealth.score}
-                    </span>
-                    <span className="text-xs text-muted-foreground">/100</span>
+        {/* ══════════════════════════════════════════════════════════
+            INTELLIGENCE TAB
+            ══════════════════════════════════════════════════════════ */}
+        {activeTab === "intelligence" && (
+          <div className="space-y-8">
+            {/* Venture Forecasts */}
+            {forecasts && forecasts.length > 0 && (
+              <motion.section
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="size-6 rounded-md bg-blue-500/10 flex items-center justify-center">
+                    <BarChart3 className="size-3.5 text-blue-400" />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Overall portfolio health score
+                  <h2 className="text-sm font-semibold text-foreground">
+                    Venture Forecasts
+                  </h2>
+                  <span className="ml-auto text-[10px] text-muted-foreground/50">
+                    AI-projected timelines
+                  </span>
+                </div>
+                <div className="space-y-2.5">
+                  {(showAllForecasts
+                    ? forecasts
+                    : forecasts.slice(0, 6)
+                  ).map((f: any, i: number) => (
+                    <motion.div
+                      key={f.ventureId}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.04, duration: 0.3 }}
+                      className="rounded-xl border border-border/30 bg-gradient-to-r from-white/[0.02] to-transparent p-5"
+                    >
+                      <div className="flex items-start justify-between mb-2.5">
+                        <div>
+                          <h3 className="text-sm font-medium text-foreground">
+                            {f.ventureName}
+                          </h3>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Projected:{" "}
+                            <span className="font-mono text-foreground/70">
+                              {f.projectedDays}
+                            </span>{" "}
+                            days to next stage
+                          </p>
+                        </div>
+                        <div
+                          className={cn(
+                            "px-2 py-0.5 rounded-full text-[10px] font-medium",
+                            f.riskLevel === "low"
+                              ? "bg-emerald-500/10 text-emerald-400"
+                              : f.riskLevel === "medium"
+                                ? "bg-amber-500/10 text-amber-400"
+                                : "bg-red-500/10 text-red-400"
+                          )}
+                        >
+                          {f.riskLevel} risk
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 bg-white/[0.04] rounded-full h-1.5">
+                          <div
+                            className="h-1.5 rounded-full bg-blue-400/60 transition-all"
+                            style={{
+                              width: `${Math.min(f.confidence, 100)}%`,
+                            }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-mono text-muted-foreground/50">
+                          {f.confidence}% confidence
+                        </span>
+                      </div>
+                      {f.riskFactors && f.riskFactors.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2.5">
+                          {f.riskFactors
+                            .slice(0, 3)
+                            .map((rf: string, j: number) => (
+                              <span
+                                key={j}
+                                className="text-[10px] px-1.5 py-0.5 rounded bg-white/[0.03] text-muted-foreground/60"
+                              >
+                                {rf}
+                              </span>
+                            ))}
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+                {forecasts.length > 6 && (
+                  <button
+                    onClick={() => setShowAllForecasts(!showAllForecasts)}
+                    className="mt-3 w-full text-center text-[11px] text-muted-foreground hover:text-blue-400 transition-colors py-2.5 border border-border/20 rounded-xl hover:border-blue-500/20"
+                  >
+                    {showAllForecasts
+                      ? "Show less"
+                      : `View all ${forecasts.length} forecasts`}
+                  </button>
+                )}
+              </motion.section>
+            )}
+
+            {/* Market Intelligence */}
+            {marketSignals && marketSignals.length > 0 && (
+              <motion.section
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+              >
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="size-6 rounded-md bg-purple-500/10 flex items-center justify-center">
+                    <Globe className="size-3.5 text-purple-400" />
+                  </div>
+                  <h2 className="text-sm font-semibold text-foreground">
+                    Market Intelligence
+                  </h2>
+                  <span className="ml-auto text-[10px] text-muted-foreground/50">
+                    Sector signals
+                  </span>
+                </div>
+                <div className="space-y-2.5">
+                  {(showAllSignals
+                    ? marketSignals
+                    : marketSignals.slice(0, 5)
+                  ).map((s: any, i: number) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.1 + i * 0.04, duration: 0.3 }}
+                      className="rounded-xl border border-border/30 bg-gradient-to-r from-white/[0.02] to-transparent p-5"
+                    >
+                      <div className="flex items-start justify-between mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground/50">
+                            {SECTOR_ICONS[s.sector] || (
+                              <Package className="size-4" />
+                            )}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground/60">
+                            {s.sector}
+                          </span>
+                          <span
+                            className={cn(
+                              "text-[10px] px-1.5 py-0.5 rounded",
+                              s.signalType === "opportunity"
+                                ? "bg-emerald-500/10 text-emerald-400"
+                                : s.signalType === "risk"
+                                  ? "bg-red-500/10 text-red-400"
+                                  : s.signalType === "regulatory"
+                                    ? "bg-amber-500/10 text-amber-400"
+                                    : "bg-white/[0.04] text-muted-foreground"
+                            )}
+                          >
+                            {s.signalType}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono text-muted-foreground/40">
+                          {s.relevance}% relevant
+                        </span>
+                      </div>
+                      <h3 className="text-sm font-medium text-foreground mb-1">
+                        {s.headline}
+                      </h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {s.impact}
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+                {marketSignals.length > 5 && (
+                  <button
+                    onClick={() => setShowAllSignals(!showAllSignals)}
+                    className="mt-3 w-full text-center text-[11px] text-muted-foreground hover:text-purple-400 transition-colors py-2.5 border border-border/20 rounded-xl hover:border-purple-500/20"
+                  >
+                    {showAllSignals
+                      ? "Show less"
+                      : `View all ${marketSignals.length} signals`}
+                  </button>
+                )}
+              </motion.section>
+            )}
+
+            {/* Empty Intelligence */}
+            {(!forecasts || forecasts.length === 0) &&
+              (!marketSignals || marketSignals.length === 0) && (
+                <div className="text-center py-16">
+                  <div className="size-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
+                    <Sparkles className="size-6 text-muted-foreground/40" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">
+                    Intelligence Building
+                  </h3>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                    VENTEX is gathering market data and building forecasts for
+                    your portfolio. Check back soon.
                   </p>
                 </div>
-                <div className="text-right">
-                  <div className={cn(
-                    "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium",
-                    portfolioHealth.trend === "improving" ? "bg-emerald-500/10 text-emerald-400" :
-                    portfolioHealth.trend === "declining" ? "bg-red-500/10 text-red-400" :
-                    "bg-muted text-muted-foreground"
-                  )}>
-                    {portfolioHealth.trend === "improving" ? "↑" : portfolioHealth.trend === "declining" ? "↓" : "→"}
-                    {portfolioHealth.trend}
-                  </div>
-                  {portfolioHealth.riskCount > 0 && (
-                    <p className="text-[11px] text-amber-400 mt-1">
-                      {portfolioHealth.riskCount} venture{portfolioHealth.riskCount !== 1 ? "s" : ""} at risk
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div
-                  className={cn(
-                    "h-2 rounded-full transition-all duration-500",
-                    portfolioHealth.score >= 80 ? "bg-emerald-400" :
-                    portfolioHealth.score >= 60 ? "bg-amber-400" : "bg-red-400"
-                  )}
-                  style={{ width: `${Math.min(portfolioHealth.score, 100)}%` }}
-                />
-              </div>
-            </div>
-          </motion.section>
+              )}
+          </div>
         )}
 
-        {/* ── Venture Forecasts ────────────────────────────────────── */}
-        {forecasts && forecasts.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25, duration: 0.3 }}
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <Clock className="size-4 text-primary" />
-              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-                Venture Forecasts
-              </h2>
-              <span className="text-[11px] text-muted-foreground ml-auto">
-                AI-projected timelines
-              </span>
-            </div>
-            <div className="space-y-2">
-              {(showAllForecasts ? forecasts : forecasts.slice(0, 6)).map((f: any, i: number) => (
-                <motion.div
-                  key={f.ventureId}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + i * 0.04, duration: 0.25 }}
-                  className="bg-card border border-border rounded-xl p-5"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h3 className="text-sm font-medium text-foreground">{f.ventureName}</h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Projected: <span className="font-mono">{f.projectedDays}</span> days to next status
-                      </p>
-                    </div>
-                    <div className={cn(
-                      "px-2 py-0.5 rounded-full text-[10px] font-medium",
-                      f.riskLevel === "low" ? "bg-emerald-500/10 text-emerald-400" :
-                      f.riskLevel === "medium" ? "bg-amber-500/10 text-amber-400" :
-                      "bg-red-500/10 text-red-400"
-                    )}>
-                      {f.riskLevel} risk
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 bg-muted rounded-full h-1.5">
-                      <div
-                        className="h-1.5 rounded-full bg-primary/60 transition-all"
-                        style={{ width: `${Math.min(f.confidence, 100)}%` }}
-                      />
-                    </div>
-                    <span className="text-[10px] font-mono text-muted-foreground">
-                      {f.confidence}% confidence
-                    </span>
-                  </div>
-                  {f.riskFactors && f.riskFactors.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {f.riskFactors.slice(0, 3).map((rf: string, j: number) => (
-                        <span key={j} className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-                          {rf}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </div>
-            {forecasts.length > 6 && (
-              <button
-                onClick={() => setShowAllForecasts(!showAllForecasts)}
-                className="mt-3 w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-2 border border-border/50 rounded-lg hover:border-border"
-              >
-                {showAllForecasts ? "Show less" : `View all ${forecasts.length} forecasts`}
-              </button>
-            )}
-          </motion.section>
-        )}
-
-        {/* ── Market Intelligence ──────────────────────────────────── */}
-        {marketSignals && marketSignals.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.3 }}
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <ArrowUpRight className="size-4 text-primary" />
-              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-                Market Intelligence
-              </h2>
-              <span className="text-[11px] text-muted-foreground ml-auto">
-                Sector signals
-              </span>
-            </div>
-            <div className="space-y-2">
-              {(showAllSignals ? marketSignals : marketSignals.slice(0, 5)).map((s: any, i: number) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.35 + i * 0.04, duration: 0.25 }}
-                  className="bg-card border border-border rounded-xl p-5"
-                >
-                  <div className="flex items-start justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">
-                        {SECTOR_ICONS[s.sector] || <Package className="size-4" />}
-                      </span>
-                      <span className="text-[11px] text-muted-foreground">{s.sector}</span>
-                      <span className={cn(
-                        "text-[10px] px-1.5 py-0.5 rounded",
-                        s.signalType === "opportunity" ? "bg-emerald-500/10 text-emerald-400" :
-                        s.signalType === "risk" ? "bg-red-500/10 text-red-400" :
-                        s.signalType === "regulatory" ? "bg-amber-500/10 text-amber-400" :
-                        "bg-muted text-muted-foreground"
-                      )}>
-                        {s.signalType}
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-mono text-muted-foreground">
-                      {s.relevance}% relevant
-                    </span>
-                  </div>
-                  <h3 className="text-sm font-medium text-foreground mb-1">{s.headline}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{s.impact}</p>
-                </motion.div>
-              ))}
-            </div>
-            {marketSignals.length > 5 && (
-              <button
-                onClick={() => setShowAllSignals(!showAllSignals)}
-                className="mt-3 w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-2 border border-border/50 rounded-lg hover:border-border"
-              >
-                {showAllSignals ? "Show less" : `View all ${marketSignals.length} signals`}
-              </button>
-            )}
-          </motion.section>
-        )}
-
-        {/* Footer */}
-        <div className="pt-8 pb-12 text-center space-y-2">
-          <p className="text-[11px] text-muted-foreground/60">
-            Need help? Contact your VENTEX relationship manager or reach us at{" "}
-            <a href="mailto:support@ventex.io" className="text-primary/70 hover:text-primary underline">support@ventex.io</a>
-          </p>
+        {/* ── Footer ──────────────────────────────────────────────── */}
+        <div className="pt-12 pb-8 text-center space-y-3">
+          <div className="flex items-center justify-center gap-2 text-muted-foreground/30">
+            <div className="h-px w-12 bg-border/30" />
+            <Shield className="size-3.5" />
+            <div className="h-px w-12 bg-border/30" />
+          </div>
           <p className="text-[11px] text-muted-foreground/40">
+            Need help? Contact your VENTEX relationship manager or reach us at{" "}
+            <a
+              href="mailto:support@ventex.io"
+              className="text-emerald-400/50 hover:text-emerald-400 transition-colors"
+            >
+              support@ventex.io
+            </a>
+          </p>
+          <p className="text-[10px] text-muted-foreground/25">
             Managed by VENTEX · Powered by Aurovia
           </p>
         </div>
       </main>
 
-      {/* ── Task Drawer ─────────────────────────────────────────────── */}
-      <Sheet open={!!taskDrawer} onOpenChange={(open) => !open && setTaskDrawer(null)}>
+      {/* ── Task Drawer ──────────────────────────────────────────── */}
+      <Sheet
+        open={!!taskDrawer}
+        onOpenChange={(open) => !open && setTaskDrawer(null)}
+      >
         <SheetContent className="w-full sm:max-w-md bg-background border-border">
           <SheetHeader>
             <SheetTitle className="text-base font-semibold text-foreground">
@@ -1128,33 +1557,48 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
             ) : !ventureTasks || ventureTasks.length === 0 ? (
               <div className="text-center py-12">
                 <CheckCircle2 className="size-8 text-emerald-400 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">No tasks for this venture yet.</p>
+                <p className="text-sm text-muted-foreground">
+                  No tasks for this venture yet.
+                </p>
               </div>
             ) : (
               <div className="space-y-2">
                 {/* Progress bar */}
                 {(() => {
                   const total = ventureTasks.length;
-                  const done = ventureTasks.filter(t => t.status === "complete").length;
-                  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+                  const done = ventureTasks.filter(
+                    (t) => t.status === "complete"
+                  ).length;
+                  const pct =
+                    total > 0 ? Math.round((done / total) * 100) : 0;
                   return (
                     <div className="mb-4">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-xs text-muted-foreground">
                           {done} of {total} tasks complete
                         </span>
-                        <span className={cn(
-                          "text-xs font-mono font-medium",
-                          pct === 100 ? "text-emerald-400" : pct >= 50 ? "text-amber-400" : "text-muted-foreground"
-                        )}>
+                        <span
+                          className={cn(
+                            "text-xs font-mono font-medium",
+                            pct === 100
+                              ? "text-emerald-400"
+                              : pct >= 50
+                                ? "text-amber-400"
+                                : "text-muted-foreground"
+                          )}
+                        >
                           {pct}%
                         </span>
                       </div>
-                      <div className="w-full bg-muted rounded-full h-1.5">
+                      <div className="w-full bg-white/[0.04] rounded-full h-1.5">
                         <div
                           className={cn(
                             "h-1.5 rounded-full transition-all duration-500",
-                            pct === 100 ? "bg-emerald-400" : pct >= 50 ? "bg-amber-400" : "bg-primary/60"
+                            pct === 100
+                              ? "bg-emerald-400"
+                              : pct >= 50
+                                ? "bg-amber-400"
+                                : "bg-emerald-400/60"
                           )}
                           style={{ width: `${pct}%` }}
                         />
@@ -1173,66 +1617,91 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                 {ventureTasks.map((task) => {
                   const isComplete = task.status === "complete";
                   const isCompleting = completingTaskIds.has(task.id);
-                  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !isComplete;
+                  const isOverdue =
+                    task.dueDate &&
+                    new Date(task.dueDate) < new Date() &&
+                    !isComplete;
 
                   return (
                     <div
                       key={task.id}
                       className={cn(
-                        "rounded-lg border p-3 transition-all",
+                        "rounded-xl border p-3.5 transition-all",
                         isComplete
-                          ? "border-emerald-500/20 bg-emerald-500/5"
+                          ? "border-emerald-500/15 bg-emerald-500/[0.03]"
                           : isOverdue
-                            ? "border-red-500/20 bg-red-500/5"
-                            : "border-border bg-card hover:border-primary/20"
+                            ? "border-red-500/15 bg-red-500/[0.03]"
+                            : "border-border/30 bg-white/[0.01] hover:border-emerald-500/15"
                       )}
                     >
                       <div className="flex items-start gap-3">
                         <div className="pt-0.5">
                           {isCompleting ? (
-                            <Loader2 className="size-4 animate-spin text-primary" />
+                            <Loader2 className="size-4 animate-spin text-emerald-400" />
                           ) : (
                             <Checkbox
                               checked={isComplete}
                               disabled={isComplete || isCompleting}
-                              onCheckedChange={() => handleCompleteTask(task.id)}
+                              onCheckedChange={() =>
+                                handleCompleteTask(task.id)
+                              }
                               className={cn(
-                                "border-muted-foreground/40",
-                                isComplete && "border-emerald-400 bg-emerald-400 text-white"
+                                "border-muted-foreground/30",
+                                isComplete &&
+                                  "border-emerald-400 bg-emerald-400 text-white"
                               )}
                             />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={cn(
-                            "text-sm font-medium leading-snug",
-                            isComplete ? "text-muted-foreground line-through" : "text-foreground"
-                          )}>
+                          <p
+                            className={cn(
+                              "text-sm font-medium leading-snug",
+                              isComplete
+                                ? "text-muted-foreground line-through"
+                                : "text-foreground"
+                            )}
+                          >
                             {task.title}
                           </p>
                           {task.description && (
-                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                            <p className="text-xs text-muted-foreground/60 mt-0.5 line-clamp-2">
                               {task.description}
                             </p>
                           )}
                           <div className="flex items-center gap-3 mt-1.5">
                             {task.priority && (
-                              <span className={cn(
-                                "text-[10px] px-1.5 py-0.5 rounded font-medium",
-                                task.priority === "High" ? "bg-red-500/10 text-red-400" :
-                                task.priority === "Medium" ? "bg-amber-500/10 text-amber-400" :
-                                "bg-muted text-muted-foreground"
-                              )}>
+                              <span
+                                className={cn(
+                                  "text-[10px] px-1.5 py-0.5 rounded font-medium",
+                                  task.priority === "High"
+                                    ? "bg-red-500/10 text-red-400"
+                                    : task.priority === "Medium"
+                                      ? "bg-amber-500/10 text-amber-400"
+                                      : "bg-white/[0.04] text-muted-foreground"
+                                )}
+                              >
                                 {task.priority}
                               </span>
                             )}
                             {task.dueDate && (
-                              <span className={cn(
-                                "text-[10px] flex items-center gap-1",
-                                isOverdue ? "text-red-400" : "text-muted-foreground"
-                              )}>
+                              <span
+                                className={cn(
+                                  "text-[10px] flex items-center gap-1",
+                                  isOverdue
+                                    ? "text-red-400"
+                                    : "text-muted-foreground/50"
+                                )}
+                              >
                                 <Clock className="size-3" />
-                                {isOverdue ? "Overdue" : friendlyDate(task.dueDate)}
+                                {isOverdue
+                                  ? "Overdue"
+                                  : friendlyDate(task.dueDate)}
+                              </span>
+                            )}
+                            {task.assigneeNames && (
+                              <span className="text-[10px] text-muted-foreground/40">
+                                {task.assigneeNames}
                               </span>
                             )}
                           </div>
@@ -1247,7 +1716,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
         </SheetContent>
       </Sheet>
 
-      {/* ── Confirmation Dialog for non-advance actions ───────────── */}
+      {/* ── Confirmation Dialog ───────────────────────────────────── */}
       <Dialog
         open={!!confirmDialog}
         onOpenChange={(open) => !open && setConfirmDialog(null)}
@@ -1277,7 +1746,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
                 Cancel
               </Button>
               <Button
-                className="min-h-[44px] sm:min-h-0 touch-manipulation bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20"
+                className="min-h-[44px] sm:min-h-0 touch-manipulation bg-emerald-600 hover:bg-emerald-500 text-white border-0"
                 disabled={resolvingIds.has(confirmDialog.eventId)}
                 onClick={() =>
                   handleResolveAction(
@@ -1298,15 +1767,38 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
         )}
       </Dialog>
 
+      {/* ── Mobile Bottom Nav ─────────────────────────────────────── */}
+      <div className="fixed bottom-0 left-0 right-0 sm:hidden z-20">
+        <div
+          className="border-t border-border/30 px-2 py-2 flex items-center justify-around"
+          style={{ backgroundColor: "oklch(8% .003 264)" }}
+        >
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "flex flex-col items-center gap-1 px-4 py-1.5 rounded-lg transition-all",
+                activeTab === tab.id
+                  ? "text-emerald-400"
+                  : "text-muted-foreground/50"
+              )}
+            >
+              {tab.icon}
+              <span className="text-[9px] font-medium">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
     </>
   );
+
+  // ── Wrapper ────────────────────────────────────────────────────────────
 
   if (useDashboard) {
     return (
       <DashboardLayout title={orgName} subtitle="MANAGED BY VENTEX">
-        <div className="p-5 md:p-8">
-          {portalContent}
-        </div>
+        <div className="p-5 md:p-8">{portalContent}</div>
       </DashboardLayout>
     );
   }
@@ -1323,28 +1815,28 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
       )}
 
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between">
+      <header className="border-b border-border/30 bg-background/80 backdrop-blur-xl sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div
-            className="cursor-pointer"
+            className="cursor-pointer group"
             onClick={() => navigate(`/portal/${orgSlug}`)}
             title="Return to dashboard"
           >
-            <h1 className="text-lg font-semibold text-foreground tracking-tight hover:text-primary transition-colors">
+            <h1 className="text-base font-semibold text-foreground tracking-tight group-hover:text-emerald-400 transition-colors font-[family-name:var(--font-display)]">
               {orgName}
             </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-[10px] text-muted-foreground/40 mt-0.5 uppercase tracking-[0.1em]">
               Managed by VENTEX
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground hidden sm:block">
+            <span className="text-[11px] text-muted-foreground/50 hidden sm:block">
               {user.name || user.email}
             </span>
             <Button
               variant="ghost"
               size="sm"
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground/40 hover:text-foreground h-8 w-8 p-0"
               onClick={() => logout()}
             >
               <LogOut className="size-4" />

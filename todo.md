@@ -3202,3 +3202,17 @@
 ## Bug Fix — Cookie Notice Transparency
 - [x] Fix cookie notice banner appearing transparent instead of solid background
 - [x] Fix VENTEX operators live status — connect "Live" indicator on dashboard to actual team members in the team section
+
+## Bug Fix — Demo Mode & Sign Out
+- [ ] Fix demo mode not working
+- [ ] Fix sign out not working
+
+## Client Portal Redesign — Premium Private-Banking-Grade Experience
+- [x] Audit current client portal pages and components
+- [x] Redesign client portal dashboard with premium, world-class UI
+- [x] Redesign client portfolio/ventures view
+- [x] Redesign client communications/messages view (integrated into Intelligence tab)
+- [x] Redesign client distributions view (integrated into Overview action items)
+- [x] Redesign client documents/files view (integrated into Portfolio venture cards)
+- [x] Polish animations, micro-interactions, and responsive design
+- [x] Ensure all client pages have consistent premium design language
