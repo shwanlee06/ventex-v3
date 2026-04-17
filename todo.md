@@ -3056,16 +3056,16 @@
 
 ## Phase 3 — Client-Readiness Simulation (CTO Persona)
 
-- [ ] Pre-check: Verify P0 from Phase 2 (13 IDOR procedures) status
-- [ ] 3.1 First impression audit of ventexdemo.manus.space
-- [ ] 3.2 Security diligence — CTO document request
-- [ ] 3.3 Regulatory diligence — GC document request
-- [ ] 3.4 Principal demo — 45-minute matriarch walkthrough
-- [ ] 3.5 Operator demo — 45-minute multi-client morning
-- [ ] 3.6 UHNWI edge cases
-- [ ] 3.7 Continuity conversation — what if Aurovia disappears
-- [ ] 3.8 Would I Sign memo
-- [ ] 3.9 Phase 3 summary + Master test battery report
+- [x] Pre-check: All 13 IDOR procedures FIXED and verified (14/14 tests pass)
+- [x] 3.1 First impression audit — 7/10 overall, 9 findings (2 HIGH legal concerns)
+- [x] 3.2 Security diligence — 2/12 documents available, 1 CRITICAL finding
+- [x] 3.3 Regulatory diligence — 4/11 clean, 4 risk areas, 3 doc gaps
+- [x] 3.4 Principal demo — 7.5/10, velocity summary excellent, 5 findings
+- [x] 3.5 Operator demo — 8/10, dashboard triage excellent, 3 findings
+- [x] 3.6 UHNWI edge cases — 3/6 pass, 2 HIGH (trust structures, sanctions)
+- [x] 3.7 Continuity conversation — 4/10, 5 findings (2 HIGH: export, hosting chain)
+- [x] 3.8 Would I Sign memo — NOT YET, 90-day revisit, 5 MUST HAVE conditions
+- [x] 3.9 Phase 3 summary + Master test battery report
 
 ## P0 IDOR Remediation (Phase 2 → Phase 3 gate)
 
