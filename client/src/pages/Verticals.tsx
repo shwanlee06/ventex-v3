@@ -479,13 +479,13 @@ export default function VerticalsPage() {
                     <span className="text-xs font-mono font-medium text-emerald-400">{group.activeCount}</span>
                   </div>
                   {group.totalTasks > 0 && (
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] text-muted-foreground">Tasks</span>
+                    <div className="flex items-center gap-1.5" title="Open tasks across all ventures accessible to this client">
+                      <span className="text-[10px] text-muted-foreground">Open Tasks</span>
                       <span className="text-xs font-mono font-medium text-amber-400">{group.totalTasks}</span>
                     </div>
                   )}
                   {group.overdueTasks > 0 && (
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5" title="Overdue tasks across all ventures accessible to this client">
                       <span className="text-[10px] text-muted-foreground">Overdue</span>
                       <span className="text-xs font-mono font-medium text-red-400">{group.overdueTasks}</span>
                     </div>

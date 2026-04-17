@@ -66,6 +66,11 @@ function formatTimeAgo(date: Date): string {
   return `${diffDays}d ago`;
 }
 
+/** Returns true if the signal is older than 24 hours */
+function isStaleSignal(date: Date): boolean {
+  return (Date.now() - new Date(date).getTime()) > 24 * 60 * 60 * 1000;
+}
+
 
 function SeverityBar({ events }: { events: AgentEvent[] }) {
   const counts = useMemo(() => {
@@ -491,8 +496,9 @@ export default function AgentsPage() {
                             <span className="text-[9px] font-mono text-muted-foreground/60 bg-secondary/30 px-1 rounded">
                               {event.eventType.replace(/_/g, " ")}
                             </span>
-                            <span className="text-[9px] font-mono text-muted-foreground/60">
+                            <span className={cn("text-[9px] font-mono", isStaleSignal(event.createdAt) ? "text-amber-400/70" : "text-muted-foreground/60")}>
                               {formatTimeAgo(event.createdAt)}
+                              {isStaleSignal(event.createdAt) && " · stale"}
                             </span>
                             {!event.isRead && (
                               <span className="size-1.5 rounded-full bg-primary flex-shrink-0" />

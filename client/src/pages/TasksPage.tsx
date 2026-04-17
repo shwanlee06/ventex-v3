@@ -72,6 +72,7 @@ export default function TasksPage() {
   const teamQ = trpc.team.list.useQuery(orgInput);
   const venturesQ = trpc.ventures.list.useQuery(orgInput);
 
+  const { organizations } = useWorkspace();
   const rawTasks = tasksQ.data || [];
   // Strip "AI Generated:" prefix and mask internal team names for client view
   const INTERNAL_TEAM_NAMES = ["VENTEX Operations", "ATLAS Operations", "VENTEX Ops", "ATLAS Ops"];
@@ -83,6 +84,13 @@ export default function TasksPage() {
   }));
   const team = teamQ.data || [];
   const ventures = venturesQ.data || [];
+
+  // Build orgId -> orgName map for task org chips (admin only)
+  const orgMap = useMemo(() => {
+    const m = new Map<number, string>();
+    for (const org of organizations || []) m.set(org.id, org.name);
+    return m;
+  }, [organizations]);
   const metrics = metricsQ.data || { total: 0, open: 0, complete: 0, overdue: 0 };
 
   const createTask = trpc.tasks.create.useMutation({
@@ -270,9 +278,16 @@ export default function TasksPage() {
             <span className="text-[10px] text-muted-foreground truncate capitalize">· {(task.assigneeNames as string[])[0]}</span>
           )}
         </div>
-        {task.ventureLink && (
-          <div className="mt-1.5 ml-6.5">
-            <span className="text-[10px] text-primary/70 italic">{task.ventureLink}</span>
+        {(task.ventureLink || (isAdmin && task.organizationId)) && (
+          <div className="mt-1.5 ml-6.5 flex items-center gap-2">
+            {task.ventureLink && (
+              <span className="text-[10px] text-primary/70 italic">{task.ventureLink}</span>
+            )}
+            {isAdmin && task.organizationId && orgMap.get(task.organizationId) && (
+              <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/15">
+                {orgMap.get(task.organizationId)}
+              </span>
+            )}
           </div>
         )}
       </motion.div>
@@ -463,6 +478,7 @@ export default function TasksPage() {
                     {isAdmin && <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Priority</TableHead>}
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden lg:table-cell">Assignees</TableHead>
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden lg:table-cell">Venture</TableHead>
+                    {isAdmin && <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground hidden xl:table-cell">Client</TableHead>}
                     <TableHead className="text-[11px] uppercase tracking-[0.06em] font-medium text-muted-foreground">Status</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -502,8 +518,19 @@ export default function TasksPage() {
                             )}>{task.priority}</span>
                           </TableCell>
                         )}
-                        <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{((task.assigneeNames || []) as string[]).join(", ") || "—"}</TableCell>
-                        <TableCell className="text-xs text-primary/70 italic hidden lg:table-cell">{task.ventureLink || "—"}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground hidden lg:table-cell">{((task.assigneeNames || []) as string[]).join(", ") || "\u2014"}</TableCell>
+                        <TableCell className="text-xs text-primary/70 italic hidden lg:table-cell">{task.ventureLink || "\u2014"}</TableCell>
+                        {isAdmin && (
+                          <TableCell className="hidden xl:table-cell">
+                            {task.organizationId && orgMap.get(task.organizationId) ? (
+                              <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/15">
+                                {orgMap.get(task.organizationId)}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">\u2014</span>
+                            )}
+                          </TableCell>
+                        )}
                         <TableCell><StatusBadge label={sc.label} bg={sc.bg} dot={sc.dot} /></TableCell>
                       </TableRow>
                     );

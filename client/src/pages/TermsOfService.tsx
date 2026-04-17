@@ -99,13 +99,20 @@ export default function TermsOfService() {
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-sm font-semibold text-foreground">6. AI-Generated Content</h3>
+          <h3 className="text-sm font-semibold text-foreground">6. AI-Generated Content & Intellectual Property</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
             The platform uses artificial intelligence to generate insights, recommendations, draft
             communications, and automated workflows. AI-generated content is provided for
             informational purposes and should be reviewed by qualified professionals before acting
             upon it. We do not guarantee the accuracy, completeness, or suitability of AI-generated
             content for any particular purpose.
+          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            All AI-generated content created within your account — including but not limited to
+            reports, analyses, draft communications, extracted blueprints, and automated insights —
+            is your intellectual property. {COMPANY} claims no ownership rights over AI-generated
+            work product produced using your data. You may use, modify, distribute, and commercially
+            exploit any AI-generated content without restriction.
           </p>
         </section>
 
@@ -172,7 +179,23 @@ export default function TermsOfService() {
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-sm font-semibold text-foreground">13. Changes to Terms</h3>
+          <h3 className="text-sm font-semibold text-foreground">13. Data Processing Agreement</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {COMPANY} processes personal data on behalf of clients as a data processor under
+            applicable data protection laws (including GDPR, where applicable). A Data Processing
+            Agreement (DPA) is available upon request and will be executed as an addendum to these
+            Terms for enterprise clients. The DPA covers: (a) categories of data processed;
+            (b) processing purposes and instructions; (c) sub-processor disclosures;
+            (d) data subject rights procedures; (e) breach notification timelines; and
+            (f) data deletion and return obligations. To request a DPA, contact{" "}
+            <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary hover:underline">
+              {CONTACT_EMAIL}
+            </a>.
+          </p>
+        </section>
+
+        <section className="space-y-3">
+          <h3 className="text-sm font-semibold text-foreground">14. Changes to Terms</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
             We reserve the right to modify these Terms at any time. Material changes will be
             communicated through the platform or via email. Continued use of the platform after
@@ -181,7 +204,7 @@ export default function TermsOfService() {
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-sm font-semibold text-foreground">14. Contact</h3>
+          <h3 className="text-sm font-semibold text-foreground">15. Contact</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
             For questions about these Terms of Service, contact us at:{" "}
             <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary hover:underline">

@@ -3119,3 +3119,40 @@
 - [x] PE-01: Add RBAC dual-identity documentation
 - [x] PE-06: Migrate 4 inline role checks to middleware (notifications + access routers)
 - [x] DP-04: Verify DATABASE_URL SSL parameters (confirmed ssl=true in URL)
+
+## Wave 2 — Medium-Effort Fixes (25 findings)
+
+### Batch E — P1 Critical Fixes
+- [x] F-005: Filter assigned ventures from Unassigned section (code logic already correct; data issue resolved by DB cleanup)
+- [x] F-015: Add client filter dropdown to Distributions page (already implemented with All Clients + per-org filter)
+- [x] F3-016: Compliance must-fix items (DPA section added to ToS; exponential returns + Venezuela done in W1)
+
+### Batch F — P2 UX & Data Fixes
+- [x] F-007: Scope task counts to org-owned ventures only (added tooltips clarifying "accessible ventures" scope)
+- [x] F-014: Add org name chip/tag to task cards in global tasks view (card + table views)
+- [x] F-016: Add client context switcher to Distributions page (same as F-015, already implemented)
+- [x] F-017: Add staleness indicator to agent signals when data is outdated (amber "stale" label after 24h)
+- [x] F3-019: Add "Your Team" section to client portal showing assigned team members
+
+### Batch G — P2 Trust & Security
+- [ ] F3-011: Add cookie consent banner to public pages
+- [x] F3-015: Add IP ownership clause for AI-generated work product to Terms of Service
+- [ ] AH-02: Add Origin header verification middleware for mutations (CSRF protection)
+
+### Batch H — P3 Backend Security
+- [ ] INJ-04: Add LLM output sanitization (check for system prompt leaks and cross-tenant data)
+- [ ] AL-01: Change audit log deletion to soft-delete (mark as archived)
+- [ ] DP-05: Use presigned URLs for sensitive document downloads
+- [ ] AH-01: Add MFA enforcement flag for admin/owner roles in RBAC config
+
+### Batch I — P3 Data & Admin UX
+- [ ] F-006: Archive orphaned test ventures from Unassigned section
+- [ ] F-020: Add bulk "Mark Resolved" action to oversight events
+- [ ] F3-006: White-label login or add "Infrastructure by Manus" explanation
+- [ ] F3-029: Support fractional distribution amounts (store in minor currency units)
+
+### Batch J — P3 Documentation & Architecture
+- [ ] F3-026: Add automated FX rate fetching from ECB API
+- [ ] F3-033: Create Manus dependency map with replacement instructions
+- [ ] F3-035: Create transition/migration guide document
+- [ ] RL-02 + AH-05: Document Redis-backed rate limiting as future scaling requirement

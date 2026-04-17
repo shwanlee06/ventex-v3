@@ -18,6 +18,8 @@ import {
   ventureFiles,
   documentDownloads,
   distributionReadReceipts,
+  teamMembers,
+  ventureTeam,
 } from "../../drizzle/schema";
 import { isVentexTeam } from "../security/rbac";
 import { onClientPortalAction, onTaskCompleted, onStageAdvanced } from "../intelligence/realtimeTriggers";
@@ -658,11 +660,32 @@ export const portalRouter = {
         });
       }
 
+      // Fetch team members assigned to this org's ventures
+      const ventureIds = access.map(a => a.ventureId);
+      let assignedTeam: { id: number; name: string; role: string | null; photoUrl: string | null; avatarUrl: string | null }[] = [];
+      if (ventureIds.length > 0) {
+        const vtRows = await db.select().from(ventureTeam).where(inArray(ventureTeam.ventureId, ventureIds));
+        const memberIds = Array.from(new Set(vtRows.map(vt => vt.memberId)));
+        if (memberIds.length > 0) {
+          const members = await db.select().from(teamMembers).where(inArray(teamMembers.id, memberIds));
+          assignedTeam = members
+            .filter(m => m.type === "Internal" && m.status === "Active")
+            .map(m => ({
+              id: m.id,
+              name: m.name,
+              role: m.role,
+              photoUrl: m.photoUrl,
+              avatarUrl: m.avatarUrl,
+            }));
+        }
+      }
+
       return {
         orgName: org.name,
         orgSlug: org.slug,
         isOperatorPreview: isAdmin,
         velocitySummary,
+        assignedTeam,
         // Intelligence layer
         forecasts,
         marketSignals,

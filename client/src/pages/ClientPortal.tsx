@@ -31,6 +31,7 @@ import {
   Send,
   DollarSign,
   Unlock,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -315,6 +316,7 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
     forecasts,
     marketSignals,
     portfolioHealth,
+    assignedTeam,
   } = data;
 
   const portalContent = (
@@ -698,7 +700,55 @@ export default function ClientPortal(props: { orgSlug?: string; useDashboard?: b
           </motion.section>
         )}
 
-        {/* ── Your Portfolio ─────────────────────────────────────────── */}        <motion.section
+        {/* ── Your Team ─────────────────────────────────────────── */}
+        {assignedTeam && assignedTeam.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12, duration: 0.3 }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Users className="size-4 text-primary" />
+              <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+                Your Team
+              </h2>
+              <span className="text-[11px] text-muted-foreground ml-auto">
+                {assignedTeam.length} member{assignedTeam.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {assignedTeam.map((member: { id: number; name: string; role: string | null; photoUrl: string | null; avatarUrl: string | null }) => (
+                <div
+                  key={member.id}
+                  className="bg-card/50 border border-border/50 rounded-xl p-4 flex items-center gap-3"
+                >
+                  {(member.avatarUrl || member.photoUrl) ? (
+                    <img
+                      src={member.avatarUrl || member.photoUrl || ""}
+                      alt={member.name}
+                      className="size-9 rounded-full object-cover border border-border/50"
+                    />
+                  ) : (
+                    <div className="size-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                      <span className="text-xs font-semibold text-primary">
+                        {member.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-foreground truncate">{member.name}</p>
+                    {member.role && (
+                      <p className="text-[10px] text-muted-foreground truncate">{member.role}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.section>
+        )}
+
+        {/* ── Your Portfolio ─────────────────────────────────────────── */}
+        <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.3 }}
