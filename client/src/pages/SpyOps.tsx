@@ -700,6 +700,20 @@ export default function SpyOps() {
                   alignItems: "center",
                 }}
               >
+                {/* Logo mark */}
+                <img
+                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png"
+                  alt="VENTEX"
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 10,
+                    objectFit: 'cover',
+                    marginBottom: 20,
+                    opacity: ventexCipher.done ? 1 : 0.3,
+                    transition: 'opacity 0.8s ease',
+                  }}
+                />
                 <div
                   style={{
                     fontFamily: "'Share Tech Mono', monospace",
@@ -2097,16 +2111,11 @@ export default function SpyOps() {
         >
           {/* col 1 */}
           <div>
-            <div
-              style={{
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 18,
-                fontWeight: 500,
-                marginBottom: 8,
-              }}
-            >
-              VTX_
-            </div>
+            <img
+              src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png"
+              alt="VENTEX"
+              style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', marginBottom: 8 }}
+            />
             <div
               style={{
                 fontFamily: "'Share Tech Mono', monospace",

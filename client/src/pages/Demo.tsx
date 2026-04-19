@@ -226,6 +226,11 @@ export default function Demo() {
         scrollY > 100 ? "bg-[#050507]/90 backdrop-blur-md border-b border-white/5" : "bg-transparent"
       )}>
         <div className="flex items-center gap-3">
+          <img
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png"
+            alt="VENTEX"
+            className="size-6 rounded object-cover"
+          />
           <span className="text-sm font-bold tracking-[0.2em]" style={{ fontFamily: HEADLINE_FONT }}>VENTEX</span>
           <span className="text-[9px] text-white/50 tracking-wider hidden sm:inline">INVESTOR DEMO</span>
         </div>
@@ -280,7 +285,15 @@ export default function Demo() {
             <span className="text-[10px] tracking-[0.2em] text-[#00ff87] uppercase">Pre-Seed Introduction · Presented by Shwan Lee</span>
           </motion.div>
 
-          {/* VENTEX. */}
+          {/* Logo + VENTEX. */}
+          <motion.img
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png"
+            alt="VENTEX"
+            className="w-16 h-16 md:w-20 md:h-20 rounded-xl object-cover mx-auto mb-6"
+          />
           <h1
             className="text-[clamp(60px,12vw,160px)] font-bold leading-[0.85] tracking-[-0.02em] mb-4"
             style={{ fontFamily: HEADLINE_FONT }}

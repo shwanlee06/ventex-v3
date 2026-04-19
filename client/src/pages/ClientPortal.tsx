@@ -1526,9 +1526,16 @@ export default function ClientPortal(
               support@ventex.io
             </a>
           </p>
-          <p className="text-[10px] text-muted-foreground/25">
-            Managed by VENTEX · Powered by Aurovia
-          </p>
+          <div className="flex items-center justify-center gap-2 mt-1">
+            <img
+              src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png"
+              alt="VENTEX"
+              className="size-4 rounded-sm object-cover opacity-25"
+            />
+            <p className="text-[10px] text-muted-foreground/25">
+              Managed by VENTEX · Powered by Aurovia
+            </p>
+          </div>
         </div>
       </main>
 
@@ -1818,16 +1825,23 @@ export default function ClientPortal(
       <header className="border-b border-border/30 bg-background/80 backdrop-blur-xl sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div
-            className="cursor-pointer group"
+            className="cursor-pointer group flex items-center gap-3"
             onClick={() => navigate(`/portal/${orgSlug}`)}
             title="Return to dashboard"
           >
-            <h1 className="text-base font-semibold text-foreground tracking-tight group-hover:text-emerald-400 transition-colors font-[family-name:var(--font-display)]">
-              {orgName}
-            </h1>
-            <p className="text-[10px] text-muted-foreground/40 mt-0.5 uppercase tracking-[0.1em]">
-              Managed by VENTEX
-            </p>
+            <img
+              src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png"
+              alt="VENTEX"
+              className="size-8 rounded-md object-cover flex-shrink-0"
+            />
+            <div>
+              <h1 className="text-base font-semibold text-foreground tracking-tight group-hover:text-emerald-400 transition-colors font-[family-name:var(--font-display)]">
+                {orgName}
+              </h1>
+              <p className="text-[10px] text-muted-foreground/40 mt-0.5 uppercase tracking-[0.1em]">
+                Managed by VENTEX
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-[11px] text-muted-foreground/50 hidden sm:block">

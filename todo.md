@@ -3216,3 +3216,23 @@
 - [x] Redesign client documents/files view (integrated into Portfolio venture cards)
 - [x] Polish animations, micro-interactions, and responsive design
 - [x] Ensure all client pages have consistent premium design language
+
+## PWA & Real-Time Notifications
+- [x] Create PWA manifest.json with VENTEX branding and icons
+- [x] Add service worker for offline caching and push notifications
+- [x] Add install prompt component for mobile and desktop
+- [x] Configure standalone display mode (no browser chrome)
+- [x] Add themed status bar and splash screen colors
+- [x] Implement real-time push notifications for action items (SSE → push bridge)
+- [ ] Add notification preferences to client portal
+- [ ] Test PWA install flow on mobile and desktop
+
+## Official VENTEX Logo Mark
+- [x] Upload user's official VENTEX logo mark to CDN
+- [x] Update PWA manifest icons to use official logo
+- [x] Update service worker notification icon
+- [x] Update AppSidebar logo
+- [x] Update SpyOps landing page hero and footer
+- [x] Update Demo page header and hero
+- [x] Update ClientPortal header and footer
+- [x] Update index.html favicon and apple-touch-icon

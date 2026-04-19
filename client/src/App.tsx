@@ -44,6 +44,8 @@ import TrustSecurity from "./pages/TrustSecurity";
 import { AgentProvider } from "./contexts/AgentContext";
 import { useHeartbeat } from "./hooks/useHeartbeat";
 import { useIdleTimeout } from "./hooks/useIdleTimeout";
+import { useNotificationBridge } from "./hooks/useNotificationBridge";
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import { DemoProvider } from "./contexts/DemoContext";
 import Demo from "./pages/Demo";
 import DemoDashboard from "./pages/DemoDashboard";
@@ -227,6 +229,7 @@ function Router() {
 function HeartbeatProvider({ children }: { children: React.ReactNode }) {
   useHeartbeat();
   useIdleTimeout();
+  useNotificationBridge();
   return <>{children}</>;
 }
 
@@ -243,6 +246,7 @@ function App() {
                 <CustomCursor />
                 <Toaster />
                 <CookieConsent />
+                <PWAInstallPrompt />
                 <Router />
               </HeartbeatProvider>
             </TooltipProvider>
