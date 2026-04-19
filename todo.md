@@ -3243,3 +3243,6 @@
 - [x] Clean up test data — remove Test VENTEX Member entries from database (22 test members deleted)
 - [x] Add notification preferences to client portal (toggle action items, distributions, stage advances)
 - [x] Verify PWA manifest and service worker are production-ready for publish
+
+## Bug Fix — Sign Out Not Working
+- [x] Investigate and fix sign out not working after signing in on published site

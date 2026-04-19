@@ -157,11 +157,14 @@ export default function AppSidebar() {
   }, [mobileOpen]);
 
   const handleSignOut = async () => {
+    // Set flag to prevent UNAUTHED redirect race condition
+    (window as any).__ventex_logging_out = true;
     try {
       localStorage.removeItem("ventex_operator");
       await logout();
     } catch {}
-    toast.info("Signed out");
+    // Hard redirect to landing page
+    window.location.href = "/";
   };
 
   const initials = user?.name?.split(" ").map(w => w[0]).join("").slice(0, 2) || "?";

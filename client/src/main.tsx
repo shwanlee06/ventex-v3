@@ -10,6 +10,10 @@ import "./index.css";
 
 const queryClient = new QueryClient();
 
+// Flag to suppress UNAUTHED redirect during intentional logout
+// Set by logout handlers before the auth query can refire
+(window as any).__ventex_logging_out = false;
+
 const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!(error instanceof TRPCClientError)) return;
   if (typeof window === "undefined") return;
@@ -17,6 +21,9 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
 
   if (!isUnauthorized) return;
+
+  // Don't redirect if user is intentionally logging out
+  if ((window as any).__ventex_logging_out) return;
 
   // Don't redirect on public pages (demo, login, legal, invite)
   const path = window.location.pathname;

@@ -67,14 +67,16 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
   }, [user?.role, isPreviewMode]);
 
   const handleSignOut = useCallback(async () => {
+    // Set flag to prevent UNAUTHED redirect race condition
+    (window as any).__ventex_logging_out = true;
     endCurrentSession();
     localStorage.removeItem("ventex_operator");
     try {
       await logout();
     } catch {}
-    toast.info("Signed out — redirecting to landing");
-    setTimeout(() => navigate("/"), 600);
-  }, [navigate, logout]);
+    // Hard redirect to landing page
+    window.location.href = "/";
+  }, [logout]);
 
   const handleTogglePreview = useCallback(() => {
     if (isPreviewMode) {
