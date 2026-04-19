@@ -3224,7 +3224,7 @@
 - [x] Configure standalone display mode (no browser chrome)
 - [x] Add themed status bar and splash screen colors
 - [x] Implement real-time push notifications for action items (SSE → push bridge)
-- [ ] Add notification preferences to client portal
+- [x] Add notification preferences to client portal
 - [ ] Test PWA install flow on mobile and desktop
 
 ## Official VENTEX Logo Mark
@@ -3236,3 +3236,10 @@
 - [x] Update Demo page header and hero
 - [x] Update ClientPortal header and footer
 - [x] Update index.html favicon and apple-touch-icon
+
+## Cleanup & Notification Preferences
+- [x] Clean up test data — remove OrgLinked Venture entries from database (11 ventures, 66 tasks, 22 activity logs deleted)
+- [x] Clean up test data — remove test organizations (AI Empty Test, AI Test Client) from database (2 orgs, 48 agent events deleted)
+- [x] Clean up test data — remove Test VENTEX Member entries from database (22 test members deleted)
+- [x] Add notification preferences to client portal (toggle action items, distributions, stage advances)
+- [x] Verify PWA manifest and service worker are production-ready for publish

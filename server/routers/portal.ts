@@ -20,6 +20,7 @@ import {
   distributionReadReceipts,
   teamMembers,
   ventureTeam,
+  notificationPreferences,
 } from "../../drizzle/schema";
 import { isVentexTeam } from "../security/rbac";
 import { onClientPortalAction, onTaskCompleted, onStageAdvanced } from "../intelligence/realtimeTriggers";
@@ -1348,5 +1349,96 @@ ${scopedContext}`;
         .orderBy(desc(distributionReadReceipts.readAt));
 
       return receipts;
+    }),
+
+  // ── Notification Preferences ──────────────────────────────────
+
+  getNotificationPreferences: protectedProcedure
+    .query(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      const [prefs] = await db.select()
+        .from(notificationPreferences)
+        .where(eq(notificationPreferences.userId, ctx.user.id))
+        .limit(1);
+
+      // Return defaults if no record exists
+      if (!prefs) {
+        return {
+          pushEnabled: true,
+          emailEnabled: true,
+          actionItems: true,
+          distributions: true,
+          stageAdvances: true,
+          teamUpdates: false,
+          marketSignals: true,
+          agentActivity: false,
+          quietHoursStart: null,
+          quietHoursEnd: null,
+        };
+      }
+
+      return {
+        pushEnabled: prefs.pushEnabled,
+        emailEnabled: prefs.emailEnabled,
+        actionItems: prefs.actionItems,
+        distributions: prefs.distributions,
+        stageAdvances: prefs.stageAdvances,
+        teamUpdates: prefs.teamUpdates,
+        marketSignals: prefs.marketSignals,
+        agentActivity: prefs.agentActivity,
+        quietHoursStart: prefs.quietHoursStart,
+        quietHoursEnd: prefs.quietHoursEnd,
+      };
+    }),
+
+  updateNotificationPreferences: protectedProcedure
+    .input(z.object({
+      pushEnabled: z.boolean().optional(),
+      emailEnabled: z.boolean().optional(),
+      actionItems: z.boolean().optional(),
+      distributions: z.boolean().optional(),
+      stageAdvances: z.boolean().optional(),
+      teamUpdates: z.boolean().optional(),
+      marketSignals: z.boolean().optional(),
+      agentActivity: z.boolean().optional(),
+      quietHoursStart: z.string().nullable().optional(),
+      quietHoursEnd: z.string().nullable().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      // Check if record exists
+      const [existing] = await db.select({ id: notificationPreferences.id })
+        .from(notificationPreferences)
+        .where(eq(notificationPreferences.userId, ctx.user.id))
+        .limit(1);
+
+      if (existing) {
+        // Update existing
+        await db.update(notificationPreferences)
+          .set(input)
+          .where(eq(notificationPreferences.userId, ctx.user.id));
+      } else {
+        // Insert new with defaults + overrides
+        await db.insert(notificationPreferences).values({
+          userId: ctx.user.id,
+          organizationId: ctx.user.organizationId,
+          pushEnabled: input.pushEnabled ?? true,
+          emailEnabled: input.emailEnabled ?? true,
+          actionItems: input.actionItems ?? true,
+          distributions: input.distributions ?? true,
+          stageAdvances: input.stageAdvances ?? true,
+          teamUpdates: input.teamUpdates ?? false,
+          marketSignals: input.marketSignals ?? true,
+          agentActivity: input.agentActivity ?? false,
+          quietHoursStart: input.quietHoursStart ?? null,
+          quietHoursEnd: input.quietHoursEnd ?? null,
+        });
+      }
+
+      return { success: true };
     }),
 };

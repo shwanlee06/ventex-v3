@@ -1131,3 +1131,27 @@ export const fxRates = mysqlTable("fx_rates", {
 });
 export type FxRate = typeof fxRates.$inferSelect;
 export type InsertFxRate = typeof fxRates.$inferInsert;
+
+// Client Notification Preferences
+export const notificationPreferences = mysqlTable("notification_preferences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  organizationId: int("organizationId"),
+  // Channel toggles
+  pushEnabled: boolean("pushEnabled").default(true).notNull(),
+  emailEnabled: boolean("emailEnabled").default(true).notNull(),
+  // Category toggles
+  actionItems: boolean("actionItems").default(true).notNull(),       // stage advances, approvals needed
+  distributions: boolean("distributions").default(true).notNull(),   // distribution confirmations, payments
+  stageAdvances: boolean("stageAdvances").default(true).notNull(),   // venture stage changes
+  teamUpdates: boolean("teamUpdates").default(false).notNull(),      // team member changes
+  marketSignals: boolean("marketSignals").default(true).notNull(),   // intelligence & market alerts
+  agentActivity: boolean("agentActivity").default(false).notNull(),  // AI agent task completions
+  // Quiet hours (UTC)
+  quietHoursStart: varchar("quietHoursStart", { length: 8 }),  // e.g. "22:00"
+  quietHoursEnd: varchar("quietHoursEnd", { length: 8 }),      // e.g. "07:00"
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type NotificationPreference = typeof notificationPreferences.$inferSelect;
+export type InsertNotificationPreference = typeof notificationPreferences.$inferInsert;

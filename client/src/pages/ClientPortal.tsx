@@ -39,9 +39,15 @@ import {
   Sparkles,
   BarChart3,
   Globe,
+  Bell,
+  BellOff,
+  Moon,
+  Sun,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -205,7 +211,7 @@ export default function ClientPortal(
   const [showAllPortfolio, setShowAllPortfolio] = useState(false);
   const [showAllForecasts, setShowAllForecasts] = useState(false);
   const [showAllSignals, setShowAllSignals] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "portfolio" | "intelligence">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "portfolio" | "intelligence" | "settings">("overview");
   const [confirmDialog, setConfirmDialog] = useState<{
     eventId: number;
     actionFlow: string;
@@ -237,6 +243,22 @@ export default function ClientPortal(
       { ventureId: taskDrawer?.ventureId ?? 0 },
       { enabled: !!taskDrawer }
     );
+
+  // Notification preferences
+  const { data: notifPrefs, isLoading: notifPrefsLoading } =
+    trpc.portal.getNotificationPreferences.useQuery(undefined, {
+      enabled: !!user,
+    });
+
+  const updateNotifPrefsMutation =
+    trpc.portal.updateNotificationPreferences.useMutation({
+      onSuccess: () => {
+        toast.success("Notification preferences updated");
+        utils.portal.getNotificationPreferences.invalidate();
+      },
+      onError: (err) =>
+        toast.error(err.message || "Failed to update preferences"),
+    });
 
   // Mutations
   const completeTaskMutation = trpc.portal.completeTask.useMutation({
@@ -461,6 +483,7 @@ export default function ClientPortal(
     { id: "overview" as const, label: "Overview", icon: <Activity className="size-3.5" /> },
     { id: "portfolio" as const, label: "Portfolio", icon: <Briefcase className="size-3.5" /> },
     { id: "intelligence" as const, label: "Intelligence", icon: <Sparkles className="size-3.5" /> },
+    { id: "settings" as const, label: "Settings", icon: <Shield className="size-3.5" /> },
   ];
 
   // ── Render Action Button ───────────────────────────────────────────────
@@ -1507,6 +1530,247 @@ export default function ClientPortal(
                   </p>
                 </div>
               )}
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════
+            SETTINGS TAB
+            ══════════════════════════════════════════════════════════ */}
+        {activeTab === "settings" && (
+          <div className="space-y-8">
+            {/* Notification Preferences */}
+            <motion.section
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="flex items-center gap-2.5 mb-6">
+                <div className="size-6 rounded-md bg-emerald-500/10 flex items-center justify-center">
+                  <Bell className="size-3.5 text-emerald-400" />
+                </div>
+                <h2 className="text-sm font-semibold text-foreground">
+                  Notification Preferences
+                </h2>
+              </div>
+
+              {notifPrefsLoading ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton key={i} className="h-14 rounded-lg" />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Channels */}
+                  <div className="space-y-1">
+                    <h3 className="text-xs font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-3">
+                      Delivery Channels
+                    </h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-border/30 bg-white/[0.02]">
+                        <div className="flex items-center gap-3">
+                          <div className="size-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                            <Bell className="size-4 text-blue-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">Push Notifications</p>
+                            <p className="text-[11px] text-muted-foreground/60">Receive alerts on your device</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={notifPrefs?.pushEnabled ?? true}
+                          onCheckedChange={(checked) =>
+                            updateNotifPrefsMutation.mutate({ pushEnabled: checked })
+                          }
+                        />
+                      </div>
+                      <div className="flex items-center justify-between p-4 rounded-xl border border-border/30 bg-white/[0.02]">
+                        <div className="flex items-center gap-3">
+                          <div className="size-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                            <Mail className="size-4 text-violet-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">Email Notifications</p>
+                            <p className="text-[11px] text-muted-foreground/60">Receive summaries via email</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={notifPrefs?.emailEnabled ?? true}
+                          onCheckedChange={(checked) =>
+                            updateNotifPrefsMutation.mutate({ emailEnabled: checked })
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Categories */}
+                  <div className="space-y-1">
+                    <h3 className="text-xs font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-3">
+                      Notification Categories
+                    </h3>
+                    <div className="space-y-2">
+                      {[
+                        {
+                          key: "actionItems" as const,
+                          label: "Action Items",
+                          desc: "Stage advances, approvals needed",
+                          icon: <Zap className="size-4 text-amber-400" />,
+                          iconBg: "bg-amber-500/10",
+                        },
+                        {
+                          key: "distributions" as const,
+                          label: "Distributions",
+                          desc: "Distribution confirmations, payments",
+                          icon: <DollarSign className="size-4 text-emerald-400" />,
+                          iconBg: "bg-emerald-500/10",
+                        },
+                        {
+                          key: "stageAdvances" as const,
+                          label: "Stage Advances",
+                          desc: "Venture stage changes and milestones",
+                          icon: <ArrowUpRight className="size-4 text-blue-400" />,
+                          iconBg: "bg-blue-500/10",
+                        },
+                        {
+                          key: "marketSignals" as const,
+                          label: "Market Signals",
+                          desc: "Intelligence and market alerts",
+                          icon: <Globe className="size-4 text-cyan-400" />,
+                          iconBg: "bg-cyan-500/10",
+                        },
+                        {
+                          key: "teamUpdates" as const,
+                          label: "Team Updates",
+                          desc: "Team member changes and assignments",
+                          icon: <Users className="size-4 text-violet-400" />,
+                          iconBg: "bg-violet-500/10",
+                        },
+                        {
+                          key: "agentActivity" as const,
+                          label: "AI Agent Activity",
+                          desc: "Autonomous task completions",
+                          icon: <Activity className="size-4 text-rose-400" />,
+                          iconBg: "bg-rose-500/10",
+                        },
+                      ].map((cat) => (
+                        <div
+                          key={cat.key}
+                          className="flex items-center justify-between p-4 rounded-xl border border-border/30 bg-white/[0.02]"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={cn(
+                                "size-8 rounded-lg flex items-center justify-center",
+                                cat.iconBg
+                              )}
+                            >
+                              {cat.icon}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-foreground">
+                                {cat.label}
+                              </p>
+                              <p className="text-[11px] text-muted-foreground/60">
+                                {cat.desc}
+                              </p>
+                            </div>
+                          </div>
+                          <Switch
+                            checked={
+                              notifPrefs?.[cat.key] ??
+                              (cat.key === "teamUpdates" ||
+                              cat.key === "agentActivity"
+                                ? false
+                                : true)
+                            }
+                            onCheckedChange={(checked) =>
+                              updateNotifPrefsMutation.mutate({
+                                [cat.key]: checked,
+                              })
+                            }
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Quiet Hours */}
+                  <div className="space-y-1">
+                    <h3 className="text-xs font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-3">
+                      Quiet Hours
+                    </h3>
+                    <div className="p-4 rounded-xl border border-border/30 bg-white/[0.02]">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="size-8 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                          <Moon className="size-4 text-indigo-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            Do Not Disturb
+                          </p>
+                          <p className="text-[11px] text-muted-foreground/60">
+                            Pause push notifications during set hours (UTC)
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 pl-11">
+                        <div className="flex items-center gap-2">
+                          <label className="text-[11px] text-muted-foreground/60">From</label>
+                          <input
+                            type="time"
+                            className="bg-white/[0.04] border border-border/30 rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
+                            value={notifPrefs?.quietHoursStart || ""}
+                            onChange={(e) =>
+                              updateNotifPrefsMutation.mutate({
+                                quietHoursStart: e.target.value || null,
+                              })
+                            }
+                          />
+                        </div>
+                        <span className="text-muted-foreground/30">—</span>
+                        <div className="flex items-center gap-2">
+                          <label className="text-[11px] text-muted-foreground/60">To</label>
+                          <input
+                            type="time"
+                            className="bg-white/[0.04] border border-border/30 rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
+                            value={notifPrefs?.quietHoursEnd || ""}
+                            onChange={(e) =>
+                              updateNotifPrefsMutation.mutate({
+                                quietHoursEnd: e.target.value || null,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Account Info */}
+                  <div className="space-y-1">
+                    <h3 className="text-xs font-medium text-muted-foreground/70 uppercase tracking-[0.08em] mb-3">
+                      Account
+                    </h3>
+                    <div className="p-4 rounded-xl border border-border/30 bg-white/[0.02]">
+                      <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                          <span className="text-sm font-semibold text-emerald-400">
+                            {(user?.name || user?.email || "?").charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            {user?.name || "Client User"}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground/60">
+                            {user?.email || "No email on file"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </motion.section>
           </div>
         )}
 
