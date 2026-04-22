@@ -1,54 +1,49 @@
 /**
  * hardLogout — nuclear sign-out that guarantees redirect to landing page.
- * Uses window.location.replace() to prevent back-button returning to dashboard.
- * All operations are synchronous — no awaiting, no React involvement.
+ *
+ * Root cause: SpyOps (the landing page at /) auto-redirects authenticated
+ * users back to /dashboard. The httpOnly session cookie MUST be cleared
+ * on the server BEFORE we redirect, otherwise the user bounces right back.
+ *
+ * Belt-and-suspenders: we also pass ?logged_out=1 so SpyOps can skip
+ * auto-redirect even if the cookie clear races.
  */
-export function hardLogout(redirectTo: string = "/") {
-  console.log("[HARD_LOGOUT] START — redirectTo:", redirectTo);
-
+export async function hardLogout(redirectTo: string = "/") {
   // 1. Set flags to suppress UNAUTHED redirect handler in main.tsx
-  try {
-    (window as any).__ventex_logging_out = true;
-    sessionStorage.setItem("__ventex_logging_out", "1");
-    console.log("[HARD_LOGOUT] Flags set");
-  } catch (e) {
-    console.error("[HARD_LOGOUT] Flag error:", e);
-  }
+  (window as any).__ventex_logging_out = true;
+  try { sessionStorage.setItem("__ventex_logging_out", "1"); } catch {}
 
-  // 2. Clear ALL localStorage auth state so RequireAuth doesn't bounce us back
+  // 2. Clear ALL localStorage auth state
   try {
     localStorage.removeItem("ventex_operator");
     localStorage.removeItem("ventex_demo_session");
     localStorage.removeItem("ventex_session_start");
     localStorage.removeItem("manus-runtime-user-info");
-    console.log("[HARD_LOGOUT] localStorage cleared");
-  } catch (e) {
-    console.error("[HARD_LOGOUT] localStorage error:", e);
-  }
+  } catch {}
 
-  // 3. Clear the session cookie directly from the client side
+  // 3. Clear client-accessible cookies
   try {
-    document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    document.cookie = "ventex_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    console.log("[HARD_LOGOUT] Cookies cleared");
-  } catch (e) {
-    console.error("[HARD_LOGOUT] Cookie error:", e);
-  }
+    document.cookie.split(";").forEach(c => {
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+  } catch {}
 
-  // 4. Fire-and-forget the server logout (clear httpOnly cookie) — don't await
+  // 4. AWAIT the server logout to clear the httpOnly session cookie.
+  //    Use the correct tRPC v11 httpBatchLink mutation format.
   try {
-    fetch("/api/trpc/auth.logout", {
+    await fetch("/api/trpc/auth.logout", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       credentials: "include",
-      body: JSON.stringify({}),
-    }).catch(() => {});
-    console.log("[HARD_LOGOUT] Server logout fired");
-  } catch (e) {
-    console.error("[HARD_LOGOUT] Fetch error:", e);
+      body: JSON.stringify({ "0": { "json": null } }),
+    });
+  } catch {
+    // If server logout fails, the ?logged_out=1 param will still prevent bounce-back
   }
 
-  // 5. Hard redirect NOW — use replace() so back button doesn't return to dashboard
-  console.log("[HARD_LOGOUT] Redirecting NOW to:", redirectTo);
-  window.location.replace(redirectTo);
+  // 5. Redirect with ?logged_out=1 so SpyOps skips auto-redirect
+  const separator = redirectTo.includes("?") ? "&" : "?";
+  window.location.replace(redirectTo + separator + "logged_out=1");
 }

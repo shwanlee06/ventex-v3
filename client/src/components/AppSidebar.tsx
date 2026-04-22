@@ -158,17 +158,7 @@ export default function AppSidebar() {
   }, [mobileOpen]);
 
   const handleSignOut = () => {
-    alert("SIGN OUT CLICKED — redirecting to landing page");
-    // Clear everything synchronously
-    localStorage.clear();
-    sessionStorage.clear();
-    document.cookie.split(";").forEach(c => {
-      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
-    // Fire-and-forget server logout
-    fetch("/api/trpc/auth.logout", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({}) }).catch(() => {});
-    // Nuclear redirect
-    window.location.href = "/";
+    hardLogout("/");
   };
 
   const initials = user?.name?.split(" ").map(w => w[0]).join("").slice(0, 2) || "?";

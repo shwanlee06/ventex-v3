@@ -435,6 +435,12 @@ export default function SpyOps() {
   /* ─── If already authenticated, skip login and go to welcome/dashboard ─── */
   useEffect(() => {
     if (authLoading) return;
+    // If user just logged out, do NOT auto-redirect back to dashboard
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("logged_out") === "1") {
+      window.history.replaceState({}, "", "/");
+      return;
+    }
     if (isAuthenticated && user && flowPhase === "login") {
       const name = user.name || "OPERATOR";
       setOperatorName(name);

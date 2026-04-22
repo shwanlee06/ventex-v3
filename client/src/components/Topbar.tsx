@@ -68,15 +68,8 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
   }, [user?.role, isPreviewMode]);
 
   const handleSignOut = useCallback(() => {
-    alert("TOPBAR SIGN OUT CLICKED — redirecting to landing page");
     endCurrentSession();
-    localStorage.clear();
-    sessionStorage.clear();
-    document.cookie.split(";").forEach(c => {
-      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
-    fetch("/api/trpc/auth.logout", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({}) }).catch(() => {});
-    window.location.href = "/";
+    hardLogout("/");
   }, []);
 
   const handleTogglePreview = useCallback(() => {
