@@ -68,8 +68,15 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
   }, [user?.role, isPreviewMode]);
 
   const handleSignOut = useCallback(() => {
+    alert("TOPBAR SIGN OUT CLICKED — redirecting to landing page");
     endCurrentSession();
-    hardLogout("/");
+    localStorage.clear();
+    sessionStorage.clear();
+    document.cookie.split(";").forEach(c => {
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+    fetch("/api/trpc/auth.logout", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({}) }).catch(() => {});
+    window.location.href = "/";
   }, []);
 
   const handleTogglePreview = useCallback(() => {
@@ -248,7 +255,7 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
                   </>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="text-red-400 focus:text-red-400 min-h-[44px]">
+                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleSignOut(); }} className="text-red-400 focus:text-red-400 min-h-[44px]">
                   <LogOut className="size-4 mr-2" />
                   Sign out
                 </DropdownMenuItem>
