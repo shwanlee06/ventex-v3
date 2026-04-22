@@ -2087,7 +2087,7 @@ export default function SpyOps() {
               letterSpacing: "0.4em",
             }}
           >
-            A T L A S
+            V E N T E X
           </div>
         </div>
       </Section>

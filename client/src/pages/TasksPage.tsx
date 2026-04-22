@@ -75,7 +75,7 @@ export default function TasksPage() {
   const { organizations } = useWorkspace();
   const rawTasks = tasksQ.data || [];
   // Strip "AI Generated:" prefix and mask internal team names for client view
-  const INTERNAL_TEAM_NAMES = ["VENTEX Operations", "ATLAS Operations", "VENTEX Ops", "ATLAS Ops"];
+  const INTERNAL_TEAM_NAMES = ["VENTEX Operations", "VENTEX Ops"];
   const maskAssigneeName = (name: string) => INTERNAL_TEAM_NAMES.some(n => name.toLowerCase().includes(n.toLowerCase())) ? "Your team" : name;
   const tasks = isAdmin ? rawTasks : rawTasks.map(t => ({
     ...t,

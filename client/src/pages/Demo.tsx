@@ -72,7 +72,7 @@ const PRODUCT_STATS = [
   { value: "6", label: "sectors automated" },
   { value: "3", label: "continents, one platform" },
   { value: "<3mo", label: "concept to deployment" },
-  { value: "950+", label: "automated test cases" },
+  { value: "1,000+", label: "automated test cases" },
   { value: "SOC 2", label: "readiness in progress" },
 ];
 
@@ -195,13 +195,13 @@ const TEAM = [
 
 const POST_RAISE_HIRES = [
   {
-    role: "Head of AI Engineering",
-    why: "Scale the intelligence layer — production ML pipelines, agent orchestration, and model fine-tuning.",
+    role: "Chief Technology Officer",
+    why: "Own the technical vision end-to-end — architecture decisions, engineering roadmap, infrastructure migration, and team leadership through Series A.",
     color: "#00ff87",
   },
   {
     role: "Senior Full-Stack Engineer",
-    why: "Accelerate platform development — client portal, operator tools, and API infrastructure.",
+    why: "Accelerate platform development — client portal, operator tools, API infrastructure, and agent orchestration layer.",
     color: "#00cc6a",
   },
 ];
@@ -796,11 +796,11 @@ export default function Demo() {
                 <div className="border border-white/8 p-5">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                     <div className="text-center">
-                      <div className="text-lg font-bold text-[#00cc6a] font-mono">54</div>
+                      <div className="text-lg font-bold text-[#00cc6a] font-mono">55</div>
                       <div className="text-[10px] text-white/50">DB tables</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-[#00cc6a] font-mono">45+</div>
+                      <div className="text-lg font-bold text-[#00cc6a] font-mono">60+</div>
                       <div className="text-[10px] text-white/50">backend modules</div>
                     </div>
                     <div className="text-center">
@@ -901,7 +901,7 @@ export default function Demo() {
                       <div className="text-[10px] text-white/50">sectors</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-[#00ff87] font-mono">950+</div>
+                      <div className="text-lg font-bold text-[#00ff87] font-mono">1,000+</div>
                       <div className="text-[10px] text-white/50">tests passing</div>
                     </div>
                     <div className="text-center">
@@ -920,7 +920,7 @@ export default function Demo() {
                   <p className="text-sm text-white/70 leading-relaxed mb-4">
                     Platform is fully functional and demo-ready. Client portal live (mobile-responsive). Operator command center live.
                     AI agents running autonomously with safety framework. Multi-currency support (15 currencies). SAML SSO + SCIM provisioning.
-                    <span className="text-[#00ff87] font-medium">1 design partner</span> — validating the full workflow across 23 ventures and 6 sectors in a live production environment.
+                    <span className="text-[#00ff87] font-medium">1 design partner</span> — validating the full workflow across 30+ ventures and 6 sectors in a live production environment.
                   </p>
                   {/* Pilot Metrics */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-4 border border-[#00ff87]/15 bg-[#00ff87]/[0.02]">
@@ -929,7 +929,7 @@ export default function Demo() {
                       <div className="text-[9px] text-white/50">Task time reduced</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-[#00ff87] font-mono">23</div>
+                      <div className="text-lg font-bold text-[#00ff87] font-mono">30+</div>
                       <div className="text-[9px] text-white/50">Ventures managed</div>
                     </div>
                     <div className="text-center">
@@ -957,7 +957,7 @@ export default function Demo() {
               <div className="border border-[#00ff87]/20 p-6 bg-[#00ff87]/[0.03]">
                 <div className="text-[9px] tracking-[0.2em] text-[#00ff87]/50 uppercase mb-4">Design Partner Validation</div>
                 <p className="text-sm text-white/70 leading-relaxed italic mb-4">
-                  "Before VENTEX, coordinating 23 ventures across 6 sectors meant constant email chains and spreadsheet updates. Now the agents handle follow-ups, flag stalled deals, and draft distribution notices automatically. We went from reactive to proactive in weeks."
+                  "Before VENTEX, coordinating 30+ ventures across 6 sectors meant constant email chains and spreadsheet updates. Now the agents handle follow-ups, flag stalled deals, and draft distribution notices automatically. We went from reactive to proactive in weeks."
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="size-8 bg-[#00ff87]/20 flex items-center justify-center text-[10px] font-bold text-[#00ff87]">DP</div>
@@ -1336,7 +1336,7 @@ export default function Demo() {
                 ))}
               </div>
               <p className="text-[10px] text-white/45 mt-4 text-center">
-                Funded by the $700K raise — 25.6% allocated to engineering talent
+                Funded by the $700K raise — CTO actively hiring, engineering talent is priority #1
               </p>
             </div>
           </RevealSection>
@@ -1409,7 +1409,7 @@ export default function Demo() {
 
           <RevealSection delay={0.4} className="mt-8">
             <p className="text-[10px] text-white/40 tracking-wide">
-              Presented By: Shwan Joung Hyo Lee
+              Presented By: Shwan Lee
             </p>
           </RevealSection>
 
