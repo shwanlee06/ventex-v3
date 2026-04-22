@@ -48,6 +48,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import PortalConcierge from "@/components/PortalConcierge";
 import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
@@ -2071,6 +2072,7 @@ export default function ClientPortal(
     return (
       <DashboardLayout title={orgName} subtitle="MANAGED BY VENTEX">
         <div className="p-5 md:p-8">{portalContent}</div>
+        <PortalConcierge orgSlug={orgSlug} orgName={orgName} />
       </DashboardLayout>
     );
   }
@@ -2123,6 +2125,7 @@ export default function ClientPortal(
       </header>
 
       {portalContent}
+      <PortalConcierge orgSlug={orgSlug} orgName={orgName} />
     </div>
   );
 }

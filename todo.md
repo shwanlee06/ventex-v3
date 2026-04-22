@@ -3305,3 +3305,14 @@
 
 ## Bug Fix — Add Client Dialog Text Overlapping
 - [x] Fix text overlapping in the Add Client dialog — root cause: base DialogContent uses `grid` layout which overrides `flex flex-col`, causing header/description/input to collapse on top of each other. Fixed with `!flex !flex-col !overflow-y-hidden` to properly override base grid, added `flex-shrink-0` on header/footer, `min-h-0` on ScrollArea, and border separator between header and content.
+
+## Feature — Repurpose AI Concierge as Client-Facing Feature
+- [x] Audit current AI Concierge implementation — backend portal.aiChat already exists with org-scoped data
+- [x] Backend already scopes AI context to client's own org data only (portal router)
+- [x] Backend already uses client-facing system prompt (not admin/internal)
+- [x] Removed AI Concierge from admin sidebar (AppSidebar.tsx)
+- [x] Created floating chat widget (PortalConcierge.tsx) — premium private-banking aesthetic
+- [x] Widget renders in both dashboard and standalone portal views (ClientPortal.tsx)
+- [x] Features: localStorage chat persistence, clear chat, suggestion prompts, Streamdown markdown rendering
+- [x] Data isolation confirmed — portal.aiChat only queries client's own org data
+- [x] 16 integration tests passing (portal.concierge.test.ts)
