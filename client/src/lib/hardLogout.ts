@@ -1,19 +1,14 @@
 /**
- * hardLogout — nuclear sign-out that guarantees redirect to landing page.
- *
- * Root cause: SpyOps (the landing page at /) auto-redirects authenticated
- * users back to /dashboard. The httpOnly session cookie MUST be cleared
- * on the server BEFORE we redirect, otherwise the user bounces right back.
- *
- * Belt-and-suspenders: we also pass ?logged_out=1 so SpyOps can skip
- * auto-redirect even if the cookie clear races.
+ * hardLogout — SYNCHRONOUS sign-out. No async, no await, no promises.
+ * Clears local state then immediately navigates away.
+ * The server cookie clear happens via a beacon (fire-and-forget).
  */
-export async function hardLogout(redirectTo: string = "/") {
-  // 1. Set flags to suppress UNAUTHED redirect handler in main.tsx
-  (window as any).__ventex_logging_out = true;
+export function hardLogout(redirectTo: string = "/") {
+  // 1. Flag to suppress UNAUTHED handler
+  try { (window as any).__ventex_logging_out = true; } catch {}
   try { sessionStorage.setItem("__ventex_logging_out", "1"); } catch {}
 
-  // 2. Clear ALL localStorage auth state
+  // 2. Clear localStorage
   try {
     localStorage.removeItem("ventex_operator");
     localStorage.removeItem("ventex_demo_session");
@@ -21,29 +16,21 @@ export async function hardLogout(redirectTo: string = "/") {
     localStorage.removeItem("manus-runtime-user-info");
   } catch {}
 
-  // 3. Clear client-accessible cookies
+  // 3. Clear client cookies
   try {
     document.cookie.split(";").forEach(c => {
-      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      const name = c.split("=")[0].trim();
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
     });
   } catch {}
 
-  // 4. AWAIT the server logout to clear the httpOnly session cookie.
-  //    Use the correct tRPC v11 httpBatchLink mutation format.
+  // 4. Fire-and-forget server logout via sendBeacon (guaranteed to send even during navigation)
   try {
-    await fetch("/api/trpc/auth.logout", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ "0": { "json": null } }),
-    });
-  } catch {
-    // If server logout fails, the ?logged_out=1 param will still prevent bounce-back
-  }
+    const body = JSON.stringify({ "0": { "json": null } });
+    navigator.sendBeacon("/api/trpc/auth.logout", new Blob([body], { type: "application/json" }));
+  } catch {}
 
-  // 5. Redirect with ?logged_out=1 so SpyOps skips auto-redirect
-  const separator = redirectTo.includes("?") ? "&" : "?";
-  window.location.replace(redirectTo + separator + "logged_out=1");
+  // 5. IMMEDIATELY redirect — this is synchronous, nothing can stop it
+  const dest = redirectTo + (redirectTo.includes("?") ? "&" : "?") + "logged_out=1";
+  window.location.href = dest;
 }
