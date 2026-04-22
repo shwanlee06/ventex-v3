@@ -1,5 +1,6 @@
 // VENTEX Service Worker — PWA offline caching + push notifications
-const CACHE_NAME = "ventex-v1";
+// v2: Fixed stale JS caching — JS/CSS now network-first so deployments take effect immediately
+const CACHE_NAME = "ventex-v2";
 const VENTEX_ICON = "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png";
 
 // Assets to pre-cache for offline shell
@@ -8,7 +9,7 @@ const PRECACHE_ASSETS = [
   "/manifest.json",
 ];
 
-// Install: pre-cache critical assets
+// Install: pre-cache critical assets, skip waiting to activate immediately
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -20,7 +21,7 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-// Activate: clean up old caches
+// Activate: delete ALL old caches (including ventex-v1) so stale JS is gone
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -34,7 +35,7 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Fetch: network-first strategy for API calls, cache-first for static assets
+// Fetch handler
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -55,9 +56,28 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // For static assets: stale-while-revalidate
+  // For JS and CSS: NETWORK-FIRST so new deployments take effect immediately
+  // Only fall back to cache when offline
+  if (url.pathname.match(/\.(js|css)$/)) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match(request);
+        })
+    );
+    return;
+  }
+
+  // For images/fonts/static: stale-while-revalidate (these don't change often)
   if (
-    url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|webp|woff2|ico)$/) ||
+    url.pathname.match(/\.(png|jpg|jpeg|svg|webp|woff2|ico)$/) ||
     url.hostname.includes("fonts.googleapis.com") ||
     url.hostname.includes("fonts.gstatic.com") ||
     url.hostname.includes("cloudfront.net")
