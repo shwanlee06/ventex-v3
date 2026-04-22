@@ -37,12 +37,17 @@ export function useAuth(options?: UseAuthOptions) {
         error instanceof TRPCClientError &&
         error.data?.code === "UNAUTHORIZED"
       ) {
+        // Already logged out, that's fine
         return;
       }
-      throw error;
+      // Swallow other errors during logout — we're leaving anyway
+      return;
     } finally {
+      // Clear cached user data immediately (sync)
       utils.auth.me.setData(undefined, null);
-      await utils.auth.me.invalidate();
+      // Do NOT await invalidate — it triggers a refetch that races with
+      // the hard redirect in handleSignOut and can cause the UNAUTHED
+      // error handler to redirect to OAuth login before window.location.href fires
     }
   }, [logoutMutation, utils]);
 
