@@ -3302,3 +3302,6 @@
 - [x] Field order: matches wizard (Name, Contact, Description, AUM+Tier, Sectors)
 - [x] Create button disabled until name + sectors filled
 - [x] 14 onboarding sync tests passing
+
+## Bug Fix — Add Client Dialog Text Overlapping
+- [x] Fix text overlapping in the Add Client dialog — root cause: base DialogContent uses `grid` layout which overrides `flex flex-col`, causing header/description/input to collapse on top of each other. Fixed with `!flex !flex-col !overflow-y-hidden` to properly override base grid, added `flex-shrink-0` on header/footer, `min-h-0` on ScrollArea, and border separator between header and content.

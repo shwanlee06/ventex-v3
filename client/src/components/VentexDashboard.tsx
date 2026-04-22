@@ -1125,14 +1125,14 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
 
       {/* ── Add Client Dialog (Matches Onboarding Wizard Step 1) ── */}
       <Dialog open={addDialogOpen} onOpenChange={(open) => { setAddDialogOpen(open); if (!open) resetAddClientForm(); }}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-lg max-h-[85vh] !flex !flex-col !overflow-y-hidden">
+          <DialogHeader className="flex-shrink-0 pb-2 border-b border-border">
             <DialogTitle>Add New Client</DialogTitle>
             <DialogDescription>
               Basic information about the new client organization. After creation you'll be guided to the full onboarding wizard.
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="flex-1 pr-3 -mr-3">
+          <ScrollArea className="flex-1 min-h-0 overflow-y-auto pr-3 -mr-3">
             <div className="space-y-4 py-2">
               {/* Organization Name — full width */}
               <div>
@@ -1248,7 +1248,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
               </div>
             </div>
           </ScrollArea>
-          <DialogFooter className="pt-4 border-t border-border">
+          <DialogFooter className="flex-shrink-0 pt-4 border-t border-border">
             <Button variant="outline" onClick={() => { setAddDialogOpen(false); resetAddClientForm(); }}>Cancel</Button>
             <Button onClick={handleAddClient} disabled={!newName.trim() || newSectors.length === 0 || createOrg.isPending}>
               {createOrg.isPending ? <Loader2 className="size-4 animate-spin mr-1.5" /> : <Plus className="size-4 mr-1.5" />}
