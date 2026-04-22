@@ -3258,3 +3258,6 @@
 - [x] Update post-raise hires to show CTO as first hire
 - [x] Update testimonial quote to match 30+ ventures
 - [ ] Build updated pitch deck slides with current stats
+
+## Sign Out Bug (April 21, 2026)
+- [x] Fix: Cannot sign out from the live dashboard — added Sign Out button to desktop sidebar (collapsed + expanded)

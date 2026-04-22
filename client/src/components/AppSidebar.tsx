@@ -347,7 +347,7 @@ export default function AppSidebar() {
           </div>
         )}
 
-        {/* Bottom: expand toggle + user */}
+        {/* Bottom: expand toggle + user + sign out */}
         <div className="border-t border-border p-1.5 flex-shrink-0">
           {!expanded ? (
             <div className="space-y-0.5">
@@ -375,20 +375,40 @@ export default function AppSidebar() {
                 </TooltipTrigger>
                 <TooltipContent side="right" className="text-xs">{user?.name || "Profile"}</TooltipContent>
               </Tooltip>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center justify-center p-2 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors w-full"
+                  >
+                    <LogOut className="size-[18px]" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="text-xs">Sign Out</TooltipContent>
+              </Tooltip>
             </div>
           ) : (
-            <Link
-              href="/profile"
-              className="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/30 transition-colors"
-            >
-              <div className="size-6 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
-                <span className="text-[9px] font-semibold text-primary">{initials}</span>
-              </div>
-              <div className="min-w-0">
-                <span className="text-[12px] font-medium text-foreground block truncate">{user?.name || "User"}</span>
-                <span className="text-[10px] text-muted-foreground block truncate">{user?.email}</span>
-              </div>
-            </Link>
+            <div className="space-y-1">
+              <Link
+                href="/profile"
+                className="flex items-center gap-2.5 px-2.5 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/30 transition-colors"
+              >
+                <div className="size-6 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+                  <span className="text-[9px] font-semibold text-primary">{initials}</span>
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[12px] font-medium text-foreground block truncate">{user?.name || "User"}</span>
+                  <span className="text-[10px] text-muted-foreground block truncate">{user?.email}</span>
+                </div>
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-md text-[12px] text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              >
+                <LogOut className="size-[16px]" />
+                Sign Out
+              </button>
+            </div>
           )}
         </div>
       </aside>
