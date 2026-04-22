@@ -272,7 +272,7 @@ export default function Demo() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-10 text-center px-6 max-w-5xl"
+          className="relative z-10 text-center px-6 max-w-5xl pb-16"
         >
           {/* Badge */}
           <motion.div
@@ -329,7 +329,7 @@ export default function Demo() {
         </motion.div>
 
         {/* Contact bar */}
-        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-8 py-4 text-[10px] text-white/40 tracking-wide">
+        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-8 py-6 text-[10px] text-white/40 tracking-wide">
           <span>aurovia.co</span>
           <span>contact@aurovia.co</span>
           <a href="tel:+15714803261" className="hover:text-white/60 transition-colors">(571) 480-3261</a>

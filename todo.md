@@ -3205,7 +3205,7 @@
 
 ## Bug Fix — Demo Mode & Sign Out
 - [ ] Fix demo mode not working
-- [ ] Fix sign out not working
+- [x] Fix sign out not working
 
 ## Client Portal Redesign — Premium Private-Banking-Grade Experience
 - [x] Audit current client portal pages and components
@@ -3262,3 +3262,14 @@
 ## Sign Out Bug (April 21, 2026)
 - [x] Fix: Cannot sign out from the live dashboard — added Sign Out button to desktop sidebar (collapsed + expanded)
 - [x] Fix: Sign out not redirecting back to the landing page — added sessionStorage flag to survive page reload, fixed all 5 logout handlers
+
+## Sign Out Final Fix (April 21-22, 2026)
+- [x] Created dedicated /sign-out page (SignOut.tsx) that handles all logout logic
+- [x] Converted ALL sign out buttons to plain anchor links to /sign-out (Topbar, AppSidebar collapsed/expanded/mobile, Profile, ClientPortal, useIdleTimeout)
+- [x] Fixed service worker: bumped to ventex-v2 cache, switched JS/CSS to network-first strategy
+- [x] Updated SpyOps to skip auto-redirect when ?logged_out=1 param is present
+- [x] User confirmed sign out now works correctly
+
+## Demo Page Overlap Fix (April 22, 2026)
+- [x] Fixed hero section text overlapping with contact bar — added pb-16 to content div
+- [x] Increased contact bar padding from py-4 to py-6 for better spacing
