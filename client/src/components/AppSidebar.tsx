@@ -85,7 +85,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
 ];
 
 export default function AppSidebar() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [expanded, setExpanded] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, logout } = useAuth();
@@ -105,11 +105,13 @@ export default function AppSidebar() {
 
   const createOrg = trpc.organizations.create.useMutation({
     onSuccess: (created) => {
-      toast.success(`Client "${created.name}" created`);
+      toast.success(`Client "${created.name}" created — redirecting to onboarding...`);
       setNewClientName("");
       setShowAddClient(false);
       setAddingClient(false);
       refetchOrgs();
+      // Redirect to onboarding wizard at step 2 (ventures) with org pre-loaded
+      navigate(`/onboarding?orgId=${created.id}&step=2`);
     },
     onError: (err) => {
       toast.error(err.message || "Failed to create client");

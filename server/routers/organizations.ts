@@ -34,6 +34,17 @@ function normalizeOrg<T extends { sectors: unknown }>(org: T): T & { sectors: st
 }
 
 export const organizationsRouter = router({
+  // Get a single organization by ID (admin only — used by onboarding wizard resume)
+  getById: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return null;
+      const [org] = await db.select().from(organizations).where(eq(organizations.id, input.id)).limit(1);
+      if (!org) return null;
+      return normalizeOrg(org);
+    }),
+
   // List all client organizations — basic list (all Ventex team members can see)
   list: protectedProcedure
     .input(z.object({ includeArchived: z.boolean().optional() }).optional())

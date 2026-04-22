@@ -8,7 +8,7 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -73,8 +73,15 @@ interface AgentConfig {
 
 export default function OnboardingWizard() {
   const [, navigate] = useLocation();
-  const [step, setStep] = useState(1);
+
+  // Parse query params for resume flow (from Add Client dialog)
+  const urlParams = new URLSearchParams(window.location.search);
+  const resumeOrgId = urlParams.get("orgId") ? Number(urlParams.get("orgId")) : null;
+  const resumeStep = urlParams.get("step") ? Number(urlParams.get("step")) : null;
+
+  const [step, setStep] = useState(resumeStep && resumeStep >= 2 && resumeStep <= 5 ? resumeStep : 1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [preloaded, setPreloaded] = useState(false);
 
   // Step 1 state
   const [clientName, setClientName] = useState("");
@@ -105,8 +112,28 @@ export default function OnboardingWizard() {
     pollingIntervalMinutes: 30,
   });
 
-  // Created org ID (after step 1 submit)
-  const [createdOrgId, setCreatedOrgId] = useState<number | null>(null);
+  // Created org ID (after step 1 submit, or from resume)
+  const [createdOrgId, setCreatedOrgId] = useState<number | null>(resumeOrgId);
+
+  // Pre-load org data when resuming from Add Client dialog
+  const orgQuery = trpc.organizations.getById.useQuery(
+    { id: resumeOrgId! },
+    { enabled: !!resumeOrgId && !preloaded }
+  );
+
+  useEffect(() => {
+    if (orgQuery.data && !preloaded) {
+      const org = orgQuery.data;
+      setClientName(org.name);
+      setContactName(org.primaryContactName || "");
+      setContactEmail(org.primaryContactEmail || "");
+      setDescription(org.description || "");
+      setAumRange(org.aumRange || "");
+      setSelectedSectors(org.sectors || []);
+      setTier((org.subscriptionTier as "poc" | "growth" | "enterprise") || "poc");
+      setPreloaded(true);
+    }
+  }, [orgQuery.data, preloaded]);
 
   // Mutations
   const createOrg = trpc.organizations.create.useMutation();
@@ -121,28 +148,48 @@ export default function OnboardingWizard() {
     return true; // Steps 2-4 are optional (skip allowed)
   }, [step, clientName, selectedSectors]);
 
+  const updateOrg = trpc.organizations.update.useMutation();
+
   const handleNext = useCallback(async () => {
     if (step === 1) {
-      // Create org
       setIsSubmitting(true);
       try {
-        const slug = clientName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-        const org = await createOrg.mutateAsync({
-          name: clientName,
-          slug,
-          description: description || undefined,
-          primaryContactName: contactName || undefined,
-          primaryContactEmail: contactEmail || undefined,
-          aumRange: aumRange || undefined,
-          sectors: selectedSectors.length > 0 ? selectedSectors : undefined,
-          subscriptionTier: tier,
-        });
-        setCreatedOrgId(org.id);
-        toast.success(`Client "${clientName}" created`);
+        let orgId = createdOrgId;
+
+        if (orgId) {
+          // Resume flow: org already exists, update it with any changes
+          await updateOrg.mutateAsync({
+            id: orgId,
+            name: clientName,
+            description: description || undefined,
+            primaryContactName: contactName || undefined,
+            primaryContactEmail: contactEmail || undefined,
+            aumRange: aumRange || undefined,
+            sectors: selectedSectors.length > 0 ? selectedSectors : undefined,
+            subscriptionTier: tier,
+          });
+          toast.success(`Client "${clientName}" updated`);
+        } else {
+          // Fresh flow: create new org
+          const slug = clientName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+          const org = await createOrg.mutateAsync({
+            name: clientName,
+            slug,
+            description: description || undefined,
+            primaryContactName: contactName || undefined,
+            primaryContactEmail: contactEmail || undefined,
+            aumRange: aumRange || undefined,
+            sectors: selectedSectors.length > 0 ? selectedSectors : undefined,
+            subscriptionTier: tier,
+          });
+          orgId = org.id;
+          setCreatedOrgId(org.id);
+          toast.success(`Client "${clientName}" created`);
+        }
         // Connection 1: Auto-generate starter blueprints for selected sectors
         if (selectedSectors.length > 0) {
           generateBlueprints.mutate(
-            { organizationId: org.id, sectors: selectedSectors },
+            { organizationId: orgId!, sectors: selectedSectors },
             {
               onSuccess: (results) => {
                 if (results.length > 0) {
@@ -216,7 +263,7 @@ export default function OnboardingWizard() {
     }
 
     if (step < 5) setStep(step + 1);
-  }, [step, clientName, description, contactName, contactEmail, aumRange, selectedSectors, tier, ventures, invites, agentConfig, createdOrgId, createOrg, addVentures, sendInvitations, configureAgents]);
+  }, [step, clientName, description, contactName, contactEmail, aumRange, selectedSectors, tier, ventures, invites, agentConfig, createdOrgId, createOrg, updateOrg, addVentures, sendInvitations, configureAgents]);
 
   const runInitialDiagnostic = trpc.diagnostics.runDiagnostic.useMutation();
 

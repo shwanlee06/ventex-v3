@@ -3279,3 +3279,14 @@
 - [x] Fix root cause — updated CSRF middleware to check X-Forwarded-Host and allow *.manus.space HTTPS domains
 - [x] Added 8 CSRF unit tests (csrf.test.ts) — all passing
 - [ ] Verify dashboard mutations work on live site after publish
+
+## Feature — Sync Add Client with Onboarding Flow
+- [x] Audit current Add Client and Onboarding flows
+- [x] Enhance Add Client dialog: add contact name, email, sectors, tier, AUM fields
+- [x] After creation, show "Continue to Onboarding" redirect to /onboarding?orgId=X&step=2
+- [x] Update OnboardingWizard to accept orgId query param and pre-load existing org data
+- [x] Update AppSidebar Add Client to also redirect to onboarding after creation
+- [x] Added organizations.getById procedure for onboarding resume
+- [x] Updated OnboardingWizard handleNext to update (not recreate) existing org on resume
+- [x] 11 onboarding sync tests passing (organizations.onboarding.test.ts)
+- [x] All 1,021 tests passing

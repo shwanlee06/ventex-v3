@@ -32,6 +32,9 @@ import {
   Brain,
   Bot,
   Download,
+  Rocket,
+  Check,
+  UserPlus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useCallback, useMemo } from "react";
@@ -39,6 +42,11 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -196,12 +204,12 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
   };
 
   const createOrg = trpc.organizations.create.useMutation({
-    onSuccess: () => {
+    onSuccess: (created) => {
       invalidateAll();
       setAddDialogOpen(false);
-      setNewName("");
-      setNewDesc("");
-      toast.success("Client created");
+      toast.success(`Client "${created.name}" created`);
+      // Show onboarding redirect dialog
+      setShowOnboardRedirect({ id: created.id, name: created.name });
     },
     onError: (err) => toast.error(err.message),
   });
@@ -248,6 +256,12 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
+  const [newContactName, setNewContactName] = useState("");
+  const [newContactEmail, setNewContactEmail] = useState("");
+  const [newAumRange, setNewAumRange] = useState("");
+  const [newSectors, setNewSectors] = useState<string[]>([]);
+  const [newTier, setNewTier] = useState<"poc" | "growth" | "enterprise">("poc");
+  const [showOnboardRedirect, setShowOnboardRedirect] = useState<{ id: number; name: string } | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<{ id: number; name: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
   const [aiTaskTarget, setAiTaskTarget] = useState<{ id: number; name: string } | null>(null);
@@ -361,7 +375,32 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
     const name = newName.trim();
     if (!name) return;
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-    createOrg.mutate({ name, slug, description: newDesc || undefined });
+    createOrg.mutate({
+      name,
+      slug,
+      description: newDesc || undefined,
+      primaryContactName: newContactName.trim() || undefined,
+      primaryContactEmail: newContactEmail.trim() || undefined,
+      aumRange: newAumRange || undefined,
+      sectors: newSectors.length > 0 ? newSectors : undefined,
+      subscriptionTier: newTier,
+    });
+  };
+
+  const resetAddClientForm = () => {
+    setNewName("");
+    setNewDesc("");
+    setNewContactName("");
+    setNewContactEmail("");
+    setNewAumRange("");
+    setNewSectors([]);
+    setNewTier("poc");
+  };
+
+  const toggleSector = (sector: string) => {
+    setNewSectors(prev =>
+      prev.includes(sector) ? prev.filter(s => s !== sector) : [...prev, sector]
+    );
   };
 
   const handleArchiveClient = () => {
@@ -1083,42 +1122,163 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
         </AnimatePresence>
       </div>
 
-      {/* ── Add Client Dialog ─────────────────────────────────────── */}
-      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+      {/* ── Add Client Dialog (Enhanced) ────────────────────────── */}
+      <Dialog open={addDialogOpen} onOpenChange={(open) => { setAddDialogOpen(open); if (!open) resetAddClientForm(); }}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>Add New Client</DialogTitle>
             <DialogDescription>
-              Create a new client workspace. You can add ventures and team members after creation.
+              Set up the client profile. After creation you'll be guided to the full onboarding wizard.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Client Name</label>
-              <Input
-                placeholder="e.g., FL1 Capital"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAddClient()}
-                autoFocus
-              />
+          <ScrollArea className="flex-1 pr-3 -mr-3">
+            <div className="space-y-4 py-2">
+              {/* Client Name */}
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Client Name <span className="text-red-400">*</span></label>
+                <Input
+                  placeholder="e.g., FL1 Capital"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  autoFocus
+                />
+              </div>
+
+              {/* Contact Row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">Primary Contact</label>
+                  <Input
+                    placeholder="Full name"
+                    value={newContactName}
+                    onChange={(e) => setNewContactName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">Contact Email</label>
+                  <Input
+                    type="email"
+                    placeholder="email@example.com"
+                    value={newContactEmail}
+                    onChange={(e) => setNewContactEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* AUM + Tier Row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">AUM Range</label>
+                  <Select value={newAumRange} onValueChange={setNewAumRange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="under-50m">Under $50M</SelectItem>
+                      <SelectItem value="50m-100m">$50M – $100M</SelectItem>
+                      <SelectItem value="100m-250m">$100M – $250M</SelectItem>
+                      <SelectItem value="250m-500m">$250M – $500M</SelectItem>
+                      <SelectItem value="500m-plus">$500M+</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">Subscription Tier</label>
+                  <Select value={newTier} onValueChange={(v) => setNewTier(v as "poc" | "growth" | "enterprise")}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="poc">POC</SelectItem>
+                      <SelectItem value="growth">Growth</SelectItem>
+                      <SelectItem value="enterprise">Enterprise</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Sectors */}
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Sectors</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {["Real Estate", "Yacht", "F&B", "Entertainment", "Oil & Gas", "Technology", "Healthcare", "Finance", "Energy", "Others"].map((s) => (
+                    <Badge
+                      key={s}
+                      variant={newSectors.includes(s) ? "default" : "outline"}
+                      className={cn(
+                        "cursor-pointer text-xs transition-colors",
+                        newSectors.includes(s)
+                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                          : "hover:bg-accent"
+                      )}
+                      onClick={() => toggleSector(s)}
+                    >
+                      {s}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Description (optional)</label>
+                <Input
+                  placeholder="Brief description of the client..."
+                  value={newDesc}
+                  onChange={(e) => setNewDesc(e.target.value)}
+                />
+              </div>
             </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Description (optional)</label>
-              <Input
-                placeholder="Brief description of the client..."
-                value={newDesc}
-                onChange={(e) => setNewDesc(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAddDialogOpen(false)}>Cancel</Button>
+          </ScrollArea>
+          <DialogFooter className="pt-4 border-t border-border">
+            <Button variant="outline" onClick={() => { setAddDialogOpen(false); resetAddClientForm(); }}>Cancel</Button>
             <Button onClick={handleAddClient} disabled={!newName.trim() || createOrg.isPending}>
-              {createOrg.isPending ? <Loader2 className="size-4 animate-spin mr-1.5" /> : null}
-              Create Client
+              {createOrg.isPending ? <Loader2 className="size-4 animate-spin mr-1.5" /> : <Plus className="size-4 mr-1.5" />}
+              Create & Continue
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Onboarding Redirect Dialog ────────────────────────────── */}
+      <Dialog open={!!showOnboardRedirect} onOpenChange={(open) => { if (!open) { setShowOnboardRedirect(null); resetAddClientForm(); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="flex items-center justify-center size-8 rounded-full bg-emerald-500/10">
+                <Check className="size-4 text-emerald-400" />
+              </div>
+              Client Created
+            </DialogTitle>
+            <DialogDescription>
+              <strong>{showOnboardRedirect?.name}</strong> has been added. Continue to the onboarding wizard to add ventures, invite team members, and configure AI agents.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 pt-2">
+            <Button
+              onClick={() => {
+                if (showOnboardRedirect) {
+                  onNavigate(`/onboarding?orgId=${showOnboardRedirect.id}&step=2`);
+                }
+                setShowOnboardRedirect(null);
+                resetAddClientForm();
+              }}
+              className="w-full gap-2"
+            >
+              <Rocket className="size-4" />
+              Continue to Onboarding
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowOnboardRedirect(null);
+                resetAddClientForm();
+              }}
+              className="w-full"
+            >
+              Skip — I'll set up later
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
