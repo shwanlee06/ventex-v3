@@ -157,8 +157,10 @@ export default function AppSidebar() {
   }, [mobileOpen]);
 
   const handleSignOut = async () => {
-    // Set flag to prevent UNAUTHED redirect race condition
+    // Set flags to prevent UNAUTHED redirect race condition
+    // sessionStorage survives the page reload that window.location.href triggers
     (window as any).__ventex_logging_out = true;
+    sessionStorage.setItem('__ventex_logging_out', '1');
     try {
       localStorage.removeItem("ventex_operator");
       await logout();

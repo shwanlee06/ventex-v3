@@ -3261,3 +3261,4 @@
 
 ## Sign Out Bug (April 21, 2026)
 - [x] Fix: Cannot sign out from the live dashboard — added Sign Out button to desktop sidebar (collapsed + expanded)
+- [x] Fix: Sign out not redirecting back to the landing page — added sessionStorage flag to survive page reload, fixed all 5 logout handlers

@@ -11,8 +11,18 @@ import "./index.css";
 const queryClient = new QueryClient();
 
 // Flag to suppress UNAUTHED redirect during intentional logout
-// Set by logout handlers before the auth query can refire
+// Uses both window flag (in-memory) and sessionStorage (survives page reload)
 (window as any).__ventex_logging_out = false;
+
+// Check if we're in the middle of a logout redirect (survives page reload)
+if (sessionStorage.getItem('__ventex_logging_out')) {
+  (window as any).__ventex_logging_out = true;
+  // Clear the flag after a short delay so it doesn't persist forever
+  setTimeout(() => {
+    sessionStorage.removeItem('__ventex_logging_out');
+    (window as any).__ventex_logging_out = false;
+  }, 3000);
+}
 
 const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!(error instanceof TRPCClientError)) return;

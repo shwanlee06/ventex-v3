@@ -114,9 +114,14 @@ export default function ProfilePage() {
 
   const handleLogout = useCallback(async () => {
     toast.info("Signing out...");
-    await logout();
-    navigate("/");
-  }, [logout, navigate]);
+    (window as any).__ventex_logging_out = true;
+    sessionStorage.setItem('__ventex_logging_out', '1');
+    localStorage.removeItem("ventex_operator");
+    try {
+      await logout();
+    } catch {}
+    window.location.href = "/";
+  }, [logout]);
 
   const userEmail = profile?.user.email || authUser?.email || "";
   const userRole = profile?.user.role || authUser?.role || "user";

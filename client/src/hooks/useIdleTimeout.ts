@@ -57,6 +57,8 @@ export function useIdleTimeout() {
 
   const handleLogout = useCallback(async (reason: "idle" | "absolute" = "idle") => {
     clearTimers();
+    (window as any).__ventex_logging_out = true;
+    sessionStorage.setItem('__ventex_logging_out', '1');
     localStorage.removeItem("ventex_operator");
     localStorage.removeItem("ventex_demo_session");
     localStorage.removeItem(SESSION_START_KEY);

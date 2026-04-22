@@ -67,8 +67,10 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
   }, [user?.role, isPreviewMode]);
 
   const handleSignOut = useCallback(async () => {
-    // Set flag to prevent UNAUTHED redirect race condition
+    // Set flags to prevent UNAUTHED redirect race condition
+    // sessionStorage survives the page reload that window.location.href triggers
     (window as any).__ventex_logging_out = true;
+    sessionStorage.setItem('__ventex_logging_out', '1');
     endCurrentSession();
     localStorage.removeItem("ventex_operator");
     try {

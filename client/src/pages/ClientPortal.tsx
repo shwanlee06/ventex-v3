@@ -2115,7 +2115,13 @@ export default function ClientPortal(
               variant="ghost"
               size="sm"
               className="text-muted-foreground/40 hover:text-foreground h-8 w-8 p-0"
-              onClick={() => logout()}
+              onClick={async () => {
+                (window as any).__ventex_logging_out = true;
+                sessionStorage.setItem('__ventex_logging_out', '1');
+                localStorage.removeItem("ventex_operator");
+                try { await logout(); } catch {}
+                window.location.href = "/";
+              }}
             >
               <LogOut className="size-4" />
             </Button>
