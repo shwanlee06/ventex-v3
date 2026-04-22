@@ -38,6 +38,7 @@ import BlueprintDiagnosticsPage from "./pages/BlueprintDiagnostics";
 import ClientPortal from "./pages/ClientPortal";
 import OversightPage from "./pages/Oversight";
 import DraftCenter from "./pages/DraftCenter";
+import SignOut from "./pages/SignOut";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import TrustSecurity from "./pages/TrustSecurity";
@@ -129,6 +130,9 @@ function Router() {
       {/* Investor demo — public, no auth, read-only */}
       <Route path="/demo/dashboard" component={DemoDashboard} />
       <Route path="/demo" component={Demo} />
+
+      {/* Sign out page — clears session and redirects to landing */}
+      <Route path="/sign-out" component={SignOut} />
 
       {/* Legal & Trust pages — public, no auth */}
       <Route path="/privacy" component={PrivacyPolicy} />

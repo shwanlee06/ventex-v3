@@ -58,8 +58,7 @@ export function useIdleTimeout() {
 
   const handleLogout = useCallback((reason: "idle" | "absolute" = "idle") => {
     clearTimers();
-    const param = reason === "absolute" ? "session_expired" : "expired";
-    hardLogout(`/?${param}=true`);
+    window.location.href = "/sign-out";
   }, [clearTimers]);
 
   const resetIdleTimer = useCallback(() => {

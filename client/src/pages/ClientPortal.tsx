@@ -2112,14 +2112,12 @@ export default function ClientPortal(
             <span className="text-[11px] text-muted-foreground/50 hidden sm:block">
               {user.name || user.email}
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground/40 hover:text-foreground h-8 w-8 p-0"
-              onClick={() => hardLogout("/")}
+            <a
+              href="/sign-out"
+              className="inline-flex items-center justify-center text-muted-foreground/40 hover:text-foreground h-8 w-8 p-0 rounded-md no-underline"
             >
               <LogOut className="size-4" />
-            </Button>
+            </a>
           </div>
         </div>
       </header>

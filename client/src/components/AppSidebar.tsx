@@ -371,12 +371,12 @@ export default function AppSidebar() {
               </Tooltip>
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
-                  <button
-                    onClick={handleSignOut}
-                    className="flex items-center justify-center p-2 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors w-full"
+                  <a
+                    href="/sign-out"
+                    className="flex items-center justify-center p-2 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors w-full no-underline"
                   >
                     <LogOut className="size-[18px]" />
-                  </button>
+                  </a>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="text-xs">Sign Out</TooltipContent>
               </Tooltip>
@@ -395,13 +395,13 @@ export default function AppSidebar() {
                   <span className="text-[10px] text-muted-foreground block truncate">{user?.email}</span>
                 </div>
               </Link>
-              <button
-                onClick={handleSignOut}
-                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-md text-[12px] text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              <a
+                href="/sign-out"
+                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-md text-[12px] text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors no-underline"
               >
                 <LogOut className="size-[16px]" />
                 Sign Out
-              </button>
+              </a>
             </div>
           )}
         </div>
@@ -499,13 +499,13 @@ export default function AppSidebar() {
                     <span className="text-[11px] text-muted-foreground block truncate">{user?.email}</span>
                   </div>
                 </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center gap-2.5 w-full px-3 py-2 mt-1 rounded-md text-[13px] text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                <a
+                  href="/sign-out"
+                  className="flex items-center gap-2.5 w-full px-3 py-2 mt-1 rounded-md text-[13px] text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors no-underline"
                 >
                   <LogOut className="size-[18px]" />
                   Sign Out
-                </button>
+                </a>
               </div>
             </motion.aside>
           </>

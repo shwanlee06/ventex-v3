@@ -403,15 +403,13 @@ export default function ProfilePage() {
           transition={{ duration: 0.3, delay: 0.4 }}
           className="flex items-center justify-between gap-3"
         >
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={handleLogout}
-            className="gap-2 h-9 min-h-[36px] touch-manipulation"
+          <a
+            href="/sign-out"
+            className="inline-flex items-center justify-center gap-2 h-9 min-h-[36px] touch-manipulation rounded-md px-3 text-sm font-medium bg-destructive text-destructive-foreground hover:bg-destructive/90 no-underline"
           >
             <LogOut className="size-3.5" />
             Sign Out
-          </Button>
+          </a>
           <Button
             onClick={handleSave}
             disabled={saving || !hasChanges}

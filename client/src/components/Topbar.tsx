@@ -248,37 +248,13 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
                   </>
                 )}
                 <DropdownMenuSeparator />
-                <div
-                  role="menuitem"
-                  tabIndex={-1}
-                  onClick={() => {
-                    (window as any).__ventex_logging_out = true;
-                    try { sessionStorage.setItem('__ventex_logging_out', '1'); } catch(e) {}
-                    try {
-                      localStorage.removeItem('ventex_operator');
-                      localStorage.removeItem('ventex_demo_session');
-                      localStorage.removeItem('ventex_session_start');
-                      localStorage.removeItem('manus-runtime-user-info');
-                    } catch(e) {}
-                    try {
-                      document.cookie.split(';').forEach(c => {
-                        document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
-                      });
-                    } catch(e) {}
-                    fetch('/api/trpc/auth.logout', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      credentials: 'include',
-                      body: JSON.stringify({ '0': { 'json': null } }),
-                    }).finally(() => {
-                      window.location.replace('/?logged_out=1');
-                    });
-                  }}
-                  className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm text-red-400 hover:bg-accent hover:text-red-400 min-h-[44px] outline-none"
+                <a
+                  href="/sign-out"
+                  className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm text-red-400 hover:bg-accent hover:text-red-400 min-h-[44px] outline-none no-underline"
                 >
                   <LogOut className="size-4 mr-2" />
                   Sign out
-                </div>
+                </a>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
