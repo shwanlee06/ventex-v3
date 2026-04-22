@@ -2,6 +2,7 @@
 // Loads user data from DB, saves changes via tRPC
 
 import DashboardLayout from "@/components/DashboardLayout";
+import { hardLogout } from "@/lib/hardLogout";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -113,15 +114,8 @@ export default function ProfilePage() {
   }, [displayName, timezone, emailNotifs, pushNotifs, twoFactor, updateProfile, updateNotifications, updateSecurity]);
 
   const handleLogout = useCallback(async () => {
-    toast.info("Signing out...");
-    (window as any).__ventex_logging_out = true;
-    sessionStorage.setItem('__ventex_logging_out', '1');
-    localStorage.removeItem("ventex_operator");
-    try {
-      await logout();
-    } catch {}
-    window.location.href = "/";
-  }, [logout]);
+    hardLogout("/");
+  }, []);
 
   const userEmail = profile?.user.email || authUser?.email || "";
   const userRole = profile?.user.role || authUser?.role || "user";

@@ -37,6 +37,7 @@ import {
 import { useLocation, Link } from "wouter";
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
+import { hardLogout } from "@/lib/hardLogout";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -156,17 +157,8 @@ export default function AppSidebar() {
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
-  const handleSignOut = async () => {
-    // Set flags to prevent UNAUTHED redirect race condition
-    // sessionStorage survives the page reload that window.location.href triggers
-    (window as any).__ventex_logging_out = true;
-    sessionStorage.setItem('__ventex_logging_out', '1');
-    try {
-      localStorage.removeItem("ventex_operator");
-      await logout();
-    } catch {}
-    // Hard redirect to landing page
-    window.location.href = "/";
+  const handleSignOut = () => {
+    hardLogout("/");
   };
 
   const initials = user?.name?.split(" ").map(w => w[0]).join("").slice(0, 2) || "?";

@@ -4,6 +4,7 @@
 // ============================================================================
 
 import { useAuth } from "@/_core/hooks/useAuth";
+import { hardLogout } from "@/lib/hardLogout";
 import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
@@ -2115,13 +2116,7 @@ export default function ClientPortal(
               variant="ghost"
               size="sm"
               className="text-muted-foreground/40 hover:text-foreground h-8 w-8 p-0"
-              onClick={async () => {
-                (window as any).__ventex_logging_out = true;
-                sessionStorage.setItem('__ventex_logging_out', '1');
-                localStorage.removeItem("ventex_operator");
-                try { await logout(); } catch {}
-                window.location.href = "/";
-              }}
+              onClick={() => hardLogout("/")}
             >
               <LogOut className="size-4" />
             </Button>

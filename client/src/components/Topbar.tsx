@@ -19,6 +19,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { endCurrentSession } from "@/lib/operatorSession";
+import { hardLogout } from "@/lib/hardLogout";
 
 interface TopbarProps {
   title: string;
@@ -66,19 +67,10 @@ export default function Topbar({ title, subtitle }: TopbarProps) {
     return user.role.charAt(0).toUpperCase() + user.role.slice(1);
   }, [user?.role, isPreviewMode]);
 
-  const handleSignOut = useCallback(async () => {
-    // Set flags to prevent UNAUTHED redirect race condition
-    // sessionStorage survives the page reload that window.location.href triggers
-    (window as any).__ventex_logging_out = true;
-    sessionStorage.setItem('__ventex_logging_out', '1');
+  const handleSignOut = useCallback(() => {
     endCurrentSession();
-    localStorage.removeItem("ventex_operator");
-    try {
-      await logout();
-    } catch {}
-    // Hard redirect to landing page
-    window.location.href = "/";
-  }, [logout]);
+    hardLogout("/");
+  }, []);
 
   const handleTogglePreview = useCallback(() => {
     if (isPreviewMode) {

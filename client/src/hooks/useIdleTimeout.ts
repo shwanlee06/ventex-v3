@@ -4,6 +4,7 @@ import { isPublicRoute } from "@/lib/publicRoutes";
 import { SESSION_IDLE_TIMEOUT_MS, SESSION_ABSOLUTE_TIMEOUT_MS } from "@shared/const";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { hardLogout } from "@/lib/hardLogout";
 
 const ACTIVITY_EVENTS = ["mousedown", "keydown", "touchstart", "scroll", "mousemove"] as const;
 const WARNING_BEFORE_MS = 2 * 60 * 1000; // Show warning 2 minutes before logout
@@ -55,21 +56,11 @@ export function useIdleTimeout() {
     hasWarnedRef.current = false;
   }, []);
 
-  const handleLogout = useCallback(async (reason: "idle" | "absolute" = "idle") => {
+  const handleLogout = useCallback((reason: "idle" | "absolute" = "idle") => {
     clearTimers();
-    (window as any).__ventex_logging_out = true;
-    sessionStorage.setItem('__ventex_logging_out', '1');
-    localStorage.removeItem("ventex_operator");
-    localStorage.removeItem("ventex_demo_session");
-    localStorage.removeItem(SESSION_START_KEY);
-    try {
-      await logout();
-    } catch {
-      // Ignore errors during forced logout
-    }
     const param = reason === "absolute" ? "session_expired" : "expired";
-    window.location.href = `/?${param}=true`;
-  }, [logout, clearTimers]);
+    hardLogout(`/?${param}=true`);
+  }, [clearTimers]);
 
   const resetIdleTimer = useCallback(() => {
     // Clear idle timers only (not absolute)
