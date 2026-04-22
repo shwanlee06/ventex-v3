@@ -3273,3 +3273,9 @@
 ## Demo Page Overlap Fix (April 22, 2026)
 - [x] Fixed hero section text overlapping with contact bar — added pb-16 to content div
 - [x] Increased contact bar padding from py-4 to py-6 for better spacing
+
+## Bug Fix — "Unable to transform response from server" on Live Dashboard
+- [x] Investigate tRPC/superjson serialization error on dashboard — root cause: CSRF origin check rejects POST mutations behind reverse proxy
+- [x] Fix root cause — updated CSRF middleware to check X-Forwarded-Host and allow *.manus.space HTTPS domains
+- [x] Added 8 CSRF unit tests (csrf.test.ts) — all passing
+- [ ] Verify dashboard mutations work on live site after publish

@@ -105,12 +105,19 @@ async function startServer() {
     // Only enforce on state-changing methods
     if (req.method !== "GET" && req.method !== "HEAD" && req.method !== "OPTIONS") {
       const origin = req.headers.origin;
-      const host = req.headers.host;
+      // Use X-Forwarded-Host (set by reverse proxy) or fall back to Host header
+      const host = (req.headers["x-forwarded-host"] as string) || req.headers.host;
       // In production, verify origin matches host; skip in dev for HMR
       if (process.env.NODE_ENV !== "development" && origin && host) {
         try {
           const originHost = new URL(origin).host;
-          if (originHost !== host) {
+          // Allow if origin matches the forwarded host, the direct host,
+          // or is a known *.manus.space domain (deployment platform)
+          const directHost = req.headers.host || "";
+          const isMatch = originHost === host 
+            || originHost === directHost
+            || (originHost.endsWith(".manus.space") && origin.startsWith("https://"));
+          if (!isMatch) {
             res.status(403).json({ error: "Origin mismatch" });
             return;
           }
