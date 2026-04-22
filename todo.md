@@ -3290,3 +3290,15 @@
 - [x] Updated OnboardingWizard handleNext to update (not recreate) existing org on resume
 - [x] 11 onboarding sync tests passing (organizations.onboarding.test.ts)
 - [x] All 1,021 tests passing
+
+## Fix — Add Client Dialog Consistency with Onboarding Wizard
+- [x] Compare Add Client dialog fields vs Onboarding Wizard Step 1 fields
+- [x] Update Add Client dialog to match all Onboarding Step 1 fields
+- [x] AUM values unified: <1M, 1M-10M, 10M-50M, 50M-100M, 100M+ (was different)
+- [x] Tier UI: button cards with descriptions (was plain dropdown)
+- [x] Description: Textarea 3 rows (was single-line Input)
+- [x] Sectors: now required with helper text and amber warning (was optional)
+- [x] Label: "Organization Name" (was "Client Name")
+- [x] Field order: matches wizard (Name, Contact, Description, AUM+Tier, Sectors)
+- [x] Create button disabled until name + sectors filled
+- [x] 14 onboarding sync tests passing

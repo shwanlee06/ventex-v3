@@ -41,6 +41,7 @@ import { useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -1122,22 +1123,22 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
         </AnimatePresence>
       </div>
 
-      {/* ── Add Client Dialog (Enhanced) ────────────────────────── */}
+      {/* ── Add Client Dialog (Matches Onboarding Wizard Step 1) ── */}
       <Dialog open={addDialogOpen} onOpenChange={(open) => { setAddDialogOpen(open); if (!open) resetAddClientForm(); }}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>Add New Client</DialogTitle>
             <DialogDescription>
-              Set up the client profile. After creation you'll be guided to the full onboarding wizard.
+              Basic information about the new client organization. After creation you'll be guided to the full onboarding wizard.
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="flex-1 pr-3 -mr-3">
             <div className="space-y-4 py-2">
-              {/* Client Name */}
+              {/* Organization Name — full width */}
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Client Name <span className="text-red-400">*</span></label>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Organization Name <span className="text-red-400">*</span></label>
                 <Input
-                  placeholder="e.g., FL1 Capital"
+                  placeholder="e.g. Meridian Capital Group"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   autoFocus
@@ -1145,7 +1146,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
               </div>
 
               {/* Contact Row */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1.5 block">Primary Contact</label>
                   <Input
@@ -1165,8 +1166,19 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                 </div>
               </div>
 
+              {/* Description — Textarea (matches wizard) */}
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Description</label>
+                <Textarea
+                  placeholder="Brief description of the client..."
+                  value={newDesc}
+                  onChange={(e) => setNewDesc(e.target.value)}
+                  rows={3}
+                />
+              </div>
+
               {/* AUM + Tier Row */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1.5 block">AUM Range</label>
                   <Select value={newAumRange} onValueChange={setNewAumRange}>
@@ -1174,32 +1186,45 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                       <SelectValue placeholder="Select range" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="under-50m">Under $50M</SelectItem>
-                      <SelectItem value="50m-100m">$50M – $100M</SelectItem>
-                      <SelectItem value="100m-250m">$100M – $250M</SelectItem>
-                      <SelectItem value="250m-500m">$250M – $500M</SelectItem>
-                      <SelectItem value="500m-plus">$500M+</SelectItem>
+                      <SelectItem value="<1M">Under $1M</SelectItem>
+                      <SelectItem value="1M-10M">$1M – $10M</SelectItem>
+                      <SelectItem value="10M-50M">$10M – $50M</SelectItem>
+                      <SelectItem value="50M-100M">$50M – $100M</SelectItem>
+                      <SelectItem value="100M+">$100M+</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1.5 block">Subscription Tier</label>
-                  <Select value={newTier} onValueChange={(v) => setNewTier(v as "poc" | "growth" | "enterprise")}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="poc">POC</SelectItem>
-                      <SelectItem value="growth">Growth</SelectItem>
-                      <SelectItem value="enterprise">Enterprise</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex gap-1.5">
+                    {[
+                      { value: "poc", label: "POC", desc: "Proof of concept" },
+                      { value: "growth", label: "Growth", desc: "Full access" },
+                      { value: "enterprise", label: "Enterprise", desc: "Custom SLA" },
+                    ].map(t => (
+                      <button
+                        key={t.value}
+                        type="button"
+                        onClick={() => setNewTier(t.value as typeof newTier)}
+                        className={cn(
+                          "flex-1 rounded-md border p-2 text-left transition-all",
+                          newTier === t.value
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/30"
+                        )}
+                      >
+                        <span className="text-xs font-semibold text-foreground">{t.label}</span>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">{t.desc}</p>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Sectors */}
+              {/* Sectors — required, matches wizard */}
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Sectors</label>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Sectors <span className="text-red-400">*</span></label>
+                <p className="text-[10px] text-muted-foreground mb-1.5">Select at least one sector to generate starter blueprints</p>
                 <div className="flex flex-wrap gap-1.5">
                   {["Real Estate", "Yacht", "F&B", "Entertainment", "Oil & Gas", "Technology", "Healthcare", "Finance", "Energy", "Others"].map((s) => (
                     <Badge
@@ -1217,22 +1242,15 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                     </Badge>
                   ))}
                 </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Description (optional)</label>
-                <Input
-                  placeholder="Brief description of the client..."
-                  value={newDesc}
-                  onChange={(e) => setNewDesc(e.target.value)}
-                />
+                {newSectors.length === 0 && (
+                  <p className="text-[10px] text-amber-400 mt-1.5">At least one sector is required</p>
+                )}
               </div>
             </div>
           </ScrollArea>
           <DialogFooter className="pt-4 border-t border-border">
             <Button variant="outline" onClick={() => { setAddDialogOpen(false); resetAddClientForm(); }}>Cancel</Button>
-            <Button onClick={handleAddClient} disabled={!newName.trim() || createOrg.isPending}>
+            <Button onClick={handleAddClient} disabled={!newName.trim() || newSectors.length === 0 || createOrg.isPending}>
               {createOrg.isPending ? <Loader2 className="size-4 animate-spin mr-1.5" /> : <Plus className="size-4 mr-1.5" />}
               Create & Continue
             </Button>

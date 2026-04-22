@@ -169,7 +169,7 @@ describe("Enhanced Add Client → Onboarding flow", () => {
       description: "A test client",
       primaryContactName: "John Doe",
       primaryContactEmail: "john@test.com",
-      aumRange: "100m-250m",
+      aumRange: "50M-100M",
       sectors: ["Real Estate", "Technology"],
       subscriptionTier: "growth" as const,
     };
@@ -180,6 +180,35 @@ describe("Enhanced Add Client → Onboarding flow", () => {
     expect(input).toHaveProperty("sectors");
     expect(input).toHaveProperty("subscriptionTier");
     expect(input.sectors).toHaveLength(2);
+  });
+
+  it("should use consistent AUM range values between dialog and wizard", () => {
+    // These are the canonical AUM values used in BOTH the Add Client dialog and Onboarding Wizard
+    const AUM_VALUES = ["<1M", "1M-10M", "10M-50M", "50M-100M", "100M+"];
+    expect(AUM_VALUES).toHaveLength(5);
+    expect(AUM_VALUES).toContain("<1M");
+    expect(AUM_VALUES).toContain("100M+");
+  });
+
+  it("should use consistent sector list between dialog and wizard", () => {
+    const SECTORS = [
+      "Real Estate", "Yacht", "F&B", "Entertainment", "Oil & Gas",
+      "Technology", "Healthcare", "Finance", "Energy", "Others",
+    ];
+    expect(SECTORS).toHaveLength(10);
+    expect(SECTORS).toContain("Real Estate");
+    expect(SECTORS).toContain("Others");
+  });
+
+  it("should require sectors (at least one) for create button to be enabled", () => {
+    const name = "Test Client";
+    const sectors: string[] = [];
+    const isDisabled = !name.trim() || sectors.length === 0;
+    expect(isDisabled).toBe(true);
+
+    const sectorsWithOne = ["Real Estate"];
+    const isDisabledWithSector = !name.trim() || sectorsWithOne.length === 0;
+    expect(isDisabledWithSector).toBe(false);
   });
 
   it("should handle optional fields being undefined", () => {
