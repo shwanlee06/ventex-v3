@@ -53,6 +53,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 // PortalConcierge removed — AI Concierge is now a dedicated tab
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Streamdown } from "streamdown";
 
 import {
   Dialog,
@@ -217,7 +219,7 @@ export default function ClientPortal(
   const [showAllPortfolio, setShowAllPortfolio] = useState(false);
   const [showAllForecasts, setShowAllForecasts] = useState(false);
   const [showAllSignals, setShowAllSignals] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "portfolio" | "intelligence" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "portfolio" | "intelligence" | "concierge" | "settings">("overview");
   const [confirmDialog, setConfirmDialog] = useState<{
     eventId: number;
     actionFlow: string;
@@ -231,7 +233,12 @@ export default function ClientPortal(
   } | null>(null);
   const [completingTaskIds, setCompletingTaskIds] = useState<Set<number>>(new Set());
 
-
+  // ── AI Concierge State ──────────────────────────────────────────────────
+  const [conciergeMessages, setConciergeMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
+  const [conciergeInput, setConciergeInput] = useState("");
+  const [conciergeSending, setConciergeSending] = useState(false);
+  const conciergeEndRef = useRef<HTMLDivElement>(null);
+  const CONCIERGE_STORAGE_KEY = `ventex_concierge_${orgSlug}`;
 
   // Data
   const { data: drafts } = trpc.portal.getDrafts.useQuery(
@@ -364,6 +371,60 @@ export default function ClientPortal(
   );
 
 
+  // ── AI Concierge Effects & Handlers ─────────────────────────────────
+
+  // Load saved messages from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(CONCIERGE_STORAGE_KEY);
+      if (saved) setConciergeMessages(JSON.parse(saved));
+    } catch { /* ignore */ }
+  }, [CONCIERGE_STORAGE_KEY]);
+
+  // Save messages to localStorage
+  useEffect(() => {
+    if (conciergeMessages.length > 0) {
+      localStorage.setItem(CONCIERGE_STORAGE_KEY, JSON.stringify(conciergeMessages));
+    }
+  }, [conciergeMessages, CONCIERGE_STORAGE_KEY]);
+
+  // Auto-scroll on new messages
+  useEffect(() => {
+    conciergeEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [conciergeMessages]);
+
+  // Focus input when switching to concierge tab
+  useEffect(() => {
+    if (activeTab === "concierge") {
+      const el = document.getElementById("concierge-input");
+      if (el) setTimeout(() => el.focus(), 300);
+    }
+  }, [activeTab]);
+
+  const handleConciergeSend = useCallback(async () => {
+    const text = conciergeInput.trim();
+    if (!text || conciergeSending) return;
+    const userMsg = { role: "user" as const, content: text };
+    setConciergeMessages((prev) => [...prev, userMsg]);
+    setConciergeInput("");
+    setConciergeSending(true);
+    try {
+      const res = await fetch("/api/trpc/portal.aiChat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ "0": { json: { orgSlug, message: text, history: conciergeMessages.slice(-20) } } }),
+      });
+      const json = await res.json();
+      const reply = json?.[0]?.result?.data?.json?.reply || "I'm unable to respond right now. Please try again.";
+      setConciergeMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+    } catch {
+      setConciergeMessages((prev) => [...prev, { role: "assistant", content: "Connection error. Please try again." }]);
+    } finally {
+      setConciergeSending(false);
+    }
+  }, [conciergeInput, conciergeSending, orgSlug, conciergeMessages]);
+
   // ── Auth / Loading / Error States ──────────────────────────────────────
 
   if (authLoading) {
@@ -491,7 +552,8 @@ export default function ClientPortal(
   const tabs = [
     { id: "overview" as const, label: "Overview", icon: <Activity className="size-3.5" /> },
     { id: "portfolio" as const, label: "Portfolio", icon: <Briefcase className="size-3.5" /> },
-    { id: "intelligence" as const, label: "Intelligence", icon: <Sparkles className="size-3.5" /> },
+    { id: "intelligence" as const, label: "Intelligence", icon: <BarChart3 className="size-3.5" /> },
+    { id: "concierge" as const, label: "AI Concierge", icon: <Sparkles className="size-3.5" /> },
     { id: "settings" as const, label: "Settings", icon: <Shield className="size-3.5" /> },
   ];
 
@@ -1539,6 +1601,132 @@ export default function ClientPortal(
                   </p>
                 </div>
               )}
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════
+            AI CONCIERGE TAB
+            ══════════════════════════════════════════════════════════ */}
+        {activeTab === "concierge" && (
+          <div className="flex flex-col" style={{ height: "calc(100vh - 280px)", minHeight: "400px" }}>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="size-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                  <Sparkles className="size-4 text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">VENTEX Intelligence</h3>
+                  <div className="flex items-center gap-1.5">
+                    <span className="size-1.5 rounded-full bg-emerald-400" />
+                    <span className="text-[10px] text-emerald-400/70 font-mono">online</span>
+                  </div>
+                </div>
+              </div>
+              {conciergeMessages.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setConciergeMessages([]);
+                    localStorage.removeItem(CONCIERGE_STORAGE_KEY);
+                  }}
+                  className="text-[10px] text-muted-foreground hover:text-foreground h-7 px-2"
+                >
+                  <Trash2 className="size-3 mr-1" /> Clear
+                </Button>
+              )}
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto space-y-4 pr-1 mb-4">
+              {conciergeMessages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <div className="size-16 rounded-2xl bg-emerald-500/[0.06] border border-emerald-500/10 flex items-center justify-center mb-4">
+                    <Sparkles className="size-7 text-emerald-400/40" />
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-1">How can I help?</p>
+                  <p className="text-[11px] text-muted-foreground/60 max-w-xs">
+                    Ask about your portfolio, ventures, tasks, or distributions.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 mt-6 max-w-sm">
+                    {[
+                      "What's the status of my portfolio?",
+                      "Which tasks need my attention?",
+                      "Create a task for my next review",
+                      "Show venture health scores",
+                    ].map((prompt) => (
+                      <button
+                        key={prompt}
+                        onClick={() => { setConciergeInput(prompt); }}
+                        className="text-left p-3 rounded-lg border border-border/50 hover:border-emerald-500/30 hover:bg-emerald-500/[0.03] transition-all text-[11px] text-muted-foreground"
+                      >
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                conciergeMessages.map((msg, i) => (
+                  <div key={i} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}>
+                    <div
+                      className={cn(
+                        "max-w-[85%] rounded-xl px-4 py-3 text-sm leading-relaxed",
+                        msg.role === "user"
+                          ? "bg-emerald-600 text-white"
+                          : "bg-card border border-border text-foreground"
+                      )}
+                    >
+                      {msg.role === "assistant" ? (
+                        <Streamdown>{msg.content}</Streamdown>
+                      ) : (
+                        msg.content
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+              {conciergeSending && (
+                <div className="flex justify-start">
+                  <div className="bg-card border border-border rounded-xl px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <div className="size-1.5 rounded-full bg-emerald-400 animate-pulse" style={{ animationDelay: "0.2s" }} />
+                      <div className="size-1.5 rounded-full bg-emerald-400 animate-pulse" style={{ animationDelay: "0.4s" }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={conciergeEndRef} />
+            </div>
+
+            {/* Input */}
+            <div className="border-t border-border/50 pt-4">
+              <div className="flex gap-2">
+                <Textarea
+                  id="concierge-input"
+                  value={conciergeInput}
+                  onChange={(e) => setConciergeInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleConciergeSend();
+                    }
+                  }}
+                  placeholder="Ask VENTEX Intelligence anything..."
+                  className="flex-1 resize-none bg-card border-border/50 text-sm min-h-[44px] max-h-[120px]"
+                  rows={1}
+                />
+                <Button
+                  onClick={handleConciergeSend}
+                  disabled={conciergeSending || !conciergeInput.trim()}
+                  size="icon"
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white border-0 h-[44px] w-[44px] flex-shrink-0"
+                >
+                  {conciergeSending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+                </Button>
+              </div>
+            </div>
           </div>
         )}
 

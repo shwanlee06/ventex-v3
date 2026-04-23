@@ -37,7 +37,6 @@ import BlueprintsPage from "./pages/Blueprints";
 import BlueprintDiagnosticsPage from "./pages/BlueprintDiagnostics";
 import ClientPortal from "./pages/ClientPortal";
 import OversightPage from "./pages/Oversight";
-import Concierge from "./pages/Concierge";
 import DraftCenter from "./pages/DraftCenter";
 import SignOut from "./pages/SignOut";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -223,9 +222,6 @@ function Router() {
       </Route>
       <Route path="/oversight">
         <RequireAuth><RequireVentex><OversightPage /></RequireVentex></RequireAuth>
-      </Route>
-      <Route path="/concierge">
-        <RequireAuth><RequireVentex><Concierge /></RequireVentex></RequireAuth>
       </Route>
 
       <Route path="/404" component={NotFound} />

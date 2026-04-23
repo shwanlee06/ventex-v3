@@ -3354,3 +3354,10 @@
 - [x] TypeScript clean — zero errors
 - [x] 16/16 concierge tests pass
 - [x] Verified in browser — sidebar nav works, page loads with VENTEX branding
+
+## Feature — Move AI Concierge to Client Portal Only
+- [x] Remove AI Concierge from admin sidebar (AppSidebar.tsx)
+- [x] Remove /concierge route and Concierge.tsx page
+- [x] Add AI Concierge as tab in client portal tab bar with Sparkles star icon
+- [x] Build inline concierge chat in client portal with suggestion cards, localStorage persistence, Streamdown rendering
+- [x] TypeScript check — zero errors, 16/16 concierge tests pass, verified in browser

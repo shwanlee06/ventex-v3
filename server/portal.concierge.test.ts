@@ -68,74 +68,63 @@ describe("AI Concierge Integration", () => {
     expect(content).toContain("activityLog");
   });
 
-  // ── Frontend: Dedicated Concierge page ──────────────────────────
-  it("Concierge page exists as a dedicated page", () => {
-    const conciergePath = path.join(ROOT, "client/src/pages/Concierge.tsx");
-    expect(fs.existsSync(conciergePath)).toBe(true);
-    const content = fs.readFileSync(conciergePath, "utf-8");
-    // Should use DashboardLayout
-    expect(content).toContain("DashboardLayout");
-    // Should have VENTEX Intelligence branding
+  // ── Frontend: AI Concierge is a tab in ClientPortal ──────────────
+  it("ClientPortal has AI Concierge as a tab with Sparkles icon", () => {
+    const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
+    const content = fs.readFileSync(portalPath, "utf-8");
+    // Should have concierge in the activeTab type
+    expect(content).toContain('"concierge"');
+    // Should have concierge tab in the tabs array
+    expect(content).toContain("AI Concierge");
+    // Should use Sparkles icon for the concierge tab
+    expect(content).toContain("Sparkles");
+    // Should have concierge tab content
+    expect(content).toContain('activeTab === "concierge"');
+  });
+
+  it("ClientPortal concierge tab has VENTEX Intelligence branding", () => {
+    const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
+    const content = fs.readFileSync(portalPath, "utf-8");
     expect(content).toContain("VENTEX Intelligence");
-    expect(content).toContain("ventex-logo-mark");
   });
 
-  it("Concierge page has streaming chat with history", () => {
-    const conciergePath = path.join(ROOT, "client/src/pages/Concierge.tsx");
-    const content = fs.readFileSync(conciergePath, "utf-8");
-    // Streaming via /api/ai/stream
-    expect(content).toContain("/api/ai/stream");
-    expect(content).toContain("streamChat");
-    // Chat history with localStorage
-    expect(content).toContain("ventex_concierge_index");
+  it("ClientPortal concierge tab has chat with localStorage persistence", () => {
+    const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
+    const content = fs.readFileSync(portalPath, "utf-8");
+    expect(content).toContain("conciergeMessages");
+    expect(content).toContain("handleConciergeSend");
     expect(content).toContain("localStorage");
-    // Conversation management
-    expect(content).toContain("createNewChat");
-    expect(content).toContain("deleteChat");
-    expect(content).toContain("switchChat");
+    expect(content).toContain("ventex_concierge_");
   });
 
-  it("Concierge page has suggestion cards", () => {
-    const conciergePath = path.join(ROOT, "client/src/pages/Concierge.tsx");
-    const content = fs.readFileSync(conciergePath, "utf-8");
-    expect(content).toContain("Portfolio overview");
-    expect(content).toContain("Overdue tasks");
-    expect(content).toContain("Create a task");
-    expect(content).toContain("Venture health");
+  it("ClientPortal concierge tab has suggestion cards", () => {
+    const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
+    const content = fs.readFileSync(portalPath, "utf-8");
+    expect(content).toContain("What's the status of my portfolio?");
+    expect(content).toContain("Which tasks need my attention?");
+    expect(content).toContain("Create a task for my next review");
+    expect(content).toContain("Show venture health scores");
   });
 
-  it("Concierge page uses Streamdown for markdown rendering", () => {
-    const conciergePath = path.join(ROOT, "client/src/pages/Concierge.tsx");
-    const content = fs.readFileSync(conciergePath, "utf-8");
+  it("ClientPortal concierge tab uses Streamdown for markdown", () => {
+    const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
+    const content = fs.readFileSync(portalPath, "utf-8");
     expect(content).toContain("Streamdown");
   });
 
-  // ── Route: /concierge registered ──────────────────────────────────
-  it("App.tsx has /concierge route", () => {
-    const appPath = path.join(ROOT, "client/src/App.tsx");
-    const content = fs.readFileSync(appPath, "utf-8");
-    expect(content).toContain('path="/concierge"');
-    expect(content).toContain("Concierge");
-  });
-
-  // ── Sidebar: AI Concierge in admin sidebar with star icon ─────────
-  it("AppSidebar has AI Concierge nav item with Sparkles icon", () => {
+  // ── Admin sidebar: AI Concierge removed ──────────────────────────
+  it("AppSidebar does NOT have AI Concierge nav item", () => {
     const sidebarPath = path.join(ROOT, "client/src/components/AppSidebar.tsx");
     const content = fs.readFileSync(sidebarPath, "utf-8");
-    expect(content).toContain("AI Concierge");
-    expect(content).toContain("/concierge");
-    expect(content).toContain("Sparkles");
+    expect(content).not.toContain("AI Concierge");
+    expect(content).not.toContain("/concierge");
   });
 
-  // ── Client Portal: concierge removed ──────────────────────────────
-  it("ClientPortal does NOT have concierge tab or overlay", () => {
+  // ── Client Portal: no floating widget or overlay ──────────────────
+  it("ClientPortal does NOT have floating widget or overlay", () => {
     const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
     const content = fs.readFileSync(portalPath, "utf-8");
-    // Should NOT have concierge as a tab
-    expect(content).not.toContain('activeTab === "concierge"');
-    // Should NOT have floating widget
     expect(content).not.toContain('import PortalConcierge from "@/components/PortalConcierge"');
-    // Should NOT have overlay panel or trigger
     expect(content).not.toContain("conciergePanel");
     expect(content).not.toContain("conciergeTrigger");
     expect(content).not.toContain("conciergeOpen");
