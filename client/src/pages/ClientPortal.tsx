@@ -48,7 +48,6 @@ import {
   MessageSquare,
   Trash2,
   X,
-  PanelLeftOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -219,7 +218,7 @@ export default function ClientPortal(
   const [showAllPortfolio, setShowAllPortfolio] = useState(false);
   const [showAllForecasts, setShowAllForecasts] = useState(false);
   const [showAllSignals, setShowAllSignals] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "portfolio" | "intelligence" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "portfolio" | "intelligence" | "settings" | "concierge">("overview");
   const [confirmDialog, setConfirmDialog] = useState<{
     eventId: number;
     actionFlow: string;
@@ -234,7 +233,6 @@ export default function ClientPortal(
   const [completingTaskIds, setCompletingTaskIds] = useState<Set<number>>(new Set());
 
   //  // ── AI Concierge State ──────────────────────────────────────────
-  const [conciergeOpen, setConciergeOpen] = useState(false);
   const [conciergeMessages, setConciergeMessages] = useState<Array<{ id: string; role: "user" | "assistant"; content: string; timestamp: Date; isStreaming?: boolean }>>([]);
   const [conciergeInput, setConciergeInput] = useState("");
   const [conciergeLoading, setConciergeLoading] = useState(false);
@@ -402,12 +400,12 @@ export default function ClientPortal(
     }
   }, [conciergeMessages]);
 
-  // Focus concierge input when panel opens
+  // Focus concierge input when tab is active
   useEffect(() => {
-    if (conciergeOpen && conciergeInputRef.current) {
+    if (activeTab === "concierge" && conciergeInputRef.current) {
       setTimeout(() => conciergeInputRef.current?.focus(), 200);
     }
-  }, [conciergeOpen]);
+  }, [activeTab]);
 
   const handleConciergeSend = useCallback(async () => {
     const text = conciergeInput.trim();
@@ -570,6 +568,7 @@ export default function ClientPortal(
     { id: "overview" as const, label: "Overview", icon: <Activity className="size-3.5" /> },
     { id: "portfolio" as const, label: "Portfolio", icon: <Briefcase className="size-3.5" /> },
     { id: "intelligence" as const, label: "Intelligence", icon: <Sparkles className="size-3.5" /> },
+    { id: "concierge" as const, label: "AI Concierge", icon: <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png" alt="" className="size-3.5 rounded object-contain" /> },
     { id: "settings" as const, label: "Settings", icon: <Shield className="size-3.5" /> },
   ];
 
@@ -1861,7 +1860,145 @@ export default function ClientPortal(
           </div>
         )}
 
-        {/* ── Footer ──────────────────────────────────────────────── */}
+        {/* ══════════════════════════════════════════════════════════
+            AI CONCIERGE TAB
+            ══════════════════════════════════════════════════════════ */}
+        {activeTab === "concierge" && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="flex flex-col" style={{ minHeight: "calc(100vh - 320px)" }}
+          >
+            {/* Chat Messages Area */}
+            <ScrollArea ref={conciergeScrollRef} className="flex-1 min-h-0">
+              <div className="space-y-4 pb-4">
+                {conciergeMessages.length === 0 && (
+                  <div className="text-center py-16">
+                    <div className="size-16 rounded-2xl bg-gradient-to-br from-emerald-500/15 to-emerald-600/5 flex items-center justify-center mx-auto mb-5 border border-emerald-500/10">
+                      <img
+                        src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png"
+                        alt="VENTEX"
+                        className="size-8 rounded object-contain"
+                      />
+                    </div>
+                    <h3 className="text-base font-semibold text-foreground mb-2">How can I help?</h3>
+                    <p className="text-xs text-muted-foreground/50 max-w-xs mx-auto leading-relaxed mb-6">
+                      Ask about your ventures, create tasks, check statuses, or take action on your portfolio.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-md mx-auto">
+                      {[
+                        { text: "What's the status of my portfolio?", icon: <Activity className="size-3.5" /> },
+                        { text: "Which tasks need my attention?", icon: <Zap className="size-3.5" /> },
+                        { text: "Create a new task for me", icon: <MessageSquare className="size-3.5" /> },
+                        { text: "Show me venture health scores", icon: <TrendingUp className="size-3.5" /> },
+                      ].map((suggestion) => (
+                        <button
+                          key={suggestion.text}
+                          onClick={() => { setConciergeInput(suggestion.text); setTimeout(() => conciergeInputRef.current?.focus(), 50); }}
+                          className="flex items-center gap-2.5 text-left text-xs text-muted-foreground/60 hover:text-emerald-400 px-3.5 py-3 rounded-xl border border-border/20 hover:border-emerald-500/20 hover:bg-emerald-500/5 transition-all group"
+                        >
+                          <span className="text-muted-foreground/30 group-hover:text-emerald-400/60 transition-colors">{suggestion.icon}</span>
+                          {suggestion.text}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {conciergeMessages.map((msg) => (
+                  <div key={msg.id} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}>
+                    <div className={cn("flex items-start gap-2.5 max-w-[85%]", msg.role === "user" ? "flex-row-reverse" : "flex-row")}>
+                      {msg.role === "assistant" && (
+                        <div className="size-7 rounded-lg bg-gradient-to-br from-emerald-500/15 to-emerald-600/5 flex items-center justify-center flex-shrink-0 mt-0.5 border border-emerald-500/10">
+                          <img
+                            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png"
+                            alt="V"
+                            className="size-4 rounded object-contain"
+                          />
+                        </div>
+                      )}
+                      <div className={cn(
+                        "rounded-2xl px-3.5 py-2.5",
+                        msg.role === "user"
+                          ? "bg-emerald-500/15 text-foreground rounded-br-md"
+                          : "bg-white/[0.04] text-foreground border border-border/20 rounded-bl-md"
+                      )}>
+                        {msg.role === "assistant" ? (
+                          msg.isStreaming && !msg.content ? (
+                            <div className="flex items-center gap-1.5 py-1">
+                              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse [animation-delay:150ms]" />
+                              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse [animation-delay:300ms]" />
+                            </div>
+                          ) : (
+                            <div className="text-sm leading-relaxed [&_p]:mb-2 [&_ul]:ml-4 [&_ul]:list-disc [&_li]:mb-1 [&_strong]:font-semibold [&_h1]:text-base [&_h1]:font-semibold [&_h1]:mb-2 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-1.5 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mb-1">
+                              <Streamdown>{msg.content}</Streamdown>
+                            </div>
+                          )
+                        ) : (
+                          <p className="text-sm leading-relaxed">{msg.content}</p>
+                        )}
+                        <span className="text-[9px] text-muted-foreground/30 mt-1 block">
+                          {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+
+            {/* Input Area */}
+            <div className="pt-4 mt-auto">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[10px] font-mono text-emerald-400/80">VENTEX Intelligence online</span>
+                </div>
+                {conciergeMessages.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearConciergeChat}
+                    className="text-xs text-muted-foreground/50 hover:text-red-400 h-7 px-2 gap-1"
+                  >
+                    <Trash2 className="size-3" />
+                    Clear
+                  </Button>
+                )}
+              </div>
+              <div className="flex items-end gap-2">
+                <Textarea
+                  ref={conciergeInputRef}
+                  value={conciergeInput}
+                  onChange={(e) => setConciergeInput(e.target.value)}
+                  onKeyDown={handleConciergeKeyDown}
+                  placeholder="Ask anything or request an action..."
+                  className="flex-1 min-h-[44px] max-h-[120px] resize-none text-sm bg-white/[0.04] border-border/20 rounded-xl focus:border-emerald-500/30 focus:ring-emerald-500/10 placeholder:text-muted-foreground/30"
+                  rows={1}
+                  disabled={conciergeLoading}
+                />
+                <Button
+                  onClick={handleConciergeSend}
+                  disabled={!conciergeInput.trim() || conciergeLoading}
+                  className="h-11 w-11 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white flex-shrink-0 disabled:opacity-30 p-0"
+                >
+                  {conciergeLoading ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Send className="size-4" />
+                  )}
+                </Button>
+              </div>
+              <p className="text-[9px] text-muted-foreground/30 mt-2 text-center">
+                Powered by VENTEX Intelligence · Can create tasks, update priorities & more
+              </p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Footer ────────────────────────────────────────────────────── */}
         <div className="pt-12 pb-8 text-center space-y-3">
           <div className="flex items-center justify-center gap-2 text-muted-foreground/30">
             <div className="h-px w-12 bg-border/30" />
@@ -2151,211 +2288,11 @@ export default function ClientPortal(
     </>
   );
 
-  // ── AI Concierge Left Panel ──────────────────────────────────────────────
-
-  const conciergePanel = (
-    <AnimatePresence>
-      {conciergeOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
-            onClick={() => setConciergeOpen(false)}
-          />
-          {/* Panel */}
-          <motion.div
-            initial={{ x: "-100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed left-0 top-0 bottom-0 w-[420px] max-w-[90vw] bg-background border-r border-border/30 z-50 flex flex-col shadow-2xl"
-          >
-            {/* Panel Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border/30 flex-shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="size-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center border border-emerald-500/20">
-                  <img
-                    src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png"
-                    alt="VENTEX"
-                    className="size-6 rounded object-contain"
-                  />
-                </div>
-                <div>
-                  <h2 className="text-sm font-semibold text-foreground tracking-tight">VENTEX Intelligence</h2>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-[10px] font-mono text-emerald-400/80">online</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1">
-                {conciergeMessages.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearConciergeChat}
-                    className="text-xs text-muted-foreground/50 hover:text-red-400 h-8 w-8 p-0"
-                    title="Clear conversation"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setConciergeOpen(false)}
-                  className="text-muted-foreground/50 hover:text-foreground h-8 w-8 p-0"
-                >
-                  <X className="size-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Chat Messages */}
-            <ScrollArea ref={conciergeScrollRef} className="flex-1 min-h-0">
-              <div className="px-5 py-4 space-y-4">
-                {conciergeMessages.length === 0 && (
-                  <div className="text-center py-12">
-                    <div className="size-16 rounded-2xl bg-gradient-to-br from-emerald-500/15 to-emerald-600/5 flex items-center justify-center mx-auto mb-5 border border-emerald-500/10">
-                      <img
-                        src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png"
-                        alt="VENTEX"
-                        className="size-8 rounded object-contain"
-                      />
-                    </div>
-                    <h3 className="text-base font-semibold text-foreground mb-2">How can I help?</h3>
-                    <p className="text-xs text-muted-foreground/50 max-w-xs mx-auto leading-relaxed mb-6">
-                      Ask about your ventures, create tasks, check statuses, or take action on your portfolio.
-                    </p>
-                    <div className="grid grid-cols-1 gap-2 max-w-xs mx-auto">
-                      {[
-                        { text: "What's the status of my portfolio?", icon: <Activity className="size-3.5" /> },
-                        { text: "Which tasks need my attention?", icon: <Zap className="size-3.5" /> },
-                        { text: "Create a new task for me", icon: <MessageSquare className="size-3.5" /> },
-                        { text: "Show me venture health scores", icon: <TrendingUp className="size-3.5" /> },
-                      ].map((suggestion) => (
-                        <button
-                          key={suggestion.text}
-                          onClick={() => { setConciergeInput(suggestion.text); setTimeout(() => conciergeInputRef.current?.focus(), 50); }}
-                          className="flex items-center gap-2.5 text-left text-xs text-muted-foreground/60 hover:text-emerald-400 px-3.5 py-3 rounded-xl border border-border/20 hover:border-emerald-500/20 hover:bg-emerald-500/5 transition-all group"
-                        >
-                          <span className="text-muted-foreground/30 group-hover:text-emerald-400/60 transition-colors">{suggestion.icon}</span>
-                          {suggestion.text}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {conciergeMessages.map((msg) => (
-                  <div key={msg.id} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}>
-                    <div className={cn("flex items-start gap-2.5 max-w-[85%]", msg.role === "user" ? "flex-row-reverse" : "flex-row")}>
-                      {msg.role === "assistant" && (
-                        <div className="size-7 rounded-lg bg-gradient-to-br from-emerald-500/15 to-emerald-600/5 flex items-center justify-center flex-shrink-0 mt-0.5 border border-emerald-500/10">
-                          <img
-                            src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png"
-                            alt="V"
-                            className="size-4 rounded object-contain"
-                          />
-                        </div>
-                      )}
-                      <div className={cn(
-                        "rounded-2xl px-3.5 py-2.5",
-                        msg.role === "user"
-                          ? "bg-emerald-500/15 text-foreground rounded-br-md"
-                          : "bg-white/[0.04] text-foreground border border-border/20 rounded-bl-md"
-                      )}>
-                        {msg.role === "assistant" ? (
-                          msg.isStreaming && !msg.content ? (
-                            <div className="flex items-center gap-1.5 py-1">
-                              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse [animation-delay:150ms]" />
-                              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse [animation-delay:300ms]" />
-                            </div>
-                          ) : (
-                            <div className="text-sm leading-relaxed [&_p]:mb-2 [&_ul]:ml-4 [&_ul]:list-disc [&_li]:mb-1 [&_strong]:font-semibold [&_h1]:text-base [&_h1]:font-semibold [&_h1]:mb-2 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-1.5 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mb-1">
-                              <Streamdown>{msg.content}</Streamdown>
-                            </div>
-                          )
-                        ) : (
-                          <p className="text-sm leading-relaxed">{msg.content}</p>
-                        )}
-                        <span className="text-[9px] text-muted-foreground/30 mt-1 block">
-                          {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-
-            {/* Input Area */}
-            <div className="px-4 pb-4 pt-3 border-t border-border/20 flex-shrink-0">
-              <div className="flex items-end gap-2">
-                <Textarea
-                  ref={conciergeInputRef}
-                  value={conciergeInput}
-                  onChange={(e) => setConciergeInput(e.target.value)}
-                  onKeyDown={handleConciergeKeyDown}
-                  placeholder="Ask anything or request an action..."
-                  className="flex-1 min-h-[44px] max-h-[120px] resize-none text-sm bg-white/[0.04] border-border/20 rounded-xl focus:border-emerald-500/30 focus:ring-emerald-500/10 placeholder:text-muted-foreground/30"
-                  rows={1}
-                  disabled={conciergeLoading}
-                />
-                <Button
-                  onClick={handleConciergeSend}
-                  disabled={!conciergeInput.trim() || conciergeLoading}
-                  className="h-11 w-11 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white flex-shrink-0 disabled:opacity-30 p-0"
-                >
-                  {conciergeLoading ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <Send className="size-4" />
-                  )}
-                </Button>
-              </div>
-              <p className="text-[9px] text-muted-foreground/30 mt-2 text-center">
-                Powered by VENTEX Intelligence · Can create tasks, update priorities & more
-              </p>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-
-  // ── AI Concierge Trigger Button (fixed left side) ───────────────────────
-
-  const conciergeTrigger = !conciergeOpen && (
-    <motion.button
-      initial={{ x: -20, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ delay: 0.5, type: "spring", damping: 20 }}
-      onClick={() => setConciergeOpen(true)}
-      className="fixed left-0 top-1/2 -translate-y-1/2 z-30 flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white pl-3 pr-4 py-3 rounded-r-xl shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:pl-4 transition-all group"
-      title="Open AI Concierge"
-    >
-      <img
-        src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png"
-        alt="VENTEX"
-        className="size-6 rounded object-contain"
-      />
-      <span className="text-xs font-semibold tracking-wide hidden sm:block">AI Concierge</span>
-    </motion.button>
-  );
-
   // ── Wrapper ────────────────────────────────────────────────────────────
 
   if (useDashboard) {
     return (
       <DashboardLayout title={orgName} subtitle="MANAGED BY VENTEX">
-        {conciergeTrigger}
-        {conciergePanel}
         <div className="p-5 md:p-8">{portalContent}</div>
       </DashboardLayout>
     );
@@ -2408,8 +2345,6 @@ export default function ClientPortal(
         </div>
       </header>
 
-      {conciergeTrigger}
-      {conciergePanel}
       {portalContent}
     </div>
   );

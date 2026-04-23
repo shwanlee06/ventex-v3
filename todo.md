@@ -3337,3 +3337,11 @@
 - [x] TypeScript check passes — zero errors
 - [x] Tests pass — 15/15 concierge tests
 - [x] Verify in browser — panel opens, AI responds with real data, tool-calling works
+
+## Feature — AI Concierge Sidebar Integration (matching admin pattern)
+- [x] Study admin sidebar AI chat panel (AppSidebar / DashboardLayout)
+- [x] Add AI Concierge as inline tab with star logo in portal tab bar
+- [x] Remove the overlay panel and fixed trigger button
+- [x] TypeScript check passes — zero errors
+- [x] Tests pass — 15/15 concierge tests
+- [x] Verified in browser — tab works, chat renders inline with full functionality

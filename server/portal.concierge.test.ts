@@ -75,34 +75,28 @@ describe("Portal AI Concierge Integration", () => {
     expect(content).toContain("activityLog");
   });
 
-  // ── Frontend: Left-side panel architecture ──────────────────────
-  it("ClientPortal has AI Concierge as a left-side panel (not tab or floating widget)", () => {
+  // ── Frontend: AI Concierge as a tab in the portal ──────────────────
+  it("ClientPortal has AI Concierge as a tab (not floating widget)", () => {
     const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
     const content = fs.readFileSync(portalPath, "utf-8");
     // Should NOT import the floating widget anymore
     expect(content).not.toContain('import PortalConcierge from "@/components/PortalConcierge"');
-    // Should NOT have concierge as a tab
-    expect(content).not.toContain('activeTab === "concierge"');
-    // Should have conciergeOpen state for the panel
-    expect(content).toContain("conciergeOpen");
-    expect(content).toContain("setConciergeOpen");
+    // Should have concierge as a tab in the tabs array
+    expect(content).toContain('"concierge"');
+    expect(content).toContain('activeTab === "concierge"');
+    // Should NOT have overlay panel or trigger
+    expect(content).not.toContain("conciergePanel");
+    expect(content).not.toContain("conciergeTrigger");
+    expect(content).not.toContain("conciergeOpen");
   });
 
-  it("ClientPortal has concierge panel with VENTEX logo", () => {
+  it("ClientPortal concierge tab has VENTEX star logo", () => {
     const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
     const content = fs.readFileSync(portalPath, "utf-8");
-    expect(content).toContain("conciergePanel");
     expect(content).toContain("VENTEX Intelligence");
     expect(content).toContain("ventex-logo-mark");
-  });
-
-  it("ClientPortal has concierge trigger button on left side", () => {
-    const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
-    const content = fs.readFileSync(portalPath, "utf-8");
-    expect(content).toContain("conciergeTrigger");
+    // Tab label should be AI Concierge
     expect(content).toContain("AI Concierge");
-    // Should be fixed to left side
-    expect(content).toContain("fixed left-0");
   });
 
   it("ClientPortal concierge uses portal.aiChat and localStorage", () => {
@@ -121,6 +115,17 @@ describe("Portal AI Concierge Integration", () => {
     expect(content).toContain("Conversation cleared");
     expect(content).toContain("What's the status of my portfolio?");
     expect(content).toContain("Create a new task for me");
+  });
+
+  it("ClientPortal concierge tab renders inline chat (not overlay)", () => {
+    const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
+    const content = fs.readFileSync(portalPath, "utf-8");
+    // Should NOT have fixed positioning or backdrop for the concierge
+    expect(content).not.toContain("fixed left-0 top-0 bottom-0 w-[420px]");
+    expect(content).not.toContain("fixed inset-0 bg-black/40 backdrop-blur-sm z-40");
+    // Should have the chat input inline
+    expect(content).toContain("handleConciergeSend");
+    expect(content).toContain("handleConciergeKeyDown");
   });
 
   // ── Admin sidebar: AI Concierge removed ──────────────────────────
