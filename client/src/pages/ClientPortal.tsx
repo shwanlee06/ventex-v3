@@ -45,11 +45,15 @@ import {
   Moon,
   Sun,
   Settings,
+  MessageSquare,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import PortalConcierge from "@/components/PortalConcierge";
+// PortalConcierge removed — AI Concierge is now a dedicated tab
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Streamdown } from "streamdown";
 import {
   Dialog,
   DialogContent,
@@ -69,7 +73,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow, format } from "date-fns";
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -213,7 +217,7 @@ export default function ClientPortal(
   const [showAllPortfolio, setShowAllPortfolio] = useState(false);
   const [showAllForecasts, setShowAllForecasts] = useState(false);
   const [showAllSignals, setShowAllSignals] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "portfolio" | "intelligence" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "portfolio" | "intelligence" | "concierge" | "settings">("overview");
   const [confirmDialog, setConfirmDialog] = useState<{
     eventId: number;
     actionFlow: string;
@@ -226,6 +230,15 @@ export default function ClientPortal(
     ventureName: string;
   } | null>(null);
   const [completingTaskIds, setCompletingTaskIds] = useState<Set<number>>(new Set());
+
+  // ── AI Concierge State ──────────────────────────────────────────────────
+  const [conciergeMessages, setConciergeMessages] = useState<Array<{ id: string; role: "user" | "assistant"; content: string; timestamp: Date; isStreaming?: boolean }>>([]);
+  const [conciergeInput, setConciergeInput] = useState("");
+  const [conciergeLoading, setConciergeLoading] = useState(false);
+  const conciergeScrollRef = useRef<HTMLDivElement>(null);
+  const conciergeInputRef = useRef<HTMLTextAreaElement>(null);
+  const conciergeStorageKey = `ventex_portal_chat_${orgSlug}`;
+  const aiChat = trpc.portal.aiChat.useMutation();
 
   // Data
   const { data: drafts } = trpc.portal.getDrafts.useQuery(
@@ -479,12 +492,82 @@ export default function ClientPortal(
   const pendingActions = actionCards.length;
   const healthScore = portfolioHealth?.score ?? 0;
 
+  // ── AI Concierge Effects & Handlers ────────────────────────────────────
+
+  // Load concierge messages from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(conciergeStorageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setConciergeMessages(parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp), isStreaming: false })));
+      }
+    } catch { /* ignore */ }
+  }, [conciergeStorageKey]);
+
+  // Save concierge messages to localStorage
+  useEffect(() => {
+    if (conciergeMessages.length > 0 && !conciergeMessages.some(m => m.isStreaming)) {
+      const toStore = conciergeMessages.slice(-30).map(({ isStreaming, ...rest }) => rest);
+      localStorage.setItem(conciergeStorageKey, JSON.stringify(toStore));
+    }
+  }, [conciergeMessages, conciergeStorageKey]);
+
+  // Auto-scroll concierge
+  useEffect(() => {
+    if (conciergeScrollRef.current) {
+      const el = conciergeScrollRef.current.querySelector("[data-radix-scroll-area-viewport]");
+      if (el) el.scrollTop = el.scrollHeight;
+    }
+  }, [conciergeMessages]);
+
+  // Focus concierge input when tab is active
+  useEffect(() => {
+    if (activeTab === "concierge" && conciergeInputRef.current) {
+      setTimeout(() => conciergeInputRef.current?.focus(), 200);
+    }
+  }, [activeTab]);
+
+  const handleConciergeSend = useCallback(async () => {
+    const text = conciergeInput.trim();
+    if (!text || conciergeLoading) return;
+
+    const userMsg = { id: `u-${Date.now()}`, role: "user" as const, content: text, timestamp: new Date() };
+    const assistantMsg = { id: `a-${Date.now()}`, role: "assistant" as const, content: "", timestamp: new Date(), isStreaming: true };
+
+    setConciergeMessages(prev => [...prev, userMsg, assistantMsg]);
+    setConciergeInput("");
+    setConciergeLoading(true);
+
+    try {
+      const history = conciergeMessages.filter(m => !m.isStreaming).slice(-10).map(m => ({ role: m.role, content: m.content }));
+      const result = await aiChat.mutateAsync({ orgSlug, messages: [...history, { role: "user" as const, content: text }] });
+      setConciergeMessages(prev => prev.map(m => m.id === assistantMsg.id ? { ...m, content: result.content, isStreaming: false } : m));
+    } catch {
+      setConciergeMessages(prev => prev.map(m => m.id === assistantMsg.id ? { ...m, content: "I apologize, but I was unable to process your request. Please try again.", isStreaming: false } : m));
+      toast.error("AI response failed");
+    } finally {
+      setConciergeLoading(false);
+    }
+  }, [conciergeInput, conciergeLoading, conciergeMessages, orgSlug, aiChat]);
+
+  const handleConciergeKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleConciergeSend(); }
+  };
+
+  const clearConciergeChat = () => {
+    setConciergeMessages([]);
+    localStorage.removeItem(conciergeStorageKey);
+    toast.success("Conversation cleared");
+  };
+
   // ── Tab Navigation ─────────────────────────────────────────────────────
 
   const tabs = [
     { id: "overview" as const, label: "Overview", icon: <Activity className="size-3.5" /> },
     { id: "portfolio" as const, label: "Portfolio", icon: <Briefcase className="size-3.5" /> },
     { id: "intelligence" as const, label: "Intelligence", icon: <Sparkles className="size-3.5" /> },
+    { id: "concierge" as const, label: "AI Concierge", icon: <MessageSquare className="size-3.5" /> },
     { id: "settings" as const, label: "Settings", icon: <Shield className="size-3.5" /> },
   ];
 
@@ -1536,6 +1619,169 @@ export default function ClientPortal(
         )}
 
         {/* ══════════════════════════════════════════════════════════
+            AI CONCIERGE TAB
+            ══════════════════════════════════════════════════════════ */}
+        {activeTab === "concierge" && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col h-[calc(100vh-220px)] min-h-[500px]"
+          >
+            {/* Concierge Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className="size-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center border border-emerald-500/20">
+                  <img
+                    src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png"
+                    alt="VENTEX"
+                    className="size-7 rounded object-contain"
+                  />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold text-foreground tracking-tight">
+                    VENTEX Intelligence
+                  </h2>
+                  <p className="text-xs text-muted-foreground/60 mt-0.5">
+                    Your portfolio assistant · Ask anything about your ventures
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {conciergeMessages.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearConciergeChat}
+                    className="text-xs text-muted-foreground/50 hover:text-red-400 gap-1.5"
+                  >
+                    <Trash2 className="size-3.5" />
+                    Clear
+                  </Button>
+                )}
+                <div className="flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[10px] font-mono text-emerald-400/80">online</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Chat Area */}
+            <div className="flex-1 min-h-0 rounded-2xl border border-border/30 bg-gradient-to-b from-white/[0.02] to-transparent flex flex-col overflow-hidden">
+              <ScrollArea ref={conciergeScrollRef} className="flex-1 min-h-0">
+                <div className="px-6 py-5 space-y-5">
+                  {conciergeMessages.length === 0 && (
+                    <div className="text-center py-16">
+                      <div className="size-20 rounded-2xl bg-gradient-to-br from-emerald-500/15 to-emerald-600/5 flex items-center justify-center mx-auto mb-6 border border-emerald-500/10">
+                        <img
+                          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png"
+                          alt="VENTEX"
+                          className="size-10 rounded object-contain"
+                        />
+                      </div>
+                      <h3 className="text-lg font-semibold text-foreground mb-2">
+                        How can I help you today?
+                      </h3>
+                      <p className="text-sm text-muted-foreground/50 max-w-md mx-auto leading-relaxed mb-8">
+                        I can answer questions about your ventures, analyze portfolio health, check task statuses, and help you take action on your portfolio.
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto">
+                        {[
+                          { text: "What's the status of my portfolio?", icon: <Activity className="size-4" /> },
+                          { text: "Which tasks need my attention?", icon: <Zap className="size-4" /> },
+                          { text: "Summarize my distributions", icon: <DollarSign className="size-4" /> },
+                          { text: "Show me venture health scores", icon: <TrendingUp className="size-4" /> },
+                        ].map((suggestion) => (
+                          <button
+                            key={suggestion.text}
+                            onClick={() => { setConciergeInput(suggestion.text); setTimeout(() => conciergeInputRef.current?.focus(), 50); }}
+                            className="flex items-center gap-3 text-left text-xs text-muted-foreground/60 hover:text-emerald-400 px-4 py-3.5 rounded-xl border border-border/20 hover:border-emerald-500/20 hover:bg-emerald-500/5 transition-all group"
+                          >
+                            <span className="text-muted-foreground/30 group-hover:text-emerald-400/60 transition-colors">{suggestion.icon}</span>
+                            {suggestion.text}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {conciergeMessages.map((msg) => (
+                    <div key={msg.id} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}>
+                      <div className={cn("flex items-start gap-3 max-w-[80%]", msg.role === "user" ? "flex-row-reverse" : "flex-row")}>
+                        {msg.role === "assistant" && (
+                          <div className="size-8 rounded-lg bg-gradient-to-br from-emerald-500/15 to-emerald-600/5 flex items-center justify-center flex-shrink-0 mt-0.5 border border-emerald-500/10">
+                            <img
+                              src="https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png"
+                              alt="V"
+                              className="size-4.5 rounded object-contain"
+                            />
+                          </div>
+                        )}
+                        <div className={cn(
+                          "rounded-2xl px-4 py-3",
+                          msg.role === "user"
+                            ? "bg-emerald-500/15 text-foreground rounded-br-md"
+                            : "bg-white/[0.04] text-foreground border border-border/20 rounded-bl-md"
+                        )}>
+                          {msg.role === "assistant" ? (
+                            msg.isStreaming && !msg.content ? (
+                              <div className="flex items-center gap-1.5 py-1">
+                                <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse [animation-delay:150ms]" />
+                                <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse [animation-delay:300ms]" />
+                              </div>
+                            ) : (
+                              <div className="text-sm leading-relaxed [&_p]:mb-2 [&_ul]:ml-4 [&_ul]:list-disc [&_li]:mb-1 [&_strong]:font-semibold [&_h1]:text-base [&_h1]:font-semibold [&_h1]:mb-2 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-1.5 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mb-1">
+                                <Streamdown>{msg.content}</Streamdown>
+                              </div>
+                            )
+                          ) : (
+                            <p className="text-sm leading-relaxed">{msg.content}</p>
+                          )}
+                          <span className="text-[9px] text-muted-foreground/30 mt-1.5 block">
+                            {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+
+              {/* Input Area */}
+              <div className="px-5 pb-5 pt-3 border-t border-border/20 flex-shrink-0">
+                <div className="flex items-end gap-3">
+                  <Textarea
+                    ref={conciergeInputRef}
+                    value={conciergeInput}
+                    onChange={(e) => setConciergeInput(e.target.value)}
+                    onKeyDown={handleConciergeKeyDown}
+                    placeholder="Ask about your portfolio, ventures, or tasks..."
+                    className="flex-1 min-h-[44px] max-h-[120px] resize-none text-sm bg-white/[0.04] border-border/20 rounded-xl focus:border-emerald-500/30 focus:ring-emerald-500/10 placeholder:text-muted-foreground/30"
+                    rows={1}
+                    disabled={conciergeLoading}
+                  />
+                  <Button
+                    onClick={handleConciergeSend}
+                    disabled={!conciergeInput.trim() || conciergeLoading}
+                    className="h-11 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white flex-shrink-0 disabled:opacity-30 gap-2"
+                  >
+                    {conciergeLoading ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Send className="size-4" />
+                    )}
+                    Send
+                  </Button>
+                </div>
+                <p className="text-[10px] text-muted-foreground/30 mt-3 text-center">
+                  Powered by VENTEX Intelligence · Responses are based on your portfolio data
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════
             SETTINGS TAB
             ══════════════════════════════════════════════════════════ */}
         {activeTab === "settings" && (
@@ -2072,7 +2318,6 @@ export default function ClientPortal(
     return (
       <DashboardLayout title={orgName} subtitle="MANAGED BY VENTEX">
         <div className="p-5 md:p-8">{portalContent}</div>
-        <PortalConcierge orgSlug={orgSlug} orgName={orgName} />
       </DashboardLayout>
     );
   }
@@ -2125,7 +2370,6 @@ export default function ClientPortal(
       </header>
 
       {portalContent}
-      <PortalConcierge orgSlug={orgSlug} orgName={orgName} />
     </div>
   );
 }

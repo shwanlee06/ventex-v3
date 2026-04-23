@@ -99,27 +99,30 @@ describe("Portal AI Concierge Integration", () => {
     expect(content).toContain("Summarize my distributions");
   });
 
-  // ── Integration: ClientPortal renders PortalConcierge ────────────
-  it("ClientPortal imports PortalConcierge", () => {
+  // ── Integration: ClientPortal has AI Concierge as dedicated tab ───────
+  it("ClientPortal has AI Concierge as a dedicated tab (not floating widget)", () => {
     const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
     const content = fs.readFileSync(portalPath, "utf-8");
-    expect(content).toContain('import PortalConcierge from "@/components/PortalConcierge"');
+    // Should NOT import the floating widget anymore
+    expect(content).not.toContain('import PortalConcierge from "@/components/PortalConcierge"');
+    // Should have concierge in the activeTab type union
+    expect(content).toContain('"concierge"');
   });
 
-  it("ClientPortal renders PortalConcierge in both dashboard and standalone views", () => {
+  it("ClientPortal has AI Concierge tab in the tabs array", () => {
     const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
     const content = fs.readFileSync(portalPath, "utf-8");
-    const instances = content.match(/<PortalConcierge/g);
-    expect(instances?.length).toBeGreaterThanOrEqual(2);
+    expect(content).toContain('"AI Concierge"');
+    expect(content).toContain('activeTab === "concierge"');
   });
 
-  it("ClientPortal passes orgSlug and orgName to PortalConcierge", () => {
+  it("ClientPortal AI Concierge tab uses VENTEX logo and portal.aiChat", () => {
     const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
     const content = fs.readFileSync(portalPath, "utf-8");
-    expect(content).toContain("orgSlug={orgSlug}");
-    expect(content).toContain("orgName={orgName}");
+    expect(content).toContain("VENTEX Intelligence");
+    expect(content).toContain("portal.aiChat");
+    expect(content).toContain("ventex-logo-mark");
   });
-
   // ── Admin sidebar: AI Concierge removed ──────────────────────────
   it("AI Concierge removed from admin sidebar", () => {
     const sidebarPath = path.join(ROOT, "client/src/components/AppSidebar.tsx");

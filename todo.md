@@ -3316,3 +3316,11 @@
 - [x] Features: localStorage chat persistence, clear chat, suggestion prompts, Streamdown markdown rendering
 - [x] Data isolation confirmed — portal.aiChat only queries client's own org data
 - [x] 16 integration tests passing (portal.concierge.test.ts)
+
+## Feature — Dedicated AI Concierge Section in Client Portal
+- [x] Remove floating PortalConcierge chatbot widget from ClientPortal
+- [x] Add "AI Concierge" as a dedicated tab in the client portal tabs
+- [x] Build full-page AI Concierge section with VENTEX star logo
+- [ ] Add task auto-execution capability (not just Q&A — can create tasks, update statuses, etc.)
+- [x] Premium UI with suggestion cards and conversation history
+- [x] TypeScript check passes with zero errors
