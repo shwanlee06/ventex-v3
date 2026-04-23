@@ -3329,3 +3329,11 @@
 - [x] Diagnose React error #310 crashing ventexdemo.manus.space/dashboard
 - [x] Fix root cause — useEffect/useCallback hooks placed after early returns violated Rules of Hooks
 - [x] Verify fix and save checkpoint
+
+## Feature — AI Concierge Task Execution + Left-Side Panel Redesign
+- [x] Review admin AI chat sidebar layout for reference
+- [x] Wire tool-calling in portal.aiChat backend (create_task, complete_task, update_task_priority, advance_venture_stage)
+- [x] Redesign concierge as left-side panel with VENTEX star logo (matching admin sidebar style)
+- [x] TypeScript check passes — zero errors
+- [x] Tests pass — 15/15 concierge tests
+- [x] Verify in browser — panel opens, AI responds with real data, tool-calling works

@@ -42,87 +42,87 @@ describe("Portal AI Concierge Integration", () => {
     expect(content).toContain("sanitize");
   });
 
-  // ── Frontend: PortalConcierge component ──────────────────────────
-  it("PortalConcierge component exists and exports default", () => {
-    const compPath = path.join(ROOT, "client/src/components/PortalConcierge.tsx");
-    expect(fs.existsSync(compPath)).toBe(true);
-    const content = fs.readFileSync(compPath, "utf-8");
-    expect(content).toContain("export default function PortalConcierge");
+  // ── Backend: Tool-calling for task execution ──────────────────────
+  it("portal aiChat defines tools for task execution", () => {
+    const portalPath = path.join(ROOT, "server/routers/portal.ts");
+    const content = fs.readFileSync(portalPath, "utf-8");
+    // Should define tools for the LLM
+    expect(content).toContain("create_task");
+    expect(content).toContain("complete_task");
+    expect(content).toContain("update_task_priority");
   });
 
-  it("PortalConcierge accepts orgSlug and orgName props", () => {
-    const compPath = path.join(ROOT, "client/src/components/PortalConcierge.tsx");
-    const content = fs.readFileSync(compPath, "utf-8");
-    expect(content).toContain("orgSlug: string");
-    expect(content).toContain("orgName: string");
+  it("portal aiChat has tool execution handler", () => {
+    const portalPath = path.join(ROOT, "server/routers/portal.ts");
+    const content = fs.readFileSync(portalPath, "utf-8");
+    // Should have a function to execute tool calls
+    expect(content).toContain("executeTool");
+    expect(content).toContain("tool_calls");
   });
 
-  it("PortalConcierge calls portal.aiChat mutation", () => {
-    const compPath = path.join(ROOT, "client/src/components/PortalConcierge.tsx");
-    const content = fs.readFileSync(compPath, "utf-8");
+  it("portal aiChat passes tools to invokeLLM", () => {
+    const portalPath = path.join(ROOT, "server/routers/portal.ts");
+    const content = fs.readFileSync(portalPath, "utf-8");
+    // Should pass tools array and tool_choice to invokeLLM
+    expect(content).toContain("tool_choice");
+    expect(content).toContain("tools: conciergeTools");
+  });
+
+  it("portal aiChat logs tool actions to activity log", () => {
+    const portalPath = path.join(ROOT, "server/routers/portal.ts");
+    const content = fs.readFileSync(portalPath, "utf-8");
+    expect(content).toContain("AI Concierge");
+    expect(content).toContain("activityLog");
+  });
+
+  // ── Frontend: Left-side panel architecture ──────────────────────
+  it("ClientPortal has AI Concierge as a left-side panel (not tab or floating widget)", () => {
+    const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
+    const content = fs.readFileSync(portalPath, "utf-8");
+    // Should NOT import the floating widget anymore
+    expect(content).not.toContain('import PortalConcierge from "@/components/PortalConcierge"');
+    // Should NOT have concierge as a tab
+    expect(content).not.toContain('activeTab === "concierge"');
+    // Should have conciergeOpen state for the panel
+    expect(content).toContain("conciergeOpen");
+    expect(content).toContain("setConciergeOpen");
+  });
+
+  it("ClientPortal has concierge panel with VENTEX logo", () => {
+    const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
+    const content = fs.readFileSync(portalPath, "utf-8");
+    expect(content).toContain("conciergePanel");
+    expect(content).toContain("VENTEX Intelligence");
+    expect(content).toContain("ventex-logo-mark");
+  });
+
+  it("ClientPortal has concierge trigger button on left side", () => {
+    const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
+    const content = fs.readFileSync(portalPath, "utf-8");
+    expect(content).toContain("conciergeTrigger");
+    expect(content).toContain("AI Concierge");
+    // Should be fixed to left side
+    expect(content).toContain("fixed left-0");
+  });
+
+  it("ClientPortal concierge uses portal.aiChat and localStorage", () => {
+    const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
+    const content = fs.readFileSync(portalPath, "utf-8");
     expect(content).toContain("portal.aiChat");
-  });
-
-  it("PortalConcierge uses localStorage for chat persistence", () => {
-    const compPath = path.join(ROOT, "client/src/components/PortalConcierge.tsx");
-    const content = fs.readFileSync(compPath, "utf-8");
     expect(content).toContain("localStorage.getItem");
     expect(content).toContain("localStorage.setItem");
     expect(content).toContain("ventex_portal_chat_");
   });
 
-  it("PortalConcierge has clear chat functionality", () => {
-    const compPath = path.join(ROOT, "client/src/components/PortalConcierge.tsx");
-    const content = fs.readFileSync(compPath, "utf-8");
-    expect(content).toContain("clearChat");
-    expect(content).toContain("localStorage.removeItem");
+  it("ClientPortal concierge has clear chat and suggestion prompts", () => {
+    const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
+    const content = fs.readFileSync(portalPath, "utf-8");
+    expect(content).toContain("clearConciergeChat");
     expect(content).toContain("Conversation cleared");
-  });
-
-  it("PortalConcierge renders as floating widget with open/close", () => {
-    const compPath = path.join(ROOT, "client/src/components/PortalConcierge.tsx");
-    const content = fs.readFileSync(compPath, "utf-8");
-    // Should have open/close state
-    expect(content).toContain("isOpen");
-    expect(content).toContain("setIsOpen");
-    // Should have fixed positioning for floating widget
-    expect(content).toContain("fixed");
-    // Should have a trigger button
-    expect(content).toContain("AI Concierge");
-  });
-
-  it("PortalConcierge renders suggestion prompts for empty state", () => {
-    const compPath = path.join(ROOT, "client/src/components/PortalConcierge.tsx");
-    const content = fs.readFileSync(compPath, "utf-8");
     expect(content).toContain("What's the status of my portfolio?");
-    expect(content).toContain("Which tasks need attention?");
-    expect(content).toContain("Summarize my distributions");
+    expect(content).toContain("Create a new task for me");
   });
 
-  // ── Integration: ClientPortal has AI Concierge as dedicated tab ───────
-  it("ClientPortal has AI Concierge as a dedicated tab (not floating widget)", () => {
-    const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
-    const content = fs.readFileSync(portalPath, "utf-8");
-    // Should NOT import the floating widget anymore
-    expect(content).not.toContain('import PortalConcierge from "@/components/PortalConcierge"');
-    // Should have concierge in the activeTab type union
-    expect(content).toContain('"concierge"');
-  });
-
-  it("ClientPortal has AI Concierge tab in the tabs array", () => {
-    const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
-    const content = fs.readFileSync(portalPath, "utf-8");
-    expect(content).toContain('"AI Concierge"');
-    expect(content).toContain('activeTab === "concierge"');
-  });
-
-  it("ClientPortal AI Concierge tab uses VENTEX logo and portal.aiChat", () => {
-    const portalPath = path.join(ROOT, "client/src/pages/ClientPortal.tsx");
-    const content = fs.readFileSync(portalPath, "utf-8");
-    expect(content).toContain("VENTEX Intelligence");
-    expect(content).toContain("portal.aiChat");
-    expect(content).toContain("ventex-logo-mark");
-  });
   // ── Admin sidebar: AI Concierge removed ──────────────────────────
   it("AI Concierge removed from admin sidebar", () => {
     const sidebarPath = path.join(ROOT, "client/src/components/AppSidebar.tsx");

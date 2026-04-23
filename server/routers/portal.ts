@@ -30,7 +30,7 @@ import { sendStageAdvancedEmail } from "../emailService";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { forecastVentures as getVentureForecasts, computePortfolioHealth as getPortfolioHealth } from "../intelligence/predictiveEngine";
 import { getActiveSignals as getLatestMarketSignals } from "../intelligence/marketIntelligence";
-import { invokeLLM, type Message as LLMMessage } from "../_core/llm";
+import { invokeLLM, type Message as LLMMessage, type Tool as LLMTool, type ToolCall } from "../_core/llm";
 import { sanitizeLLMOutput } from "../security/llmSanitize";
 import { enforceRateLimit } from "../security/rateLimit";
 
@@ -1067,17 +1067,152 @@ export const portalRouter = {
 
       const scopedContext = `
 === YOUR PORTFOLIO DATA ===
-Organization: ${org.name}
+Organization: ${org.name} (ID: ${org.id})
 
 VENTURES (${orgVentures.length}):
-${orgVentures.map((v: any) => `- ${v.name} | Sector: ${v.sector} | Location: ${v.location} | Stage: ${clientFriendlyStage(v.stage)} | Health: ${v.healthScore || "N/A"}/100`).join("\n")}
+${orgVentures.map((v: any) => `- [ID:${v.id}] ${v.name} | Sector: ${v.sector} | Location: ${v.location} | Stage: ${clientFriendlyStage(v.stage)} | Health: ${v.healthScore || "N/A"}/100`).join("\n")}
 
 TASKS (${orgTasks.length} total, ${activeTasks.length} active, ${completedTasks.length} completed, ${overdueTasks.length} overdue):
-${orgTasks.slice(0, 20).map((t: any) => `- [${t.status}] ${t.title}${t.dueDate ? ` (due: ${t.dueDate})` : ""}${t.priority ? ` [${t.priority}]` : ""}`).join("\n")}
+${orgTasks.slice(0, 40).map((t: any) => `- [ID:${t.id}] [${t.status}] ${t.title} | Venture ID: ${t.ventureId}${t.dueDate ? ` | Due: ${t.dueDate}` : ""}${t.priority ? ` | Priority: ${t.priority}` : ""}`).join("\n")}
 
 DISTRIBUTIONS (${orgDists.length} total, ${orgDists.filter((d: any) => d.status === "Paid").length} paid):
-${orgDists.slice(0, 15).map((d: any) => `- ${d.label || "Distribution"} | ${d.status} | $${Number(d.amount || 0).toLocaleString()}`).join("\n")}
+${orgDists.slice(0, 15).map((d: any) => `- [ID:${d.id}] ${d.label || "Distribution"} | ${d.status} | $${Number(d.amount || 0).toLocaleString()}`).join("\n")}
 `;
+
+      // ── Tool definitions for task execution ──────────────────────────
+      const conciergeTools: LLMTool[] = [
+        {
+          type: "function",
+          function: {
+            name: "create_task",
+            description: "Create a new task for a specific venture in the client's portfolio. Use when the client asks to add a task, reminder, or action item.",
+            parameters: {
+              type: "object",
+              properties: {
+                ventureId: { type: "number", description: "The venture ID to attach this task to" },
+                title: { type: "string", description: "Clear, actionable task title" },
+                description: { type: "string", description: "Optional detailed description" },
+                priority: { type: "string", enum: ["High", "Medium", "Low"], description: "Task priority level" },
+                dueDate: { type: "string", description: "Due date in YYYY-MM-DD format, or omit if no deadline" },
+              },
+              required: ["ventureId", "title"],
+              additionalProperties: false,
+            },
+          },
+        },
+        {
+          type: "function",
+          function: {
+            name: "complete_task",
+            description: "Mark an existing task as complete. Use when the client says a task is done or wants to check it off.",
+            parameters: {
+              type: "object",
+              properties: {
+                taskId: { type: "number", description: "The task ID to mark complete" },
+                ventureId: { type: "number", description: "The venture ID the task belongs to" },
+              },
+              required: ["taskId", "ventureId"],
+              additionalProperties: false,
+            },
+          },
+        },
+        {
+          type: "function",
+          function: {
+            name: "update_task_priority",
+            description: "Change the priority of an existing task. Use when the client wants to escalate or de-escalate a task.",
+            parameters: {
+              type: "object",
+              properties: {
+                taskId: { type: "number", description: "The task ID to update" },
+                priority: { type: "string", enum: ["High", "Medium", "Low"], description: "New priority level" },
+              },
+              required: ["taskId", "priority"],
+              additionalProperties: false,
+            },
+          },
+        },
+      ];
+
+      // ── Tool execution handlers ─────────────────────────────────────
+      async function executeTool(toolCall: ToolCall): Promise<string> {
+        const args = JSON.parse(toolCall.function.arguments);
+        const toolName = toolCall.function.name;
+        // db is guaranteed non-null here (checked at top of mutation)
+        const safeDb = db!;
+
+        if (toolName === "create_task") {
+          // Verify venture belongs to this org
+          if (!ventureIds.includes(args.ventureId)) {
+            return JSON.stringify({ error: "Venture not found in your portfolio" });
+          }
+          const venture = orgVentures.find((v: any) => v.id === args.ventureId);
+          const [inserted] = await safeDb.insert(tasks).values({
+            title: args.title,
+            description: args.description || null,
+            ventureId: args.ventureId,
+            organizationId: org.id,
+            priority: args.priority || "Medium",
+            dueDate: args.dueDate || null,
+            status: "open",
+          }).$returningId();
+          // Log activity
+          await safeDb.insert(activityLog).values({
+            entityType: "task",
+            entityId: inserted.id,
+            entityName: args.title,
+            action: "Task Created (AI Concierge)",
+            detail: `Client created task via AI Concierge for ${venture?.name || "venture"}`,
+            userName: ctx.user.name || "Client",
+            activitySource: "client_business",
+            organizationId: org.id,
+          });
+          return JSON.stringify({ success: true, taskId: inserted.id, title: args.title, venture: venture?.name });
+        }
+
+        if (toolName === "complete_task") {
+          // Verify task belongs to this org's ventures
+          if (!ventureIds.includes(args.ventureId)) {
+            return JSON.stringify({ error: "Venture not found in your portfolio" });
+          }
+          const [task] = await safeDb.select().from(tasks).where(and(eq(tasks.id, args.taskId), eq(tasks.ventureId, args.ventureId))).limit(1);
+          if (!task) return JSON.stringify({ error: "Task not found" });
+          if (task.status === "complete") return JSON.stringify({ error: "Task is already complete" });
+          await safeDb.update(tasks).set({ status: "complete" }).where(eq(tasks.id, args.taskId));
+          await safeDb.insert(activityLog).values({
+            entityType: "task",
+            entityId: args.taskId,
+            entityName: task.title,
+            action: "Task Completed (AI Concierge)",
+            detail: `Client completed task via AI Concierge`,
+            userName: ctx.user.name || "Client",
+            activitySource: "client_business",
+            organizationId: org.id,
+          });
+          return JSON.stringify({ success: true, taskId: args.taskId, title: task.title });
+        }
+
+        if (toolName === "update_task_priority") {
+          const [task] = await safeDb.select().from(tasks).where(eq(tasks.id, args.taskId)).limit(1);
+          if (!task) return JSON.stringify({ error: "Task not found" });
+          if (!ventureIds.includes(task.ventureId!)) return JSON.stringify({ error: "Task not in your portfolio" });
+          const oldPriority = task.priority;
+          await safeDb.update(tasks).set({ priority: args.priority }).where(eq(tasks.id, args.taskId));
+          await safeDb.insert(activityLog).values({
+            entityType: "task",
+            entityId: args.taskId,
+            entityName: task.title,
+            action: "Task Priority Updated (AI Concierge)",
+            detail: `Priority changed from ${oldPriority} to ${args.priority} via AI Concierge`,
+            userName: ctx.user.name || "Client",
+            activitySource: "client_business",
+            organizationId: org.id,
+          });
+          return JSON.stringify({ success: true, taskId: args.taskId, title: task.title, oldPriority, newPriority: args.priority });
+        }
+
+        return JSON.stringify({ error: "Unknown tool" });
+      }
 
       const systemPrompt = `You are the VENTEX Portfolio Assistant for ${org.name}. You help this client understand their venture portfolio, track progress, and make informed decisions.
 
@@ -1089,6 +1224,15 @@ Your capabilities:
 3. Summarize portfolio health and highlight areas needing attention
 4. Help prioritize overdue tasks
 5. Explain distribution schedules and payment status
+6. **CREATE TASKS** — When a client asks to add a task, reminder, or action item, use the create_task tool
+7. **COMPLETE TASKS** — When a client says a task is done, use the complete_task tool
+8. **UPDATE TASK PRIORITY** — When a client wants to escalate or change priority, use the update_task_priority tool
+
+When executing actions:
+- Always confirm what you did after executing a tool (e.g. "Done — I've created a new task...")
+- Reference the venture name and task details in your confirmation
+- If the client's request is ambiguous, ask for clarification before acting
+- Never execute actions without the client's clear intent
 
 Communication style:
 - Professional, clear, and client-friendly
@@ -1109,11 +1253,47 @@ ${scopedContext}`;
       ];
 
       try {
-        const result = await invokeLLM({
+        // First LLM call — may return tool calls or direct response
+        let result = await invokeLLM({
           messages: llmMessages,
+          tools: conciergeTools,
+          tool_choice: "auto",
           maxTokens: 2048,
         });
-        const content = result.choices?.[0]?.message?.content;
+
+        let message = result.choices?.[0]?.message;
+        const toolCalls = message?.tool_calls;
+
+        // If the model wants to call tools, execute them and get final response
+        if (toolCalls && toolCalls.length > 0) {
+          // Add assistant message with tool calls to conversation
+          llmMessages.push({
+            role: "assistant",
+            content: typeof message.content === "string" ? message.content : "",
+            tool_calls: toolCalls,
+          } as any);
+
+          // Execute each tool call and add results
+          const toolResults: string[] = [];
+          for (const tc of toolCalls) {
+            const toolResult = await executeTool(tc);
+            toolResults.push(toolResult);
+            llmMessages.push({
+              role: "tool",
+              content: toolResult,
+              tool_call_id: tc.id,
+            } as any);
+          }
+
+          // Second LLM call — get natural language response after tool execution
+          result = await invokeLLM({
+            messages: llmMessages,
+            maxTokens: 2048,
+          });
+          message = result.choices?.[0]?.message;
+        }
+
+        const content = message?.content;
         const textContent =
           typeof content === "string"
             ? content
@@ -1125,7 +1305,10 @@ ${scopedContext}`;
         if (sanitized.flagged) {
           console.warn("[Portal AI] Output flagged:", sanitized.flags);
         }
-        return { content: sanitized.text };
+        return {
+          content: sanitized.text,
+          actions: toolCalls?.map(tc => ({ tool: tc.function.name, args: JSON.parse(tc.function.arguments) })) || [],
+        };
       } catch (error: unknown) {
         console.error("[Portal AI] Error:", error);
         throw new TRPCError({
