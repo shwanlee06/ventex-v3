@@ -133,6 +133,18 @@ export function registerOAuthRoutes(app: Express) {
           return;
         }
 
+        // Also update team_members.lastSeenAt so live presence is accurate on login
+        if (database && existingUser.id) {
+          try {
+            await database.update(teamMembers)
+              .set({ lastSeenAt: new Date() })
+              .where(eq(teamMembers.userId, existingUser.id));
+          } catch (tmErr) {
+            // Non-fatal — presence will still work via heartbeat
+            console.error("[OAuth] Non-fatal: team_members lastSeenAt update failed:", tmErr);
+          }
+        }
+
         if (!existingUser.organizationId && database) {
           const email = (userInfo.email ?? existingUser.email ?? "").toLowerCase();
           if (email) {

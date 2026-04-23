@@ -3361,3 +3361,10 @@
 - [x] Add AI Concierge as tab in client portal tab bar with Sparkles star icon
 - [x] Build inline concierge chat in client portal with suggestion cards, localStorage persistence, Streamdown rendering
 - [x] TypeScript check — zero errors, 16/16 concierge tests pass, verified in browser
+
+## Bug Fix — Live Members Stale "Last Seen" Timestamps
+- [x] Investigate how live members / last seen data is tracked on admin dashboard
+- [x] Fix stale timestamps: liveStatuses now uses MAX(team_members.lastSeenAt, users.lastSignedIn)
+- [x] Ensure last_seen updates on every login: OAuth callback now updates team_members.lastSeenAt
+- [x] Verify in browser: Chris Phelps now shows 'Active', Brian Chen shows '6h ago' instead of '13d ago'
+- [x] Write 11 unit tests for calculateLiveStatus and timestamp fallback logic

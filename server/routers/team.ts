@@ -426,6 +426,8 @@ export const teamRouter = router({
   /**
    * Get live status for all team members (Internal + client contacts).
    * Returns id, name, liveStatus, lastSeenAt, adminStatus.
+   * Uses the MORE RECENT of team_members.lastSeenAt and users.lastSignedIn
+   * so that login events are always reflected even if heartbeat didn't fire.
    */
   liveStatuses: protectedProcedure.query(async () => {
     const db = await getDb();
@@ -437,16 +439,25 @@ export const teamRouter = router({
       lastSeenAt: teamMembers.lastSeenAt,
       adminStatus: teamMembers.adminStatus,
       userId: teamMembers.userId,
-    }).from(teamMembers);
+      userLastSignedIn: users.lastSignedIn,
+    })
+    .from(teamMembers)
+    .leftJoin(users, eq(teamMembers.userId, users.id));
 
-    return members.map(m => ({
-      id: m.id,
-      name: m.name,
-      type: m.type,
-      liveStatus: calculateLiveStatus(m.lastSeenAt, m.adminStatus),
-      lastSeenAt: m.lastSeenAt?.toISOString() || null,
-      adminStatus: m.adminStatus,
-    }));
+    return members.map(m => {
+      // Use the more recent of the two timestamps
+      const tmSeen = m.lastSeenAt?.getTime() ?? 0;
+      const uSeen = m.userLastSignedIn?.getTime() ?? 0;
+      const effectiveLastSeen = tmSeen >= uSeen ? m.lastSeenAt : m.userLastSignedIn;
+      return {
+        id: m.id,
+        name: m.name,
+        type: m.type,
+        liveStatus: calculateLiveStatus(effectiveLastSeen ?? null, m.adminStatus),
+        lastSeenAt: effectiveLastSeen?.toISOString() || null,
+        adminStatus: m.adminStatus,
+      };
+    });
   }),
 
   /**
