@@ -370,6 +370,75 @@ export default function ClientPortal(
     [resolveActionMutation]
   );
 
+  // ── AI Concierge Effects & Handlers ────────────────────────────────────
+
+  // Load concierge messages from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(conciergeStorageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setConciergeMessages(parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp), isStreaming: false })));
+      }
+    } catch { /* ignore */ }
+  }, [conciergeStorageKey]);
+
+  // Save concierge messages to localStorage
+  useEffect(() => {
+    if (conciergeMessages.length > 0 && !conciergeMessages.some(m => m.isStreaming)) {
+      const toStore = conciergeMessages.slice(-30).map(({ isStreaming, ...rest }) => rest);
+      localStorage.setItem(conciergeStorageKey, JSON.stringify(toStore));
+    }
+  }, [conciergeMessages, conciergeStorageKey]);
+
+  // Auto-scroll concierge
+  useEffect(() => {
+    if (conciergeScrollRef.current) {
+      const el = conciergeScrollRef.current.querySelector("[data-radix-scroll-area-viewport]");
+      if (el) el.scrollTop = el.scrollHeight;
+    }
+  }, [conciergeMessages]);
+
+  // Focus concierge input when tab is active
+  useEffect(() => {
+    if (activeTab === "concierge" && conciergeInputRef.current) {
+      setTimeout(() => conciergeInputRef.current?.focus(), 200);
+    }
+  }, [activeTab]);
+
+  const handleConciergeSend = useCallback(async () => {
+    const text = conciergeInput.trim();
+    if (!text || conciergeLoading) return;
+
+    const userMsg = { id: `u-${Date.now()}`, role: "user" as const, content: text, timestamp: new Date() };
+    const assistantMsg = { id: `a-${Date.now()}`, role: "assistant" as const, content: "", timestamp: new Date(), isStreaming: true };
+
+    setConciergeMessages(prev => [...prev, userMsg, assistantMsg]);
+    setConciergeInput("");
+    setConciergeLoading(true);
+
+    try {
+      const history = conciergeMessages.filter(m => !m.isStreaming).slice(-10).map(m => ({ role: m.role, content: m.content }));
+      const result = await aiChat.mutateAsync({ orgSlug, messages: [...history, { role: "user" as const, content: text }] });
+      setConciergeMessages(prev => prev.map(m => m.id === assistantMsg.id ? { ...m, content: result.content, isStreaming: false } : m));
+    } catch {
+      setConciergeMessages(prev => prev.map(m => m.id === assistantMsg.id ? { ...m, content: "I apologize, but I was unable to process your request. Please try again.", isStreaming: false } : m));
+      toast.error("AI response failed");
+    } finally {
+      setConciergeLoading(false);
+    }
+  }, [conciergeInput, conciergeLoading, conciergeMessages, orgSlug, aiChat]);
+
+  const handleConciergeKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleConciergeSend(); }
+  };
+
+  const clearConciergeChat = () => {
+    setConciergeMessages([]);
+    localStorage.removeItem(conciergeStorageKey);
+    toast.success("Conversation cleared");
+  };
+
   // ── Auth / Loading / Error States ──────────────────────────────────────
 
   if (authLoading) {
@@ -491,75 +560,6 @@ export default function ClientPortal(
   ).length;
   const pendingActions = actionCards.length;
   const healthScore = portfolioHealth?.score ?? 0;
-
-  // ── AI Concierge Effects & Handlers ────────────────────────────────────
-
-  // Load concierge messages from localStorage
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(conciergeStorageKey);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setConciergeMessages(parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp), isStreaming: false })));
-      }
-    } catch { /* ignore */ }
-  }, [conciergeStorageKey]);
-
-  // Save concierge messages to localStorage
-  useEffect(() => {
-    if (conciergeMessages.length > 0 && !conciergeMessages.some(m => m.isStreaming)) {
-      const toStore = conciergeMessages.slice(-30).map(({ isStreaming, ...rest }) => rest);
-      localStorage.setItem(conciergeStorageKey, JSON.stringify(toStore));
-    }
-  }, [conciergeMessages, conciergeStorageKey]);
-
-  // Auto-scroll concierge
-  useEffect(() => {
-    if (conciergeScrollRef.current) {
-      const el = conciergeScrollRef.current.querySelector("[data-radix-scroll-area-viewport]");
-      if (el) el.scrollTop = el.scrollHeight;
-    }
-  }, [conciergeMessages]);
-
-  // Focus concierge input when tab is active
-  useEffect(() => {
-    if (activeTab === "concierge" && conciergeInputRef.current) {
-      setTimeout(() => conciergeInputRef.current?.focus(), 200);
-    }
-  }, [activeTab]);
-
-  const handleConciergeSend = useCallback(async () => {
-    const text = conciergeInput.trim();
-    if (!text || conciergeLoading) return;
-
-    const userMsg = { id: `u-${Date.now()}`, role: "user" as const, content: text, timestamp: new Date() };
-    const assistantMsg = { id: `a-${Date.now()}`, role: "assistant" as const, content: "", timestamp: new Date(), isStreaming: true };
-
-    setConciergeMessages(prev => [...prev, userMsg, assistantMsg]);
-    setConciergeInput("");
-    setConciergeLoading(true);
-
-    try {
-      const history = conciergeMessages.filter(m => !m.isStreaming).slice(-10).map(m => ({ role: m.role, content: m.content }));
-      const result = await aiChat.mutateAsync({ orgSlug, messages: [...history, { role: "user" as const, content: text }] });
-      setConciergeMessages(prev => prev.map(m => m.id === assistantMsg.id ? { ...m, content: result.content, isStreaming: false } : m));
-    } catch {
-      setConciergeMessages(prev => prev.map(m => m.id === assistantMsg.id ? { ...m, content: "I apologize, but I was unable to process your request. Please try again.", isStreaming: false } : m));
-      toast.error("AI response failed");
-    } finally {
-      setConciergeLoading(false);
-    }
-  }, [conciergeInput, conciergeLoading, conciergeMessages, orgSlug, aiChat]);
-
-  const handleConciergeKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleConciergeSend(); }
-  };
-
-  const clearConciergeChat = () => {
-    setConciergeMessages([]);
-    localStorage.removeItem(conciergeStorageKey);
-    toast.success("Conversation cleared");
-  };
 
   // ── Tab Navigation ─────────────────────────────────────────────────────
 

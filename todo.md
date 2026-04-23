@@ -3324,3 +3324,8 @@
 - [ ] Add task auto-execution capability (not just Q&A — can create tasks, update statuses, etc.)
 - [x] Premium UI with suggestion cards and conversation history
 - [x] TypeScript check passes with zero errors
+
+## Bug Fix — React Error #310 on Live Dashboard
+- [x] Diagnose React error #310 crashing ventexdemo.manus.space/dashboard
+- [x] Fix root cause — useEffect/useCallback hooks placed after early returns violated Rules of Hooks
+- [x] Verify fix and save checkpoint
