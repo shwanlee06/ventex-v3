@@ -33,6 +33,7 @@ import {
   Menu,
   LogOut,
   Mail,
+  Sparkles,
 } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useState, useMemo, useEffect } from "react";
@@ -62,7 +63,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Oversight", href: "/oversight", icon: <Eye className="size-[18px]" />, ventexOnly: true, group: "Operations" },
 
   // Intelligence
-  // AI Concierge moved to client portal as floating widget (PortalConcierge.tsx)
+  { label: "AI Concierge", href: "/concierge", icon: <Sparkles className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },
   { label: "AI Agents", href: "/agents", icon: <Cpu className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },
   { label: "Blueprints", href: "/blueprints", icon: <Layers3 className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },
   { label: "Diagnostics", href: "/diagnostics", icon: <Gauge className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },

@@ -3345,3 +3345,12 @@
 - [x] TypeScript check passes — zero errors
 - [x] Tests pass — 15/15 concierge tests
 - [x] Verified in browser — tab works, chat renders inline with full functionality
+
+## Feature — AI Concierge as Dashboard Sidebar Nav Item
+- [x] Move AI Concierge from client portal tab to admin dashboard sidebar
+- [x] Use Sparkles (star) icon for AI Concierge in sidebar
+- [x] Create dedicated AI Concierge page at /concierge with streaming chat, history, suggestion cards
+- [x] Remove concierge tab and all related state/handlers from ClientPortal.tsx
+- [x] TypeScript clean — zero errors
+- [x] 16/16 concierge tests pass
+- [x] Verified in browser — sidebar nav works, page loads with VENTEX branding
