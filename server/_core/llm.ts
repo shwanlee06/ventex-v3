@@ -265,8 +265,30 @@ const normalizeResponseFormat = ({
   };
 };
 
+// Rate limiter: max 3 requests per second to avoid 429 errors
+const LLM_RATE_LIMIT = 3; // max requests per second
+const llmRequestTimestamps: number[] = [];
+
+async function waitForRateLimit(): Promise<void> {
+  const now = Date.now();
+  // Remove timestamps older than 1 second
+  while (llmRequestTimestamps.length > 0 && llmRequestTimestamps[0]! < now - 1000) {
+    llmRequestTimestamps.shift();
+  }
+  if (llmRequestTimestamps.length >= LLM_RATE_LIMIT) {
+    const oldestInWindow = llmRequestTimestamps[0]!;
+    const waitMs = oldestInWindow + 1000 - now + 50; // +50ms buffer
+    if (waitMs > 0) {
+      await new Promise(resolve => setTimeout(resolve, waitMs));
+    }
+    return waitForRateLimit(); // Re-check after waiting
+  }
+  llmRequestTimestamps.push(Date.now());
+}
+
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   assertApiKey();
+  await waitForRateLimit();
 
   const {
     messages,

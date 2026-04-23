@@ -20,6 +20,43 @@ const resend = new Resend(process.env.RESEND_API_KEY || "");
 const FROM_ADDRESS = "VENTEX <contact@aurovia.co>";
 const REPLY_TO = "slee72106@gmail.com"; // Operator: Shwan Lee
 
+// Rate limiter: max 2 emails per second to stay within Resend limits
+const EMAIL_RATE_LIMIT = 2;
+const emailTimestamps: number[] = [];
+
+async function waitForEmailRateLimit(): Promise<void> {
+  const now = Date.now();
+  while (emailTimestamps.length > 0 && emailTimestamps[0]! < now - 1000) {
+    emailTimestamps.shift();
+  }
+  if (emailTimestamps.length >= EMAIL_RATE_LIMIT) {
+    const oldest = emailTimestamps[0]!;
+    const waitMs = oldest + 1000 - now + 100;
+    if (waitMs > 0) await new Promise(r => setTimeout(r, waitMs));
+    return waitForEmailRateLimit();
+  }
+  emailTimestamps.push(Date.now());
+}
+
+// Daily email budget tracking
+let dailyEmailCount = 0;
+let dailyResetDate = new Date().toDateString();
+const DAILY_EMAIL_BUDGET = 50; // Max emails per day to avoid quota exhaustion
+
+function checkDailyBudget(): boolean {
+  const today = new Date().toDateString();
+  if (today !== dailyResetDate) {
+    dailyEmailCount = 0;
+    dailyResetDate = today;
+  }
+  if (dailyEmailCount >= DAILY_EMAIL_BUDGET) {
+    console.warn(`[EmailService] Daily budget exhausted (${DAILY_EMAIL_BUDGET} emails). Skipping.`);
+    return false;
+  }
+  dailyEmailCount++;
+  return true;
+}
+
 
 interface EmailResult {
   success: boolean;
@@ -238,6 +275,10 @@ export async function sendTaskFollowUp(params: TaskFollowUpParams): Promise<Emai
   if (!process.env.RESEND_API_KEY) {
     return { success: false, error: "RESEND_API_KEY not configured" };
   }
+  if (!checkDailyBudget()) {
+    return { success: false, error: "Daily email budget exhausted" };
+  }
+  await waitForEmailRateLimit();
   try {
     const { data, error } = await resend.emails.send({
       from: FROM_ADDRESS,
@@ -261,6 +302,10 @@ export async function sendDistributionNotice(params: DistributionNoticeParams): 
   if (!process.env.RESEND_API_KEY) {
     return { success: false, error: "RESEND_API_KEY not configured" };
   }
+  if (!checkDailyBudget()) {
+    return { success: false, error: "Daily email budget exhausted" };
+  }
+  await waitForEmailRateLimit();
   try {
     const { data, error } = await resend.emails.send({
       from: FROM_ADDRESS,
@@ -284,6 +329,10 @@ export async function sendClientNudge(params: ClientNudgeParams): Promise<EmailR
   if (!process.env.RESEND_API_KEY) {
     return { success: false, error: "RESEND_API_KEY not configured" };
   }
+  if (!checkDailyBudget()) {
+    return { success: false, error: "Daily email budget exhausted" };
+  }
+  await waitForEmailRateLimit();
   try {
     const { data, error } = await resend.emails.send({
       from: FROM_ADDRESS,
@@ -312,6 +361,10 @@ export async function sendOverdueAutoEmail(params: OverdueAutoEmailParams): Prom
   if (!process.env.RESEND_API_KEY) {
     return { success: false, error: "RESEND_API_KEY not configured" };
   }
+  if (!checkDailyBudget()) {
+    return { success: false, error: "Daily email budget exhausted" };
+  }
+  await waitForEmailRateLimit();
   try {
     const { data, error } = await resend.emails.send({
       from: FROM_ADDRESS,
@@ -339,6 +392,10 @@ export async function sendReadyToAdvanceEmail(params: ReadyToAdvanceEmailParams)
   if (!process.env.RESEND_API_KEY) {
     return { success: false, error: "RESEND_API_KEY not configured" };
   }
+  if (!checkDailyBudget()) {
+    return { success: false, error: "Daily email budget exhausted" };
+  }
+  await waitForEmailRateLimit();
   try {
     const { data, error } = await resend.emails.send({
       from: FROM_ADDRESS,
@@ -366,6 +423,10 @@ export async function sendStageAdvancedEmail(params: StageAdvancedEmailParams): 
   if (!process.env.RESEND_API_KEY) {
     return { success: false, error: "RESEND_API_KEY not configured" };
   }
+  if (!checkDailyBudget()) {
+    return { success: false, error: "Daily email budget exhausted" };
+  }
+  await waitForEmailRateLimit();
   try {
     const { data, error } = await resend.emails.send({
       from: FROM_ADDRESS,

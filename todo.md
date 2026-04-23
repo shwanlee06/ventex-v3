@@ -3368,3 +3368,16 @@
 - [x] Ensure last_seen updates on every login: OAuth callback now updates team_members.lastSeenAt
 - [x] Verify in browser: Chris Phelps now shows 'Active', Brian Chen shows '6h ago' instead of '13d ago'
 - [x] Write 11 unit tests for calculateLiveStatus and timestamp fallback logic
+
+## Bug Fix — Rate Exceeded Errors (Apr 23, 2026)
+- [x] Root cause: Escalation engine sends overdue emails with NO cooldown (up to 20 per org per cycle × 9 orgs = 180 emails)
+- [x] Root cause: Agent scheduler running every 2h (too frequent for production)
+- [x] Root cause: No rate limiting on LLM API calls (concurrent agents fire simultaneously)
+- [x] Fix 1: Add 7-day cooldown to escalation engine overdue emails (tracks via overdue_email agent events)
+- [x] Fix 2: Cap overdue emails at 3 per sweep per org (MAX_OVERDUE_EMAILS_PER_SWEEP)
+- [x] Fix 3: Increase agent scheduler interval from 2h to 6h (production-appropriate)
+- [x] Fix 4: Add LLM rate limiter — max 3 requests/second with queuing (waitForRateLimit in llm.ts)
+- [x] Fix 5: Add email rate limiter — max 2 emails/second with queuing (waitForEmailRateLimit in emailService.ts)
+- [x] Fix 6: Add daily email budget cap — 50 emails/day with auto-reset (checkDailyBudget in emailService.ts)
+- [x] Fix 7: All 6 email functions protected (sendTaskFollowUp, sendDistributionNotice, sendClientNudge, sendOverdueAutoEmail, sendReadyToAdvanceEmail, sendStageAdvancedEmail)
+- [x] Write 13 vitest tests for rate limiting (LLM, email, escalation engine, scheduler interval)

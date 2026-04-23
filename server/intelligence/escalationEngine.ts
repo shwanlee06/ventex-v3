@@ -10,6 +10,8 @@ import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 const ESCALATION_THRESHOLD_HOURS = 48;
 const NUDGE_THRESHOLD_HOURS = 24;
 const MAX_NUDGES_PER_SWEEP = 10;
+const MAX_OVERDUE_EMAILS_PER_SWEEP = 3; // Cap to avoid Resend rate limits
+const OVERDUE_EMAIL_COOLDOWN_DAYS = 7; // Don't re-email about the same task within 7 days
 
 export interface EscalationResult {
   nudgesSent: number;
@@ -177,14 +179,34 @@ export async function runEscalationSweep(organizationId: number): Promise<Escala
       )
       .limit(20);
 
+    let overdueEmailsSent = 0;
     for (const task of overdueTasks) {
       if (!task.dueDate) continue;
+      if (overdueEmailsSent >= MAX_OVERDUE_EMAILS_PER_SWEEP) break; // Cap per sweep
+
       const daysOverdue = Math.floor(
         (now.getTime() - new Date(task.dueDate).getTime()) / (1000 * 60 * 60 * 24)
       );
 
       // Only alert on tasks overdue by 2+ days (avoid noise)
       if (daysOverdue < 2) continue;
+
+      // 7-day cooldown: check if we already emailed about this task recently
+      const cooldownCutoff = new Date(now.getTime() - OVERDUE_EMAIL_COOLDOWN_DAYS * 24 * 60 * 60 * 1000);
+      const recentEscalationEmail = await db
+        .select({ id: agentEvents.id })
+        .from(agentEvents)
+        .where(
+          and(
+            eq(agentEvents.agentName, "Escalation Engine"),
+            eq(agentEvents.eventType, "overdue_email"),
+            eq(agentEvents.agentEntityId, String(task.id)),
+            eq(agentEvents.organizationId, organizationId),
+            gte(agentEvents.createdAt, cooldownCutoff),
+          )
+        )
+        .limit(1);
+      if (recentEscalationEmail.length > 0) continue; // Already emailed recently
 
       // Get venture name
       let ventureName = "Unknown Venture";
@@ -213,7 +235,23 @@ export async function runEscalationSweep(organizationId: number): Promise<Escala
               year: "numeric",
             }),
           });
+
+          // Record that we sent this email (for cooldown tracking)
+          await db.insert(agentEvents).values({
+            organizationId,
+            agentName: "Escalation Engine",
+            eventType: "overdue_email",
+            message: `Overdue email sent for "${task.title}" (${daysOverdue} days overdue)`,
+            severity: "info",
+            entityType: "task",
+            agentEntityId: String(task.id),
+            agentEntityName: task.title,
+            audience: "operator",
+            requiresClientAction: false,
+          });
+
           result.overdueTaskAlerts++;
+          overdueEmailsSent++;
         } catch (err: any) {
           result.errors.push(`Overdue email failed for task ${task.id}: ${err.message}`);
         }

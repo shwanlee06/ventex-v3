@@ -19,7 +19,7 @@ let isRunning = false;
 let totalRunCount = 0;
 let consecutiveFailures = 0;
 
-const DEFAULT_INTERVAL_MS = 2 * 60 * 60 * 1000; // 2 hours (demo mode — production should be 6h)
+const DEFAULT_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours (production)
 const MAX_CONSECUTIVE_FAILURES = 3;
 
 /**
