@@ -143,7 +143,7 @@ const USE_OF_FUNDS = FUND_BUCKETS.flatMap((b) => b.items);
 const TIMELINE_MILESTONES = [
   { quarter: "M1-3", label: "Hire CTO + 3 engineers, harden platform, C-Corp conversion", color: "#00ff87" },
   { quarter: "M4-6", label: "Convert pilot to paid + close first enterprise clients", color: "#FFB800" },
-  { quarter: "M7-12", label: "Scale to 5 engineers, 25+ clients, $1.6M ARR → Series A", color: "#8B8BFF" },
+  { quarter: "M7-12", label: "Scale to 5 engineers, 12-15 clients, $1.5M+ ARR → Series A", color: "#8B8BFF" },
 ];
 
 const TEAM = [
@@ -1050,9 +1050,9 @@ export default function Demo() {
 
           <RevealSection delay={0.1}>
             <p className="text-sm text-white/70 max-w-3xl leading-relaxed mb-12">
-              This raise gives VENTEX 14+ months of runway to convert our pilot into a paying client,
-              close 25+ enterprise contracts, hire a full-time CTO and ramp from 3 to 5 engineers, and reach
-              $1.6M+ ARR — the traction that positions our Series A at a $15M+ valuation.
+              This raise gives VENTEX 14+ months of runway to convert our pilot into a paid contract,
+              close 12-15 enterprise contracts, hire a full-time CTO and ramp from 3 to 5 engineers, and reach
+              $1.5M+ ARR — the traction that positions our Series A at a $15M+ valuation.
               Every dollar is allocated with precision to generate maximum leverage.
             </p>
           </RevealSection>
@@ -1170,7 +1170,7 @@ export default function Demo() {
           {/* Unit Economics — The Math */}
           <RevealSection delay={0.22}>
             <div className="border border-white/8 p-6 md:p-8 mb-8">
-              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase mb-6">Unit Economics — The Math Behind $2.8M ARR</div>
+              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase mb-6">Unit Economics — The Math Behind $4.8M ARR</div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
                 <div>
                   <div className="text-2xl font-bold text-[#FFB800] font-mono">$120K</div>
@@ -1188,9 +1188,9 @@ export default function Demo() {
                   <div className="text-[9px] text-white/30">Founder-led sales, no paid acquisition</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-[#00ff87] font-mono">8x</div>
+                  <div className="text-2xl font-bold text-[#00ff87] font-mono">20.4x</div>
                   <div className="text-[10px] text-white/50 mb-1">LTV:CAC Ratio</div>
-                  <div className="text-[9px] text-white/30">$120K ACV x 3yr retention / $15K CAC</div>
+                  <div className="text-[9px] text-white/30">$306K LTV (85% margin × 3yr) / $15K CAC</div>
                 </div>
               </div>
               <div className="border-t border-white/8 pt-5">
@@ -1198,15 +1198,15 @@ export default function Demo() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="p-3 border border-white/5">
                     <div className="text-sm font-bold text-[#00ff87] font-mono mb-1">Year 1</div>
-                    <div className="text-[11px] text-white/60">3-5 clients × $120K = <span className="text-[#FFB800] font-medium">$360K-$600K ARR</span></div>
+                    <div className="text-[11px] text-white/60">12-15 clients × $120K = <span className="text-[#FFB800] font-medium">$1.5M+ ARR</span></div>
                   </div>
                   <div className="p-3 border border-white/5">
                     <div className="text-sm font-bold text-[#FFB800] font-mono mb-1">Year 2</div>
-                    <div className="text-[11px] text-white/60">10-15 clients × $130K = <span className="text-[#FFB800] font-medium">$1.3M-$2M ARR</span></div>
+                    <div className="text-[11px] text-white/60">25 clients × $120K = <span className="text-[#FFB800] font-medium">$3M ARR</span></div>
                   </div>
                   <div className="p-3 border border-white/5">
-                    <div className="text-sm font-bold text-[#00ff87] font-mono mb-1">Month 18</div>
-                    <div className="text-[11px] text-white/60">20+ clients × $140K = <span className="text-[#FFB800] font-medium">$2.8M+ ARR → Series A</span></div>
+                    <div className="text-sm font-bold text-[#00ff87] font-mono mb-1">Year 3</div>
+                    <div className="text-[11px] text-white/60">40 clients × $120K = <span className="text-[#FFB800] font-medium">$4.8M ARR</span></div>
                   </div>
                 </div>
                 <p className="text-[9px] text-white/30 mt-3 italic">
