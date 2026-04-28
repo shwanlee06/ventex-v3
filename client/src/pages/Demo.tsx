@@ -106,10 +106,10 @@ const FUND_BUCKETS = [
     bucket: "BUILD",
     bucketColor: "#00ff87",
     bucketDesc: "Product & Engineering",
-    milestone: "Ship production platform, scale to enterprise-grade with 5-7 engineers",
+    milestone: "3 engineers M1-6, scale to 5 after first revenue validates model",
     items: [
       { label: "CTO (Full-Time)", pct: 13.7, amount: "$96K", color: "#00ff87" },
-      { label: "Engineering Team (5 devs)", pct: 25.7, amount: "$180K", color: "#00cc6a" },
+      { label: "Engineering (3→5 ramp)", pct: 20.6, amount: "$144K", color: "#00cc6a" },
       { label: "Infrastructure & Cloud", pct: 5.1, amount: "$36K", color: "#009952" },
     ],
   },
@@ -117,7 +117,7 @@ const FUND_BUCKETS = [
     bucket: "GROW",
     bucketColor: "#FFB800",
     bucketDesc: "Sales & Market Entry",
-    milestone: "Convert pilot to paid, close 3-5 enterprise clients by Month 12",
+    milestone: "Convert pilot to paid, close 25+ enterprise clients by Month 12",
     items: [
       { label: "Sales & Marketing", pct: 8.6, amount: "$60K", color: "#FFB800" },
       { label: "Travel & Events", pct: 2.6, amount: "$18K", color: "#FF9F43" },
@@ -127,12 +127,12 @@ const FUND_BUCKETS = [
     bucket: "SUSTAIN",
     bucketColor: "#8B8BFF",
     bucketDesc: "Team & Operations",
-    milestone: "12+ months runway, retain core team through first revenue",
+    milestone: "14+ months runway, retain core team through first revenue",
     items: [
       { label: "Founder Salaries (3×$3K)", pct: 15.4, amount: "$108K", color: "#8B8BFF" },
       { label: "Legal & Financial Teams", pct: 13.7, amount: "$96K", color: "#7C7CCC" },
       { label: "Software & Insurance", pct: 3.1, amount: "$22K", color: "#54A0FF" },
-      { label: "Contingency (1mo burn)", pct: 12.0, amount: "$84K", color: "#4040AA" },
+      { label: "Contingency (2mo burn)", pct: 12.0, amount: "$84K", color: "#4040AA" },
     ],
   },
 ];
@@ -141,9 +141,9 @@ const FUND_BUCKETS = [
 const USE_OF_FUNDS = FUND_BUCKETS.flatMap((b) => b.items);
 
 const TIMELINE_MILESTONES = [
-  { quarter: "Q1-Q2", label: "Convert pilot to paid + close 2 enterprise clients", color: "#00ff87" },
-  { quarter: "Q3-Q4", label: "Scale to 5-6 clients + $600K ARR", color: "#FFB800" },
-  { quarter: "Q5-Q7", label: "15+ clients + $2M ARR → Series A ready", color: "#8B8BFF" },
+  { quarter: "M1-3", label: "Hire CTO + 3 engineers, harden platform, C-Corp conversion", color: "#00ff87" },
+  { quarter: "M4-6", label: "Convert pilot to paid + close first enterprise clients", color: "#FFB800" },
+  { quarter: "M7-12", label: "Scale to 5 engineers, 25+ clients, $1.6M ARR → Series A", color: "#8B8BFF" },
 ];
 
 const TEAM = [
@@ -958,8 +958,8 @@ export default function Demo() {
                     </div>
                   </div>
                   <p className="text-sm text-white/70 leading-relaxed">
-                    <span className="text-[#00cc6a] font-medium">90-day north star: convert design partner to paid contract, close 2 enterprise clients from active pipeline.
-                    Pilot validates product. Paying clients validate the market.</span>
+                    <span className="text-[#00cc6a] font-medium">90-day north star: hire CTO + 3 engineers, harden platform for enterprise, convert design partner to paid contract.
+                    Pilot validates product. Revenue validates the market.</span>
                   </p>
                 </div>
               </div>
@@ -1050,9 +1050,9 @@ export default function Demo() {
 
           <RevealSection delay={0.1}>
             <p className="text-sm text-white/70 max-w-3xl leading-relaxed mb-12">
-              This raise gives VENTEX 12+ months of runway to convert our pilot into a paying client,
-              close 3–5 enterprise contracts, hire a full-time CTO and 5–7 engineers, and reach
-              $600K+ ARR — the traction that positions our Series A at a $15M+ valuation.
+              This raise gives VENTEX 14+ months of runway to convert our pilot into a paying client,
+              close 25+ enterprise contracts, hire a full-time CTO and ramp from 3 to 5 engineers, and reach
+              $1.6M+ ARR — the traction that positions our Series A at a $15M+ valuation.
               Every dollar is allocated with precision to generate maximum leverage.
             </p>
           </RevealSection>
@@ -1142,7 +1142,7 @@ export default function Demo() {
           {/* Timeline — How Capital Deploys */}
           <RevealSection delay={0.2}>
             <div className="border border-white/8 p-6 md:p-8 mb-8">
-              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase mb-6">12-Month Deployment Timeline</div>
+              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase mb-6">14-Month Deployment Timeline</div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
                 {TIMELINE_MILESTONES.map((m, i) => (
                   <div key={m.quarter} className="relative p-4 border border-white/5">
@@ -1231,7 +1231,7 @@ export default function Demo() {
               </div>
               <div className="border border-[#00ff87]/20 p-5 text-center bg-[#00ff87]/[0.03]">
                 <div className="text-[9px] tracking-[0.15em] text-[#00ff87]/50 uppercase mb-2">Runway</div>
-                <div className="text-2xl font-bold text-[#00ff87] font-mono">12+</div>
+                <div className="text-2xl font-bold text-[#00ff87] font-mono">14+</div>
                 <div className="text-[10px] text-white/30 mt-1">Months to Series A</div>
               </div>
             </div>

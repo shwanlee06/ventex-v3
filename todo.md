@@ -3392,3 +3392,14 @@
 - [ ] Add [CTO FULL NAME] to investor demo team section
 - [ ] Regenerate all PDFs
 - [ ] Save checkpoint
+
+## Update — Conservative Ramp Model (3→5 Engineers)
+- [ ] Recalculate capital allocation: 3 engineers Months 1-6, scale to 5 after first revenue
+- [ ] Update Financial Projections document
+- [ ] Update Use of Funds document
+- [ ] Update Cap Table narrative
+- [ ] Update Executive Summary
+- [ ] Update Investor FAQ
+- [ ] Update Demo.tsx investor demo page with new numbers
+- [ ] Regenerate all PDFs
+- [ ] Save checkpoint
