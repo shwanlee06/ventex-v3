@@ -3381,3 +3381,14 @@
 - [x] Fix 6: Add daily email budget cap — 50 emails/day with auto-reset (checkDailyBudget in emailService.ts)
 - [x] Fix 7: All 6 email functions protected (sendTaskFollowUp, sendDistributionNotice, sendClientNudge, sendOverdueAutoEmail, sendReadyToAdvanceEmail, sendStageAdvancedEmail)
 - [x] Write 13 vitest tests for rate limiting (LLM, email, escalation engine, scheduler interval)
+
+## Fix — Investor Documents & Demo Consistency
+- [ ] Change "paying client" to "pilot client" / "design partner" across all docs
+- [ ] Fix Financial Projections: Month 1 = $0 revenue, first revenue Month 3-4 when pilots convert
+- [ ] Fix Executive Summary traction section
+- [ ] Fix Investor FAQ references to paying client
+- [ ] Fix Company Overview references
+- [ ] Update investor demo page (Demo.tsx) with corrected traction data
+- [ ] Add [CTO FULL NAME] to investor demo team section
+- [ ] Regenerate all PDFs
+- [ ] Save checkpoint

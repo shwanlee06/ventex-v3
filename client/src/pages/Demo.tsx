@@ -106,32 +106,33 @@ const FUND_BUCKETS = [
     bucket: "BUILD",
     bucketColor: "#00ff87",
     bucketDesc: "Product & Engineering",
-    milestone: "Ship production platform, onboard 5-6 enterprise clients",
+    milestone: "Ship production platform, scale to enterprise-grade with 5-7 engineers",
     items: [
-      { label: "AI/ML Engineers", pct: 25.6, amount: "$179K", color: "#00ff87" },
-      { label: "Platform Infrastructure", pct: 4.7, amount: "$33K", color: "#00cc6a" },
-      { label: "Security Baseline", pct: 2.9, amount: "$20K", color: "#009952" },
+      { label: "CTO (Full-Time)", pct: 13.7, amount: "$96K", color: "#00ff87" },
+      { label: "Engineering Team (5 devs)", pct: 25.7, amount: "$180K", color: "#00cc6a" },
+      { label: "Infrastructure & Cloud", pct: 5.1, amount: "$36K", color: "#009952" },
     ],
   },
   {
     bucket: "GROW",
     bucketColor: "#FFB800",
     bucketDesc: "Sales & Market Entry",
-    milestone: "Close 5-6 UHNWI contracts, reach $4M ARR for Series A",
+    milestone: "Convert pilot to paid, close 3-5 enterprise clients by Month 12",
     items: [
-      { label: "Sales & GTM", pct: 10.7, amount: "$75K", color: "#FFB800" },
-      { label: "LOI / Client Legal", pct: 0.7, amount: "$5K", color: "#FF9F43" },
+      { label: "Sales & Marketing", pct: 8.6, amount: "$60K", color: "#FFB800" },
+      { label: "Travel & Events", pct: 2.6, amount: "$18K", color: "#FF9F43" },
     ],
   },
   {
     bucket: "SUSTAIN",
     bucketColor: "#8B8BFF",
     bucketDesc: "Team & Operations",
-    milestone: "25+ months runway, retain core team through Series A",
+    milestone: "12+ months runway, retain core team through first revenue",
     items: [
-      { label: "Team Stipends", pct: 20.9, amount: "$146K", color: "#8B8BFF" },
-      { label: "Operating Reserve", pct: 25.4, amount: "$178K", color: "#54A0FF" },
-      { label: "Legal & Compliance", pct: 4.6, amount: "$32K", color: "#7C7CCC" },
+      { label: "Founder Salaries (3×$3K)", pct: 15.4, amount: "$108K", color: "#8B8BFF" },
+      { label: "Legal & Financial Teams", pct: 13.7, amount: "$96K", color: "#7C7CCC" },
+      { label: "Software & Insurance", pct: 3.1, amount: "$22K", color: "#54A0FF" },
+      { label: "Contingency (1mo burn)", pct: 12.0, amount: "$84K", color: "#4040AA" },
     ],
   },
 ];
@@ -140,9 +141,9 @@ const FUND_BUCKETS = [
 const USE_OF_FUNDS = FUND_BUCKETS.flatMap((b) => b.items);
 
 const TIMELINE_MILESTONES = [
-  { quarter: "Q1-Q2", label: "Platform launch + first 3 paying clients", color: "#00ff87" },
-  { quarter: "Q3-Q4", label: "3-4 paying clients + $1M ARR", color: "#FFB800" },
-  { quarter: "Q5-Q7", label: "5-6 clients + $4M ARR + Series A", color: "#8B8BFF" },
+  { quarter: "Q1-Q2", label: "Convert pilot to paid + close 2 enterprise clients", color: "#00ff87" },
+  { quarter: "Q3-Q4", label: "Scale to 5-6 clients + $600K ARR", color: "#FFB800" },
+  { quarter: "Q5-Q7", label: "15+ clients + $2M ARR → Series A ready", color: "#8B8BFF" },
 ];
 
 const TEAM = [
@@ -177,6 +178,21 @@ const TEAM = [
     ],
   },
   {
+    name: "[CTO FULL NAME]",
+    initials: "CTO",
+    role: "Chief Technology Officer",
+    color: "#FFB800",
+    photo: "",
+    linkedin: "",
+    bio: "[CTO FULL NAME] is the technical leader of VENTEX, owning the engineering roadmap, architecture decisions, infrastructure scaling, and team leadership. Responsible for building and managing the 5-7 person engineering team that will take the platform from pilot to enterprise-scale production.",
+    quote: "Great technology is invisible — it just works.",
+    stats: [
+      { label: "Engineers Managed", value: "5-7" },
+      { label: "Architecture", value: "Owner" },
+      { label: "Focus", value: "Scale" },
+    ],
+  },
+  {
     name: "Chris Phelps",
     initials: "CP",
     role: "CRO",
@@ -195,13 +211,13 @@ const TEAM = [
 
 const POST_RAISE_HIRES = [
   {
-    role: "Chief Technology Officer",
-    why: "Own the technical vision end-to-end — architecture decisions, engineering roadmap, infrastructure migration, and team leadership through Series A.",
+    role: "Senior Full-Stack Engineers (5-7)",
+    why: "Scale the engineering team — accelerate platform development, client portal, API infrastructure, agent orchestration, and multi-tenant architecture.",
     color: "#00ff87",
   },
   {
-    role: "Senior Full-Stack Engineer",
-    why: "Accelerate platform development — client portal, operator tools, API infrastructure, and agent orchestration layer.",
+    role: "Financial & Legal Team",
+    why: "Dedicated compliance, accounting, and legal counsel to support enterprise client contracts, SOC 2 certification, and investor reporting.",
     color: "#00cc6a",
   },
 ];
@@ -764,7 +780,7 @@ export default function Demo() {
               className="text-[clamp(24px,4vw,48px)] font-bold leading-[0.95] mb-8 text-white/45"
               style={{ fontFamily: HEADLINE_FONT }}
             >
-              BUILT BY THREE PEOPLE.
+              BUILT BY FOUR PEOPLE.
             </h2>
           </RevealSection>
 
@@ -909,7 +925,7 @@ export default function Demo() {
                       <div className="text-[10px] text-white/50">in progress</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-[#00ff87] font-mono">3</div>
+                      <div className="text-lg font-bold text-[#00ff87] font-mono">4</div>
                       <div className="text-[10px] text-white/50">person team</div>
                     </div>
                     <div className="text-center">
@@ -942,8 +958,8 @@ export default function Demo() {
                     </div>
                   </div>
                   <p className="text-sm text-white/70 leading-relaxed">
-                    <span className="text-[#00cc6a] font-medium">90-day north star: close first 3 paying clients from active pipeline.
-                    Design partner validates product. Paying clients validate the market.</span>
+                    <span className="text-[#00cc6a] font-medium">90-day north star: convert design partner to paid contract, close 2 enterprise clients from active pipeline.
+                    Pilot validates product. Paying clients validate the market.</span>
                   </p>
                 </div>
               </div>
@@ -1034,10 +1050,10 @@ export default function Demo() {
 
           <RevealSection delay={0.1}>
             <p className="text-sm text-white/70 max-w-3xl leading-relaxed mb-12">
-              This raise gives VENTEX 25+ months of runway to close 5–6 enterprise contracts, hire 2–4
-              critical AI engineers, and reach a $4M ARR milestone — the threshold that unlocks our
-              Series A at a $15M+ valuation. Every dollar is allocated with precision to generate
-              maximum leverage.
+              This raise gives VENTEX 12+ months of runway to convert our pilot into a paying client,
+              close 3–5 enterprise contracts, hire a full-time CTO and 5–7 engineers, and reach
+              $600K+ ARR — the traction that positions our Series A at a $15M+ valuation.
+              Every dollar is allocated with precision to generate maximum leverage.
             </p>
           </RevealSection>
 
@@ -1126,7 +1142,7 @@ export default function Demo() {
           {/* Timeline — How Capital Deploys */}
           <RevealSection delay={0.2}>
             <div className="border border-white/8 p-6 md:p-8 mb-8">
-              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase mb-6">25-Month Deployment Timeline</div>
+              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase mb-6">12-Month Deployment Timeline</div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
                 {TIMELINE_MILESTONES.map((m, i) => (
                   <div key={m.quarter} className="relative p-4 border border-white/5">
@@ -1154,7 +1170,7 @@ export default function Demo() {
           {/* Unit Economics — The Math */}
           <RevealSection delay={0.22}>
             <div className="border border-white/8 p-6 md:p-8 mb-8">
-              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase mb-6">Unit Economics — The Math Behind $4M ARR</div>
+              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase mb-6">Unit Economics — The Math Behind $2.8M ARR</div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
                 <div>
                   <div className="text-2xl font-bold text-[#FFB800] font-mono">$120K</div>
@@ -1178,19 +1194,19 @@ export default function Demo() {
                 </div>
               </div>
               <div className="border-t border-white/8 pt-5">
-                <div className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-3">Path to $4M ARR</div>
+                <div className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-3">Path to Series A</div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="p-3 border border-white/5">
                     <div className="text-sm font-bold text-[#00ff87] font-mono mb-1">Year 1</div>
-                    <div className="text-[11px] text-white/60">5-6 clients × $120K = <span className="text-[#FFB800] font-medium">$600K-$720K ARR</span></div>
+                    <div className="text-[11px] text-white/60">3-5 clients × $120K = <span className="text-[#FFB800] font-medium">$360K-$600K ARR</span></div>
                   </div>
                   <div className="p-3 border border-white/5">
                     <div className="text-sm font-bold text-[#FFB800] font-mono mb-1">Year 2</div>
-                    <div className="text-[11px] text-white/60">15-20 clients × $140K = <span className="text-[#FFB800] font-medium">$2.1M-$2.8M ARR</span></div>
+                    <div className="text-[11px] text-white/60">10-15 clients × $130K = <span className="text-[#FFB800] font-medium">$1.3M-$2M ARR</span></div>
                   </div>
                   <div className="p-3 border border-white/5">
                     <div className="text-sm font-bold text-[#00ff87] font-mono mb-1">Month 18</div>
-                    <div className="text-[11px] text-white/60">30+ clients × $140K = <span className="text-[#FFB800] font-medium">$4M+ ARR → Series A</span></div>
+                    <div className="text-[11px] text-white/60">20+ clients × $140K = <span className="text-[#FFB800] font-medium">$2.8M+ ARR → Series A</span></div>
                   </div>
                 </div>
                 <p className="text-[9px] text-white/30 mt-3 italic">
@@ -1210,12 +1226,12 @@ export default function Demo() {
               </div>
               <div className="border border-[#FFB800]/20 p-5 text-center bg-[#FFB800]/[0.03]">
                 <div className="text-[9px] tracking-[0.15em] text-[#FFB800]/50 uppercase mb-2">Valuation Cap</div>
-                <div className="text-2xl font-bold text-[#FFB800] font-mono">$4M</div>
+                <div className="text-2xl font-bold text-[#FFB800] font-mono">$5M</div>
                 <div className="text-[10px] text-white/30 mt-1">Post-money SAFE</div>
               </div>
               <div className="border border-[#00ff87]/20 p-5 text-center bg-[#00ff87]/[0.03]">
                 <div className="text-[9px] tracking-[0.15em] text-[#00ff87]/50 uppercase mb-2">Runway</div>
-                <div className="text-2xl font-bold text-[#00ff87] font-mono">25+</div>
+                <div className="text-2xl font-bold text-[#00ff87] font-mono">12+</div>
                 <div className="text-[10px] text-white/30 mt-1">Months to Series A</div>
               </div>
             </div>
@@ -1235,7 +1251,7 @@ export default function Demo() {
               MEET THE TEAM.
             </h2>
             <p className="text-sm text-white/50 italic max-w-2xl leading-relaxed mb-2">
-              "Three operators who built the system they couldn't find anywhere else."
+              "Four operators who built the system they couldn't find anywhere else."
             </p>
             <p className="text-sm text-white/70 max-w-2xl leading-relaxed mb-6">
               We didn't raise money to build the product. We built the product to raise money.
@@ -1336,7 +1352,7 @@ export default function Demo() {
                 ))}
               </div>
               <p className="text-[10px] text-white/45 mt-4 text-center">
-                Funded by the $700K raise — CTO actively hiring, engineering talent is priority #1
+                Funded by the $700K raise — CTO leads hiring, engineering scale-up is priority #1
               </p>
             </div>
           </RevealSection>
@@ -1359,7 +1375,7 @@ export default function Demo() {
 
           <RevealSection delay={0.2}>
             <p className="text-sm text-white/70 max-w-xl mx-auto leading-relaxed mb-6">
-              The market is uncontested. The platform is live. The round is <span className="text-[#FFB800] font-semibold">$700K</span>, SAFE Cap <span className="text-[#FFB800] font-semibold">$4,000,000</span>.
+              The market is uncontested. The platform is live. The round is <span className="text-[#FFB800] font-semibold">$700K</span>, SAFE Cap <span className="text-[#FFB800] font-semibold">$5,000,000</span>.
               <span className="text-white font-medium"> The next call is yours to make.</span>
             </p>
           </RevealSection>
@@ -1372,7 +1388,7 @@ export default function Demo() {
                 <div className="text-[10px] text-white/40">Total round size</div>
               </div>
               <div className="border border-[#00ff87]/15 p-4 text-center bg-[#00ff87]/[0.03]">
-                <div className="text-lg font-bold text-[#00ff87] font-mono">$4M</div>
+                <div className="text-lg font-bold text-[#00ff87] font-mono">$5M</div>
                 <div className="text-[10px] text-white/40">Post-money cap</div>
               </div>
               <div className="border border-white/10 p-4 text-center">
