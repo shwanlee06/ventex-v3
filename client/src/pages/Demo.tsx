@@ -1050,7 +1050,7 @@ export default function Demo() {
 
           <RevealSection delay={0.1}>
             <p className="text-sm text-white/70 max-w-3xl leading-relaxed mb-12">
-              This raise gives VENTEX 14+ months of runway to convert our pilot into a paid contract,
+              This raise gives Aurovia 14+ months of runway to convert our pilot into a paid contract,
               close 12-15 enterprise contracts, hire a full-time CTO and ramp from 3 to 5 engineers, and reach
               $1.5M+ ARR — the traction that positions our Series A at a $15M+ valuation.
               Every dollar is allocated with precision to generate maximum leverage.
@@ -1235,6 +1235,9 @@ export default function Demo() {
                 <div className="text-[10px] text-white/30 mt-1">Months to Series A</div>
               </div>
             </div>
+            <p className="text-[9px] text-white/30 mt-3 text-center italic">
+              Entity: Aurovia LLC (d/b/a VENTEX) — converting to Delaware C-Corp at close. VENTEX is a product wholly owned by Aurovia.
+            </p>
           </RevealSection>
         </div>
       </section>
