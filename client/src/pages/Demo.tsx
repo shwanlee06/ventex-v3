@@ -106,10 +106,11 @@ const FUND_BUCKETS = [
     bucket: "BUILD",
     bucketColor: "#00ff87",
     bucketDesc: "Product & Engineering",
-    milestone: "3 engineers M1-6, scale to 5 after first revenue validates model",
+    milestone: "CTO + Lead Eng + 2 devs M1-6, add 3rd dev after first revenue",
     items: [
-      { label: "CTO (Full-Time)", pct: 13.7, amount: "$96K", color: "#00ff87" },
-      { label: "Engineering (3→5 ramp)", pct: 25.7, amount: "$180K", color: "#00cc6a" },
+      { label: "CTO (4% equity, $5K/mo)", pct: 8.6, amount: "$60K", color: "#00ff87" },
+      { label: "Lead Engineer (1% equity, $8K/mo)", pct: 13.7, amount: "$96K", color: "#00cc6a" },
+      { label: "Engineering Team (2→3 ramp)", pct: 17.1, amount: "$120K", color: "#00aa55" },
       { label: "Infrastructure & Cloud", pct: 5.1, amount: "$36K", color: "#009952" },
     ],
   },
@@ -141,9 +142,9 @@ const FUND_BUCKETS = [
 const USE_OF_FUNDS = FUND_BUCKETS.flatMap((b) => b.items);
 
 const TIMELINE_MILESTONES = [
-  { quarter: "M1-3", label: "Hire CTO + 3 engineers, harden platform, C-Corp conversion", color: "#00ff87" },
+  { quarter: "M1-3", label: "CTO + Lead Eng + 2 devs, harden platform, C-Corp conversion", color: "#00ff87" },
   { quarter: "M4-6", label: "Convert pilot to paid + close first enterprise clients", color: "#FFB800" },
-  { quarter: "M7-12", label: "Scale to 5 engineers, 12-15 clients, $1.5M+ ARR → Series A", color: "#8B8BFF" },
+  { quarter: "M7-12", label: "Add 3rd dev, 12-15 clients, $1.5M+ ARR → Series A", color: "#8B8BFF" },
 ];
 
 const TEAM = [
@@ -184,10 +185,10 @@ const TEAM = [
     color: "#FFB800",
     photo: "",
     linkedin: "",
-    bio: "[CTO FULL NAME] is the technical leader of VENTEX, owning the engineering roadmap, architecture decisions, infrastructure scaling, and team leadership. Responsible for building and managing the 5-7 person engineering team that will take the platform from pilot to enterprise-scale production.",
+    bio: "[CTO FULL NAME] is the technical leader of VENTEX, owning the engineering roadmap, architecture decisions, infrastructure scaling, and team leadership. Joins at $5K/month with 4% equity — responsible for leading the Lead Engineer and dev team from pilot to enterprise-scale production.",
     quote: "Great technology is invisible — it just works.",
     stats: [
-      { label: "Engineers Managed", value: "5-7" },
+      { label: "Equity", value: "4%" },
       { label: "Architecture", value: "Owner" },
       { label: "Focus", value: "Scale" },
     ],
@@ -211,8 +212,8 @@ const TEAM = [
 
 const POST_RAISE_HIRES = [
   {
-    role: "Senior Full-Stack Engineers (5-7)",
-    why: "Scale the engineering team — accelerate platform development, client portal, API infrastructure, agent orchestration, and multi-tenant architecture.",
+    role: "Engineering Team (2 devs → 3 devs)",
+    why: "Led by Lead Engineer (1% equity, $8K/mo). Scale from 2 to 3 devs after first revenue — platform development, API infrastructure, agent orchestration, and multi-tenant architecture.",
     color: "#00ff87",
   },
   {
@@ -958,7 +959,7 @@ export default function Demo() {
                     </div>
                   </div>
                   <p className="text-sm text-white/70 leading-relaxed">
-                    <span className="text-[#00cc6a] font-medium">90-day north star: hire CTO + 3 engineers, harden platform for enterprise, convert design partner to paid contract.
+                    <span className="text-[#00cc6a] font-medium">90-day north star: onboard CTO + Lead Engineer + 2 devs, harden platform for enterprise, convert design partner to paid contract.
                     Pilot validates product. Revenue validates the market.</span>
                   </p>
                 </div>
@@ -1051,7 +1052,7 @@ export default function Demo() {
           <RevealSection delay={0.1}>
             <p className="text-sm text-white/70 max-w-3xl leading-relaxed mb-12">
               This raise gives Aurovia 14+ months of runway to convert our pilot into a paid contract,
-              close 12-15 enterprise contracts, hire a full-time CTO and ramp from 3 to 5 engineers, and reach
+              close 12-15 enterprise contracts, onboard a CTO (4% equity) and Lead Engineer (1% equity) with a dev team ramping from 2 to 3, and reach
               $1.5M+ ARR — the traction that positions our Series A at a $15M+ valuation.
               Every dollar is allocated with precision to generate maximum leverage.
             </p>
@@ -1355,7 +1356,7 @@ export default function Demo() {
                 ))}
               </div>
               <p className="text-[10px] text-white/45 mt-4 text-center">
-                Funded by the $700K raise — CTO leads hiring, engineering scale-up is priority #1
+                Funded by the $700K raise — CTO (4% equity) + Lead Engineer (1% equity) drive engineering execution
               </p>
             </div>
           </RevealSection>
