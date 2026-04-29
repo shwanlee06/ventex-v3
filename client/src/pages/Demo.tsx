@@ -109,7 +109,7 @@ const FUND_BUCKETS = [
     milestone: "3 engineers M1-6, scale to 5 after first revenue validates model",
     items: [
       { label: "CTO (Full-Time)", pct: 13.7, amount: "$96K", color: "#00ff87" },
-      { label: "Engineering (3→5 ramp)", pct: 20.6, amount: "$144K", color: "#00cc6a" },
+      { label: "Engineering (3→5 ramp)", pct: 25.7, amount: "$180K", color: "#00cc6a" },
       { label: "Infrastructure & Cloud", pct: 5.1, amount: "$36K", color: "#009952" },
     ],
   },
@@ -117,9 +117,9 @@ const FUND_BUCKETS = [
     bucket: "GROW",
     bucketColor: "#FFB800",
     bucketDesc: "Sales & Market Entry",
-    milestone: "Convert pilot to paid, close 25+ enterprise clients by Month 12",
+    milestone: "Convert pilot to paid, close 12-15 enterprise clients by Month 12",
     items: [
-      { label: "Sales & Marketing", pct: 8.6, amount: "$60K", color: "#FFB800" },
+      { label: "Sales & Marketing", pct: 13.7, amount: "$96K", color: "#FFB800" },
       { label: "Travel & Events", pct: 2.6, amount: "$18K", color: "#FF9F43" },
     ],
   },
@@ -129,7 +129,7 @@ const FUND_BUCKETS = [
     bucketDesc: "Team & Operations",
     milestone: "14+ months runway, retain core team through first revenue",
     items: [
-      { label: "Founder Salaries (3×$3K)", pct: 15.4, amount: "$108K", color: "#8B8BFF" },
+      { label: "Founder Salaries (3×$1K)", pct: 5.1, amount: "$36K", color: "#8B8BFF" },
       { label: "Legal & Financial Teams", pct: 13.7, amount: "$96K", color: "#7C7CCC" },
       { label: "Software & Insurance", pct: 3.1, amount: "$22K", color: "#54A0FF" },
       { label: "Contingency (2mo burn)", pct: 12.0, amount: "$84K", color: "#4040AA" },
