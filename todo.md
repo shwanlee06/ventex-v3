@@ -3414,3 +3414,12 @@
 - [x] Investor Stage Change Triggers (Airtable script)
 - [x] Document Version Tracker (Airtable script)
 - [x] Removed dashboard API endpoints (moved to native Airtable)
+
+## CTO Confirmed - Durga Kar
+- [x] Pull Durga Kar LinkedIn profile for background
+- [x] Replace all [CTO FULL NAME] placeholders across documents
+- [x] Update CTO Offer Letter with Durga Kar
+- [x] Update Demo.tsx investor demo with Durga Kar
+- [x] Regenerate all affected PDFs
+- [x] Update Airtable records with new PDFs (7/7 patched)
+- [x] Save checkpoint
