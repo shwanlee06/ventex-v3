@@ -108,8 +108,8 @@ const FUND_BUCKETS = [
     bucketDesc: "Product & Engineering",
     milestone: "CTO + Lead Eng + 2 devs M1-6, add 3rd dev after first revenue",
     items: [
-      { label: "CTO (4% equity, $5K/mo)", pct: 8.6, amount: "$60K", color: "#00ff87" },
-      { label: "Lead Engineer (1% equity, $8K/mo)", pct: 13.7, amount: "$96K", color: "#00cc6a" },
+      { label: "CTO", pct: 8.6, amount: "$60K", color: "#00ff87" },
+      { label: "Lead Engineer", pct: 13.7, amount: "$96K", color: "#00cc6a" },
       { label: "Engineering Team (2→3 ramp)", pct: 17.1, amount: "$120K", color: "#00aa55" },
       { label: "Infrastructure & Cloud", pct: 5.1, amount: "$36K", color: "#009952" },
     ],
@@ -130,7 +130,7 @@ const FUND_BUCKETS = [
     bucketDesc: "Team & Operations",
     milestone: "14+ months runway, retain core team through first revenue",
     items: [
-      { label: "Founder Salaries (3×$1K)", pct: 5.1, amount: "$36K", color: "#8B8BFF" },
+      { label: "Founder Salaries", pct: 5.1, amount: "$36K", color: "#8B8BFF" },
       { label: "Legal & Financial Teams", pct: 13.7, amount: "$96K", color: "#7C7CCC" },
       { label: "Software & Insurance", pct: 3.1, amount: "$22K", color: "#54A0FF" },
       { label: "Contingency (2mo burn)", pct: 12.0, amount: "$84K", color: "#4040AA" },
@@ -213,7 +213,7 @@ const TEAM = [
 const POST_RAISE_HIRES = [
   {
     role: "Engineering Team (2 devs → 3 devs)",
-    why: "Led by Lead Engineer (1% equity, $8K/mo). Scale from 2 to 3 devs after first revenue — platform development, API infrastructure, agent orchestration, and multi-tenant architecture.",
+    why: "Led by Lead Engineer. Scale from 2 to 3 devs after first revenue - platform development, API infrastructure, agent orchestration, and multi-tenant architecture.",
     color: "#00ff87",
   },
   {
@@ -1052,8 +1052,8 @@ export default function Demo() {
           <RevealSection delay={0.1}>
             <p className="text-sm text-white/70 max-w-3xl leading-relaxed mb-12">
               This raise gives Aurovia 14+ months of runway to convert our pilot into a paid contract,
-              close 12-15 enterprise contracts, onboard a CTO (4% equity) and Lead Engineer (1% equity) with a dev team ramping from 2 to 3, and reach
-              $1.5M+ ARR — the traction that positions our Series A at a $15M+ valuation.
+              close 12-15 enterprise contracts, onboard a CTO and Lead Engineer with a dev team ramping from 2 to 3, and reach
+              $1.5M+ ARR - the traction that positions our Series A at a $15M+ valuation.
               Every dollar is allocated with precision to generate maximum leverage.
             </p>
           </RevealSection>
@@ -1356,7 +1356,7 @@ export default function Demo() {
                 ))}
               </div>
               <p className="text-[10px] text-white/45 mt-4 text-center">
-                Funded by the $700K raise — CTO (4% equity) + Lead Engineer (1% equity) drive engineering execution
+                Funded by the $700K raise - CTO + Lead Engineer drive engineering execution
               </p>
             </div>
           </RevealSection>
