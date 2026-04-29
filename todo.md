@@ -3403,3 +3403,14 @@
 - [ ] Update Demo.tsx investor demo page with new numbers
 - [ ] Regenerate all PDFs
 - [ ] Save checkpoint
+
+## Tier 2 - Scheduled Automations
+- [ ] Weekly Investor Pipeline Report (Monday morning summary)
+- [ ] Stale Lead Detector (flag investors stuck 10+ days)
+- [ ] Missing Email Finder (research 99 investors without emails)
+
+## Tier 3 - Workflow Automations (API endpoints)
+- [x] Airtable helper module (shared API logic)
+- [x] Post-Meeting Auto-Logger endpoint
+- [x] Investor Stage Change Triggers endpoint
+- [x] Document Version Tracker endpoint
