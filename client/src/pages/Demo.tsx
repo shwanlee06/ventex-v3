@@ -188,9 +188,9 @@ const TEAM = [
     bio: "22+ years at IG Group building and scaling technology organizations across global markets. Led engineering teams spanning multiple continents, architecting systems that processed millions of real-time transactions daily. Certified Team Topologies Advocate specializing in aligning people, processes, and AI to accelerate delivery. PhD holder with deep expertise in responsible AI governance and platform modernization.",
     quote: "I don't just build technology - I focus on bringing people, processes, and AI together so teams can move faster and deliver impactful outcomes.",
     stats: [
-      { label: "Equity", value: "4%" },
-      { label: "Architecture", value: "Owner" },
-      { label: "Focus", value: "Scale" },
+      { label: "Experience", value: "22+ yrs" },
+      { label: "Teams Led", value: "Global" },
+      { label: "Focus", value: "AI + Scale" },
     ],
   },
   {
