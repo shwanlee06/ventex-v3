@@ -183,10 +183,10 @@ const TEAM = [
     initials: "DK",
     role: "Chief Technology Officer",
     color: "#FFB800",
-    photo: "",
+    photo: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663421947072/ZJKKPhytCgRkAyzU.jpg",
     linkedin: "https://www.linkedin.com/in/durga-kar/",
-    bio: "Dr. Durga Kar brings 22+ years of technology leadership from IG Group (global fintech), where he led global capabilities across all regions. Team Topologies Advocate, AI startup advisor, and PhD holder. Joins at $5K/month with 4% equity, owning the engineering roadmap, architecture, and team scaling from pilot to enterprise production.",
-    quote: "Leadership in technology goes beyond execution - it's about fostering continuous improvement.",
+    bio: "22+ years at IG Group building and scaling technology organizations across global markets. Led engineering teams spanning multiple continents, architecting systems that processed millions of real-time transactions daily. Certified Team Topologies Advocate specializing in aligning people, processes, and AI to accelerate delivery. PhD holder with deep expertise in responsible AI governance and platform modernization.",
+    quote: "I don't just build technology - I focus on bringing people, processes, and AI together so teams can move faster and deliver impactful outcomes.",
     stats: [
       { label: "Equity", value: "4%" },
       { label: "Architecture", value: "Owner" },
