@@ -3423,3 +3423,8 @@
 - [x] Regenerate all affected PDFs
 - [x] Update Airtable records with new PDFs (7/7 patched)
 - [x] Save checkpoint
+
+## Team Section Touchup
+- [ ] Condense Meet the Team section on Demo.tsx (compact layout, shorter bios)
+- [ ] Recapture investor demo as 16:9 PDF
+- [ ] Update Airtable Pitch Deck record

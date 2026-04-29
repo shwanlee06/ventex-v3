@@ -155,7 +155,7 @@ const TEAM = [
     color: "#00ff87",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee-new_e321fa79.webp",
     linkedin: "https://www.linkedin.com/in/shwan-lee-93b486356/",
-    bio: "Shwan Lee is a full-stack architect who saw the problem firsthand inside a UHNWI holding company — 20+ ventures across 6 sectors coordinated on spreadsheets and email chains. As Founder and CEO of Aurovia, he designed and built the entire VENTEX platform in under 90 days: 5 AI intelligence engines, enterprise-grade security architecture (SOC 2 Type II readiness in progress), and a system targeting a $6 trillion market. He owns the product, the vision, and every line of code behind it.",
+    bio: "Built the entire VENTEX platform in under 90 days. 5 AI engines, enterprise-grade security, and a system targeting a $6 trillion market. Full-stack architect who saw the problem firsthand inside a UHNWI holding company.",
     quote: "We didn't raise money to build the product. We built the product to raise money.",
     stats: [
       { label: "AI Engines", value: "5" },
@@ -170,7 +170,7 @@ const TEAM = [
     color: "#00cc6a",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/brian-chen_b535f902.jpeg",
     linkedin: "https://www.linkedin.com/in/brian-chen-1a6aa2373/",
-    bio: "Brian Chen is the operational backbone of Aurovia. As Co-Founder and COO, he architected the intelligence layer behind VENTEX's autonomous AI agents — including the Mirofish predictive engine that forecasts venture outcomes before they happen. He runs day-to-day operations across all verticals and designed the systems that eliminate bottlenecks before anyone notices them. Equal parts operator and engineer, Brian turns complex multi-entity workflows into automated pipelines that scale.",
+    bio: "Architected VENTEX's autonomous AI agents including the Mirofish predictive engine. Runs day-to-day operations across all verticals and turns complex multi-entity workflows into automated pipelines that scale.",
     quote: "The best operations are the ones nobody notices — because nothing breaks.",
     stats: [
       { label: "AI Agents Designed", value: "5" },
@@ -185,7 +185,7 @@ const TEAM = [
     color: "#FFB800",
     photo: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663421947072/ZJKKPhytCgRkAyzU.jpg",
     linkedin: "https://www.linkedin.com/in/durga-kar/",
-    bio: "22+ years at IG Group building and scaling technology organizations across global markets. Led engineering teams spanning multiple continents, architecting systems that processed millions of real-time transactions daily. Certified Team Topologies Advocate specializing in aligning people, processes, and AI to accelerate delivery. PhD holder with deep expertise in responsible AI governance and platform modernization.",
+    bio: "22+ years scaling technology organizations across global markets at IG Group. Led engineering teams spanning multiple continents, processing millions of real-time transactions daily. PhD, Certified Team Topologies Advocate.",
     quote: "I don't just build technology - I focus on bringing people, processes, and AI together so teams can move faster and deliver impactful outcomes.",
     stats: [
       { label: "Experience", value: "22+ yrs" },
@@ -200,7 +200,7 @@ const TEAM = [
     color: "#009952",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/chris-phelps-bw_662a9642.jpg",
     linkedin: "https://www.linkedin.com/in/christopher-phelps-090848230/",
-    bio: "Christopher Phelps is a self-taught revenue operator who built his sales foundation through hands-on experience rather than a traditional background. As Co-Founder and CRO of Aurovia, he leads go-to-market strategy and client acquisition for VENTEX, focused on family offices, UHNWI networks, and institutional channels. He owns the full revenue cycle from first outreach to closed deal and built the commercial playbook from the ground up.",
+    bio: "Leads go-to-market strategy and client acquisition for VENTEX. Focused on family offices, UHNWI networks, and institutional channels. Built the commercial playbook from the ground up.",
     quote: "Pipeline doesn't build itself. But with the right system, it gets close.",
     stats: [
       { label: "GTM Playbook", value: "Built" },
@@ -1254,86 +1254,41 @@ export default function Demo() {
             >
               MEET THE TEAM.
             </h2>
-            <p className="text-sm text-white/50 italic max-w-2xl leading-relaxed mb-2">
-              "Four operators who built the system they couldn't find anywhere else."
+            <p className="text-sm text-white/60 max-w-2xl leading-relaxed mb-10">
+              Four operators who built the system they couldn't find anywhere else. No outsourced code. No borrowed ideas. Every engine, every pipeline, built in-house in under 90 days.
             </p>
-            <p className="text-sm text-white/70 max-w-2xl leading-relaxed mb-6">
-              We didn't raise money to build the product. We built the product to raise money.
-              No outsourced code. No borrowed ideas. Every engine, every pipeline — built in-house in under 90 days.
-            </p>
-
-            {/* Unfair Advantage */}
-            <div className="border border-[#8B8BFF]/15 p-5 bg-[#8B8BFF]/[0.03] mb-12">
-              <div className="text-[9px] tracking-[0.2em] text-[#8B8BFF]/50 uppercase mb-3">Why This Team Wins</div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-start gap-2">
-                  <div className="size-1.5 mt-1.5 bg-[#8B8BFF] flex-shrink-0" />
-                  <p className="text-[11px] text-white/60 leading-relaxed"><span className="text-[#8B8BFF] font-medium">Domain Expertise</span> — Built from inside a real UHNWI holding company. We are the user. We know the pain because we lived it daily.</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="size-1.5 mt-1.5 bg-[#8B8BFF] flex-shrink-0" />
-                  <p className="text-[11px] text-white/60 leading-relaxed"><span className="text-[#8B8BFF] font-medium">Full-Stack Builders</span> — No outsourced dev shop. The founding team designed, coded, and shipped the entire platform in 90 days. We move at startup speed.</p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="size-1.5 mt-1.5 bg-[#8B8BFF] flex-shrink-0" />
-                  <p className="text-[11px] text-white/60 leading-relaxed"><span className="text-[#8B8BFF] font-medium">Built-In Distribution</span> — Our design partnership gives us direct access to UHNWI operators, family offices, and holding companies through their network. First 10 prospects already sourced — zero paid acquisition.</p>
-                </div>
-              </div>
-            </div>
           </RevealSection>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {TEAM.map((t, i) => (
-              <RevealSection key={t.name} delay={i * 0.15}>
-                <div className="group border border-white/8 overflow-hidden hover:border-white/20 transition-all duration-300">
-                  {/* Team photo with hover stat overlay */}
-                  <div className="aspect-square relative overflow-hidden" style={{ backgroundColor: `${t.color}08` }}>
+              <RevealSection key={t.name} delay={i * 0.1}>
+                <div className="border border-white/8 overflow-hidden">
+                  {/* Photo */}
+                  <div className="aspect-[3/4] relative overflow-hidden" style={{ backgroundColor: `${t.color}08` }}>
                     <img
                       src={t.photo}
                       alt={t.name}
-                      className="w-full h-full object-cover object-[center_20%] group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover object-[center_20%]"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                    {/* Hover stat overlay */}
-                    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="flex flex-col items-center gap-4">
-                        {t.stats.map((s) => (
-                          <div key={s.label} className="text-center">
-                            <div className="text-xl font-bold font-mono" style={{ color: t.color }}>{s.value}</div>
-                            <div className="text-[9px] tracking-[0.15em] text-white/50 uppercase">{s.label}</div>
-                          </div>
-                        ))}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-white">{t.name}</span>
+                        <a href={t.linkedin} target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white/70 transition-colors" title="LinkedIn">
+                          <svg className="size-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                        </a>
                       </div>
+                      <div className="text-[10px] tracking-wide mt-0.5" style={{ color: `${t.color}` }}>{t.role}</div>
                     </div>
                   </div>
-                  {/* Signature accent line */}
+                  {/* Accent line */}
                   <div className="h-[2px] w-full" style={{ background: `linear-gradient(90deg, ${t.color}, ${t.color}00)` }} />
-                  {/* Info */}
-                  <div className="p-5">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-semibold text-white">{t.name}</span>
-                      <a href={t.linkedin} target="_blank" rel="noopener noreferrer" className="text-white/30 hover:text-white/70 transition-colors" title="LinkedIn">
-                        <svg className="size-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                      </a>
-                    </div>
-                    <div className="text-[10px] tracking-wide mb-3" style={{ color: `${t.color}99` }}>{t.role}</div>
+                  {/* Bio + Quote */}
+                  <div className="p-4">
                     <p className="text-[11px] text-white/60 leading-relaxed mb-3">{t.bio}</p>
-                    {/* Quote */}
-                    <p className="text-[10px] italic text-white/40 leading-relaxed border-l-2 pl-3 mb-4" style={{ borderColor: `${t.color}40` }}>
+                    <p className="text-[10px] italic text-white/35 leading-relaxed border-l-2 pl-2" style={{ borderColor: `${t.color}30` }}>
                       "{t.quote}"
                     </p>
-                    {/* Metric badges */}
-                    <div className="flex flex-wrap gap-1.5">
-                      {t.stats.map((s) => (
-                        <span
-                          key={s.label}
-                          className="text-[9px] font-mono px-2 py-1 border"
-                          style={{ borderColor: `${t.color}25`, color: `${t.color}CC`, backgroundColor: `${t.color}08` }}
-                        >
-                          {s.value} {s.label.toLowerCase()}
-                        </span>
-                      ))}
-                    </div>
                   </div>
                 </div>
               </RevealSection>
@@ -1341,23 +1296,11 @@ export default function Demo() {
           </div>
 
           {/* Post-Raise Hires */}
-          <RevealSection delay={0.5} className="mt-12">
-            <div className="border border-white/8 p-6">
-              <div className="text-[10px] tracking-[0.2em] text-white/50 uppercase mb-6">Post-Raise Key Hires</div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {POST_RAISE_HIRES.map((h) => (
-                  <div key={h.role} className="flex items-start gap-3 p-4 border border-white/5">
-                    <div className="size-2 mt-1.5 flex-shrink-0" style={{ backgroundColor: h.color }} />
-                    <div>
-                      <div className="text-sm font-semibold text-white mb-1">{h.role}</div>
-                      <p className="text-[11px] text-white/60 leading-relaxed">{h.why}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className="text-[10px] text-white/45 mt-4 text-center">
-                Funded by the $700K raise - CTO + Lead Engineer drive engineering execution
-              </p>
+          <RevealSection delay={0.4} className="mt-8">
+            <div className="border border-white/5 px-5 py-3 flex items-center gap-3">
+              <div className="text-[9px] tracking-[0.2em] text-white/40 uppercase">Post-Raise</div>
+              <div className="h-px flex-1 bg-white/5" />
+              <span className="text-[11px] text-white/50">Engineering team scales to 3 devs + dedicated financial and legal counsel</span>
             </div>
           </RevealSection>
         </div>
