@@ -106,11 +106,11 @@ const FUND_BUCKETS = [
     bucket: "BUILD",
     bucketColor: "#00ff87",
     bucketDesc: "Product & Engineering",
-    milestone: "CTO + Lead Eng + 2 devs M1-6, add 3rd dev after first revenue",
+    milestone: "Lead Eng + 2 devs M1-6, add 3rd dev after first revenue",
     items: [
-      { label: "CTO", pct: 8.6, amount: "$60K", color: "#00ff87" },
+      { label: "CTO (Durga Kar)", pct: 8.6, amount: "$60K", color: "#00ff87" },
       { label: "Lead Engineer", pct: 13.7, amount: "$96K", color: "#00cc6a" },
-      { label: "Engineering Team (2→3 ramp)", pct: 17.1, amount: "$120K", color: "#00aa55" },
+      { label: "Engineering Team (2→5 ramp)", pct: 17.1, amount: "$120K", color: "#00aa55" },
       { label: "Infrastructure & Cloud", pct: 5.1, amount: "$36K", color: "#009952" },
     ],
   },
@@ -142,7 +142,7 @@ const FUND_BUCKETS = [
 const USE_OF_FUNDS = FUND_BUCKETS.flatMap((b) => b.items);
 
 const TIMELINE_MILESTONES = [
-  { quarter: "M1-3", label: "CTO + Lead Eng + 2 devs, harden platform, C-Corp conversion", color: "#00ff87" },
+  { quarter: "M1-3", label: "Lead Eng + 2 devs, harden platform, C-Corp conversion", color: "#00ff87" },
   { quarter: "M4-6", label: "Convert pilot to paid + close first enterprise clients", color: "#FFB800" },
   { quarter: "M7-12", label: "Add 3rd dev, 12-15 clients, $1.5M+ ARR → Series A", color: "#8B8BFF" },
 ];
@@ -959,7 +959,7 @@ export default function Demo() {
                     </div>
                   </div>
                   <p className="text-sm text-white/70 leading-relaxed">
-                    <span className="text-[#00cc6a] font-medium">90-day north star: onboard CTO + Lead Engineer + 2 devs, harden platform for enterprise, convert design partner to paid contract.
+                    <span className="text-[#00cc6a] font-medium">90-day north star: onboard Lead Engineer + 2 devs, harden platform for enterprise, convert design partner to paid contract.
                     Pilot validates product. Revenue validates the market.</span>
                   </p>
                 </div>
@@ -1045,16 +1045,16 @@ export default function Demo() {
               className="text-[clamp(20px,3vw,40px)] font-bold leading-[0.95] mb-8 text-[#FFB800]"
               style={{ fontFamily: HEADLINE_FONT }}
             >
-              SERIES A IN 18 MONTHS.
+              SERIES A IN 12 MONTHS.
             </h3>
           </RevealSection>
 
           <RevealSection delay={0.1}>
             <p className="text-sm text-white/70 max-w-3xl leading-relaxed mb-12">
-              This raise gives Aurovia 14+ months of runway to convert our pilot into a paid contract,
-              close 12-15 enterprise contracts, onboard a CTO and Lead Engineer with a dev team ramping from 2 to 3, and reach
-              $1.5M+ ARR - the traction that positions our Series A at a $15M+ valuation.
-              Every dollar is allocated with precision to generate maximum leverage.
+              This raise gives Aurovia 14+ months of runway to convert our pilot into a $120K annual contract,
+              hire a Lead Engineer and scale the dev team from 2 to 5, close 12-15 enterprise clients,
+              and reach $1.56M ARR by Month 12. Cash flow positive by Month 6. Series A positioned at $15M+ valuation
+              by Month 10-12. Every dollar is allocated with precision to generate maximum leverage.
             </p>
           </RevealSection>
 
@@ -1143,7 +1143,7 @@ export default function Demo() {
           {/* Timeline — How Capital Deploys */}
           <RevealSection delay={0.2}>
             <div className="border border-white/8 p-6 md:p-8 mb-8">
-              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase mb-6">14-Month Deployment Timeline</div>
+              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase mb-6">12-Month Deployment Timeline</div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
                 {TIMELINE_MILESTONES.map((m, i) => (
                   <div key={m.quarter} className="relative p-4 border border-white/5">
@@ -1232,7 +1232,7 @@ export default function Demo() {
               </div>
               <div className="border border-[#00ff87]/20 p-5 text-center bg-[#00ff87]/[0.03]">
                 <div className="text-[9px] tracking-[0.15em] text-[#00ff87]/50 uppercase mb-2">Runway</div>
-                <div className="text-2xl font-bold text-[#00ff87] font-mono">14+</div>
+                <div className="text-2xl font-bold text-[#00ff87] font-mono">12</div>
                 <div className="text-[10px] text-white/30 mt-1">Months to Series A</div>
               </div>
             </div>
