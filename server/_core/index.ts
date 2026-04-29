@@ -13,7 +13,6 @@ import { runDataRetentionPurge } from "../security/dataRetention";
 import inviteValidationRouter from "../routes/inviteValidation";
 import { sseRouter } from "../routes/sseEvents";
 import { ssoRouter } from "../routes/ssoRoutes";
-import { scheduledAutomationRouter } from "../routes/scheduledAutomation";
 import { createSCIMRouter } from "../enterprise/scimProvisioning";
 import { startCronScheduler, getCronStatus } from "../cron";
 import { randomBytes } from "crypto";
@@ -99,8 +98,6 @@ async function startServer() {
   // SSE real-time events
   app.use(sseRouter);
   app.use(ssoRouter);
-  // Scheduled automation endpoints (called by Manus scheduled tasks)
-  app.use(scheduledAutomationRouter);
   // SCIM 2.0 provisioning endpoint (enterprise SSO auto-provisioning)
   app.use("/scim/v2", createSCIMRouter());
   // CSRF protection: verify Origin header on mutation requests

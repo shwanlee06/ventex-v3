@@ -3405,12 +3405,12 @@
 - [ ] Save checkpoint
 
 ## Tier 2 - Scheduled Automations
-- [ ] Weekly Investor Pipeline Report (Monday morning summary)
-- [ ] Stale Lead Detector (flag investors stuck 10+ days)
-- [ ] Missing Email Finder (research 99 investors without emails)
+- [x] Weekly Investor Pipeline Report (Airtable script)
+- [x] Stale Lead Detector (Airtable script)
+- [x] Missing Email Finder (Airtable script)
 
-## Tier 3 - Workflow Automations (API endpoints)
-- [x] Airtable helper module (shared API logic)
-- [x] Post-Meeting Auto-Logger endpoint
-- [x] Investor Stage Change Triggers endpoint
-- [x] Document Version Tracker endpoint
+## Tier 3 - Workflow Automations (Airtable scripts)
+- [x] Post-Meeting Auto-Logger (Airtable script)
+- [x] Investor Stage Change Triggers (Airtable script)
+- [x] Document Version Tracker (Airtable script)
+- [x] Removed dashboard API endpoints (moved to native Airtable)

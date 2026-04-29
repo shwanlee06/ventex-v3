@@ -32,7 +32,6 @@ import { onboardingRouter } from "./routers/onboarding";
 import { portalRouter } from "./routers/portal";
 import { auditRouter } from "./routers/audit";
 import { blueprintDiagnosticsRouter } from "./routers/blueprintDiagnostics";
-import { airtableAutomationRouter } from "./routers/airtableAutomation";
 
 export const appRouter = router({
   system: systemRouter,
@@ -341,7 +340,6 @@ export const appRouter = router({
   portal: portalRouter,
   audit: auditRouter,
   diagnostics: blueprintDiagnosticsRouter,
-  airtableAutomation: airtableAutomationRouter,
 });
 
 export type AppRouter = typeof appRouter;
