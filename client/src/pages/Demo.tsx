@@ -132,8 +132,8 @@ const FUND_BUCKETS = [
     items: [
       { label: "Founder Salaries", pct: 5.1, amount: "$36K", color: "#8B8BFF" },
       { label: "Legal & Financial Teams", pct: 13.7, amount: "$96K", color: "#7C7CCC" },
-      { label: "Software & Insurance", pct: 3.1, amount: "$22K", color: "#54A0FF" },
-      { label: "Contingency (2mo burn)", pct: 12.0, amount: "$84K", color: "#4040AA" },
+      { label: "Software & Insurance", pct: 3.3, amount: "$22K", color: "#54A0FF" },
+      { label: "Contingency (~3mo burn)", pct: 17.1, amount: "$120K", color: "#4040AA" },
     ],
   },
 ];
