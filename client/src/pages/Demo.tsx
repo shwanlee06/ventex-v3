@@ -576,18 +576,18 @@ export default function Demo() {
           {/* Competitive Moat */}
           <RevealSection delay={0.3}>
             <div className="border border-white/8 p-6 md:p-8">
-              <div className="text-[10px] tracking-[0.3em] text-white/40 uppercase mb-6">Why Not Incumbents?</div>
+              <div className="text-[10px] tracking-[0.3em] text-white/70 uppercase mb-6">Why Not Incumbents?</div>
               
               {/* Comparison table */}
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-white/10">
-                      <th className="text-[10px] tracking-[0.15em] text-white/40 uppercase py-3 pr-4 w-[180px]">Capability</th>
+                      <th className="text-[10px] tracking-[0.15em] text-white/70 uppercase py-3 pr-4 w-[180px]">Capability</th>
                       <th className="text-[10px] tracking-[0.15em] text-[#00ff87] uppercase py-3 px-3 text-center">VENTEX</th>
-                      <th className="text-[10px] tracking-[0.15em] text-white/40 uppercase py-3 px-3 text-center">Masttro</th>
-                      <th className="text-[10px] tracking-[0.15em] text-white/40 uppercase py-3 px-3 text-center">Addepar</th>
-                      <th className="text-[10px] tracking-[0.15em] text-white/40 uppercase py-3 px-3 text-center">AppFolio</th>
+                      <th className="text-[10px] tracking-[0.15em] text-white/70 uppercase py-3 px-3 text-center">Masttro</th>
+                      <th className="text-[10px] tracking-[0.15em] text-white/70 uppercase py-3 px-3 text-center">Addepar</th>
+                      <th className="text-[10px] tracking-[0.15em] text-white/70 uppercase py-3 px-3 text-center">AppFolio</th>
                     </tr>
                   </thead>
                   <tbody className="text-[11px]">
@@ -602,7 +602,7 @@ export default function Demo() {
                       { cap: "Cross-Sector Insights", v: true, m: false, a: false, af: false },
                     ].map((row) => (
                       <tr key={row.cap} className="border-b border-white/5">
-                        <td className="py-2.5 pr-4 text-white/60">{row.cap}</td>
+                        <td className="py-2.5 pr-4 text-white/80">{row.cap}</td>
                         <td className="py-2.5 px-3 text-center">{row.v ? <span className="text-[#00ff87] text-sm font-bold">✓</span> : <span className="text-white/20">—</span>}</td>
                         <td className="py-2.5 px-3 text-center">{row.m ? <span className="text-white/70 text-sm font-bold">✓</span> : <span className="text-white/20">—</span>}</td>
                         <td className="py-2.5 px-3 text-center">{row.a ? <span className="text-white/70 text-sm font-bold">✓</span> : <span className="text-white/20">—</span>}</td>
@@ -614,19 +614,19 @@ export default function Demo() {
               </div>
 
               <div className="mt-6 border-t border-white/8 pt-5">
-                <div className="text-[10px] tracking-[0.2em] text-white/30 uppercase mb-3">The Moat</div>
+                <div className="text-[10px] tracking-[0.2em] text-white/70 uppercase mb-3">The Moat</div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-start gap-2">
                     <div className="size-1.5 mt-1.5 bg-[#00ff87] flex-shrink-0" />
-                    <p className="text-[11px] text-white/60 leading-relaxed"><span className="text-[#00ff87] font-medium">Data Network Effects</span> — Every client's operational data trains better cross-sector intelligence. More clients = smarter agents for everyone.</p>
+                    <p className="text-[11px] text-white/80 leading-relaxed"><span className="text-[#00ff87] font-medium">Data Network Effects</span> — Every client's operational data trains better cross-sector intelligence. More clients = smarter agents for everyone.</p>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="size-1.5 mt-1.5 bg-[#00ff87] flex-shrink-0" />
-                    <p className="text-[11px] text-white/60 leading-relaxed"><span className="text-[#00ff87] font-medium">Switching Costs</span> — Once agents run your operations, replacing them means re-building every workflow. Churn is structurally low.</p>
+                    <p className="text-[11px] text-white/80 leading-relaxed"><span className="text-[#00ff87] font-medium">Switching Costs</span> — Once agents run your operations, replacing them means re-building every workflow. Churn is structurally low.</p>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="size-1.5 mt-1.5 bg-[#00ff87] flex-shrink-0" />
-                    <p className="text-[11px] text-white/60 leading-relaxed"><span className="text-[#00ff87] font-medium">Execution Layer</span> — Incumbents report. VENTEX executes. Adding an execution layer to a reporting tool is a full rebuild.</p>
+                    <p className="text-[11px] text-white/80 leading-relaxed"><span className="text-[#00ff87] font-medium">Execution Layer</span> — Incumbents report. VENTEX executes. Adding an execution layer to a reporting tool is a full rebuild.</p>
                   </div>
                 </div>
               </div>
