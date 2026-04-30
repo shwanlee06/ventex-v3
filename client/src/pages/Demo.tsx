@@ -110,7 +110,7 @@ const FUND_BUCKETS = [
     items: [
       { label: "CTO (Durga Kar)", pct: 8.6, amount: "$60K", color: "#00ff87" },
       { label: "Lead Engineer", pct: 13.7, amount: "$96K", color: "#00cc6a" },
-      { label: "Engineering Team (2→5 ramp)", pct: 17.1, amount: "$120K", color: "#00aa55" },
+      { label: "Engineering Team (2→3 dev ramp)", pct: 17.1, amount: "$120K", color: "#00aa55" },
       { label: "Infrastructure & Cloud", pct: 5.1, amount: "$36K", color: "#009952" },
     ],
   },
@@ -213,7 +213,7 @@ const TEAM = [
 const POST_RAISE_HIRES = [
   {
     role: "Engineering Team (2 devs → 3 devs)",
-    why: "Led by Lead Engineer. Scale from 2 to 3 devs after first revenue - platform development, API infrastructure, agent orchestration, and multi-tenant architecture.",
+    why: "Led by Lead Engineer. Scale from 2 to 3 devs after first revenue — platform development, API infrastructure, agent orchestration, and multi-tenant architecture. Total engineering team: 5 (CTO + Lead + 3 devs).",
     color: "#00ff87",
   },
   {
@@ -937,7 +937,7 @@ export default function Demo() {
                   <p className="text-sm text-white/70 leading-relaxed mb-4">
                     Platform is fully functional and demo-ready. Client portal live (mobile-responsive). Operator command center live.
                     AI agents running autonomously with safety framework. Multi-currency support (15 currencies). SAML SSO + SCIM provisioning.
-                    <span className="text-[#00ff87] font-medium">1 design partner</span> — validating the full workflow across 30+ ventures and 6 sectors in a live production environment.
+                    <span className="text-[#00ff87] font-medium">1 design partner</span> — validating the full workflow across 20 ventures and 6 sectors in a live production environment.
                   </p>
                   {/* Pilot Metrics */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-4 border border-[#00ff87]/15 bg-[#00ff87]/[0.02]">
@@ -946,7 +946,7 @@ export default function Demo() {
                       <div className="text-[9px] text-white/50">Task time reduced</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-[#00ff87] font-mono">30+</div>
+                      <div className="text-lg font-bold text-[#00ff87] font-mono">20</div>
                       <div className="text-[9px] text-white/50">Ventures managed</div>
                     </div>
                     <div className="text-center">
@@ -974,13 +974,13 @@ export default function Demo() {
               <div className="border border-[#00ff87]/20 p-6 bg-[#00ff87]/[0.03]">
                 <div className="text-[9px] tracking-[0.2em] text-[#00ff87]/50 uppercase mb-4">Design Partner Validation</div>
                 <p className="text-sm text-white/70 leading-relaxed italic mb-4">
-                  "Before VENTEX, coordinating 30+ ventures across 6 sectors meant constant email chains and spreadsheet updates. Now the agents handle follow-ups, flag stalled deals, and draft distribution notices automatically. We went from reactive to proactive in weeks."
+                  "Before VENTEX, coordinating 20 ventures across 6 sectors meant constant email chains and spreadsheet updates. Now the agents handle follow-ups, flag stalled deals, and draft distribution notices automatically. We went from reactive to proactive in weeks."
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="size-8 bg-[#00ff87]/20 flex items-center justify-center text-[10px] font-bold text-[#00ff87]">DP</div>
                   <div>
                     <div className="text-[11px] text-white font-medium">Design Partner</div>
-                    <div className="text-[10px] text-white/40">Design Partner — 23 ventures, 6 sectors, live production</div>
+                    <div className="text-[10px] text-white/40">Design Partner — 20 ventures, 6 sectors, live production</div>
                   </div>
                 </div>
                 <div className="mt-4 pt-3 border-t border-[#00ff87]/10">
@@ -1052,7 +1052,7 @@ export default function Demo() {
           <RevealSection delay={0.1}>
             <p className="text-sm text-white/70 max-w-3xl leading-relaxed mb-12">
               This raise gives Aurovia 14+ months of runway to convert our pilot into a $120K annual contract,
-              hire a Lead Engineer and scale the dev team from 2 to 5, close 12-15 enterprise clients,
+              hire a Lead Engineer and add a 3rd dev after first revenue, scaling the engineering team to 5, close 12-15 enterprise clients,
               and reach $1.56M ARR by Month 12. Cash flow positive by Month 6. Series A positioned at $15M+ valuation
               by Month 10-12. Every dollar is allocated with precision to generate maximum leverage.
             </p>
@@ -1339,7 +1339,7 @@ export default function Demo() {
                 <div className="text-[10px] text-white/40">Post-money cap</div>
               </div>
               <div className="border border-white/10 p-4 text-center">
-                <div className="text-lg font-bold text-white font-mono">$50K</div>
+                <div className="text-lg font-bold text-white font-mono">$25K</div>
                 <div className="text-[10px] text-white/40">Min. check size</div>
               </div>
             </div>
