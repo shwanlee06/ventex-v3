@@ -151,7 +151,7 @@ const TEAM = [
   {
     name: "Shwan Lee",
     initials: "SL",
-    role: "Founder & CEO",
+    role: "Founder & Chief Executive Officer",
     color: "#00ff87",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/shwan-lee-new_e321fa79.webp",
     linkedin: "https://www.linkedin.com/in/shwan-lee-93b486356/",
@@ -166,7 +166,7 @@ const TEAM = [
   {
     name: "Brian Chen",
     initials: "BC",
-    role: "COO",
+    role: "Chief Operating Officer",
     color: "#00cc6a",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/brian-chen_b535f902.jpeg",
     linkedin: "https://www.linkedin.com/in/brian-chen-1a6aa2373/",
@@ -183,7 +183,7 @@ const TEAM = [
     initials: "DK",
     role: "Chief Technology Officer",
     color: "#FFB800",
-    photo: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663421947072/ZJKKPhytCgRkAyzU.jpg",
+    photo: "/manus-storage/durga-kar-bw_d823586e.jpg",
     linkedin: "https://www.linkedin.com/in/durga-kar/",
     bio: "22+ years scaling technology organizations across global markets at IG Group. Led engineering teams spanning multiple continents, processing millions of real-time transactions daily. PhD, Certified Team Topologies Advocate.",
     quote: "I don't just build technology - I focus on bringing people, processes, and AI together so teams can move faster and deliver impactful outcomes.",
@@ -196,7 +196,7 @@ const TEAM = [
   {
     name: "Chris Phelps",
     initials: "CP",
-    role: "CRO",
+    role: "Chief Revenue Officer",
     color: "#009952",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/chris-phelps-bw_662a9642.jpg",
     linkedin: "https://www.linkedin.com/in/christopher-phelps-090848230/",

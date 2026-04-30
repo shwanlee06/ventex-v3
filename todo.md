@@ -3428,3 +3428,8 @@
 - [ ] Condense Meet the Team section on Demo.tsx (compact layout, shorter bios)
 - [ ] Recapture investor demo as 16:9 PDF
 - [ ] Update Airtable Pitch Deck record
+
+## Investor Demo Team Section Updates
+- [x] Make Durga's headshot B&W to match other team photos on investor demo
+- [x] Spell out position titles on investor demo (CEO, COO, CTO, CRO → full titles)
+- [x] Create updated one-pager document with Durga Kar included
