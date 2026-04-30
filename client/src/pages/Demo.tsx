@@ -603,10 +603,10 @@ export default function Demo() {
                     ].map((row) => (
                       <tr key={row.cap} className="border-b border-white/5">
                         <td className="py-2.5 pr-4 text-white/60">{row.cap}</td>
-                        <td className="py-2.5 px-3 text-center">{row.v ? <span className="text-[#00ff87]">✓</span> : <span className="text-white/20">—</span>}</td>
-                        <td className="py-2.5 px-3 text-center">{row.m ? <span className="text-white/40">✓</span> : <span className="text-white/20">—</span>}</td>
-                        <td className="py-2.5 px-3 text-center">{row.a ? <span className="text-white/40">✓</span> : <span className="text-white/20">—</span>}</td>
-                        <td className="py-2.5 px-3 text-center">{row.af ? <span className="text-white/40">✓</span> : <span className="text-white/20">—</span>}</td>
+                        <td className="py-2.5 px-3 text-center">{row.v ? <span className="text-[#00ff87] text-sm font-bold">✓</span> : <span className="text-white/20">—</span>}</td>
+                        <td className="py-2.5 px-3 text-center">{row.m ? <span className="text-white/70 text-sm font-bold">✓</span> : <span className="text-white/20">—</span>}</td>
+                        <td className="py-2.5 px-3 text-center">{row.a ? <span className="text-white/70 text-sm font-bold">✓</span> : <span className="text-white/20">—</span>}</td>
+                        <td className="py-2.5 px-3 text-center">{row.af ? <span className="text-white/70 text-sm font-bold">✓</span> : <span className="text-white/20">—</span>}</td>
                       </tr>
                     ))}
                   </tbody>
