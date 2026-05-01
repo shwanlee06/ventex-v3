@@ -72,8 +72,8 @@ const PRODUCT_STATS = [
   { value: "6", label: "sectors automated" },
   { value: "3", label: "continents, one platform" },
   { value: "<3mo", label: "concept to deployment" },
-  { value: "1,000+", label: "automated test cases" },
-  { value: "SOC 2", label: "readiness in progress" },
+  { value: "4", label: "autonomous AI agents" },
+  { value: "Pre-Seed", label: "idea stage, prototype built" },
 ];
 
 const GTM_STAGES = [
@@ -118,7 +118,7 @@ const FUND_BUCKETS = [
     bucket: "GROW",
     bucketColor: "#FFB800",
     bucketDesc: "Sales & Market Entry",
-    milestone: "Convert pilot to paid, close 12-15 enterprise clients by Month 12",
+    milestone: "Formalize design partner, begin enterprise sales targeting 12-15 clients by Month 12",
     items: [
       { label: "Sales & Marketing", pct: 13.7, amount: "$96K", color: "#FFB800" },
       { label: "Travel & Events", pct: 2.6, amount: "$18K", color: "#FF9F43" },
@@ -170,7 +170,7 @@ const TEAM = [
     color: "#00cc6a",
     photo: "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/brian-chen_b535f902.jpeg",
     linkedin: "https://www.linkedin.com/in/brian-chen-1a6aa2373/",
-    bio: "Architected VENTEX's autonomous AI agents including the Mirofish predictive engine. Runs day-to-day operations across all verticals and turns complex multi-entity workflows into automated pipelines that scale.",
+    bio: "Co-Founder & COO. Manages day-to-day operations and coordinates across all verticals. Designed the multi-entity workflow logic that powers VENTEX's automation layer.",
     quote: "The best operations are the ones nobody notices — because nothing breaks.",
     stats: [
       { label: "AI Agents Designed", value: "5" },
@@ -365,7 +365,7 @@ export default function Demo() {
             >
               THE PEOPLE RUNNING
               <br />
-              <span className="text-[#FFB800]">$200M+</span> PORTFOLIOS
+              <span className="text-[#FFB800]">MULTI-SECTOR</span> PORTFOLIOS
               <br />
               <span className="text-white/45">ARE STILL DOING IT</span>
               <br />
@@ -457,15 +457,15 @@ export default function Demo() {
               className="text-[clamp(28px,5vw,64px)] font-bold leading-[0.95] mb-8"
               style={{ fontFamily: HEADLINE_FONT }}
             >
-              BUILT. NOT MOCKED.
+              BUILT. VALIDATED. READY TO SCALE.
             </h2>
           </RevealSection>
 
           <RevealSection delay={0.1}>
             <p className="text-sm text-white/70 max-w-3xl leading-relaxed mb-12">
-              Two completely separate interfaces: a private-banking-grade Client Portal in plain English
-              with no internal jargon, and an Operator Command Center with full visibility across all
-              clients, ventures, and agent signals.
+              A functional prototype with two separate interfaces: a Client Portal designed for LPs and stakeholders,
+              and an Operator Command Center with visibility across all ventures and agent signals.
+              The full platform will be engineered from the ground up by the incoming technical team post-funding.
             </p>
           </RevealSection>
 
@@ -918,12 +918,12 @@ export default function Demo() {
                       <div className="text-[10px] text-white/50">sectors</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-[#00ff87] font-mono">1,000+</div>
-                      <div className="text-[10px] text-white/50">tests passing</div>
+                      <div className="text-lg font-bold text-[#00ff87] font-mono">4</div>
+                      <div className="text-[10px] text-white/50">AI agents</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-[#00ff87] font-mono">SOC 2</div>
-                      <div className="text-[10px] text-white/50">in progress</div>
+                      <div className="text-lg font-bold text-[#00ff87] font-mono">Pre-Seed</div>
+                      <div className="text-[10px] text-white/50">prototype built</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-[#00ff87] font-mono">4</div>
@@ -935,15 +935,15 @@ export default function Demo() {
                     </div>
                   </div>
                   <p className="text-sm text-white/70 leading-relaxed mb-4">
-                    Platform is fully functional and demo-ready. Client portal live (mobile-responsive). Operator command center live.
-                    AI agents running autonomously with safety framework. Multi-currency support (15 currencies). SAML SSO + SCIM provisioning.
-                    <span className="text-[#00ff87] font-medium">1 design partner</span> — validating the full workflow across 20 ventures and 6 sectors in a live production environment.
+                    Functional prototype built and accessible to authorized users. Validates the concept and workflow logic across venture management, task orchestration, and distribution tracking.
+                    Full platform will be engineered from the ground up by the incoming technical team post-funding.
+                    <span className="text-[#00ff87] font-medium">1 design partner</span> — active relationship being formalized as a paid engagement. No revenue collected to date.
                   </p>
                   {/* Pilot Metrics */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-4 border border-[#00ff87]/15 bg-[#00ff87]/[0.02]">
                     <div className="text-center">
                       <div className="text-lg font-bold text-[#00ff87] font-mono">47%</div>
-                      <div className="text-[9px] text-white/50">Task time reduced</div>
+                      <div className="text-[9px] text-white/50">Target time reduction</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-[#00ff87] font-mono">20</div>
@@ -954,8 +954,8 @@ export default function Demo() {
                       <div className="text-[9px] text-white/50">Sectors automated</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-[#00ff87] font-mono">0</div>
-                      <div className="text-[9px] text-white/50">Missed distributions</div>
+                      <div className="text-lg font-bold text-[#00ff87] font-mono">$0</div>
+                      <div className="text-[9px] text-white/50">Revenue to date</div>
                     </div>
                   </div>
                   <p className="text-sm text-white/70 leading-relaxed">
@@ -980,12 +980,12 @@ export default function Demo() {
                   <div className="size-8 bg-[#00ff87]/20 flex items-center justify-center text-[10px] font-bold text-[#00ff87]">DP</div>
                   <div>
                     <div className="text-[11px] text-white font-medium">Design Partner</div>
-                    <div className="text-[10px] text-white/40">Design Partner — 20 ventures, 6 sectors, live production</div>
+                    <div className="text-[10px] text-white/40">Design Partner — 20 ventures, 6 sectors, prototype validation</div>
                   </div>
                 </div>
                 <div className="mt-4 pt-3 border-t border-[#00ff87]/10">
                   <p className="text-[10px] text-white/50 leading-relaxed">
-                    Our design partner is a UHNWI holding company — not a paying client. We built VENTEX inside their operations to solve our own pain. This gave us 6 months of real-world product validation at zero CAC. The product works. Now we sell it.
+                    Our design partner is a multi-sector holding company. We built the VENTEX prototype to validate the concept and workflow logic using their real operational structure. This relationship is being formalized as a paid engagement. No revenue has been collected to date.
                   </p>
                 </div>
               </div>
@@ -994,29 +994,20 @@ export default function Demo() {
               <div className="border border-white/8 p-6">
                 <div className="text-[9px] tracking-[0.2em] text-white/40 uppercase mb-4">Go-To-Market Pipeline</div>
                 <div className="space-y-3">
+                  <p className="text-[11px] text-white/60 leading-relaxed mb-3">
+                    Several warm contacts from the founding network have expressed general interest in the platform. No formal sales conversations or LOIs exist at this time.
+                  </p>
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-white/70">UHNWI Family Office — Dubai</span>
-                    <span className="text-[9px] font-mono px-2 py-0.5 bg-[#FFB800]/10 text-[#FFB800] border border-[#FFB800]/20">DISCOVERY CALL</span>
+                    <span className="text-[11px] text-white/70">Warm introductions via design partner network</span>
+                    <span className="text-[9px] font-mono px-2 py-0.5 bg-[#FFB800]/10 text-[#FFB800] border border-[#FFB800]/20">INTEREST</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-white/70">Multi-Sector Holding — London</span>
-                    <span className="text-[9px] font-mono px-2 py-0.5 bg-[#FFB800]/10 text-[#FFB800] border border-[#FFB800]/20">WARM INTRO</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-white/70">Real Estate + Energy Group — NYC</span>
-                    <span className="text-[9px] font-mono px-2 py-0.5 bg-white/5 text-white/40 border border-white/10">OUTREACH</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-white/70">Hospitality + F&B Conglomerate — Miami</span>
-                    <span className="text-[9px] font-mono px-2 py-0.5 bg-white/5 text-white/40 border border-white/10">OUTREACH</span>
+                    <span className="text-[11px] text-white/70">Founder network contacts (multi-sector operators)</span>
+                    <span className="text-[9px] font-mono px-2 py-0.5 bg-white/5 text-white/40 border border-white/10">EARLY STAGE</span>
                   </div>
                 </div>
                 <div className="mt-4 pt-3 border-t border-white/8">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-white/40">Potential pipeline value (if converted)</span>
-                    <span className="text-sm font-bold text-[#FFB800] font-mono">$480K ARR</span>
-                  </div>
-                  <p className="text-[9px] text-white/30 mt-2">All prospects sourced through our design partner's network. Zero paid acquisition.</p>
+                  <p className="text-[9px] text-white/30 mt-2">All interest sourced organically through the founding network. Zero paid acquisition. No formal pipeline or LOIs at this stage.</p>
                 </div>
               </div>
             </div>
@@ -1051,9 +1042,9 @@ export default function Demo() {
 
           <RevealSection delay={0.1}>
             <p className="text-sm text-white/70 max-w-3xl leading-relaxed mb-12">
-              This raise gives Aurovia 14+ months of runway to convert our pilot into a $120K annual contract,
-              hire a Lead Engineer and add a 3rd dev after first revenue, scaling the engineering team to 5, close 12-15 enterprise clients,
-              and reach $1.56M ARR by Month 12. Cash flow positive by Month 6. Series A positioned at $15M+ valuation
+              This raise gives Aurovia 14+ months of runway to formalize our design partner into a $120K annual contract,
+              hire a Lead Engineer and build the engineering team to 5, engineer the full platform from the ground up,
+              and begin enterprise sales targeting 12-15 clients and $1.56M ARR by Month 12. Series A positioned at $15M+ valuation
               by Month 10-12. Every dollar is allocated with precision to generate maximum leverage.
             </p>
           </RevealSection>
@@ -1255,7 +1246,7 @@ export default function Demo() {
               MEET THE TEAM.
             </h2>
             <p className="text-sm text-white/60 max-w-2xl leading-relaxed mb-10">
-              Four operators who built the system they couldn't find anywhere else. No outsourced code. No borrowed ideas. Every engine, every pipeline, built in-house in under 90 days.
+              Four operators building the system they couldn't find anywhere else. Prototype built in under 90 days. Full platform to be engineered post-funding by the incoming technical team.
             </p>
           </RevealSection>
 

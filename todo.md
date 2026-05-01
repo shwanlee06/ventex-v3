@@ -3433,3 +3433,17 @@
 - [x] Make Durga's headshot B&W to match other team photos on investor demo
 - [x] Spell out position titles on investor demo (CEO, COO, CTO, CRO → full titles)
 - [x] Create updated one-pager document with Durga Kar included
+
+## Verified Facts Document Rewrite
+- [ ] Catalog all unsupported claims across all documents
+- [ ] Rewrite 07_Executive_Summary.md with verified facts
+- [ ] Rewrite 05_Financial_Projections.md with verified facts
+- [ ] Rewrite 08_Use_of_Funds.md with verified facts
+- [ ] Rewrite 10_Company_Overview_Market.md with verified facts
+- [ ] Rewrite 12_Investor_FAQ.md with verified facts
+- [ ] Rewrite 04_SAFE_Agreement.md with verified facts
+- [ ] Rewrite VENTEX_One_Pager.md with verified facts
+- [ ] Rewrite VENTEX_Investment_Thesis.md with verified facts
+- [ ] Update live investor demo site to match verified facts
+- [ ] Convert all docs to PDF and upload to both Airtable bases
+- [ ] Deliver flagged claims report
