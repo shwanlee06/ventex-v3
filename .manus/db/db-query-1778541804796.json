@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, title, ventureId, organizationId FROM tasks WHERE title LIKE 'AI Generated:%' ORDER BY title, id LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, title, ventureId, organizationId FROM tasks WHERE title LIKE 'AI Generated:%' ORDER BY title, id LIMIT 20;",
+  "rows": [
+    {
+      "id": "1050036",
+      "title": "AI Generated: Follow up on permit renewal",
+      "ventureId": "NULL",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "1050035",
+      "title": "AI Generated: Review Q2 financials",
+      "ventureId": "NULL",
+      "organizationId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tventureId\torganizationId\n1050036\tAI Generated: Follow up on permit renewal\tNULL\tNULL\n1050035\tAI Generated: Review Q2 financials\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 270
+}

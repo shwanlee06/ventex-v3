@@ -1,0 +1,15 @@
+{
+  "query": "UPDATE ventures SET status = 'Completed' WHERE name = 'Casino - Malaysia' AND stage = 'Completed'; SELECT name, status, stage FROM ventures WHERE (stage = 'Completed' AND status != 'Completed') OR (stage = 'On Hold' AND status != 'On-Hold');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute UPDATE ventures SET status = 'Completed' WHERE name = 'Casino - Malaysia' AND stage = 'Completed'; SELECT name, status, stage FROM ventures WHERE (stage = 'Completed' AND status != 'Completed') OR (stage = 'On Hold' AND status != 'On-Hold');",
+  "rows": [
+    {
+      "name": "KTL-Dubai Casino License",
+      "status": "In progress",
+      "stage": "On Hold"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\tstatus\tstage\nKTL-Dubai Casino License\tIn progress\tOn Hold\n",
+  "stderr": "",
+  "execution_time_ms": 281
+}

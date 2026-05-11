@@ -1,0 +1,31 @@
+{
+  "query": "SELECT COUNT(*) as total_ventures FROM ventures; SELECT COUNT(*) as total_tasks FROM tasks; SELECT COUNT(*) as open_tasks FROM tasks WHERE status = 'open'; SELECT COUNT(*) as overdue FROM tasks WHERE status = 'open' AND dueDate < CURDATE();",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT COUNT(*) as total_ventures FROM ventures; SELECT COUNT(*) as total_tasks FROM tasks; SELECT COUNT(*) as open_tasks FROM tasks WHERE status = 'open'; SELECT COUNT(*) as overdue FROM tasks WHERE status = 'open' AND dueDate < CURDATE();",
+  "rows": [
+    {
+      "total_ventures": "28"
+    },
+    {
+      "total_ventures": "total_tasks"
+    },
+    {
+      "total_ventures": "564"
+    },
+    {
+      "total_ventures": "open_tasks"
+    },
+    {
+      "total_ventures": "20"
+    },
+    {
+      "total_ventures": "overdue"
+    },
+    {
+      "total_ventures": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_ventures\n28\ntotal_tasks\n564\nopen_tasks\n20\noverdue\n0\n",
+  "stderr": "",
+  "execution_time_ms": 294
+}

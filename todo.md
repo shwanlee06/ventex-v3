@@ -3551,3 +3551,33 @@
 - [x] PURGE-4: Delete Vitest-generated test tasks
 - [x] PURGE-5: Delete agent_events and audit_log entries for test orgs
 - [x] PURGE-6: Verify clean state — 5 orgs, 82 ventures, 738 tasks, 14 SPVs, 21 team members, 9 users
+
+## Full System Audit — Production Ready
+- [ ] AUDIT-1: Zero TypeScript errors
+- [ ] AUDIT-2: Zero console errors on all pages
+- [ ] AUDIT-3: Dashboard loads correctly with real data
+- [ ] AUDIT-4: Ventures page lists all ventures, detail pages work
+- [ ] AUDIT-5: SPVs page renders correctly with proper status badges
+- [ ] AUDIT-6: Distributions page loads and displays data
+- [ ] AUDIT-7: Tasks page shows tasks with proper filtering
+- [ ] AUDIT-8: Client Portal renders for partner users
+- [ ] AUDIT-9: Onboarding wizard works end-to-end
+- [ ] AUDIT-10: Agent page and AI chat functional
+- [ ] AUDIT-11: Blueprints page renders correctly
+- [ ] AUDIT-12: Settings and Security pages work
+- [ ] AUDIT-13: SpyOps landing page renders on mobile without cutoff
+- [ ] AUDIT-14: All navigation links work (no dead routes)
+- [ ] AUDIT-15: All buttons functional (no placeholder toasts in critical paths)
+- [ ] AUDIT-16: Loading states and error boundaries work properly
+- [ ] AUDIT-17: NeedsAttention widget displays lifecycle data
+- [ ] AUDIT-18: All tests pass
+
+## System Audit — May 11, 2026
+- [x] Remove QA- prefix from all task titles in database
+- [x] Delete duplicate/orphan AI Generated tasks from database
+- [x] Add Passkey/WebAuthn registration UI to Settings Security tab
+- [x] Add Passkey sign-in button to SpyOps login form
+- [x] Hide login globe on mobile (768px breakpoint)
+- [x] Verify /clients route works (client detail via /clients/:slug, list in dashboard)
+- [x] All tests passing (auth, routers, security, dashboard, overdue — 235+ tests)
+- [x] TypeScript compiles cleanly with zero errors

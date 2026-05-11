@@ -1,0 +1,26 @@
+{
+  "query": "SELECT id, name FROM spvs WHERE name LIKE '%Meridian%' OR name LIKE '%Volkov%' LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name FROM spvs WHERE name LIKE '%Meridian%' OR name LIKE '%Volkov%' LIMIT 10;",
+  "rows": [
+    {
+      "id": "60005",
+      "name": "Meridian RE Fund I"
+    },
+    {
+      "id": "60006",
+      "name": "Meridian Yacht SPV"
+    },
+    {
+      "id": "60007",
+      "name": "Meridian Growth Fund"
+    },
+    {
+      "id": "60008",
+      "name": "Volkov Entertainment SPV"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n60005\tMeridian RE Fund I\n60006\tMeridian Yacht SPV\n60007\tMeridian Growth Fund\n60008\tVolkov Entertainment SPV\n",
+  "stderr": "",
+  "execution_time_ms": 266
+}

@@ -243,6 +243,75 @@ export default function SettingsConfigPage() {
     toast.success("Backup codes copied to clipboard");
   }, [mfaBackupCodes]);
 
+  // ═══ Passkey / WebAuthn state ═══
+  const [passkeyList, setPasskeyList] = useState<any[]>([]);
+  const [registeringPasskey, setRegisteringPasskey] = useState(false);
+
+  // Fetch passkeys on mount
+  const passkeysQuery = trpc.passkeys.list.useQuery(undefined, {
+    enabled: !!authUser,
+  });
+
+  useEffect(() => {
+    if (passkeysQuery.data) setPasskeyList(passkeysQuery.data);
+  }, [passkeysQuery.data]);
+
+  const handleRegisterPasskey = useCallback(async () => {
+    setRegisteringPasskey(true);
+    try {
+      // Step 1: Get registration options from server
+      const { startRegistration } = await import('@simplewebauthn/browser');
+      const optionsRes = await fetch('/api/trpc/passkeys.getRegistrationOptions', {
+        method: 'GET',
+        credentials: 'include',
+      });
+      const optionsJson = await optionsRes.json();
+      const options = optionsJson?.result?.data?.json || optionsJson?.result?.data;
+      if (!options) throw new Error('Failed to get registration options');
+
+      // Step 2: Trigger browser WebAuthn prompt
+      const credential = await startRegistration(options);
+
+      // Step 3: Verify with server
+      const verifyRes = await fetch('/api/trpc/passkeys.verifyRegistration', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ json: { credential, name: 'My Passkey' } }),
+      });
+      const verifyJson = await verifyRes.json();
+      if (verifyJson?.result?.data?.json?.verified || verifyJson?.result?.data?.verified) {
+        toast.success('Passkey registered successfully');
+        passkeysQuery.refetch();
+      } else {
+        throw new Error('Verification failed');
+      }
+    } catch (e: any) {
+      if (e.name === 'NotAllowedError') {
+        toast.error('Passkey registration was cancelled');
+      } else {
+        toast.error(e.message || 'Failed to register passkey');
+      }
+    } finally {
+      setRegisteringPasskey(false);
+    }
+  }, [passkeysQuery]);
+
+  const handleDeletePasskey = useCallback(async (id: string) => {
+    try {
+      await fetch('/api/trpc/passkeys.delete', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ json: { credentialId: id } }),
+      });
+      toast.success('Passkey removed');
+      passkeysQuery.refetch();
+    } catch {
+      toast.error('Failed to remove passkey');
+    }
+  }, [passkeysQuery]);
+
   const handleDisplayToggle = useCallback(async (field: "compactView" | "autoRefresh", value: boolean) => {
     if (field === "compactView") setCompactView(value);
     else setAutoRefresh(value);
@@ -745,6 +814,69 @@ export default function SettingsConfigPage() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+
+              {/* ═══ Passkey / WebAuthn ═══ */}
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.085 }}>
+                <Card className="p-4 sm:p-6 bg-card border-border">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <Key className="size-4 text-primary" />
+                      Passkeys (WebAuthn / FIDO2)
+                    </h3>
+                    <Badge variant="outline" className="text-[10px] font-mono text-blue-400 border-blue-500/30">ENTERPRISE</Badge>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg bg-blue-500/5 border border-blue-500/20">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Shield className="size-4 text-blue-400" />
+                        <span className="text-xs font-semibold text-blue-400">PASSWORDLESS AUTHENTICATION</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        Register a hardware security key or biometric authenticator (Face ID, Touch ID, Windows Hello) for phishing-resistant sign-in.
+                      </p>
+                    </div>
+                    {passkeyList && passkeyList.length > 0 ? (
+                      <div className="space-y-2">
+                        {passkeyList.map((pk: any) => (
+                          <div key={pk.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/10 border border-border">
+                            <div className="flex items-center gap-3">
+                              <div className="size-2 rounded-full bg-green-400 shrink-0" />
+                              <div>
+                                <p className="text-xs font-medium text-foreground">{pk.name || 'Passkey'}</p>
+                                <p className="text-[10px] text-muted-foreground font-mono">
+                                  Registered {pk.createdAt ? new Date(pk.createdAt).toLocaleDateString() : 'recently'}
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-xs h-7 text-red-400 hover:text-red-400 min-h-[36px] touch-manipulation"
+                              onClick={() => handleDeletePasskey(pk.id)}
+                            >
+                              <Trash2 className="size-3 mr-1" /> Remove
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center border border-dashed border-border rounded-lg">
+                        <Key className="size-6 text-muted-foreground mx-auto mb-2 opacity-40" />
+                        <p className="text-xs text-muted-foreground">No passkeys registered yet.</p>
+                      </div>
+                    )}
+                    <Button
+                      size="sm"
+                      className="text-xs h-8"
+                      onClick={handleRegisterPasskey}
+                      disabled={registeringPasskey}
+                    >
+                      {registeringPasskey ? <Loader2 className="size-3 mr-1 animate-spin" /> : <Key className="size-3 mr-1" />}
+                      Register New Passkey
+                    </Button>
+                  </div>
+                </Card>
+              </motion.div>
 
               {/* Active Sessions — Real DB data */}
               <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>

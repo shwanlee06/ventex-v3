@@ -1,0 +1,58 @@
+{
+  "query": "SELECT id, name FROM distributions WHERE name LIKE 'QA-%' LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name FROM distributions WHERE name LIKE 'QA-%' LIMIT 20;",
+  "rows": [
+    {
+      "id": "150013",
+      "name": "QA-Q4 2025 Profit Share"
+    },
+    {
+      "id": "150014",
+      "name": "QA-Q1 2026 Dividend"
+    },
+    {
+      "id": "150015",
+      "name": "QA-Yacht Charter Revenue Q4"
+    },
+    {
+      "id": "150016",
+      "name": "QA-Return of Capital - Alpha"
+    },
+    {
+      "id": "150017",
+      "name": "QA-Q2 2026 Scheduled Dividend"
+    },
+    {
+      "id": "150018",
+      "name": "QA-Yacht Refit Drawdown"
+    },
+    {
+      "id": "150019",
+      "name": "QA-Cancelled Distribution"
+    },
+    {
+      "id": "150020",
+      "name": "QA-AED Distribution Test"
+    },
+    {
+      "id": "150021",
+      "name": "QA-F&B Revenue Share Q4"
+    },
+    {
+      "id": "150022",
+      "name": "QA-Entertainment Dividend"
+    },
+    {
+      "id": "150023",
+      "name": "QA-Scheduled Capital Call"
+    },
+    {
+      "id": "150024",
+      "name": "QA-JPY Distribution Test"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n150013\tQA-Q4 2025 Profit Share\n150014\tQA-Q1 2026 Dividend\n150015\tQA-Yacht Charter Revenue Q4\n150016\tQA-Return of Capital - Alpha\n150017\tQA-Q2 2026 Scheduled Dividend\n150018\tQA-Yacht Refit Drawdown\n150019\tQA-Cancelled Distribution\n150020\tQA-AED Distribution Test\n150021\tQA-F&B Revenue Share Q4\n150022\tQA-Entertainment Dividend\n150023\tQA-Scheduled Capital Call\n150024\tQA-JPY Distribution Test\n",
+  "stderr": "",
+  "execution_time_ms": 270
+}

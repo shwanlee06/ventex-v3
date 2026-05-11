@@ -1,0 +1,58 @@
+{
+  "query": "SELECT id, name FROM ventures WHERE name LIKE '%Unassigned%' OR name LIKE '%OrgLinked%' LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name FROM ventures WHERE name LIKE '%Unassigned%' OR name LIKE '%OrgLinked%' LIMIT 20;",
+  "rows": [
+    {
+      "id": "870006",
+      "name": "OrgLinked Venture 1776636099918"
+    },
+    {
+      "id": "870010",
+      "name": "OrgLinked Venture 1776636711062"
+    },
+    {
+      "id": "900002",
+      "name": "OrgLinked Venture 1776829054338"
+    },
+    {
+      "id": "930003",
+      "name": "OrgLinked Venture 1776877636646"
+    },
+    {
+      "id": "930007",
+      "name": "OrgLinked Venture 1776880513334"
+    },
+    {
+      "id": "960003",
+      "name": "OrgLinked Venture 1776901918891"
+    },
+    {
+      "id": "960007",
+      "name": "OrgLinked Venture 1776902024061"
+    },
+    {
+      "id": "960011",
+      "name": "OrgLinked Venture 1776902238107"
+    },
+    {
+      "id": "960015",
+      "name": "OrgLinked Venture 1776912056935"
+    },
+    {
+      "id": "990003",
+      "name": "OrgLinked Venture 1777431091889"
+    },
+    {
+      "id": "1020003",
+      "name": "OrgLinked Venture 1778462830436"
+    },
+    {
+      "id": "1020007",
+      "name": "OrgLinked Venture 1778462986758"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n870006\tOrgLinked Venture 1776636099918\n870010\tOrgLinked Venture 1776636711062\n900002\tOrgLinked Venture 1776829054338\n930003\tOrgLinked Venture 1776877636646\n930007\tOrgLinked Venture 1776880513334\n960003\tOrgLinked Venture 1776901918891\n960007\tOrgLinked Venture 1776902024061\n960011\tOrgLinked Venture 1776902238107\n960015\tOrgLinked Venture 1776912056935\n990003\tOrgLinked Venture 1777431091889\n1020003\tOrgLinked Venture 1778462830436\n1020007\tOrgLinked Venture 1778462986758\n",
+  "stderr": "",
+  "execution_time_ms": 272
+}

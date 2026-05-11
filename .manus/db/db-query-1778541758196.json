@@ -1,0 +1,9 @@
+{
+  "query": "DELETE t1 FROM tasks t1 INNER JOIN tasks t2 WHERE t1.id > t2.id AND t1.title = t2.title AND t1.title IN ('AI Generated: Review Q2 financials', 'AI Generated: Follow up on permit renewal');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute DELETE t1 FROM tasks t1 INNER JOIN tasks t2 WHERE t1.id > t2.id AND t1.title = t2.title AND t1.title IN ('AI Generated: Review Q2 financials', 'AI Generated: Follow up on permit renewal');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 270
+}

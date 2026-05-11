@@ -1,0 +1,14 @@
+{
+  "query": "SELECT id, name FROM organizations WHERE name LIKE '%Apex%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name FROM organizations WHERE name LIKE '%Apex%';",
+  "rows": [
+    {
+      "id": "870039",
+      "name": "Apex Partners"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n870039\tApex Partners\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}
