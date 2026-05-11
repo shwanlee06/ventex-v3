@@ -3513,3 +3513,33 @@
 - [x] ENT-24: Update GAP closure document to mark resolved items
 - [x] ENT-25: Create enterprise deployment guide documenting all security features
 - [x] ENT-26: Update API documentation with new auth endpoints and security headers
+
+## Data Lifecycle Management System
+
+### System 1: Automated Data Escalation & Staleness Detection
+- [x] DLM-1: Tasks auto-escalate: overdue after due date → stale after 14 days → auto-archive after 30 days
+- [x] DLM-2: Ventures flagged "dormant" after 60 days of zero activity
+- [x] DLM-3: SPVs surface "status check needed" prompt after 30 days no updates
+- [x] DLM-4: Create data_lifecycle_config table for configurable thresholds per org
+
+### System 2: AI-Powered Health Sweep Agent
+- [x] DLM-5: Daily scheduled agent scans all ventures, tasks, SPVs for staleness
+- [x] DLM-6: Auto-generate nudge notifications to responsible team members
+- [x] DLM-7: Weekly "Stale Data Report" generated for operators
+- [x] DLM-8: Configurable sweep frequency and thresholds per org
+
+### System 3: Smart Archiving
+- [x] DLM-9: Completed ventures auto-archive after 90 days (configurable)
+- [x] DLM-10: Completed SPVs auto-archive after 90 days (configurable)
+- [x] DLM-11: Archived items removed from active views but remain searchable
+- [x] DLM-12: Bulk archive/unarchive UI for operators
+
+### System 4: Activity-Based Visibility
+- [x] DLM-13: Dashboard prioritizes items with recent activity
+- [x] DLM-14: "Last updated" timestamps prominently displayed on all entities
+- [x] DLM-15: Items without activity fade in priority/visibility on dashboard
+- [x] DLM-16: Stale items grouped in a collapsible "Needs Attention" section
+
+### Domain Cleanup
+- [x] DOM-1: Replace all ventexdemo.manus.space references with www.ventex.us.com
+- [x] DOM-2: Replace all royaltonai-tykqbqav.manus.space references with www.ventex.us.com

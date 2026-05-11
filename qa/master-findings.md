@@ -3,7 +3,7 @@
 **Date:** 2026-04-16
 **Auditor:** VENTEX QA System
 **Scope:** Phases 1 (Functional), 2 (Security & Tenant Isolation), 3 (Client-Readiness Simulation)
-**Platform:** ventexdemo.manus.space | 280 procedures | 55 tables | 969 tests
+**Platform:** www.ventex.us.com | 280 procedures | 55 tables | 969 tests
 
 ---
 

@@ -1,4 +1,4 @@
-# Published Site Testing — ventexdemo.manus.space
+# Published Site Testing — www.ventex.us.com
 
 ## Demo Mode
 - Landing page → INVESTOR DEMO → /demo pitch page → ENTER LIVE DEMO → /demo/dashboard
@@ -13,7 +13,7 @@
 
 ## Root Cause Analysis
 The user is likely not logged in on the published site. The browser session from the dev preview 
-(3000-iwp88zgpy3c9vej77hg67-64a7c9f5.us2.manus.computer) does NOT carry to ventexdemo.manus.space.
+(3000-iwp88zgpy3c9vej77hg67-64a7c9f5.us2.manus.computer) does NOT carry to www.ventex.us.com.
 
 When they click "AUTHORIZED ACCESS" they get sent to the OAuth login page, which is CORRECT behavior.
 They need to complete the login flow first, then they can test sign out.

@@ -3,6 +3,7 @@
  *
  * W4-003: ECB FX rate fetching — daily at 16:00 CET (15:00 UTC in winter, 14:00 UTC in summer)
  * W4-004: Nightly portfolio snapshots to S3 — daily at 02:00 UTC
+ * DLM: Data Lifecycle Management sweep — daily at 03:00 UTC
  *
  * Uses setInterval-based scheduling with time-of-day targeting.
  * Each job checks the current UTC hour and runs if it matches the target.
@@ -10,6 +11,7 @@
 
 import { fetchECBRates } from "./currency";
 import { generatePortfolioSnapshot } from "./resilience/snapshotExport";
+import { runLifecycleSweepAll } from "./dataLifecycle";
 import { storagePut } from "./storage";
 import { getDb } from "./db";
 import { organizations } from "../drizzle/schema";
@@ -25,12 +27,17 @@ const ECB_FETCH_MINUTE_UTC = 15;
 const SNAPSHOT_HOUR_UTC = 2;
 const SNAPSHOT_MINUTE_UTC = 0;
 
+/** Data Lifecycle Management sweep at 03:00 UTC */
+const LIFECYCLE_HOUR_UTC = 3;
+const LIFECYCLE_MINUTE_UTC = 0;
+
 /** Check interval: every 15 minutes */
 const CHECK_INTERVAL_MS = 15 * 60 * 1000;
 
 // Track last run dates to prevent duplicate runs
 let lastECBRunDate = "";
 let lastSnapshotRunDate = "";
+let lastLifecycleRunDate = "";
 
 // ─── ECB FX Rate Job ────────────────────────────────────────────
 
@@ -131,7 +138,7 @@ export function startCronScheduler(): void {
     return;
   }
 
-  console.log("[Cron] Starting scheduled task runner (ECB FX @ 15:15 UTC, Snapshots @ 02:00 UTC)");
+  console.log("[Cron] Starting scheduled task runner (ECB FX @ 15:15 UTC, Snapshots @ 02:00 UTC, Lifecycle @ 03:00 UTC)");
 
   // Run checks immediately on startup
   setTimeout(async () => {
@@ -143,6 +150,7 @@ export function startCronScheduler(): void {
   cronInterval = setInterval(async () => {
     await runECBFetchJob();
     await runSnapshotJob();
+    await runLifecycleJob();
   }, CHECK_INTERVAL_MS);
 }
 
@@ -164,14 +172,40 @@ export function getCronStatus(): {
   running: boolean;
   lastECBRun: string;
   lastSnapshotRun: string;
+  lastLifecycleRun: string;
   nextCheckIn: string;
 } {
   return {
     running: cronInterval !== null,
     lastECBRun: lastECBRunDate || "never",
     lastSnapshotRun: lastSnapshotRunDate || "never",
+    lastLifecycleRun: lastLifecycleRunDate || "never",
     nextCheckIn: `${CHECK_INTERVAL_MS / 60000} minutes`,
   };
+}
+
+// ─── Data Lifecycle Job ────────────────────────────────────────
+
+async function runLifecycleJob(): Promise<void> {
+  const today = new Date().toISOString().slice(0, 10);
+  if (lastLifecycleRunDate === today) return; // Already ran today
+
+  const now = new Date();
+  const utcHour = now.getUTCHours();
+  const utcMinute = now.getUTCMinutes();
+
+  // Run if we're within the target window (03:00-03:14 UTC)
+  if (utcHour !== LIFECYCLE_HOUR_UTC || utcMinute < LIFECYCLE_MINUTE_UTC || utcMinute >= LIFECYCLE_MINUTE_UTC + 15) return;
+
+  console.log("[Cron/Lifecycle] Starting daily data lifecycle sweep...");
+  try {
+    const results = await runLifecycleSweepAll();
+    lastLifecycleRunDate = today;
+    const totalActions = results.reduce((sum, r) => sum + r.totalActions, 0);
+    console.log(`[Cron/Lifecycle] Complete: ${results.length} orgs, ${totalActions} actions`);
+  } catch (err) {
+    console.error("[Cron/Lifecycle] Job failed:", err);
+  }
 }
 
 /**

@@ -65,7 +65,7 @@ export const ENTERPRISE_SECURITY_CONFIG = {
   cors: {
     allowedOrigins: [
       "https://www.ventex.us.com",
-      "https://royaltonai-tykqbqav.manus.space",
+      "https://www.ventex.us.com",
     ],
     allowedMethods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID", "X-CSRF-Token"],

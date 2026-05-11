@@ -122,19 +122,19 @@ describe("Invite Link Format", () => {
   it("builds correct org-specific invite link", () => {
     const orgSlug = "aurovia";
     const token = "abc123def456";
-    const origin = "https://royaltonai-tykqbqav.manus.space";
+    const origin = "https://www.ventex.us.com";
     const link = `${origin}/invite/${orgSlug}/${token}`;
-    expect(link).toBe("https://royaltonai-tykqbqav.manus.space/invite/aurovia/abc123def456");
+    expect(link).toBe("https://www.ventex.us.com/invite/aurovia/abc123def456");
   });
 
   it("falls back to query param format when no org slug", () => {
     const token = "abc123def456";
-    const origin = "https://royaltonai-tykqbqav.manus.space";
+    const origin = "https://www.ventex.us.com";
     const orgSlug: string | null = null;
     const link = orgSlug
       ? `${origin}/invite/${orgSlug}/${token}`
       : `${origin}/?invite=${token}`;
-    expect(link).toBe("https://royaltonai-tykqbqav.manus.space/?invite=abc123def456");
+    expect(link).toBe("https://www.ventex.us.com/?invite=abc123def456");
   });
 });
 

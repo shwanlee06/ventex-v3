@@ -33,6 +33,7 @@ import { portalRouter } from "./routers/portal";
 import { auditRouter } from "./routers/audit";
 import { blueprintDiagnosticsRouter } from "./routers/blueprintDiagnostics";
 import { passkeysRouter } from "./routers/passkeys";
+import { dataLifecycleRouter } from "./routers/dataLifecycle";
 
 export const appRouter = router({
   system: systemRouter,
@@ -342,6 +343,7 @@ export const appRouter = router({
   audit: auditRouter,
   diagnostics: blueprintDiagnosticsRouter,
   passkeys: passkeysRouter,
+  lifecycle: dataLifecycleRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -396,8 +396,8 @@ export default function TrustSecurity() {
                 <p>Contact: mailto:{CONTACT_EMAIL}</p>
                 <p>Expires: 2027-04-16T00:00:00.000Z</p>
                 <p>Preferred-Languages: en</p>
-                <p>Canonical: https://ventexdemo.manus.space/.well-known/security.txt</p>
-                <p>Policy: https://ventexdemo.manus.space/trust#disclosure</p>
+                <p>Canonical: https://www.ventex.us.com/.well-known/security.txt</p>
+                <p>Policy: https://www.ventex.us.com/trust#disclosure</p>
               </div>
             </Section>
 

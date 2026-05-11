@@ -1,7 +1,7 @@
 # Sign Out Investigation
 
 ## Issue
-User reports sign out not working on published site (ventexdemo.manus.space)
+User reports sign out not working on published site (www.ventex.us.com)
 
 ## Code Review Findings
 

@@ -56,10 +56,21 @@ describe("CSRF Origin Check", () => {
   it("allows request from any *.manus.space HTTPS domain", () => {
     expect(
       isOriginAllowed(
-        "https://royaltonai-tykqbqav.manus.space",
+        "https://some-app.manus.space",
         "internal-proxy:3000",
         undefined,
         "internal-proxy:3000"
+      )
+    ).toBe(true);
+  });
+
+  it("allows request from www.ventex.us.com when it matches directHost", () => {
+    expect(
+      isOriginAllowed(
+        "https://www.ventex.us.com",
+        "internal-proxy:3000",
+        undefined,
+        "www.ventex.us.com"
       )
     ).toBe(true);
   });
@@ -78,7 +89,7 @@ describe("CSRF Origin Check", () => {
   it("rejects HTTP (non-HTTPS) manus.space origin", () => {
     expect(
       isOriginAllowed(
-        "http://royaltonai-tykqbqav.manus.space",
+        "http://www.ventex.us.com",
         "internal-proxy:3000",
         undefined,
         "internal-proxy:3000"

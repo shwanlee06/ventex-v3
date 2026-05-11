@@ -30,8 +30,8 @@ import { notifyOwner } from "./_core/notification";
 
 describe("buildInviteLink", () => {
   it("constructs a valid invite URL with token", () => {
-    const link = buildInviteLink("https://royaltonai.manus.space", "abc123token");
-    expect(link).toBe("https://royaltonai.manus.space/accept-invite?token=abc123token");
+    const link = buildInviteLink("https://www.ventex.us.com", "abc123token");
+    expect(link).toBe("https://www.ventex.us.com/accept-invite?token=abc123token");
   });
 
   it("encodes special characters in token", () => {

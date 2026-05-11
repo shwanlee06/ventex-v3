@@ -74,6 +74,7 @@ import VelocityIntelligenceCard from "@/components/VelocityIntelligenceCard";
 import AgentExecutionLog from "@/components/AgentExecutionLog";
 import ExecutiveSummaryWidget from "@/components/ExecutiveSummaryWidget";
 import MorningBriefingCard from "@/components/MorningBriefingCard";
+import NeedsAttentionWidget from "@/components/NeedsAttentionWidget";
 
 type SortField = "name" | "ventures" | "velocity" | "overdue" | "health" | "completion";
 type ViewMode = "grid" | "table";
@@ -556,6 +557,9 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
 
       {/* ── Overdue Alert Banner — only shows when there are overdue items */}
       <OverdueAlertBanner onNavigate={onNavigate} />
+
+      {/* ── Needs Attention — stale/dormant items from lifecycle sweep */}
+      <NeedsAttentionWidget onNavigate={onNavigate} />
 
       {/* ── Active / Archived Tabs — CLIENT LIST FIRST for clarity ── */}
       <div className="flex items-center gap-1 border-b border-border">
