@@ -516,7 +516,22 @@ export default function SpyOps() {
     }
   }, [flowPhase, navigate]);
 
-  /* Handle OAuth sign-in */
+  /* Login form state */
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const passwordRef = useRef<HTMLInputElement>(null);
+
+  /* Handle email/password sign-in — routes through Manus OAuth with email hint */
+  const handleEmailSignIn = () => {
+    window.location.href = getLoginUrl("email");
+  };
+
+  /* Handle social sign-in (Google / Apple) */
+  const handleSocialSignIn = (provider: "google" | "apple") => {
+    window.location.href = getLoginUrl(provider);
+  };
+
+  /* Handle OAuth sign-in (fallback) */
   const handleSignIn = () => {
     window.location.href = getLoginUrl();
   };
@@ -949,10 +964,55 @@ export default function SpyOps() {
                   </div>
                 )}
 
-                {/* CTA buttons */}
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                {/* Login Form */}
+                <div style={{ maxWidth: 400 }}>
+                  {/* Email + Password fields */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                    <input
+                      type="email"
+                      placeholder="EMAIL ADDRESS"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && passwordRef.current?.focus()}
+                      autoComplete="email"
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 12,
+                        letterSpacing: "0.08em",
+                        background: "rgba(255,255,255,0.04)",
+                        border: "1px solid rgba(255,255,255,0.15)",
+                        borderBottom: "none",
+                        color: "#fff",
+                        padding: "14px 16px",
+                        outline: "none",
+                        width: "100%",
+                      }}
+                    />
+                    <input
+                      ref={passwordRef}
+                      type="password"
+                      placeholder="PASSWORD"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleEmailSignIn()}
+                      autoComplete="current-password"
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 12,
+                        letterSpacing: "0.08em",
+                        background: "rgba(255,255,255,0.04)",
+                        border: "1px solid rgba(255,255,255,0.15)",
+                        color: "#fff",
+                        padding: "14px 16px",
+                        outline: "none",
+                        width: "100%",
+                      }}
+                    />
+                  </div>
+
+                  {/* Sign In button */}
                   <button
-                    onClick={handleSignIn}
+                    onClick={handleEmailSignIn}
                     disabled={authLoading}
                     className="spyops-btn-primary"
                     style={{
@@ -962,14 +1022,89 @@ export default function SpyOps() {
                       background: authLoading ? "#333" : "#fff",
                       color: authLoading ? "#666" : "#000",
                       border: "none",
-                      padding: "14px 28px",
+                      padding: "14px 0",
                       cursor: authLoading ? "wait" : "none",
-                      transition: "background 0.2s, color 0.2s",
+                      width: "100%",
+                      marginTop: 0,
                     }}
                   >
-                    {authLoading ? "VERIFYING..." : "AUTHORIZED ACCESS →"}
+                    {authLoading ? "VERIFYING..." : "SIGN IN →"}
                   </button>
 
+                  {/* Divider */}
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 16,
+                    margin: "20px 0",
+                  }}>
+                    <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.1)" }} />
+                    <span style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: 9,
+                      letterSpacing: "0.15em",
+                      color: "#444",
+                    }}>OR CONTINUE WITH</span>
+                    <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.1)" }} />
+                  </div>
+
+                  {/* Social sign-in buttons */}
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <button
+                      onClick={() => handleSocialSignIn("google")}
+                      disabled={authLoading}
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 10,
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 10,
+                        letterSpacing: "0.1em",
+                        background: "transparent",
+                        border: "1px solid rgba(255,255,255,0.15)",
+                        color: "#999",
+                        padding: "12px 0",
+                        cursor: authLoading ? "wait" : "none",
+                      }}
+                      className="spyops-social-btn"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A11.96 11.96 0 0 0 0 12c0 1.94.46 3.77 1.28 5.4l3.56-2.77-.01-.54z" fill="#FBBC05"/>
+                        <path d="M12 4.75c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 1.09 14.97 0 12 0 7.7 0 3.99 2.47 2.18 6.07l3.66 2.84c.87-2.6 3.3-4.16 6.16-4.16z" fill="#EA4335"/>
+                      </svg>
+                      GOOGLE
+                    </button>
+
+                    <button
+                      onClick={() => handleSocialSignIn("apple")}
+                      disabled={authLoading}
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 10,
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 10,
+                        letterSpacing: "0.1em",
+                        background: "transparent",
+                        border: "1px solid rgba(255,255,255,0.15)",
+                        color: "#999",
+                        padding: "12px 0",
+                        cursor: authLoading ? "wait" : "none",
+                      }}
+                      className="spyops-social-btn"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                      </svg>
+                      APPLE
+                    </button>
+                  </div>
                 </div>
 
                 {/* Bottom classification */}
@@ -2269,6 +2404,21 @@ export default function SpyOps() {
           background: #fff !important;
           color: #000 !important;
           transition: none !important;
+        }
+
+        /* Social sign-in buttons */
+        .spyops-social-btn:hover {
+          background: rgba(255,255,255,0.08) !important;
+          border-color: rgba(255,255,255,0.35) !important;
+          color: #fff !important;
+          transition: none !important;
+        }
+
+        /* Login form input focus */
+        .spyops-root input[type="email"]:focus,
+        .spyops-root input[type="password"]:focus {
+          border-color: rgba(255,255,255,0.4) !important;
+          background: rgba(255,255,255,0.07) !important;
         }
 
         /* FIX 13: sector card instant hover inversion — no transition */

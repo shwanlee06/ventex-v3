@@ -3465,3 +3465,11 @@
 - [x] PROTO-14: Update security whitepaper URLs to www.ventex.us.com
 - [x] PROTO-15: Update GAP_CLOSURE_BUILD_PROMPT.md URL to www.ventex.us.com
 - [x] PROTO-16: Delete obsolete demo planning docs (demo-vs-actual-audit.md, guided-demo-plan.md)
+
+## Inline Login Form on SpyOps Intro
+- [x] AUTH-1: Replace "AUTHORIZED ACCESS" button with inline login form (email + password fields)
+- [x] AUTH-2: Add "Sign in with Google" button routing to Manus OAuth with Google hint
+- [x] AUTH-3: Add "Sign in with Apple" button routing to Manus OAuth with Apple hint
+- [x] AUTH-4: Style login form in spy-ops aesthetic (monospace, dark, premium feel)
+- [x] AUTH-5: Keep cipher intro → login form → welcome → dashboard flow intact
+- [x] AUTH-6: Email/password form submits to Manus OAuth portal with pre-filled email
