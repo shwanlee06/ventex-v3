@@ -1348,165 +1348,110 @@ export default function SpyOps() {
             pointerEvents: "none",
           }}
         />
-        {/* foreground content */}
+        {/* foreground content — clean & simple */}
         <div
           style={{
             position: "relative",
             zIndex: 2,
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            minHeight: "calc(100vh - 52px)",
-            padding: "0 6vw",
+            justifyContent: "center",
+            minHeight: "calc(100vh - 56px)",
+            padding: "0 24px",
+            textAlign: "center",
           }}
         >
-          <div style={{ maxWidth: 700 }}>
-            {/* Classified badge */}
-            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 48 }}>
-              <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "6px 14px",
-                  fontSize: 10,
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  letterSpacing: "0.12em",
-                  background: "rgba(0,255,135,0.08)",
-                  color: "#00ff87",
-                  border: "1px solid rgba(0,255,135,0.25)",
-                }}
-              >
-                <span style={{ color: "#00ff87" }}>■</span> CLASSIFIED
-              </span>
-              <span
-                style={{
-                  fontSize: 10,
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  letterSpacing: "0.12em",
-                  color: "#555",
-                }}
-              >
-                OPERATION VENTEX — ACTIVE DEPLOYMENT
-              </span>
-            </div>
+          {/* VENTEX — the brand, front and center */}
+          <h1
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: "clamp(72px, 14vw, 180px)",
+              letterSpacing: "-0.03em",
+              lineHeight: 1,
+              margin: 0,
+              color: "#fff",
+              fontWeight: 700,
+            }}
+          >
+            VENTEX
+          </h1>
 
-            <h1
-              style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontSize: "clamp(56px, 9vw, 130px)",
-                letterSpacing: "-0.02em",
-                lineHeight: 0.92,
-                margin: 0,
-              }}
-            >
-              <span style={{ color: "#666" }}>THE AI THAT</span>
-              <br />
-              <span style={{ color: "#fff" }}>ACCELERATES</span>
-              <br />
-              <span style={{ color: "#666" }}>VENTURE HOLDINGS</span>
-            </h1>
+          {/* Tagline */}
+          <p
+            style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: "clamp(11px, 1.5vw, 14px)",
+              letterSpacing: "0.2em",
+              color: "rgba(255,255,255,0.4)",
+              marginTop: 20,
+              textTransform: "uppercase",
+            }}
+          >
+            Velocity Intelligence for Venture Holdings
+          </p>
 
-            <p
+          {/* CTA buttons */}
+          <div style={{ display: "flex", gap: 16, marginTop: 48, flexWrap: "wrap", justifyContent: "center" }}>
+            <button
+              onClick={() => { setScrollUnlocked(true); isAuthenticated ? navigate("/dashboard") : handleSignIn(); }}
+              className="spyops-btn-primary"
               style={{
                 fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 14,
-                color: "rgba(255,255,255,0.55)",
-                maxWidth: 440,
-                lineHeight: 1.8,
-                marginTop: 36,
+                fontSize: 11,
+                letterSpacing: "0.12em",
+                background: "#fff",
+                color: "#000",
+                border: "none",
+                padding: "16px 36px",
+                cursor: "none",
               }}
             >
-              <span style={{ color: "#fff", fontWeight: 500 }}>V</span>elocity{" "}
-              <span style={{ color: "#fff", fontWeight: 500 }}>EN</span>abled{" "}
-              <span style={{ color: "#fff", fontWeight: 500 }}>T</span>echnology for{" "}
-              <span style={{ color: "#fff", fontWeight: 500 }}>EX</span>ponential velocity.
-              <br />
-              <span style={{ color: "rgba(255,255,255,0.4)" }}>
-                The AI-powered operations dashboard built exclusively
-                for venture holding businesses. One command layer.
-                Every holding. Total control.
-              </span>
-            </p>
+              {isAuthenticated ? "ENTER COMMAND CENTER →" : "AUTHORIZED ACCESS →"}
+            </button>
 
-            <div style={{ display: "flex", gap: 16, marginTop: 44, flexWrap: "wrap" }}>
-              {/* ENTER COMMAND CENTER — auth-aware */}
-              <button
-                onClick={() => { setScrollUnlocked(true); isAuthenticated ? navigate("/dashboard") : handleSignIn(); }}
-                className="spyops-btn-primary"
-                style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 11,
-                  letterSpacing: "0.12em",
-                  background: "#fff",
-                  color: "#000",
-                  border: "none",
-                  padding: "16px 36px",
-                  cursor: "none",
-                }}
-              >
-                {isAuthenticated ? "ENTER COMMAND CENTER →" : "AUTHORIZED ACCESS →"}
-              </button>
+            <button
+              onClick={() => { setScrollUnlocked(true); setTimeout(() => scrollTo("coordinates"), 100); }}
+              className="spyops-btn-secondary"
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                letterSpacing: "0.12em",
+                background: "transparent",
+                color: "#fff",
+                border: "1px solid rgba(255,255,255,0.3)",
+                padding: "16px 36px",
+                cursor: "none",
+              }}
+            >
+              REQUEST ACCESS +
+            </button>
+          </div>
 
-              {/* REQUEST ACCESS scrolls to contact/coordinates */}
-              <button
-                onClick={() => { setScrollUnlocked(true); setTimeout(() => scrollTo("coordinates"), 100); }}
-                className="spyops-btn-secondary"
-                style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 11,
-                  letterSpacing: "0.12em",
-                  background: "transparent",
-                  color: "#fff",
-                  border: "1px solid rgba(255,255,255,0.3)",
-                  padding: "16px 36px",
-                  cursor: "none",
-                }}
-              >
-                REQUEST ACCESS +
-              </button>
-            </div>
-
-            {/* Bottom classification */}
-            <div
+          {/* Powered by Aurovia — bottom */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: 48,
+              left: "50%",
+              transform: "translateX(-50%)",
+              textAlign: "center",
+            }}
+          >
+            <a
+              href="https://aurovia.co"
+              target="_blank"
+              rel="noopener noreferrer"
               style={{
                 fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 10,
-                color: "#333",
-                letterSpacing: "0.12em",
-                marginTop: 64,
+                letterSpacing: "0.15em",
+                color: "#444",
+                textDecoration: "none",
               }}
             >
-              DOC-VTX-2026-001 // EYES ONLY // VENTURE INTELLIGENCE DIVISION
-            </div>
-          </div>
-          {/* right readouts with left border */}
-          <div
-            className="spyops-hero-readouts"
-            style={{
-              position: "absolute",
-              right: "8%",
-              top: "50%",
-              transform: "translateY(-50%)",
-              borderLeft: "1px solid rgba(255,255,255,0.2)",
-              paddingLeft: 16,
-              display: "flex",
-              flexDirection: "column",
-              gap: 6,
-            }}
-          >
-            {dynamicReadouts.map((line, i) => (
-              <div
-                key={i}
-                style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: 10,
-                  color: i === 0 ? "#555" : "rgba(255,255,255,0.7)",
-                  textAlign: "right",
-                }}
-              >
-                <TypewriterLine text={line} delay={i * 100} speed={20} />
-              </div>
-            ))}
+              POWERED BY <span style={{ color: "#666" }}>AUROVIA</span>
+            </a>
           </div>
         </div>
         {/* Scroll indicator — bottom center — only shows when scroll is locked */}

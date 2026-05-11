@@ -3473,3 +3473,9 @@
 - [x] AUTH-4: Style login form in spy-ops aesthetic (monospace, dark, premium feel)
 - [x] AUTH-5: Keep cipher intro → login form → welcome → dashboard flow intact
 - [x] AUTH-6: Email/password form submits to Manus OAuth portal with pre-filled email
+
+## Hero Section Simplification (Mobile-Friendly)
+- [x] HERO-1: Simplify hero to just "VENTEX" prominently displayed
+- [x] HERO-2: Add "powered by aurovia" at the bottom with aurovia.co link
+- [x] HERO-3: Remove long copy that cuts off on mobile
+- [x] HERO-4: Keep login form and AUTHORIZED ACCESS button functional
