@@ -47,9 +47,6 @@ import { useHeartbeat } from "./hooks/useHeartbeat";
 import { useIdleTimeout } from "./hooks/useIdleTimeout";
 import { useNotificationBridge } from "./hooks/useNotificationBridge";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
-import { DemoProvider } from "./contexts/DemoContext";
-import Demo from "./pages/Demo";
-import DemoDashboard from "./pages/DemoDashboard";
 
 /* Auth guard - checks real OAuth session via useAuth hook.
    Falls back to localStorage for the SpyOps cinematic flow. */
@@ -126,10 +123,6 @@ function Router() {
       <Route path="/portal">
         <Redirect to="/dashboard" />
       </Route>
-
-      {/* Investor demo — public, no auth, read-only */}
-      <Route path="/demo/dashboard" component={DemoDashboard} />
-      <Route path="/demo" component={Demo} />
 
       {/* Sign out page — clears session and redirects to landing */}
       <Route path="/sign-out" component={SignOut} />
@@ -241,7 +234,6 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark" switchable>
-        <DemoProvider>
         <PreviewModeProvider>
           <WorkspaceProvider>
             <AgentProvider>
@@ -257,7 +249,6 @@ function App() {
             </AgentProvider>
           </WorkspaceProvider>
         </PreviewModeProvider>
-        </DemoProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

@@ -3447,3 +3447,21 @@
 - [ ] Update live investor demo site to match verified facts
 - [ ] Convert all docs to PDF and upload to both Airtable bases
 - [ ] Deliver flagged claims report
+
+## Phase: Demo Removal → Full Prototype Transition
+- [x] PROTO-1: Delete Demo.tsx (investor pitch deck page)
+- [x] PROTO-2: Delete DemoDashboard.tsx (interactive demo dashboard)
+- [x] PROTO-3: Delete DemoContext.tsx (demo mode provider — guardMutation, isDemo)
+- [x] PROTO-4: Delete demo-dashboard.test.ts (demo test suite)
+- [x] PROTO-5: Remove /demo and /demo/dashboard routes from App.tsx
+- [x] PROTO-6: Remove DemoProvider wrapper from App component tree
+- [x] PROTO-7: Remove INVESTOR DEMO button from SpyOps landing (first CTA section)
+- [x] PROTO-8: Remove VIEW BRIEFING button from SpyOps landing (second CTA section)
+- [x] PROTO-9: Remove /demo from publicRoutes.ts PUBLIC_PATHS
+- [x] PROTO-10: Remove /demo from main.tsx publicPaths redirect whitelist
+- [x] PROTO-11: Update SCIM provisioning documentationUri to www.ventex.us.com
+- [x] PROTO-12: Update CSRF test references from ventexdemo.manus.space to www.ventex.us.com
+- [x] PROTO-13: Update SOC2-Compliance-Audit.md system URL to www.ventex.us.com
+- [x] PROTO-14: Update security whitepaper URLs to www.ventex.us.com
+- [x] PROTO-15: Update GAP_CLOSURE_BUILD_PROMPT.md URL to www.ventex.us.com
+- [x] PROTO-16: Delete obsolete demo planning docs (demo-vs-actual-audit.md, guided-demo-plan.md)

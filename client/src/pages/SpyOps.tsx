@@ -969,31 +969,7 @@ export default function SpyOps() {
                   >
                     {authLoading ? "VERIFYING..." : "AUTHORIZED ACCESS →"}
                   </button>
-                  <button
-                    onClick={() => navigate("/demo")}
-                    className="spyops-hover"
-                    style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: 11,
-                      letterSpacing: "0.12em",
-                      background: "transparent",
-                      color: "#00ff87",
-                      border: "1px solid rgba(0,255,135,0.4)",
-                      padding: "14px 28px",
-                      cursor: "none",
-                      transition: "border-color 0.2s, background 0.2s",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = "rgba(0,255,135,0.8)";
-                      e.currentTarget.style.background = "rgba(0,255,135,0.05)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = "rgba(0,255,135,0.4)";
-                      e.currentTarget.style.background = "transparent";
-                    }}
-                  >
-                    INVESTOR DEMO
-                  </button>
+
                 </div>
 
                 {/* Bottom classification */}
@@ -1335,32 +1311,7 @@ export default function SpyOps() {
               >
                 {isAuthenticated ? "ENTER COMMAND CENTER →" : "AUTHORIZED ACCESS →"}
               </button>
-              {/* INVESTOR DEMO — no auth required */}
-              <button
-                onClick={() => { setScrollUnlocked(true); navigate("/demo"); }}
-                className="spyops-hover"
-                style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 11,
-                  letterSpacing: "0.12em",
-                  background: "transparent",
-                  color: "#00ff87",
-                  border: "1px solid rgba(0,255,135,0.4)",
-                  padding: "16px 36px",
-                  cursor: "none",
-                  transition: "border-color 0.2s, background 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(0,255,135,0.8)";
-                  e.currentTarget.style.background = "rgba(0,255,135,0.05)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(0,255,135,0.4)";
-                  e.currentTarget.style.background = "transparent";
-                }}
-              >
-                VIEW BRIEFING
-              </button>
+
               {/* REQUEST ACCESS scrolls to contact/coordinates */}
               <button
                 onClick={() => { setScrollUnlocked(true); setTimeout(() => scrollTo("coordinates"), 100); }}

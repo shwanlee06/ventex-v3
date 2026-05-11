@@ -34,10 +34,10 @@ describe("CSRF Origin Check", () => {
   it("allows request when origin matches host directly", () => {
     expect(
       isOriginAllowed(
-        "https://ventexdemo.manus.space",
-        "ventexdemo.manus.space",
+        "https://www.ventex.us.com",
+        "www.ventex.us.com",
         undefined,
-        "ventexdemo.manus.space"
+        "www.ventex.us.com"
       )
     ).toBe(true);
   });
@@ -45,9 +45,9 @@ describe("CSRF Origin Check", () => {
   it("allows request when origin matches X-Forwarded-Host", () => {
     expect(
       isOriginAllowed(
-        "https://ventexdemo.manus.space",
+        "https://www.ventex.us.com",
         "internal-proxy:3000",
-        "ventexdemo.manus.space",
+        "www.ventex.us.com",
         "internal-proxy:3000"
       )
     ).toBe(true);
@@ -68,9 +68,9 @@ describe("CSRF Origin Check", () => {
     expect(
       isOriginAllowed(
         "https://evil-site.com",
-        "ventexdemo.manus.space",
-        "ventexdemo.manus.space",
-        "ventexdemo.manus.space"
+        "www.ventex.us.com",
+        "www.ventex.us.com",
+        "www.ventex.us.com"
       )
     ).toBe(false);
   });
@@ -78,7 +78,7 @@ describe("CSRF Origin Check", () => {
   it("rejects HTTP (non-HTTPS) manus.space origin", () => {
     expect(
       isOriginAllowed(
-        "http://ventexdemo.manus.space",
+        "http://royaltonai-tykqbqav.manus.space",
         "internal-proxy:3000",
         undefined,
         "internal-proxy:3000"
@@ -88,7 +88,7 @@ describe("CSRF Origin Check", () => {
 
   it("allows request when no origin header (same-origin request)", () => {
     expect(
-      isOriginAllowed(undefined, "ventexdemo.manus.space", undefined, "ventexdemo.manus.space")
+      isOriginAllowed(undefined, "www.ventex.us.com", undefined, "www.ventex.us.com")
     ).toBe(true);
   });
 
@@ -96,9 +96,9 @@ describe("CSRF Origin Check", () => {
     expect(
       isOriginAllowed(
         "not-a-url",
-        "ventexdemo.manus.space",
+        "www.ventex.us.com",
         undefined,
-        "ventexdemo.manus.space"
+        "www.ventex.us.com"
       )
     ).toBe(false);
   });
@@ -106,10 +106,10 @@ describe("CSRF Origin Check", () => {
   it("allows when origin matches direct host but not forwarded host", () => {
     expect(
       isOriginAllowed(
-        "https://ventexdemo.manus.space",
-        "ventexdemo.manus.space",
+        "https://www.ventex.us.com",
+        "www.ventex.us.com",
         "some-other-host.com",
-        "ventexdemo.manus.space"
+        "www.ventex.us.com"
       )
     ).toBe(true);
   });

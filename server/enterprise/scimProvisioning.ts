@@ -190,7 +190,7 @@ export function createSCIMRouter(): Router {
   router.get("/ServiceProviderConfig", (_req, res) => {
     res.json({
       schemas: [SCIM_SCHEMAS.ServiceProviderConfig],
-      documentationUri: "https://ventexdemo.manus.space/docs/scim",
+      documentationUri: "https://www.ventex.us.com/docs/scim",
       patch: { supported: true },
       bulk: { supported: false, maxOperations: 0, maxPayloadSize: 0 },
       filter: { supported: true, maxResults: 200 },

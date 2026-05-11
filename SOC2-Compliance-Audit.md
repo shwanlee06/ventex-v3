@@ -2,7 +2,7 @@
 
 **Prepared for:** Shwan Lee, CEO & Founder, VENTEX  
 **Date:** April 1, 2026  
-**System:** VENTEX Platform (ventexdemo.manus.space)  
+**System:** VENTEX Platform (www.ventex.us.com)  
 **Audit scope:** Application-layer controls only (infrastructure managed by Manus platform)
 
 ---

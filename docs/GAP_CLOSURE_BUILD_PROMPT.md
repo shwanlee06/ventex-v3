@@ -1,7 +1,7 @@
 # VENTEX — GAP CLOSURE BUILD PROMPT
 
 ## CONTEXT
-You are continuing work on VENTEX, the venture intelligence operations platform built by Aurovia LLC for UHNWI/SFO clients managing $10M–$10B+ AUM. The current build (live at ventexdemo.manus.space) has a working product architecture, 50+ database tables, four AI agents, role-based access, and a client portal. A third-party review identified gaps that block institutional client adoption and unicorn-trajectory growth. Your job is to close those gaps with the same standard you used to build the original system: no placeholders, no stubs, every button wired, every claim accurate.
+You are continuing work on VENTEX, the venture intelligence operations platform built by Aurovia LLC for UHNWI/SFO clients managing $10M–$10B+ AUM. The current build (live at www.ventex.us.com) has a working product architecture, 50+ database tables, four AI agents, role-based access, and a client portal. A third-party review identified gaps that block institutional client adoption and unicorn-trajectory growth. Your job is to close those gaps with the same standard you used to build the original system: no placeholders, no stubs, every button wired, every claim accurate.
 
 ## NON-NEGOTIABLE RULES FOR THIS WORK
 1. Do not introduce or retain any text claiming "SOC 2 compliant," "SOC 2 certified," or equivalent. Replace with "SOC 2 Type II readiness in progress" wherever it appears in code, UI, marketing, or docs. We do not have a SOC 2 report yet.

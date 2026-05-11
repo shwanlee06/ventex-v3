@@ -191,8 +191,8 @@ Breach notification is provided within 72 hours of confirmation, in compliance w
 For security inquiries, vulnerability reports, or compliance documentation requests:
 
 **Email:** security@aurovia.com
-**Security.txt:** https://ventexdemo.manus.space/.well-known/security.txt
-**Trust Page:** https://ventexdemo.manus.space/trust
+**Security.txt:** https://www.ventex.us.com/.well-known/security.txt
+**Trust Page:** https://www.ventex.us.com/trust
 
 ---
 

@@ -35,9 +35,9 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
   // Don't redirect if user is intentionally logging out
   if ((window as any).__ventex_logging_out) return;
 
-  // Don't redirect on public pages (demo, login, legal, invite)
+  // Don't redirect on public pages (login, legal, invite)
   const path = window.location.pathname;
-  const publicPaths = ["/demo", "/", "/privacy", "/terms", "/invite", "/accept-invite", "/portal"];
+  const publicPaths = ["/", "/privacy", "/terms", "/invite", "/accept-invite", "/portal"];
   if (publicPaths.some(p => path === p || path.startsWith(p + "/"))) return;
 
   window.location.href = getLoginUrl();
