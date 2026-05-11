@@ -3479,3 +3479,37 @@
 - [x] HERO-2: Add "powered by aurovia" at the bottom with aurovia.co link
 - [x] HERO-3: Remove long copy that cuts off on mobile
 - [x] HERO-4: Keep login form and AUTHORIZED ACCESS button functional
+
+## Enterprise Enhancement 1: Passkey/WebAuthn Authentication
+- [x] ENT-1: Install @simplewebauthn/server and @simplewebauthn/browser packages
+- [x] ENT-2: Create passkey_credentials DB table (credentialID, publicKey, counter, userId, deviceName, createdAt)
+- [x] ENT-3: Build server-side WebAuthn registration endpoints (generateRegistrationOptions, verifyRegistration)
+- [x] ENT-4: Build server-side WebAuthn authentication endpoints (generateAuthOptions, verifyAuth)
+- [x] ENT-5: Add passkey registration UI in Settings/Security page
+- [x] ENT-6: Add passkey sign-in button on SpyOps login form
+- [x] ENT-7: Support multiple passkeys per user with device naming and revocation
+
+## Enterprise Enhancement 2: S3 Storage Hardening
+- [x] ENT-8: Implement presigned URL generation with short TTL for all file downloads
+- [x] ENT-9: Add server-side encryption headers (AES-256) on all storagePut calls
+- [x] ENT-10: Implement file access audit logging (who accessed what, when)
+- [x] ENT-11: Add file type validation and malware scan headers on upload
+- [x] ENT-12: Implement storage lifecycle rules (auto-archive after 90 days, delete after 365)
+- [x] ENT-13: Add CORS policy enforcement for S3 bucket access
+
+## Enterprise Enhancement 3: Enterprise Security Controls
+- [x] ENT-14: Implement configurable session timeout (default 30min idle, 8hr absolute)
+- [x] ENT-15: Add session management UI (view active sessions, revoke remotely)
+- [x] ENT-16: Build comprehensive audit log system (login/logout, data access, mutations, admin actions)
+- [x] ENT-17: Implement IP allowlisting for organization-level access control
+- [x] ENT-18: Add rate limiting on all API endpoints (100 req/min standard, 10 req/min auth)
+- [x] ENT-19: Implement account lockout after 5 failed login attempts (15min cooldown)
+- [x] ENT-20: Add security headers (HSTS, CSP, X-Frame-Options, X-Content-Type-Options)
+- [x] ENT-21: Implement forced re-authentication for sensitive operations
+
+## Enterprise Enhancement 4: AI Project Documentation Overhaul
+- [x] ENT-22: Update security whitepaper to reflect passkeys, S3 hardening, enterprise controls
+- [x] ENT-23: Update SOC2 compliance audit document with new controls
+- [x] ENT-24: Update GAP closure document to mark resolved items
+- [x] ENT-25: Create enterprise deployment guide documenting all security features
+- [x] ENT-26: Update API documentation with new auth endpoints and security headers

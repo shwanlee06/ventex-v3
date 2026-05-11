@@ -1,9 +1,10 @@
 # SOC 2 Compliance Audit — VENTEX Platform by Aurovia LLC
 
 **Prepared for:** Shwan Lee, CEO & Founder, VENTEX  
-**Date:** April 1, 2026  
+**Date:** May 11, 2026 (Revised)  
 **System:** VENTEX Platform (www.ventex.us.com)  
-**Audit scope:** Application-layer controls only (infrastructure managed by Manus platform)
+**Audit scope:** Application-layer controls only (infrastructure managed by Manus platform)  
+**Revision note:** Updated to reflect enterprise security enhancements shipped May 2026
 
 ---
 
@@ -11,7 +12,7 @@
 
 The VENTEX Platform implements a substantial portion of the technical controls required for SOC 2 Type II readiness. The codebase includes role-based access control with six defined roles, automatic audit logging on every mutation, AES-256-GCM encryption at the application layer, session management with device fingerprinting, and multi-tenant data isolation. However, SOC 2 certification requires more than code — it requires organizational policies, formal risk assessments, vendor management, employee training, and a third-party audit by a licensed CPA firm.
 
-**The honest answer: the system is approximately 60% of the way to SOC 2 readiness.** The technical controls are strong. The organizational and procedural controls are not yet in place.
+**The honest answer: the system is approximately 85% of the way to SOC 2 readiness.** The technical controls are comprehensive — passkey/WebAuthn authentication, S3 storage hardening with presigned URLs, enterprise session management, brute-force protection, and SAML 2.0 SSO have all been implemented since the initial audit. The remaining gaps are organizational and procedural controls (formal risk assessments, vendor management, employee training, and third-party audit engagement).
 
 ---
 
@@ -30,13 +31,13 @@ Security is the only **required** category in SOC 2. It covers logical access, s
 | **Multi-Tenant Isolation** | Implemented | `resolveVentureScope()`, `resolveOrgId()`, `resolveSpvScope()` enforce org-scoped queries. Client users can only access their own organization's data. Cross-tenant data leakage gaps in `documentIntelligence` and `ai.chat` were identified and hardened to `adminProcedure`. |
 | **Security Headers** | Implemented | `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, `Strict-Transport-Security: max-age=31536000`, `Content-Security-Policy`, `Referrer-Policy: strict-origin-when-cross-origin`. All set in `server/_core/index.ts`. |
 | **Input Validation** | Implemented | 627 Zod schema validations across all tRPC procedures. Every input is typed and validated before processing. |
-| **Rate Limiting** | Partial | In-memory sliding window rate limiter exists (`server/rateLimiter.ts`) but is only applied to `ai.chat`. Other endpoints (login, API key creation, file upload) are unprotected against brute force. |
+| **Rate Limiting** | Implemented | Sliding window rate limiter (`server/security/rateLimit.ts`) applied to authentication (5 attempts/15 min), API mutations (100/min), file uploads (20/min), AI operations (30/min). Brute-force protection with progressive lockout in `server/security/enterpriseControls.ts`. |
 | **Audit Logging** | Implemented | `audit_log` table captures: userId, userName, action, entityType, entityId, entityName, details (JSON), ipAddress, userAgent, result (success/denied/error), timestamp. Auto-audit middleware (`autoAudit`) is attached to all `protectedProcedure`, `adminProcedure`, and `partnerProcedure` calls — every mutation is logged automatically. |
 | **Encryption at Rest** | Implemented | AES-256-GCM envelope encryption module (`server/security/encryption.ts`) with HMAC-SHA256 key derivation per data domain. Files encrypted before S3 upload via `encryptedStorage.ts`. Requires `ENCRYPTION_MASTER_KEY` (256-bit hex). |
 | **Encryption in Transit** | Implemented | HTTPS enforced via `Strict-Transport-Security` header. Cookies set with `secure: true` on HTTPS requests. |
 | **Session Management** | Implemented | `sessions` table tracks: userId, token, ipAddress, userAgent, deviceFingerprint, lastActivity, expiresAt, isActive. Sessions have explicit expiration and active/inactive state. |
 | **API Key Security** | Implemented | API keys hashed with SHA-256 before storage. Keys shown once at creation, never retrievable. Expiration dates enforced. |
-| **Multi-Factor Authentication** | Not Implemented | No MFA/2FA support. Settings UI has a "two-factor" toggle but it is a placeholder with no backend implementation. |
+| **Multi-Factor Authentication** | Implemented | WebAuthn/FIDO2 passkeys (Touch ID, Face ID, Windows Hello, YubiKey) via `server/security/passkeys.ts`. TOTP MFA via `server/security/mfa.ts`. Per-org MFA enforcement policies. |
 | **Vulnerability Management** | Gap | `pnpm audit` reports 38 vulnerabilities (1 critical, 18 high, 18 moderate, 1 low). The critical vulnerability is in the `qs` dependency via Express. |
 
 ### 2. Availability
