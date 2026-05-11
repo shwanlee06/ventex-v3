@@ -889,56 +889,21 @@ export default function SpyOps() {
                   </span>
                 </div>
 
-                {/* Headline — Space Grotesk */}
+                {/* Headline — just VENTEX */}
                 <h1
                   style={{
                     fontFamily: "'Space Grotesk', sans-serif",
-                    fontSize: "clamp(48px, 8vw, 96px)",
-                    letterSpacing: "-0.01em",
-                    lineHeight: 0.95,
-                    margin: 0,
-                    marginBottom: 24,
-                  }}
-                >
-                  <span style={{ color: "#666" }}>THE AI THAT</span>
-                  <br />
-                  <span style={{ color: "#fff" }}>ACCELERATES</span>
-                  <br />
-                  <span style={{ color: "#666" }}>VENTURE HOLDINGS</span>
-                </h1>
-
-                {/* Subtext */}
-                <p
-                  style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: 13,
-                    color: "rgba(255,255,255,0.6)",
-                    maxWidth: 400,
-                    lineHeight: 1.8,
-                    margin: 0,
-                    marginBottom: 8,
-                  }}
-                >
-                  <span style={{ color: "#fff", fontWeight: 500 }}>V</span>elocity{" "}
-                  <span style={{ color: "#fff", fontWeight: 500 }}>EN</span>abled{" "}
-                  <span style={{ color: "#fff", fontWeight: 500 }}>T</span>echnology for{" "}
-                  <span style={{ color: "#fff", fontWeight: 500 }}>EX</span>ponential velocity.
-                </p>
-                <p
-                  style={{
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontSize: 12,
-                    color: "rgba(255,255,255,0.45)",
-                    maxWidth: 400,
-                    lineHeight: 1.7,
+                    fontSize: "clamp(56px, 10vw, 120px)",
+                    letterSpacing: "-0.02em",
+                    lineHeight: 1,
                     margin: 0,
                     marginBottom: 36,
+                    color: "#fff",
+                    fontWeight: 700,
                   }}
                 >
-                  The AI-powered operations dashboard built exclusively
-                  for venture holding businesses. One command layer.
-                  Every holding. Total control.
-                </p>
+                  VENTEX
+                </h1>
 
                 {/* OAuth error message */}
                 {oauthError && (
