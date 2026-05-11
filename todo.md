@@ -3543,3 +3543,11 @@
 ### Domain Cleanup
 - [x] DOM-1: Replace all ventexdemo.manus.space references with www.ventex.us.com
 - [x] DOM-2: Replace all royaltonai-tykqbqav.manus.space references with www.ventex.us.com
+
+## Test Data Purge (Pre-Wednesday Client Ready)
+- [x] PURGE-1: Delete test organizations (Test Pilot 123, AI Test Client, AI Empty Test, Shwan Capital Group)
+- [x] PURGE-2: Delete 41 test ventures (Test Venture *)
+- [x] PURGE-3: Delete 20+ test team members (Test VENTEX Member, Test Client Contact)
+- [x] PURGE-4: Delete Vitest-generated test tasks
+- [x] PURGE-5: Delete agent_events and audit_log entries for test orgs
+- [x] PURGE-6: Verify clean state — 5 orgs, 82 ventures, 738 tasks, 14 SPVs, 21 team members, 9 users

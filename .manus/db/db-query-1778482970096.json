@@ -1,0 +1,46 @@
+{
+  "query": "SELECT 'contacts', COUNT(*) FROM contacts WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'ai_observations', COUNT(*) FROM ai_observations WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'daily_briefs', COUNT(*) FROM daily_briefs WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'smart_alerts', COUNT(*) FROM smart_alerts WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'audit_log', COUNT(*) FROM audit_log WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'invitations', COUNT(*) FROM invitations WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'org_venture_access', COUNT(*) FROM org_venture_access WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'agent_events', COUNT(*) FROM agent_events WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'agent_drafts', COUNT(*) FROM agent_drafts WHERE organizationId IN (990016, 990030, 990031, 1020001);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT 'contacts', COUNT(*) FROM contacts WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'ai_observations', COUNT(*) FROM ai_observations WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'daily_briefs', COUNT(*) FROM daily_briefs WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'smart_alerts', COUNT(*) FROM smart_alerts WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'audit_log', COUNT(*) FROM audit_log WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'invitations', COUNT(*) FROM invitations WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'org_venture_access', COUNT(*) FROM org_venture_access WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'agent_events', COUNT(*) FROM agent_events WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'agent_drafts', COUNT(*) FROM agent_drafts WHERE organizationId IN (990016, 990030, 990031, 1020001);",
+  "rows": [
+    {
+      "contacts": "daily_briefs",
+      "COUNT(*)": "0"
+    },
+    {
+      "contacts": "contacts",
+      "COUNT(*)": "0"
+    },
+    {
+      "contacts": "ai_observations",
+      "COUNT(*)": "0"
+    },
+    {
+      "contacts": "smart_alerts",
+      "COUNT(*)": "0"
+    },
+    {
+      "contacts": "invitations",
+      "COUNT(*)": "0"
+    },
+    {
+      "contacts": "org_venture_access",
+      "COUNT(*)": "0"
+    },
+    {
+      "contacts": "agent_drafts",
+      "COUNT(*)": "0"
+    },
+    {
+      "contacts": "agent_events",
+      "COUNT(*)": "432"
+    },
+    {
+      "contacts": "audit_log",
+      "COUNT(*)": "4"
+    }
+  ],
+  "messages": [],
+  "stdout": "contacts\tCOUNT(*)\ndaily_briefs\t0\ncontacts\t0\nai_observations\t0\nsmart_alerts\t0\ninvitations\t0\norg_venture_access\t0\nagent_drafts\t0\nagent_events\t432\naudit_log\t4\n",
+  "stderr": "",
+  "execution_time_ms": 291
+}

@@ -1,0 +1,158 @@
+{
+  "query": "SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE COLUMN_NAME LIKE '%org%' AND TABLE_SCHEMA = DATABASE();",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE COLUMN_NAME LIKE '%org%' AND TABLE_SCHEMA = DATABASE();",
+  "rows": [
+    {
+      "TABLE_NAME": "users",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "activity_log",
+      "COLUMN_NAME": "activityOrgId"
+    },
+    {
+      "TABLE_NAME": "contacts",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "distributions",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "notifications",
+      "COLUMN_NAME": "notifOrgId"
+    },
+    {
+      "TABLE_NAME": "spvs",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "tasks",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "team_members",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "ai_observations",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "daily_briefs",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "smart_alerts",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "audit_log",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "api_keys",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "invitations",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "org_venture_access",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "org_venture_access",
+      "COLUMN_NAME": "orgPermission"
+    },
+    {
+      "TABLE_NAME": "organizations",
+      "COLUMN_NAME": "orgStatus"
+    },
+    {
+      "TABLE_NAME": "organizations",
+      "COLUMN_NAME": "parentOrgId"
+    },
+    {
+      "TABLE_NAME": "agent_events",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "agent_drafts",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "venture_velocity",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "client_agent_config",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "process_templates",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "client_velocity_benchmarks",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "agent_performance",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "event_trigger_log",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "market_signal",
+      "COLUMN_NAME": "affectedOrganizationIds"
+    },
+    {
+      "TABLE_NAME": "portfolio_health_trajectory",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "recommendation_outcome",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "resource_contention_alert",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "venture_forecast",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "blueprint_diagnostics",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "blueprint_structure_modes",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "velocity_attribution",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "distribution_read_receipts",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "document_downloads",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "notification_preferences",
+      "COLUMN_NAME": "organizationId"
+    }
+  ],
+  "messages": [],
+  "stdout": "TABLE_NAME\tCOLUMN_NAME\nusers\torganizationId\nactivity_log\tactivityOrgId\ncontacts\torganizationId\ndistributions\torganizationId\nnotifications\tnotifOrgId\nspvs\torganizationId\ntasks\torganizationId\nteam_members\torganizationId\nai_observations\torganizationId\ndaily_briefs\torganizationId\nsmart_alerts\torganizationId\naudit_log\torganizationId\napi_keys\torganizationId\ninvitations\torganizationId\norg_venture_access\torganizationId\norg_venture_access\torgPermission\norganizations\torgStatus\norganizations\tparentOrgId\nagent_events\torganizationId\nagent_drafts\torganizationId\nventure_velocity\torganizationId\nclient_agent_config\torganizationId\nprocess_templates\torganizationId\nclient_velocity_benchmarks\torganizationId\nagent_performance\torganizationId\nevent_trigger_log\torganizationId\nmarket_signal\taffectedOrganizationIds\nportfolio_health_trajectory\torganizationId\nrecommendation_outcome\torganizationId\nresource_contention_alert\torganizationId\nventure_forecast\torganizationId\nblueprint_diagnostics\torganizationId\nblueprint_structure_modes\torganizationId\nvelocity_attribution\torganizationId\ndistribution_read_receipts\torganizationId\ndocument_downloads\torganizationId\nnotification_preferences\torganizationId\n",
+  "stderr": "",
+  "execution_time_ms": 280
+}

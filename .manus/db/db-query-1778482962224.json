@@ -1,0 +1,38 @@
+{
+  "query": "SELECT 'users' as tbl, COUNT(*) as cnt FROM users WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'tasks', COUNT(*) FROM tasks WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'team_members', COUNT(*) FROM team_members WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'spvs', COUNT(*) FROM spvs WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'distributions', COUNT(*) FROM distributions WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'activity_log', COUNT(*) FROM activity_log WHERE activityOrgId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'notifications', COUNT(*) FROM notifications WHERE notifOrgId IN (990016, 990030, 990031, 1020001);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT 'users' as tbl, COUNT(*) as cnt FROM users WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'tasks', COUNT(*) FROM tasks WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'team_members', COUNT(*) FROM team_members WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'spvs', COUNT(*) FROM spvs WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'distributions', COUNT(*) FROM distributions WHERE organizationId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'activity_log', COUNT(*) FROM activity_log WHERE activityOrgId IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'notifications', COUNT(*) FROM notifications WHERE notifOrgId IN (990016, 990030, 990031, 1020001);",
+  "rows": [
+    {
+      "tbl": "users",
+      "cnt": "0"
+    },
+    {
+      "tbl": "spvs",
+      "cnt": "0"
+    },
+    {
+      "tbl": "distributions",
+      "cnt": "0"
+    },
+    {
+      "tbl": "team_members",
+      "cnt": "0"
+    },
+    {
+      "tbl": "tasks",
+      "cnt": "0"
+    },
+    {
+      "tbl": "activity_log",
+      "cnt": "0"
+    },
+    {
+      "tbl": "notifications",
+      "cnt": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "tbl\tcnt\nusers\t0\nspvs\t0\ndistributions\t0\nteam_members\t0\ntasks\t0\nactivity_log\t0\nnotifications\t0\n",
+  "stderr": "",
+  "execution_time_ms": 282
+}

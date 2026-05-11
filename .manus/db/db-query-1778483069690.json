@@ -1,0 +1,110 @@
+{
+  "query": "SELECT id, name, role FROM team_members WHERE name LIKE '%test%' OR name LIKE '%Test%' OR name LIKE '%TEST%' OR name LIKE '%dummy%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, role FROM team_members WHERE name LIKE '%test%' OR name LIKE '%Test%' OR name LIKE '%TEST%' OR name LIKE '%dummy%';",
+  "rows": [
+    {
+      "id": "870001",
+      "name": "Test VENTEX Member 1776635730035",
+      "role": "Test Role"
+    },
+    {
+      "id": "870008",
+      "name": "Test VENTEX Member 1776636104641",
+      "role": "Test Role"
+    },
+    {
+      "id": "870015",
+      "name": "Test VENTEX Member 1776636710982",
+      "role": "Test Role"
+    },
+    {
+      "id": "900001",
+      "name": "Test VENTEX Member 1776829056668",
+      "role": "Test Role"
+    },
+    {
+      "id": "930001",
+      "name": "Test VENTEX Member 1776877638588",
+      "role": "Test Role"
+    },
+    {
+      "id": "930008",
+      "name": "Test VENTEX Member 1776880514269",
+      "role": "Test Role"
+    },
+    {
+      "id": "960001",
+      "name": "Test VENTEX Member 1776901920766",
+      "role": "Test Role"
+    },
+    {
+      "id": "960002",
+      "name": "Test Client Contact 1776901920894",
+      "role": "Client Liaison"
+    },
+    {
+      "id": "960008",
+      "name": "Test VENTEX Member 1776902027336",
+      "role": "Test Role"
+    },
+    {
+      "id": "960009",
+      "name": "Test Client Contact 1776902027507",
+      "role": "Client Liaison"
+    },
+    {
+      "id": "960018",
+      "name": "Test VENTEX Member 1776902239450",
+      "role": "Test Role"
+    },
+    {
+      "id": "960019",
+      "name": "Test Client Contact 1776902239599",
+      "role": "Client Liaison"
+    },
+    {
+      "id": "960022",
+      "name": "Test VENTEX Member 1776912053827",
+      "role": "Test Role"
+    },
+    {
+      "id": "960023",
+      "name": "Test Client Contact 1776912054079",
+      "role": "Client Liaison"
+    },
+    {
+      "id": "990004",
+      "name": "Test VENTEX Member 1777431094368",
+      "role": "Test Role"
+    },
+    {
+      "id": "990005",
+      "name": "Test Client Contact 1777431094494",
+      "role": "Client Liaison"
+    },
+    {
+      "id": "1080001",
+      "name": "Test VENTEX Member 1778462830196",
+      "role": "Test Role"
+    },
+    {
+      "id": "1080002",
+      "name": "Test Client Contact 1778462830551",
+      "role": "Client Liaison"
+    },
+    {
+      "id": "1080008",
+      "name": "Test VENTEX Member 1778462986922",
+      "role": "Test Role"
+    },
+    {
+      "id": "1080009",
+      "name": "Test Client Contact 1778462987270",
+      "role": "Client Liaison"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\trole\n870001\tTest VENTEX Member 1776635730035\tTest Role\n870008\tTest VENTEX Member 1776636104641\tTest Role\n870015\tTest VENTEX Member 1776636710982\tTest Role\n900001\tTest VENTEX Member 1776829056668\tTest Role\n930001\tTest VENTEX Member 1776877638588\tTest Role\n930008\tTest VENTEX Member 1776880514269\tTest Role\n960001\tTest VENTEX Member 1776901920766\tTest Role\n960002\tTest Client Contact 1776901920894\tClient Liaison\n960008\tTest VENTEX Member 1776902027336\tTest Role\n960009\tTest Client Contact 1776902027507\tClient Liaison\n960018\tTest VENTEX Member 1776902239450\tTest Role\n960019\tTest Client Contact 1776902239599\tClient Liaison\n960022\tTest VENTEX Member 1776912053827\tTest Role\n960023\tTest Client Contact 1776912054079\tClient Liaison\n990004\tTest VENTEX Member 1777431094368\tTest Role\n990005\tTest Client Contact 1777431094494\tClient Liaison\n1080001\tTest VENTEX Member 1778462830196\tTest Role\n1080002\tTest Client Contact 1778462830551\tClient Liaison\n1080008\tTest VENTEX Member 1778462986922\tTest Role\n1080009\tTest Client Contact 1778462987270\tClient Liaison\n",
+  "stderr": "",
+  "execution_time_ms": 272
+}

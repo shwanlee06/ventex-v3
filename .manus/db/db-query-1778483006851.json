@@ -1,0 +1,73 @@
+{
+  "query": "SELECT id, name, email, role, organizationId FROM users;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, email, role, organizationId FROM users;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Shwan Lee",
+      "email": "slee72106@gmail.com",
+      "role": "admin",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "390151",
+      "name": "Jason Yu",
+      "email": "jason41659@gmail.com",
+      "role": "admin",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "750035",
+      "name": "Brian Chen",
+      "email": "bchen2561@gmail.com",
+      "role": "admin",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "840001",
+      "name": "Christopher Phelps",
+      "email": "ccphelps15@gmail.com",
+      "role": "admin",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "933332",
+      "name": "Shourya Kudaravalli",
+      "email": "kudaravalli.shourya@gmail.com",
+      "role": "admin",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "2522851",
+      "name": "Michael Adenew",
+      "email": "michaeladenew24@gmail.com",
+      "role": "admin",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "3900013",
+      "name": "Najib hanna",
+      "email": "najib.hanna1@gmail.com",
+      "role": "user",
+      "organizationId": "2"
+    },
+    {
+      "id": "9180009",
+      "name": "kushal gupta",
+      "email": "kushalguptadtu@gmail.com",
+      "role": "admin",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "9420052",
+      "name": "Durga Kar",
+      "email": "durga.kar@gmail.com",
+      "role": "admin",
+      "organizationId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\trole\torganizationId\n1\tShwan Lee\tslee72106@gmail.com\tadmin\tNULL\n390151\tJason Yu\tjason41659@gmail.com\tadmin\tNULL\n750035\tBrian Chen\tbchen2561@gmail.com\tadmin\tNULL\n840001\tChristopher Phelps\tccphelps15@gmail.com\tadmin\tNULL\n933332\tShourya Kudaravalli\tkudaravalli.shourya@gmail.com\tadmin\tNULL\n2522851\tMichael Adenew\tmichaeladenew24@gmail.com\tadmin\tNULL\n3900013\tNajib hanna\tnajib.hanna1@gmail.com\tuser\t2\n9180009\tkushal gupta\tkushalguptadtu@gmail.com\tadmin\tNULL\n9420052\tDurga Kar\tdurga.kar@gmail.com\tadmin\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 267
+}

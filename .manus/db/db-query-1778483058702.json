@@ -1,0 +1,126 @@
+{
+  "query": "SELECT id, title FROM tasks WHERE title LIKE '%test%' OR title LIKE '%Test%' OR title LIKE '%TEST%'; SELECT id, name FROM spvs WHERE name LIKE '%test%' OR name LIKE '%Test%' OR name LIKE '%TEST%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, title FROM tasks WHERE title LIKE '%test%' OR title LIKE '%Test%' OR title LIKE '%TEST%'; SELECT id, name FROM spvs WHERE name LIKE '%test%' OR name LIKE '%Test%' OR name LIKE '%TEST%';",
+  "rows": [
+    {
+      "id": "1200044",
+      "title": "Vitest task 1776389096791"
+    },
+    {
+      "id": "1200164",
+      "title": "QA-Menu development and testing"
+    },
+    {
+      "id": "1200186",
+      "title": "Vitest task 1776392442326"
+    },
+    {
+      "id": "1200190",
+      "title": "Vitest task 1776394502157"
+    },
+    {
+      "id": "1200194",
+      "title": "Vitest task 1776394606897"
+    },
+    {
+      "id": "1200207",
+      "title": "Vitest task 1776394669559"
+    },
+    {
+      "id": "1200214",
+      "title": "Vitest task 1776398990588"
+    },
+    {
+      "id": "1200221",
+      "title": "Vitest task 1776401373154"
+    },
+    {
+      "id": "1230004",
+      "title": "Vitest task 1776438253087"
+    },
+    {
+      "id": "1230011",
+      "title": "Vitest task 1776439311413"
+    },
+    {
+      "id": "1230018",
+      "title": "Vitest task 1776439529208"
+    },
+    {
+      "id": "1230022",
+      "title": "Vitest task 1776439960816"
+    },
+    {
+      "id": "1260035",
+      "title": "Develop detailed pilot testing plan and success metrics"
+    },
+    {
+      "id": "1350024",
+      "title": "Vitest task 1776635735254"
+    },
+    {
+      "id": "1350030",
+      "title": "Vitest task 1776636108666"
+    },
+    {
+      "id": "1350039",
+      "title": "Vitest task 1776636715266"
+    },
+    {
+      "id": "1500003",
+      "title": "Prepare comprehensive pilot testing materials for shortlisted users/partners"
+    },
+    {
+      "id": "1560004",
+      "title": "Vitest task 1776829060981"
+    },
+    {
+      "id": "1590004",
+      "title": "Vitest task 1776877640438"
+    },
+    {
+      "id": "1590013",
+      "title": "Vitest task 1776880517274"
+    },
+    {
+      "id": "1620002",
+      "title": "Prepare Data Collection Tools & Metrics for Hypothesis Testing"
+    },
+    {
+      "id": "1650004",
+      "title": "Vitest task 1776901922152"
+    },
+    {
+      "id": "1650008",
+      "title": "Vitest task 1776902028744"
+    },
+    {
+      "id": "1650012",
+      "title": "Vitest task 1776902238459"
+    },
+    {
+      "id": "1650052",
+      "title": "Vitest task 1776912059784"
+    },
+    {
+      "id": "2190012",
+      "title": "Vitest task 1777431091023"
+    },
+    {
+      "id": "2610007",
+      "title": "Review and update LOI/MOU draft with latest regulatory insights from legal counsel and government liaisons"
+    },
+    {
+      "id": "3090008",
+      "title": "Vitest task 1778462832342"
+    },
+    {
+      "id": "3090017",
+      "title": "Vitest task 1778462989129"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\n1200044\tVitest task 1776389096791\n1200164\tQA-Menu development and testing\n1200186\tVitest task 1776392442326\n1200190\tVitest task 1776394502157\n1200194\tVitest task 1776394606897\n1200207\tVitest task 1776394669559\n1200214\tVitest task 1776398990588\n1200221\tVitest task 1776401373154\n1230004\tVitest task 1776438253087\n1230011\tVitest task 1776439311413\n1230018\tVitest task 1776439529208\n1230022\tVitest task 1776439960816\n1260035\tDevelop detailed pilot testing plan and success metrics\n1350024\tVitest task 1776635735254\n1350030\tVitest task 1776636108666\n1350039\tVitest task 1776636715266\n1500003\tPrepare comprehensive pilot testing materials for shortlisted users/partners\n1560004\tVitest task 1776829060981\n1590004\tVitest task 1776877640438\n1590013\tVitest task 1776880517274\n1620002\tPrepare Data Collection Tools & Metrics for Hypothesis Testing\n1650004\tVitest task 1776901922152\n1650008\tVitest task 1776902028744\n1650012\tVitest task 1776902238459\n1650052\tVitest task 1776912059784\n2190012\tVitest task 1777431091023\n2610007\tReview and update LOI/MOU draft with latest regulatory insights from legal counsel and government liaisons\n3090008\tVitest task 1778462832342\n3090017\tVitest task 1778462989129\n",
+  "stderr": "",
+  "execution_time_ms": 278
+}

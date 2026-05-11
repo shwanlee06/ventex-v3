@@ -1,0 +1,8 @@
+{
+  "query": "SELECT 'ventures' as tbl, COUNT(*) as cnt FROM ventures WHERE org_id IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'tasks', COUNT(*) FROM tasks WHERE org_id IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'spvs', COUNT(*) FROM spvs WHERE org_id IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'team_members', COUNT(*) FROM team_members WHERE org_id IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'distributions', COUNT(*) FROM distributions WHERE org_id IN (990016, 990030, 990031, 1020001);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT 'ventures' as tbl, COUNT(*) as cnt FROM ventures WHERE org_id IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'tasks', COUNT(*) FROM tasks WHERE org_id IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'spvs', COUNT(*) FROM spvs WHERE org_id IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'team_members', COUNT(*) FROM team_members WHERE org_id IN (990016, 990030, 990031, 1020001) UNION ALL SELECT 'distributions', COUNT(*) FROM distributions WHERE org_id IN (990016, 990030, 990031, 1020001);",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'org_id' in 'where clause'"
+  ]
+}

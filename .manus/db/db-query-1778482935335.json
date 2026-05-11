@@ -1,0 +1,38 @@
+{
+  "query": "SELECT id, name, slug, type, orgStatus FROM organizations WHERE id > 870039;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, slug, type, orgStatus FROM organizations WHERE id > 870039;",
+  "rows": [
+    {
+      "id": "990016",
+      "name": "Test Pilot 123",
+      "slug": "test-pilot-123",
+      "type": "client",
+      "orgStatus": "active"
+    },
+    {
+      "id": "990030",
+      "name": "AI Test Client",
+      "slug": "ai-test-client-1776880521234",
+      "type": "client",
+      "orgStatus": "active"
+    },
+    {
+      "id": "990031",
+      "name": "AI Empty Test",
+      "slug": "ai-empty-test-1776880521375",
+      "type": "client",
+      "orgStatus": "active"
+    },
+    {
+      "id": "1020001",
+      "name": "Shwan Capital Group",
+      "slug": "shwan-capital-group",
+      "type": "client",
+      "orgStatus": "active"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\ttype\torgStatus\n990016\tTest Pilot 123\ttest-pilot-123\tclient\tactive\n990030\tAI Test Client\tai-test-client-1776880521234\tclient\tactive\n990031\tAI Empty Test\tai-empty-test-1776880521375\tclient\tactive\n1020001\tShwan Capital Group\tshwan-capital-group\tclient\tactive\n",
+  "stderr": "",
+  "execution_time_ms": 267
+}

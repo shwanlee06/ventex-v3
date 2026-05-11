@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM venture_folders WHERE ventureId IN (SELECT id FROM ventures WHERE name LIKE 'Test Venture%'); DELETE FROM tasks WHERE ventureId IN (SELECT id FROM ventures WHERE name LIKE 'Test Venture%'); DELETE FROM org_venture_access WHERE ventureId IN (SELECT id FROM ventures WHERE name LIKE 'Test Venture%');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute DELETE FROM venture_folders WHERE ventureId IN (SELECT id FROM ventures WHERE name LIKE 'Test Venture%'); DELETE FROM tasks WHERE ventureId IN (SELECT id FROM ventures WHERE name LIKE 'Test Venture%'); DELETE FROM org_venture_access WHERE ventureId IN (SELECT id FROM ventures WHERE name LIKE 'Test Venture%');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 283
+}

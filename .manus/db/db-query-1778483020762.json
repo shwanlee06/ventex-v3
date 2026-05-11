@@ -1,0 +1,256 @@
+{
+  "query": "SELECT id, name, sector, status FROM ventures WHERE name LIKE '%test%' OR name LIKE '%Test%' OR name LIKE '%TEST%' OR name LIKE '%dummy%' OR name LIKE '%sample%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, sector, status FROM ventures WHERE name LIKE '%test%' OR name LIKE '%Test%' OR name LIKE '%TEST%' OR name LIKE '%dummy%' OR name LIKE '%sample%';",
+  "rows": [
+    {
+      "id": "660017",
+      "name": "Test Venture 1776362459266",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "660021",
+      "name": "Test Venture 1776363945904",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "660025",
+      "name": "Test Venture 1776366155563",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "660029",
+      "name": "Test Venture 1776366984757",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "660033",
+      "name": "Test Venture 1776367648567",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "660037",
+      "name": "Test Venture 1776368216421",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "660041",
+      "name": "Test Venture 1776368849026",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "660045",
+      "name": "Test Venture 1776370023050",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "660049",
+      "name": "Test Venture 1776370210505",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "690001",
+      "name": "Test Venture 1776376021119",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "690005",
+      "name": "Test Venture 1776376858984",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "690010",
+      "name": "Test Venture 1776376959308",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "720001",
+      "name": "Test Venture 1776377745187",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "720005",
+      "name": "Test Venture 1776377840068",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "750002",
+      "name": "Test Venture 1776380045524",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "780001",
+      "name": "Test Venture 1776383321860",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "810002",
+      "name": "Test Venture 1776386906995",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "810006",
+      "name": "Test Venture 1776389093451",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "810026",
+      "name": "Test Venture 1776392431460",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "810030",
+      "name": "Test Venture 1776394497744",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "810035",
+      "name": "Test Venture 1776394604171",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "810039",
+      "name": "Test Venture 1776394666947",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "810042",
+      "name": "Test Venture 1776398983420",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "810046",
+      "name": "Test Venture 1776401369203",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "840001",
+      "name": "Test Venture 1776438248732",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "840005",
+      "name": "Test Venture 1776439306081",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "840010",
+      "name": "Test Venture 1776439525448",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "840013",
+      "name": "Test Venture 1776439962616",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "870001",
+      "name": "Test Venture 1776635728449",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "870005",
+      "name": "Test Venture 1776636099798",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "870009",
+      "name": "Test Venture 1776636710942",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "900001",
+      "name": "Test Venture 1776829054196",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "930002",
+      "name": "Test Venture 1776877636512",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "930006",
+      "name": "Test Venture 1776880513189",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "960002",
+      "name": "Test Venture 1776901918764",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "960006",
+      "name": "Test Venture 1776902023879",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "960010",
+      "name": "Test Venture 1776902237970",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "960014",
+      "name": "Test Venture 1776912056711",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "990002",
+      "name": "Test Venture 1777431091757",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "1020002",
+      "name": "Test Venture 1778462830084",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "1020006",
+      "name": "Test Venture 1778462986399",
+      "sector": "Real Estate",
+      "status": "In progress"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tsector\tstatus\n660017\tTest Venture 1776362459266\tReal Estate\tIn progress\n660021\tTest Venture 1776363945904\tReal Estate\tIn progress\n660025\tTest Venture 1776366155563\tReal Estate\tIn progress\n660029\tTest Venture 1776366984757\tReal Estate\tIn progress\n660033\tTest Venture 1776367648567\tReal Estate\tIn progress\n660037\tTest Venture 1776368216421\tReal Estate\tIn progress\n660041\tTest Venture 1776368849026\tReal Estate\tIn progress\n660045\tTest Venture 1776370023050\tReal Estate\tIn progress\n660049\tTest Venture 1776370210505\tReal Estate\tIn progress\n690001\tTest Venture 1776376021119\tReal Estate\tIn progress\n690005\tTest Venture 1776376858984\tReal Estate\tIn progress\n690010\tTest Venture 1776376959308\tReal Estate\tIn progress\n720001\tTest Venture 1776377745187\tReal Estate\tIn progress\n720005\tTest Venture 1776377840068\tReal Estate\tIn progress\n750002\tTest Venture 1776380045524\tReal Estate\tIn progress\n780001\tTest Venture 1776383321860\tReal Estate\tIn progress\n810002\tTest Venture 1776386906995\tReal Estate\tIn progress\n810006\tTest Venture 1776389093451\tReal Estate\tIn progress\n810026\tTest Venture 1776392431460\tReal Estate\tIn progress\n810030\tTest Venture 1776394497744\tReal Estate\tIn progress\n810035\tTest Venture 1776394604171\tReal Estate\tIn progress\n810039\tTest Venture 1776394666947\tReal Estate\tIn progress\n810042\tTest Venture 1776398983420\tReal Estate\tIn progress\n810046\tTest Venture 1776401369203\tReal Estate\tIn progress\n840001\tTest Venture 1776438248732\tReal Estate\tIn progress\n840005\tTest Venture 1776439306081\tReal Estate\tIn progress\n840010\tTest Venture 1776439525448\tReal Estate\tIn progress\n840013\tTest Venture 1776439962616\tReal Estate\tIn progress\n870001\tTest Venture 1776635728449\tReal Estate\tIn progress\n870005\tTest Venture 1776636099798\tReal Estate\tIn progress\n870009\tTest Venture 1776636710942\tReal Estate\tIn progress\n900001\tTest Venture 1776829054196\tReal Estate\tIn progress\n930002\tTest Venture 1776877636512\tReal Estate\tIn progress\n930006\tTest Venture 1776880513189\tReal Estate\tIn progress\n960002\tTest Venture 1776901918764\tReal Estate\tIn progress\n960006\tTest Venture 1776902023879\tReal Estate\tIn progress\n960010\tTest Venture 1776902237970\tReal Estate\tIn progress\n960014\tTest Venture 1776912056711\tReal Estate\tIn progress\n990002\tTest Venture 1777431091757\tReal Estate\tIn progress\n1020002\tTest Venture 1778462830084\tReal Estate\tIn progress\n1020006\tTest Venture 1778462986399\tReal Estate\tIn progress\n",
+  "stderr": "",
+  "execution_time_ms": 267
+}
