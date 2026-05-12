@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM team_members WHERE id IN (1110001, 1110002, 1110008, 1110009, 1110015, 1110016);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute DELETE FROM team_members WHERE id IN (1110001, 1110002, 1110008, 1110009, 1110015, 1110016);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 271
+}

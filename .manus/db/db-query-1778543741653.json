@@ -1,0 +1,25 @@
+{
+  "query": "SHOW TABLES LIKE '%team%'; SHOW TABLES LIKE '%member%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SHOW TABLES LIKE '%team%'; SHOW TABLES LIKE '%member%';",
+  "rows": [
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%team%)": "spv_team"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%team%)": "team_members"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%team%)": "venture_team"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%team%)": "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%member%)"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%team%)": "team_members"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%team%)\nspv_team\nteam_members\nventure_team\nTables_in_TYkqBQavc4Sd5YvF3sSZqT (%member%)\nteam_members\n",
+  "stderr": "",
+  "execution_time_ms": 269
+}

@@ -1,0 +1,34 @@
+{
+  "query": "SELECT * FROM org_venture_access WHERE ventureId IN (1050001, 1050003, 1050004, 1050005, 1050006, 1050007, 1050010, 1050011, 1050012);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT * FROM org_venture_access WHERE ventureId IN (1050001, 1050003, 1050004, 1050005, 1050006, 1050007, 1050010, 1050011, 1050012);",
+  "rows": [
+    {
+      "id": "1050002",
+      "organizationId": "2",
+      "ventureId": "1050003",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-05-11 23:31:48"
+    },
+    {
+      "id": "1050003",
+      "organizationId": "2",
+      "ventureId": "1050006",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-05-11 23:33:30"
+    },
+    {
+      "id": "1050006",
+      "organizationId": "2",
+      "ventureId": "1050011",
+      "orgPermission": "full",
+      "grantedBy": "1",
+      "createdAt": "2026-05-11 23:34:51"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\torganizationId\tventureId\torgPermission\tgrantedBy\tcreatedAt\n1050002\t2\t1050003\tfull\t1\t2026-05-11 23:31:48\n1050003\t2\t1050006\tfull\t1\t2026-05-11 23:33:30\n1050006\t2\t1050011\tfull\t1\t2026-05-11 23:34:51\n",
+  "stderr": "",
+  "execution_time_ms": 269
+}

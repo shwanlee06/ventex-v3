@@ -1,0 +1,46 @@
+{
+  "query": "SHOW TABLES LIKE '%venture%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SHOW TABLES LIKE '%venture%';",
+  "rows": [
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%venture%)": "org_venture_access"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%venture%)": "spv_ventures"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%venture%)": "user_venture_access"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%venture%)": "venture_files"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%venture%)": "venture_folders"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%venture%)": "venture_forecast"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%venture%)": "venture_process_overrides"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%venture%)": "venture_process_tracking"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%venture%)": "venture_risks"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%venture%)": "venture_team"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%venture%)": "venture_velocity"
+    },
+    {
+      "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%venture%)": "ventures"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_TYkqBQavc4Sd5YvF3sSZqT (%venture%)\norg_venture_access\nspv_ventures\nuser_venture_access\nventure_files\nventure_folders\nventure_forecast\nventure_process_overrides\nventure_process_tracking\nventure_risks\nventure_team\nventure_velocity\nventures\n",
+  "stderr": "",
+  "execution_time_ms": 271
+}

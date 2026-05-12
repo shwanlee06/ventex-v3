@@ -1,0 +1,70 @@
+{
+  "query": "SELECT id, name, sector, status FROM ventures WHERE name LIKE '%Test%' OR name LIKE '%OrgLinked%' OR name LIKE '%Unassigned%' OR name LIKE '%AI %';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, sector, status FROM ventures WHERE name LIKE '%Test%' OR name LIKE '%OrgLinked%' OR name LIKE '%Unassigned%' OR name LIKE '%AI %';",
+  "rows": [
+    {
+      "id": "15",
+      "name": "KTL-Dubai Casino License",
+      "sector": "Entertainment",
+      "status": "On-Hold"
+    },
+    {
+      "id": "1050001",
+      "name": "Test Venture 1778542308602",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "1050003",
+      "name": "OrgLinked Venture 1778542308959",
+      "sector": "F&B",
+      "status": "In progress"
+    },
+    {
+      "id": "1050004",
+      "name": "Unassigned Venture 1778542309081",
+      "sector": "Others",
+      "status": "In progress"
+    },
+    {
+      "id": "1050005",
+      "name": "Test Venture 1778542410445",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "1050006",
+      "name": "OrgLinked Venture 1778542410802",
+      "sector": "F&B",
+      "status": "In progress"
+    },
+    {
+      "id": "1050007",
+      "name": "Unassigned Venture 1778542410930",
+      "sector": "Others",
+      "status": "In progress"
+    },
+    {
+      "id": "1050010",
+      "name": "Test Venture 1778542491252",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "1050011",
+      "name": "OrgLinked Venture 1778542491599",
+      "sector": "F&B",
+      "status": "In progress"
+    },
+    {
+      "id": "1050012",
+      "name": "Unassigned Venture 1778542491704",
+      "sector": "Others",
+      "status": "In progress"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tsector\tstatus\n15\tKTL-Dubai Casino License\tEntertainment\tOn-Hold\n1050001\tTest Venture 1778542308602\tReal Estate\tIn progress\n1050003\tOrgLinked Venture 1778542308959\tF&B\tIn progress\n1050004\tUnassigned Venture 1778542309081\tOthers\tIn progress\n1050005\tTest Venture 1778542410445\tReal Estate\tIn progress\n1050006\tOrgLinked Venture 1778542410802\tF&B\tIn progress\n1050007\tUnassigned Venture 1778542410930\tOthers\tIn progress\n1050010\tTest Venture 1778542491252\tReal Estate\tIn progress\n1050011\tOrgLinked Venture 1778542491599\tF&B\tIn progress\n1050012\tUnassigned Venture 1778542491704\tOthers\tIn progress\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}

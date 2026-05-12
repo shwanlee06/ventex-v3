@@ -1,0 +1,18 @@
+{
+  "query": "SELECT v.id, v.name, v.sector, v.status, v.stage, v.operatingEntityId FROM ventures v WHERE v.name = 'Berlin';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT v.id, v.name, v.sector, v.status, v.stage, v.operatingEntityId FROM ventures v WHERE v.name = 'Berlin';",
+  "rows": [
+    {
+      "id": "14",
+      "name": "Berlin",
+      "sector": "Entertainment",
+      "status": "Completed",
+      "stage": "Active Ventures",
+      "operatingEntityId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tsector\tstatus\tstage\toperatingEntityId\n14\tBerlin\tEntertainment\tCompleted\tActive Ventures\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 260
+}

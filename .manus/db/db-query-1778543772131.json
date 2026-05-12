@@ -1,0 +1,94 @@
+{
+  "query": "SELECT id, name, organizationId, stage FROM spvs LIMIT 15;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, organizationId, stage FROM spvs LIMIT 15;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Venezuela Mining Rights",
+      "organizationId": "2",
+      "stage": "Active deal"
+    },
+    {
+      "id": "2",
+      "name": "Azzam - Yacht",
+      "organizationId": "2",
+      "stage": "Active deal"
+    },
+    {
+      "id": "3",
+      "name": "Crude Oil Deal",
+      "organizationId": "2",
+      "stage": "In negotiation"
+    },
+    {
+      "id": "4",
+      "name": "Shipping Deal",
+      "organizationId": "2",
+      "stage": "Active deal"
+    },
+    {
+      "id": "5",
+      "name": "Chakra Yacht - Brokerage",
+      "organizationId": "2",
+      "stage": "Active deal"
+    },
+    {
+      "id": "6",
+      "name": "Serenity Yacht - Brokerage",
+      "organizationId": "2",
+      "stage": "Active deal"
+    },
+    {
+      "id": "7",
+      "name": "Ego Yacht",
+      "organizationId": "2",
+      "stage": "Active deal"
+    },
+    {
+      "id": "8",
+      "name": "Onara",
+      "organizationId": "2",
+      "stage": "Closed deal"
+    },
+    {
+      "id": "9",
+      "name": "ReserveOne",
+      "organizationId": "2",
+      "stage": "Closed deal"
+    },
+    {
+      "id": "10",
+      "name": "Casino License",
+      "organizationId": "2",
+      "stage": "Dropped deal"
+    },
+    {
+      "id": "60005",
+      "name": "Meridian RE Fund I",
+      "organizationId": "870037",
+      "stage": "Active deal"
+    },
+    {
+      "id": "60006",
+      "name": "Meridian Yacht SPV",
+      "organizationId": "870037",
+      "stage": "In negotiation"
+    },
+    {
+      "id": "60007",
+      "name": "Meridian Growth Fund",
+      "organizationId": "870037",
+      "stage": "Pipeline"
+    },
+    {
+      "id": "60008",
+      "name": "Volkov Entertainment SPV",
+      "organizationId": "870038",
+      "stage": "Active deal"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\torganizationId\tstage\n1\tVenezuela Mining Rights\t2\tActive deal\n2\tAzzam - Yacht\t2\tActive deal\n3\tCrude Oil Deal\t2\tIn negotiation\n4\tShipping Deal\t2\tActive deal\n5\tChakra Yacht - Brokerage\t2\tActive deal\n6\tSerenity Yacht - Brokerage\t2\tActive deal\n7\tEgo Yacht\t2\tActive deal\n8\tOnara\t2\tClosed deal\n9\tReserveOne\t2\tClosed deal\n10\tCasino License\t2\tDropped deal\n60005\tMeridian RE Fund I\t870037\tActive deal\n60006\tMeridian Yacht SPV\t870037\tIn negotiation\n60007\tMeridian Growth Fund\t870037\tPipeline\n60008\tVolkov Entertainment SPV\t870038\tActive deal\n",
+  "stderr": "",
+  "execution_time_ms": 278
+}

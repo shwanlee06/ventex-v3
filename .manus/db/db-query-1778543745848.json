@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, name, organizationId FROM team_members WHERE name LIKE '%Test%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, organizationId FROM team_members WHERE name LIKE '%Test%';",
+  "rows": [
+    {
+      "id": "1110001",
+      "name": "Test VENTEX Member 1778542309851",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "1110002",
+      "name": "Test Client Contact 1778542310186",
+      "organizationId": "2"
+    },
+    {
+      "id": "1110008",
+      "name": "Test VENTEX Member 1778542412552",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "1110009",
+      "name": "Test Client Contact 1778542412910",
+      "organizationId": "2"
+    },
+    {
+      "id": "1110015",
+      "name": "Test VENTEX Member 1778542491212",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "1110016",
+      "name": "Test Client Contact 1778542491559",
+      "organizationId": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\torganizationId\n1110001\tTest VENTEX Member 1778542309851\tNULL\n1110002\tTest Client Contact 1778542310186\t2\n1110008\tTest VENTEX Member 1778542412552\tNULL\n1110009\tTest Client Contact 1778542412910\t2\n1110015\tTest VENTEX Member 1778542491212\tNULL\n1110016\tTest Client Contact 1778542491559\t2\n",
+  "stderr": "",
+  "execution_time_ms": 278
+}

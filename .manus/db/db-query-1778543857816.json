@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, name, sector FROM spvs WHERE name IN ('Onara', 'ReserveOne');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, sector FROM spvs WHERE name IN ('Onara', 'ReserveOne');",
+  "rows": [
+    {
+      "id": "8",
+      "name": "Onara",
+      "sector": "TBD"
+    },
+    {
+      "id": "9",
+      "name": "ReserveOne",
+      "sector": "TBD"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tsector\n8\tOnara\tTBD\n9\tReserveOne\tTBD\n",
+  "stderr": "",
+  "execution_time_ms": 266
+}

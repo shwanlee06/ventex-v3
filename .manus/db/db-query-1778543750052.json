@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, name, slug FROM organizations WHERE name LIKE '%Test%' OR name LIKE '%AI %';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, slug FROM organizations WHERE name LIKE '%Test%' OR name LIKE '%AI %';",
+  "rows": [
+    {
+      "id": "1110012",
+      "name": "AI Test Client",
+      "slug": "ai-test-client-1778542316519"
+    },
+    {
+      "id": "1110014",
+      "name": "AI Empty Test",
+      "slug": "ai-empty-test-1778542316878"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\n1110012\tAI Test Client\tai-test-client-1778542316519\n1110014\tAI Empty Test\tai-empty-test-1778542316878\n",
+  "stderr": "",
+  "execution_time_ms": 268
+}

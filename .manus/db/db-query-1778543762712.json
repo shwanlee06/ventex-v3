@@ -1,0 +1,30 @@
+{
+  "query": "SELECT id, name, fund FROM distributions WHERE name LIKE '%ATLAS%' OR fund LIKE '%ATLAS%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, fund FROM distributions WHERE name LIKE '%ATLAS%' OR fund LIKE '%ATLAS%';",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Q4 2025 Profit Share",
+      "fund": "ATLAS Venture Fund I"
+    },
+    {
+      "id": "2",
+      "name": "2025 Return of Capital - SPV Alpha",
+      "fund": "ATLAS SPV Alpha"
+    },
+    {
+      "id": "3",
+      "name": "2026 Scheduled Dividend - REIT Fund I",
+      "fund": "ATLAS Real Estate Fund II"
+    },
+    {
+      "id": "4",
+      "name": "Cancelled Profit Distribution - Growth Equity Fund II",
+      "fund": "ATLAS Growth Equity Fund II"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tfund\n1\tQ4 2025 Profit Share\tATLAS Venture Fund I\n2\t2025 Return of Capital - SPV Alpha\tATLAS SPV Alpha\n3\t2026 Scheduled Dividend - REIT Fund I\tATLAS Real Estate Fund II\n4\tCancelled Profit Distribution - Growth Equity Fund II\tATLAS Growth Equity Fund II\n",
+  "stderr": "",
+  "execution_time_ms": 296
+}
