@@ -1,0 +1,30 @@
+{
+  "query": "\nSELECT o.name, o.slug, COUNT(DISTINCT ova.ventureId) as venture_count\nFROM organizations o\nLEFT JOIN org_venture_access ova ON ova.organizationId = o.id\nGROUP BY o.id, o.name, o.slug\nORDER BY venture_count DESC\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \nSELECT o.name, o.slug, COUNT(DISTINCT ova.ventureId) as venture_count\nFROM organizations o\nLEFT JOIN org_venture_access ova ON ova.organizationId = o.id\nGROUP BY o.id, o.name, o.slug\nORDER BY venture_count DESC\n",
+  "rows": [
+    {
+      "name": "Royalton Venture Holding",
+      "slug": "royalton",
+      "venture_count": "21"
+    },
+    {
+      "name": "Meridian Holdings",
+      "slug": "meridian-holdings",
+      "venture_count": "5"
+    },
+    {
+      "name": "Volkov Capital",
+      "slug": "volkov-capital",
+      "venture_count": "3"
+    },
+    {
+      "name": "VENTEX",
+      "slug": "ventex",
+      "venture_count": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\tslug\tventure_count\nRoyalton Venture Holding\troyalton\t21\nMeridian Holdings\tmeridian-holdings\t5\nVolkov Capital\tvolkov-capital\t3\nVENTEX\tventex\t0\n",
+  "stderr": "",
+  "execution_time_ms": 276
+}

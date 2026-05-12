@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT o.name, o.slug, \n  COUNT(DISTINCT ova.ventureId) as venture_count,\n  (SELECT COUNT(*) FROM tasks t WHERE t.ventureId IN (SELECT ventureId FROM org_venture_access WHERE organizationId = o.id)) as task_count,\n  (SELECT COUNT(*) FROM distributions d WHERE d.organizationId = o.id) as dist_count\nFROM organizations o\nLEFT JOIN org_venture_access ova ON ova.organizationId = o.id\nWHERE o.status = 'active'\nGROUP BY o.id, o.name, o.slug\nORDER BY venture_count DESC\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \nSELECT o.name, o.slug, \n  COUNT(DISTINCT ova.ventureId) as venture_count,\n  (SELECT COUNT(*) FROM tasks t WHERE t.ventureId IN (SELECT ventureId FROM org_venture_access WHERE organizationId = o.id)) as task_count,\n  (SELECT COUNT(*) FROM distributions d WHERE d.organizationId = o.id) as dist_count\nFROM organizations o\nLEFT JOIN org_venture_access ova ON ova.organizationId = o.id\nWHERE o.status = 'active'\nGROUP BY o.id, o.name, o.slug\nORDER BY venture_count DESC\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'o.status' in 'where clause'"
+  ]
+}

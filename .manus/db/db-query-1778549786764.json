@@ -1,0 +1,26 @@
+{
+  "query": "\nSELECT 'tasks' as tbl, COUNT(*) as cnt FROM tasks WHERE title LIKE '%QA-%'\nUNION ALL\nSELECT 'agent_events', COUNT(*) FROM agent_events WHERE message LIKE '%QA-%'\nUNION ALL\nSELECT 'agent_drafts_body', COUNT(*) FROM agent_drafts WHERE body LIKE '%QA-%'\nUNION ALL\nSELECT 'agent_drafts_subj', COUNT(*) FROM agent_drafts WHERE subject LIKE '%QA-%'\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \nSELECT 'tasks' as tbl, COUNT(*) as cnt FROM tasks WHERE title LIKE '%QA-%'\nUNION ALL\nSELECT 'agent_events', COUNT(*) FROM agent_events WHERE message LIKE '%QA-%'\nUNION ALL\nSELECT 'agent_drafts_body', COUNT(*) FROM agent_drafts WHERE body LIKE '%QA-%'\nUNION ALL\nSELECT 'agent_drafts_subj', COUNT(*) FROM agent_drafts WHERE subject LIKE '%QA-%'\n",
+  "rows": [
+    {
+      "tbl": "agent_drafts_subj",
+      "cnt": "0"
+    },
+    {
+      "tbl": "agent_drafts_body",
+      "cnt": "0"
+    },
+    {
+      "tbl": "tasks",
+      "cnt": "0"
+    },
+    {
+      "tbl": "agent_events",
+      "cnt": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "tbl\tcnt\nagent_drafts_subj\t0\nagent_drafts_body\t0\ntasks\t0\nagent_events\t0\n",
+  "stderr": "",
+  "execution_time_ms": 285
+}

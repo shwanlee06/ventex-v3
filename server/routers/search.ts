@@ -39,15 +39,25 @@ export const searchRouter = router({
         ? and(like(distributions.name, q), eq(distributions.organizationId, effectiveOrgId))
         : like(distributions.name, q);
 
+      // SPV scoping: filter by organizationId when org-scoped
+      const spvWhere = effectiveOrgId
+        ? and(like(spvs.name, q), eq(spvs.organizationId, effectiveOrgId))
+        : like(spvs.name, q);
+
+      // Team scoping: filter by organizationId when org-scoped
+      const teamWhere = effectiveOrgId
+        ? and(like(teamMembers.name, q), eq(teamMembers.organizationId, effectiveOrgId))
+        : like(teamMembers.name, q);
+
       const [ventureResults, spvResults, taskResults, teamResults, distResults] = await Promise.all([
         db.select({ id: ventures.id, name: ventures.name, sector: ventures.sector, slug: ventures.slug, status: ventures.status })
           .from(ventures).where(ventureWhere).limit(5),
         db.select({ id: spvs.id, name: spvs.name, sector: spvs.sector, slug: spvs.slug, stage: spvs.stage })
-          .from(spvs).where(like(spvs.name, q)).limit(5),
+          .from(spvs).where(spvWhere).limit(5),
         db.select({ id: tasks.id, title: tasks.title, status: tasks.status, priority: tasks.priority })
           .from(tasks).where(taskWhere).limit(5),
         db.select({ id: teamMembers.id, name: teamMembers.name, role: teamMembers.role, slug: teamMembers.slug })
-          .from(teamMembers).where(like(teamMembers.name, q)).limit(5),
+          .from(teamMembers).where(teamWhere).limit(5),
         db.select({ id: distributions.id, name: distributions.name, amount: distributions.amount, status: distributions.status })
           .from(distributions).where(distWhere).limit(5),
       ]);

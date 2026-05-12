@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT 'daily_briefs_headline' as tbl, COUNT(*) as cnt FROM daily_briefs WHERE headline LIKE '%QA-%'\nUNION ALL\nSELECT 'venture_velocity', COUNT(*) FROM venture_velocity WHERE lastAgentNote LIKE '%QA-%'\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \nSELECT 'daily_briefs_headline' as tbl, COUNT(*) as cnt FROM daily_briefs WHERE headline LIKE '%QA-%'\nUNION ALL\nSELECT 'venture_velocity', COUNT(*) FROM venture_velocity WHERE lastAgentNote LIKE '%QA-%'\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'lastagentnote' in 'where clause'"
+  ]
+}

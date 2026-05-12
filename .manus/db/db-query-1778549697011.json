@@ -1,0 +1,30 @@
+{
+  "query": "SELECT id, LEFT(message, 100) as msg FROM agent_events WHERE message LIKE '%QA-%' LIMIT 5",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, LEFT(message, 100) as msg FROM agent_events WHERE message LIKE '%QA-%' LIMIT 5",
+  "rows": [
+    {
+      "id": "5310249",
+      "msg": "Completed \"Environmental impact assessment\" for QA-Meridian Tower Dubai. Research deliverable genera"
+    },
+    {
+      "id": "5310250",
+      "msg": "Completed \"Regulatory compliance check\" for QA-Meridian Marina Residences. Research deliverable gene"
+    },
+    {
+      "id": "5310251",
+      "msg": "Completed \"Local partner due diligence\" for QA-Meridian Marina Residences. Research deliverable gene"
+    },
+    {
+      "id": "5310252",
+      "msg": "Completed \"Zoning compliance review\" for QA-Meridian Riviera Estate. Review deliverable generated."
+    },
+    {
+      "id": "5310253",
+      "msg": "Completed \"Heritage site assessment\" for QA-Meridian Riviera Estate. Research deliverable generated."
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tmsg\n5310249\tCompleted \"Environmental impact assessment\" for QA-Meridian Tower Dubai. Research deliverable genera\n5310250\tCompleted \"Regulatory compliance check\" for QA-Meridian Marina Residences. Research deliverable gene\n5310251\tCompleted \"Local partner due diligence\" for QA-Meridian Marina Residences. Research deliverable gene\n5310252\tCompleted \"Zoning compliance review\" for QA-Meridian Riviera Estate. Review deliverable generated.\n5310253\tCompleted \"Heritage site assessment\" for QA-Meridian Riviera Estate. Research deliverable generated.\n",
+  "stderr": "",
+  "execution_time_ms": 269
+}

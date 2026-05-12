@@ -27,6 +27,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 import { logAction } from "@/lib/operatorSession";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 
@@ -189,11 +190,12 @@ async function streamChat(
   onDone: (model: string) => void,
   onError: (error: string) => void,
   signal?: AbortSignal,
+  organizationId?: number,
 ): Promise<void> {
   const response = await fetch("/api/ai/stream", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, organizationId }),
     signal,
   });
   if (!response.ok) throw new Error(`Request failed: ${response.status}`);
@@ -224,6 +226,7 @@ async function streamChat(
 
 
 export default function Agent() {
+  const { activeOrgId } = useWorkspace();
   const [chatIndex, setChatIndex] = useState<{ id: string; title: string; createdAt: string; updatedAt: string }[]>(() => {
     const existing = loadChatIndex();
     if (existing.length > 0) return existing;
@@ -504,6 +507,7 @@ export default function Agent() {
           setIsStreaming(false);
         },
         controller.signal,
+        activeOrgId || undefined,
       );
     } catch (error) {
       if ((error as Error).name === "AbortError") return;

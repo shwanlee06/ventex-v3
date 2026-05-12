@@ -1,0 +1,22 @@
+{
+  "query": "\nSELECT \n  (SELECT COUNT(*) FROM ventures WHERE status = 'In progress') as active_ventures,\n  (SELECT COUNT(*) FROM ventures) as total_ventures,\n  (SELECT COUNT(*) FROM spvs WHERE stage IN ('Active deal', 'In negotiation')) as active_spvs,\n  (SELECT COUNT(*) FROM spvs) as total_spvs,\n  (SELECT COUNT(*) FROM tasks WHERE status != 'complete') as open_tasks,\n  (SELECT COUNT(*) FROM tasks WHERE status = 'complete') as completed_tasks,\n  (SELECT COUNT(*) FROM tasks) as total_tasks,\n  (SELECT COUNT(*) FROM tasks WHERE status != 'complete' AND dueDate IS NOT NULL AND dueDate < CURDATE()) as overdue_tasks,\n  (SELECT COUNT(*) FROM distributions WHERE status = 'Paid') as paid_distributions,\n  (SELECT SUM(amount) FROM distributions WHERE status = 'Paid') as total_paid_amount\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \nSELECT \n  (SELECT COUNT(*) FROM ventures WHERE status = 'In progress') as active_ventures,\n  (SELECT COUNT(*) FROM ventures) as total_ventures,\n  (SELECT COUNT(*) FROM spvs WHERE stage IN ('Active deal', 'In negotiation')) as active_spvs,\n  (SELECT COUNT(*) FROM spvs) as total_spvs,\n  (SELECT COUNT(*) FROM tasks WHERE status != 'complete') as open_tasks,\n  (SELECT COUNT(*) FROM tasks WHERE status = 'complete') as completed_tasks,\n  (SELECT COUNT(*) FROM tasks) as total_tasks,\n  (SELECT COUNT(*) FROM tasks WHERE status != 'complete' AND dueDate IS NOT NULL AND dueDate < CURDATE()) as overdue_tasks,\n  (SELECT COUNT(*) FROM distributions WHERE status = 'Paid') as paid_distributions,\n  (SELECT SUM(amount) FROM distributions WHERE status = 'Paid') as total_paid_amount\n",
+  "rows": [
+    {
+      "active_ventures": "22",
+      "total_ventures": "31",
+      "active_spvs": "11",
+      "total_spvs": "14",
+      "open_tasks": "92",
+      "completed_tasks": "487",
+      "total_tasks": "579",
+      "overdue_tasks": "70",
+      "paid_distributions": "10",
+      "total_paid_amount": "9765000"
+    }
+  ],
+  "messages": [],
+  "stdout": "active_ventures\ttotal_ventures\tactive_spvs\ttotal_spvs\topen_tasks\tcompleted_tasks\ttotal_tasks\toverdue_tasks\tpaid_distributions\ttotal_paid_amount\n22\t31\t11\t14\t92\t487\t579\t70\t10\t9765000\n",
+  "stderr": "",
+  "execution_time_ms": 297
+}

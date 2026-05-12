@@ -3601,3 +3601,11 @@
 - [x] Network request failures — zero tolerance (0 failures)
 - [x] Fix all discovered issues (12 DB fixes, passkey UI, mobile responsiveness)
 - [x] Full test suite: 959 tests, 60 files, 0 failures
+
+## Deep System Intelligence Audit — May 11, 2026
+- [x] Data isolation: verify every tRPC query scopes by org, no cross-client data leaks (search SPV+team fix applied)
+- [x] AI agent context: ensure it understands org boundaries, venture relationships, task ownership (org-scoped buildLiveContext)
+- [x] Dashboard metrics: verify counts, overdue logic, velocity calculations are accurate per-client (orphan data cleaned)
+- [x] UI consistency: check every page for visual bugs, broken states, missing data, dead buttons (ATLAS→VENTEX email fix)
+- [x] Fix all discovered data scoping, AI context, metrics, and UI issues
+- [x] Write tests for data isolation and run full suite (970 tests, 62 files, 0 failures)

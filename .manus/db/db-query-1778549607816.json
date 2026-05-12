@@ -1,0 +1,130 @@
+{
+  "query": "\nSELECT ova.ventureId, v.name, v.status\nFROM org_venture_access ova\nLEFT JOIN ventures v ON v.id = ova.ventureId\nWHERE ova.organizationId = (SELECT id FROM organizations WHERE slug = 'royalton')\nAND v.id IS NULL\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \nSELECT ova.ventureId, v.name, v.status\nFROM org_venture_access ova\nLEFT JOIN ventures v ON v.id = ova.ventureId\nWHERE ova.organizationId = (SELECT id FROM organizations WHERE slug = 'royalton')\nAND v.id IS NULL\n",
+  "rows": [
+    {
+      "ventureId": "540003",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "540006",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "540010",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "570003",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "570006",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "570011",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "570015",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "570018",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "600002",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "600006",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "630003",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "630006",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "870006",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "870010",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "900002",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "930003",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "930007",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "960003",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "960007",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "960011",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "960015",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "990003",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "1020003",
+      "name": "NULL",
+      "status": "NULL"
+    },
+    {
+      "ventureId": "1020007",
+      "name": "NULL",
+      "status": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "ventureId\tname\tstatus\n540003\tNULL\tNULL\n540006\tNULL\tNULL\n540010\tNULL\tNULL\n570003\tNULL\tNULL\n570006\tNULL\tNULL\n570011\tNULL\tNULL\n570015\tNULL\tNULL\n570018\tNULL\tNULL\n600002\tNULL\tNULL\n600006\tNULL\tNULL\n630003\tNULL\tNULL\n630006\tNULL\tNULL\n870006\tNULL\tNULL\n870010\tNULL\tNULL\n900002\tNULL\tNULL\n930003\tNULL\tNULL\n930007\tNULL\tNULL\n960003\tNULL\tNULL\n960007\tNULL\tNULL\n960011\tNULL\tNULL\n960015\tNULL\tNULL\n990003\tNULL\tNULL\n1020003\tNULL\tNULL\n1020007\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 273
+}

@@ -1,0 +1,34 @@
+{
+  "query": "SHOW COLUMNS FROM agent_drafts WHERE Field LIKE '%content%' OR Field LIKE '%draft%' OR Field LIKE '%body%'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SHOW COLUMNS FROM agent_drafts WHERE Field LIKE '%content%' OR Field LIKE '%draft%' OR Field LIKE '%body%'",
+  "rows": [
+    {
+      "Field": "draftType",
+      "Type": "varchar(32)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "body",
+      "Type": "text",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "draftStatus",
+      "Type": "varchar(16)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "pending",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\ndraftType\tvarchar(32)\tNO\t\tNULL\t\nbody\ttext\tNO\t\tNULL\t\ndraftStatus\tvarchar(16)\tNO\t\tpending\t\n",
+  "stderr": "",
+  "execution_time_ms": 264
+}

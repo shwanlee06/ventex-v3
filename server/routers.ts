@@ -218,7 +218,7 @@ export const appRouter = router({
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">
   <div style="max-width:560px;margin:0 auto;padding:48px 32px;">
     <div style="border-bottom:1px solid #222;padding-bottom:12px;margin-bottom:28px;">
-      <span style="color:#fff;font-size:14px;letter-spacing:0.15em;font-weight:600;">A T L A S</span>
+      <span style="color:#fff;font-size:14px;letter-spacing:0.15em;font-weight:600;">V E N T E X</span>
     </div>
     <p style="color:#a0a0a0;font-size:13px;line-height:1.7;">A sign-in link was requested for your account.</p>
     <p style="color:#a0a0a0;font-size:13px;line-height:1.7;">Click the button below to access your VENTEX dashboard. This link expires in 1 hour.</p>

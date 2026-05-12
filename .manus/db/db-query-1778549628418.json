@@ -1,0 +1,22 @@
+{
+  "query": "\nSELECT v.id, v.name, v.sector, v.status\nFROM ventures v\nLEFT JOIN org_venture_access ova ON ova.ventureId = v.id\nWHERE ova.id IS NULL\nORDER BY v.id\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \nSELECT v.id, v.name, v.sector, v.status\nFROM ventures v\nLEFT JOIN org_venture_access ova ON ova.ventureId = v.id\nWHERE ova.id IS NULL\nORDER BY v.id\n",
+  "rows": [
+    {
+      "id": "1050014",
+      "name": "Test Venture 1778544083342",
+      "sector": "Real Estate",
+      "status": "In progress"
+    },
+    {
+      "id": "1050016",
+      "name": "Unassigned Venture 1778544083843",
+      "sector": "Others",
+      "status": "In progress"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tsector\tstatus\n1050014\tTest Venture 1778544083342\tReal Estate\tIn progress\n1050016\tUnassigned Venture 1778544083843\tOthers\tIn progress\n",
+  "stderr": "",
+  "execution_time_ms": 264
+}

@@ -1,0 +1,22 @@
+{
+  "query": "\nSELECT 'agent_drafts' as tbl, COUNT(*) as cnt FROM agent_drafts WHERE body LIKE '%QA-%'\nUNION ALL\nSELECT 'smart_alerts', COUNT(*) FROM smart_alerts WHERE message LIKE '%QA-%'\nUNION ALL\nSELECT 'ai_observations', COUNT(*) FROM ai_observations WHERE observation LIKE '%QA-%'\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \nSELECT 'agent_drafts' as tbl, COUNT(*) as cnt FROM agent_drafts WHERE body LIKE '%QA-%'\nUNION ALL\nSELECT 'smart_alerts', COUNT(*) FROM smart_alerts WHERE message LIKE '%QA-%'\nUNION ALL\nSELECT 'ai_observations', COUNT(*) FROM ai_observations WHERE observation LIKE '%QA-%'\n",
+  "rows": [
+    {
+      "tbl": "smart_alerts",
+      "cnt": "0"
+    },
+    {
+      "tbl": "ai_observations",
+      "cnt": "0"
+    },
+    {
+      "tbl": "agent_drafts",
+      "cnt": "46"
+    }
+  ],
+  "messages": [],
+  "stdout": "tbl\tcnt\nsmart_alerts\t0\nai_observations\t0\nagent_drafts\t46\n",
+  "stderr": "",
+  "execution_time_ms": 273
+}

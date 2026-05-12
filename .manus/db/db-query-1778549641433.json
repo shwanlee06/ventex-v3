@@ -1,0 +1,17 @@
+{
+  "query": "\nSELECT \n  (SELECT COUNT(*) FROM ventures) as total_ventures,\n  (SELECT COUNT(*) FROM ventures WHERE status = 'In progress') as active_ventures,\n  (SELECT COUNT(*) FROM tasks WHERE status != 'complete' AND dueDate IS NOT NULL AND dueDate < CURDATE()) as overdue_tasks,\n  (SELECT COUNT(*) FROM tasks WHERE status != 'complete') as open_tasks,\n  (SELECT COUNT(*) FROM team_members) as team_count\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \nSELECT \n  (SELECT COUNT(*) FROM ventures) as total_ventures,\n  (SELECT COUNT(*) FROM ventures WHERE status = 'In progress') as active_ventures,\n  (SELECT COUNT(*) FROM tasks WHERE status != 'complete' AND dueDate IS NOT NULL AND dueDate < CURDATE()) as overdue_tasks,\n  (SELECT COUNT(*) FROM tasks WHERE status != 'complete') as open_tasks,\n  (SELECT COUNT(*) FROM team_members) as team_count\n",
+  "rows": [
+    {
+      "total_ventures": "29",
+      "active_ventures": "20",
+      "overdue_tasks": "70",
+      "open_tasks": "92",
+      "team_count": "22"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_ventures\tactive_ventures\toverdue_tasks\topen_tasks\tteam_count\n29\t20\t70\t92\t22\n",
+  "stderr": "",
+  "execution_time_ms": 278
+}

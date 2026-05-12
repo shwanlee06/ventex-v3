@@ -8,27 +8,80 @@ import { getDb } from "../db";
 import {
   ventures, tasks, spvs, distributions, teamMembers,
   documentIntelligence, ventureRisks, dailyBriefs, smartAlerts,
-  aiObservations, activityLog,
+  aiObservations, activityLog, orgVentureAccess, organizations,
 } from "../../drizzle/schema";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, inArray, and } from "drizzle-orm";
 
-async function buildLiveContext(): Promise<string> {
+/**
+ * Build live context — optionally scoped to a specific organization.
+ * When orgId is provided, only that client's data is included.
+ * When orgId is null/undefined, ALL data is included (admin global view).
+ */
+async function buildLiveContext(orgId?: number | null): Promise<string> {
   try {
     const db = await getDb();
     if (!db) return "";
 
-    const [allVentures, allTasks, allSpvs, allDist, allTeam, recentDocs, allRisks, latestBrief, alerts, observations] = await Promise.all([
-      db.select().from(ventures),
-      db.select().from(tasks),
-      db.select().from(spvs),
-      db.select().from(distributions),
-      db.select().from(teamMembers),
-      db.select().from(documentIntelligence).where(eq(documentIntelligence.processingStatus, "completed")).orderBy(desc(documentIntelligence.processedAt)).limit(10),
-      db.select().from(ventureRisks),
-      db.select().from(dailyBriefs).orderBy(desc(dailyBriefs.generatedAt)).limit(1),
-      db.select().from(smartAlerts).where(eq(smartAlerts.dismissed, 0)).limit(10),
-      db.select().from(aiObservations).where(eq(aiObservations.dismissed, 0)).limit(5),
-    ]);
+    // Determine venture scope
+    let ventureIds: number[] | null = null;
+    let orgName: string | null = null;
+
+    if (orgId) {
+      const accessRows = await db.select({ ventureId: orgVentureAccess.ventureId })
+        .from(orgVentureAccess)
+        .where(eq(orgVentureAccess.organizationId, orgId));
+      ventureIds = accessRows.map(r => r.ventureId);
+
+      const [org] = await db.select({ name: organizations.name })
+        .from(organizations)
+        .where(eq(organizations.id, orgId))
+        .limit(1);
+      orgName = org?.name || null;
+    }
+
+    // Fetch data — scoped if ventureIds available
+    const allVentures = ventureIds && ventureIds.length > 0
+      ? await db.select().from(ventures).where(inArray(ventures.id, ventureIds))
+      : ventureIds && ventureIds.length === 0
+        ? []
+        : await db.select().from(ventures);
+
+    const allTasks = ventureIds && ventureIds.length > 0
+      ? await db.select().from(tasks).where(inArray(tasks.ventureId, ventureIds))
+      : ventureIds && ventureIds.length === 0
+        ? []
+        : await db.select().from(tasks);
+
+    const allSpvs = orgId
+      ? await db.select().from(spvs).where(eq(spvs.organizationId, orgId))
+      : await db.select().from(spvs);
+
+    const allDist = orgId
+      ? await db.select().from(distributions).where(eq(distributions.organizationId, orgId))
+      : await db.select().from(distributions);
+
+    const allTeam = orgId
+      ? await db.select().from(teamMembers).where(eq(teamMembers.organizationId, orgId))
+      : await db.select().from(teamMembers);
+
+    const recentDocs = await db.select().from(documentIntelligence)
+      .where(eq(documentIntelligence.processingStatus, "completed"))
+      .orderBy(desc(documentIntelligence.processedAt)).limit(10);
+
+    const allRisks = await db.select().from(ventureRisks);
+
+    const briefConditions = orgId
+      ? eq(dailyBriefs.organizationId, orgId)
+      : undefined;
+    const latestBrief = await db.select().from(dailyBriefs)
+      .where(briefConditions)
+      .orderBy(desc(dailyBriefs.generatedAt)).limit(1);
+
+    const alerts = await db.select().from(smartAlerts)
+      .where(eq(smartAlerts.dismissed, 0)).limit(10);
+
+    const observations = await db.select().from(aiObservations)
+      .where(eq(aiObservations.dismissed, 0)).limit(5);
 
     const overdueTasks = allTasks.filter((t: any) => {
       if (!t.dueDate || t.status === "complete") return false;
@@ -38,14 +91,16 @@ async function buildLiveContext(): Promise<string> {
     const activeVentures = allVentures.filter((v: any) => v.status === "In progress");
     const activeSpvs = allSpvs.filter((s: any) => s.stage === "Active deal" || s.stage === "In negotiation");
 
+    const scopeLabel = orgName ? `CLIENT: ${orgName}` : "ALL CLIENTS (GLOBAL VIEW)";
+
     let context = `
-=== LIVE PORTFOLIO DATA ===
+=== LIVE PORTFOLIO DATA — ${scopeLabel} ===
 
 VENTURES (${allVentures.length} total, ${activeVentures.length} active):
 ${allVentures.map((v: any) => `- ${v.name} | ${v.sector} | ${v.location} | Status: ${v.status} | Health: ${v.healthScore || "N/A"}/100`).join("\n")}
 
 TASKS (${allTasks.length} total, ${overdueTasks.length} overdue):
-${allTasks.slice(0, 15).map((t: any) => `- [${t.status}] ${t.title}${t.dueDate ? ` (due: ${t.dueDate})` : ""}${t.priority ? ` [${t.priority}]` : ""}`).join("\n")}
+${allTasks.slice(0, 30).map((t: any) => `- [${t.status}] ${t.title}${t.dueDate ? ` (due: ${t.dueDate})` : ""}${t.priority ? ` [${t.priority}]` : ""}`).join("\n")}
 
 SPVs (${allSpvs.length} total, ${activeSpvs.length} active):
 ${allSpvs.map((s: any) => `- ${s.name} | ${s.theme} | Stage: ${s.stage} | Priority: ${s.priority}`).join("\n")}
@@ -112,6 +167,8 @@ Communication style:
 - Reference specific ventures, SPVs, and team members by name when relevant
 - Use tables for comparative data when appropriate
 - When discussing documents, reference the specific findings from document intelligence
+- When scoped to a specific client, focus answers on that client's portfolio only
+- When in global view, provide cross-client comparisons and portfolio-wide insights
 
 Important: Always use the live portfolio data provided below to answer questions accurately. Do not make up data.`;
 
@@ -121,19 +178,24 @@ const messageSchema = z.object({
 });
 
 export const aiRouter = router({
-  // VENTEX-only: chat builds context from ALL ventures across all clients
+  /**
+   * Admin AI chat — org-aware context.
+   * When organizationId is provided, context is scoped to that client.
+   * When omitted, provides global portfolio view.
+   */
   chat: adminProcedure
     .input(
       z.object({
         messages: z.array(messageSchema),
+        organizationId: z.number().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
       // Rate limit: 30 AI calls per 10 minutes per user
       enforceRateLimit("aiChat", ctx.user.id);
 
-      // Build live context from database
-      const liveContext = await buildLiveContext();
+      // Build live context — scoped to org if provided
+      const liveContext = await buildLiveContext(input.organizationId);
 
       const systemPrompt = `${BASE_SYSTEM_PROMPT}
 

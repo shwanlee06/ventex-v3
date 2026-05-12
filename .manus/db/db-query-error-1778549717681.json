@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT 'agent_drafts' as tbl, COUNT(*) as cnt FROM agent_drafts WHERE draftContent LIKE '%QA-%'\nUNION ALL\nSELECT 'smart_alerts', COUNT(*) FROM smart_alerts WHERE message LIKE '%QA-%'\nUNION ALL\nSELECT 'ai_observations', COUNT(*) FROM ai_observations WHERE observation LIKE '%QA-%'\nUNION ALL\nSELECT 'activity_log', COUNT(*) FROM activity_log WHERE details LIKE '%QA-%'\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute \nSELECT 'agent_drafts' as tbl, COUNT(*) as cnt FROM agent_drafts WHERE draftContent LIKE '%QA-%'\nUNION ALL\nSELECT 'smart_alerts', COUNT(*) FROM smart_alerts WHERE message LIKE '%QA-%'\nUNION ALL\nSELECT 'ai_observations', COUNT(*) FROM ai_observations WHERE observation LIKE '%QA-%'\nUNION ALL\nSELECT 'activity_log', COUNT(*) FROM activity_log WHERE details LIKE '%QA-%'\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'draftcontent' in 'where clause'"
+  ]
+}
