@@ -1,0 +1,100 @@
+{
+  "query": "SELECT id, LEFT(message, 120) as msg, agentName, createdAt FROM agent_events ORDER BY createdAt DESC LIMIT 15;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, LEFT(message, 120) as msg, agentName, createdAt FROM agent_events ORDER BY createdAt DESC LIMIT 15;",
+  "rows": [
+    {
+      "id": "8490062",
+      "msg": "3 ventures monitored. 2 at risk. No auto-advance triggers detected.",
+      "agentName": "Velocity Agent",
+      "createdAt": "2026-05-12 02:53:09"
+    },
+    {
+      "id": "8490064",
+      "msg": "Volkov F&B Fund: Immediately process the $120,000 LP notice to secure critical funding and prevent further distribution ",
+      "agentName": "Orchestrator",
+      "createdAt": "2026-05-12 02:53:09"
+    },
+    {
+      "id": "8490063",
+      "msg": "Volkov F&B Fund: $120,000 — existing LP notice pending, skipping duplicate.",
+      "agentName": "Distribution Sentinel",
+      "createdAt": "2026-05-12 02:53:09"
+    },
+    {
+      "id": "8490061",
+      "msg": "14 tasks remain in overdue status. No new overdue tasks detected.",
+      "agentName": "Overdue Agent",
+      "createdAt": "2026-05-12 02:53:09"
+    },
+    {
+      "id": "8490059",
+      "msg": "Meridian RE Fund I: $150,000 — existing LP notice pending, skipping duplicate.",
+      "agentName": "Distribution Sentinel",
+      "createdAt": "2026-05-12 02:52:50"
+    },
+    {
+      "id": "8490060",
+      "msg": "Meridian RE Fund I & Meridian Yacht SPV: Immediately process the $225,000 LP notices to unlock critical capital distribu",
+      "agentName": "Orchestrator",
+      "createdAt": "2026-05-12 02:52:50"
+    },
+    {
+      "id": "8490058",
+      "msg": "5 ventures monitored. 1 at risk. No auto-advance triggers detected.",
+      "agentName": "Velocity Agent",
+      "createdAt": "2026-05-12 02:52:49"
+    },
+    {
+      "id": "8490057",
+      "msg": "21 tasks remain in overdue status. No new overdue tasks detected.",
+      "agentName": "Overdue Agent",
+      "createdAt": "2026-05-12 02:52:49"
+    },
+    {
+      "id": "8490054",
+      "msg": "27 tasks remain in overdue status. No new overdue tasks detected.",
+      "agentName": "Overdue Agent",
+      "createdAt": "2026-05-12 02:45:08"
+    },
+    {
+      "id": "8490055",
+      "msg": "15 ventures monitored. 0 at risk. No auto-advance triggers detected.",
+      "agentName": "Velocity Agent",
+      "createdAt": "2026-05-12 02:45:08"
+    },
+    {
+      "id": "8490056",
+      "msg": "Focus on the \"at risk\" venture. Immediately initiate a deep-dive diagnostic with the venture lead to understand the heal",
+      "agentName": "Orchestrator",
+      "createdAt": "2026-05-12 02:45:08"
+    },
+    {
+      "id": "8490035",
+      "msg": "ESCALATION: \"Structural engineering review\" has been unactioned for 48+ hours. Original: \"Structural engineering review\"",
+      "agentName": "Escalation Engine",
+      "createdAt": "2026-05-12 01:27:34"
+    },
+    {
+      "id": "8490032",
+      "msg": "ESCALATION: \"Preliminary design review\" has been unactioned for 48+ hours. Original: \"Preliminary design review\" moved t",
+      "agentName": "Escalation Engine",
+      "createdAt": "2026-05-12 01:27:34"
+    },
+    {
+      "id": "8490034",
+      "msg": "ESCALATION: \"Crew recruitment plan\" has been unactioned for 48+ hours. Original: \"Crew recruitment plan\" moved to overdu",
+      "agentName": "Escalation Engine",
+      "createdAt": "2026-05-12 01:27:34"
+    },
+    {
+      "id": "8490036",
+      "msg": "ESCALATION: \"Regulatory flag review\" has been unactioned for 48+ hours. Original: \"Regulatory flag review\" moved to over",
+      "agentName": "Escalation Engine",
+      "createdAt": "2026-05-12 01:27:34"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tmsg\tagentName\tcreatedAt\n8490062\t3 ventures monitored. 2 at risk. No auto-advance triggers detected.\tVelocity Agent\t2026-05-12 02:53:09\n8490064\tVolkov F&B Fund: Immediately process the $120,000 LP notice to secure critical funding and prevent further distribution \tOrchestrator\t2026-05-12 02:53:09\n8490063\tVolkov F&B Fund: $120,000 — existing LP notice pending, skipping duplicate.\tDistribution Sentinel\t2026-05-12 02:53:09\n8490061\t14 tasks remain in overdue status. No new overdue tasks detected.\tOverdue Agent\t2026-05-12 02:53:09\n8490059\tMeridian RE Fund I: $150,000 — existing LP notice pending, skipping duplicate.\tDistribution Sentinel\t2026-05-12 02:52:50\n8490060\tMeridian RE Fund I & Meridian Yacht SPV: Immediately process the $225,000 LP notices to unlock critical capital distribu\tOrchestrator\t2026-05-12 02:52:50\n8490058\t5 ventures monitored. 1 at risk. No auto-advance triggers detected.\tVelocity Agent\t2026-05-12 02:52:49\n8490057\t21 tasks remain in overdue status. No new overdue tasks detected.\tOverdue Agent\t2026-05-12 02:52:49\n8490054\t27 tasks remain in overdue status. No new overdue tasks detected.\tOverdue Agent\t2026-05-12 02:45:08\n8490055\t15 ventures monitored. 0 at risk. No auto-advance triggers detected.\tVelocity Agent\t2026-05-12 02:45:08\n8490056\tFocus on the \"at risk\" venture. Immediately initiate a deep-dive diagnostic with the venture lead to understand the heal\tOrchestrator\t2026-05-12 02:45:08\n8490035\tESCALATION: \"Structural engineering review\" has been unactioned for 48+ hours. Original: \"Structural engineering review\"\tEscalation Engine\t2026-05-12 01:27:34\n8490032\tESCALATION: \"Preliminary design review\" has been unactioned for 48+ hours. Original: \"Preliminary design review\" moved t\tEscalation Engine\t2026-05-12 01:27:34\n8490034\tESCALATION: \"Crew recruitment plan\" has been unactioned for 48+ hours. Original: \"Crew recruitment plan\" moved to overdu\tEscalation Engine\t2026-05-12 01:27:34\n8490036\tESCALATION: \"Regulatory flag review\" has been unactioned for 48+ hours. Original: \"Regulatory flag review\" moved to over\tEscalation Engine\t2026-05-12 01:27:34\n",
+  "stderr": "",
+  "execution_time_ms": 282
+}

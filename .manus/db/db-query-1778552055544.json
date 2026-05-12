@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM agent_events WHERE message LIKE '%OrgLinked%' OR message LIKE '%AI Generated%' OR agentEntityName LIKE '%OrgLinked%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute DELETE FROM agent_events WHERE message LIKE '%OrgLinked%' OR message LIKE '%AI Generated%' OR agentEntityName LIKE '%OrgLinked%';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 311
+}

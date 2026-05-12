@@ -1,0 +1,14 @@
+{
+  "query": "SELECT id, name FROM ventures WHERE name LIKE '%Test Venture%' OR name LIKE '%vitest%' OR name LIKE '%Fundraising%' LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name FROM ventures WHERE name LIKE '%Test Venture%' OR name LIKE '%vitest%' OR name LIKE '%Fundraising%' LIMIT 20;",
+  "rows": [
+    {
+      "id": "1080001",
+      "name": "Test Venture 1778550333020"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n1080001\tTest Venture 1778550333020\n",
+  "stderr": "",
+  "execution_time_ms": 278
+}

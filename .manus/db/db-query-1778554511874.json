@@ -1,0 +1,90 @@
+{
+  "query": "SELECT id, message FROM agent_events WHERE message LIKE '%OrgLinked%' OR message LIKE '%test%' OR message LIKE '%QA-%' LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, message FROM agent_events WHERE message LIKE '%OrgLinked%' OR message LIKE '%test%' OR message LIKE '%QA-%' LIMIT 20;",
+  "rows": [
+    {
+      "id": "5400018",
+      "message": "Created 2 next-step tasks for \"Oman Luxury Resort\": Finalize internal capital request and submit to VENTEX committee; Develop detailed pilot testing plan and success metrics"
+    },
+    {
+      "id": "5460009",
+      "message": "Completed \"Develop detailed pilot testing plan and success metrics\" for Oman Luxury Resort. Draft deliverable generated."
+    },
+    {
+      "id": "5550065",
+      "message": "\"Vitest task 1776392442326\" moved to overdue (2 days). Follow-up drafted for Unassigned."
+    },
+    {
+      "id": "5550066",
+      "message": "\"Vitest task 1776394502157\" moved to overdue (2 days). Follow-up drafted for Unassigned."
+    },
+    {
+      "id": "5550067",
+      "message": "\"Vitest task 1776394606897\" moved to overdue (2 days). Follow-up drafted for Unassigned."
+    },
+    {
+      "id": "5550068",
+      "message": "\"Vitest task 1776394669559\" moved to overdue (2 days). Follow-up drafted for Unassigned."
+    },
+    {
+      "id": "5550069",
+      "message": "\"Vitest task 1776398990588\" moved to overdue (2 days). Follow-up drafted for Unassigned."
+    },
+    {
+      "id": "5550070",
+      "message": "\"Vitest task 1776401373154\" moved to overdue (2 days). Follow-up drafted for Unassigned."
+    },
+    {
+      "id": "5550071",
+      "message": "\"Vitest task 1776438253087\" moved to overdue (2 days). Follow-up drafted for Unassigned."
+    },
+    {
+      "id": "5550072",
+      "message": "\"Vitest task 1776439311413\" moved to overdue (2 days). Follow-up drafted for Unassigned."
+    },
+    {
+      "id": "5550073",
+      "message": "\"Vitest task 1776439529208\" moved to overdue (2 days). Follow-up drafted for Unassigned."
+    },
+    {
+      "id": "5550074",
+      "message": "\"Vitest task 1776439960816\" moved to overdue (2 days). Follow-up drafted for Unassigned."
+    },
+    {
+      "id": "5550075",
+      "message": "\"Vitest task 1776389096791\" moved to overdue (2 days). Follow-up drafted for Unassigned."
+    },
+    {
+      "id": "5760008",
+      "message": "Created 1 next-step tasks for \"Oman Luxury Resort\": Prepare comprehensive pilot testing materials for shortlisted users/partners"
+    },
+    {
+      "id": "5790002",
+      "message": "Completed \"Prepare comprehensive pilot testing materials for shortlisted users/partners\" for Oman Luxury Resort. Draft deliverable generated."
+    },
+    {
+      "id": "5850034",
+      "message": "\"Vitest task 1776635735254\" moved to overdue (2 days). Follow-up drafted for Unassigned."
+    },
+    {
+      "id": "5850036",
+      "message": "\"Vitest task 1776636108666\" moved to overdue (2 days). Follow-up drafted for Unassigned."
+    },
+    {
+      "id": "5850037",
+      "message": "\"Vitest task 1776636715266\" moved to overdue (2 days). Follow-up drafted for Unassigned."
+    },
+    {
+      "id": "5970088",
+      "message": "\"Vitest task 1776877640438\" moved to overdue (0 days). Follow-up drafted for Unassigned."
+    },
+    {
+      "id": "5970089",
+      "message": "\"Vitest task 1776880517274\" moved to overdue (0 days). Follow-up drafted for Unassigned."
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tmessage\n5400018\tCreated 2 next-step tasks for \"Oman Luxury Resort\": Finalize internal capital request and submit to VENTEX committee; Develop detailed pilot testing plan and success metrics\n5460009\tCompleted \"Develop detailed pilot testing plan and success metrics\" for Oman Luxury Resort. Draft deliverable generated.\n5550065\t\"Vitest task 1776392442326\" moved to overdue (2 days). Follow-up drafted for Unassigned.\n5550066\t\"Vitest task 1776394502157\" moved to overdue (2 days). Follow-up drafted for Unassigned.\n5550067\t\"Vitest task 1776394606897\" moved to overdue (2 days). Follow-up drafted for Unassigned.\n5550068\t\"Vitest task 1776394669559\" moved to overdue (2 days). Follow-up drafted for Unassigned.\n5550069\t\"Vitest task 1776398990588\" moved to overdue (2 days). Follow-up drafted for Unassigned.\n5550070\t\"Vitest task 1776401373154\" moved to overdue (2 days). Follow-up drafted for Unassigned.\n5550071\t\"Vitest task 1776438253087\" moved to overdue (2 days). Follow-up drafted for Unassigned.\n5550072\t\"Vitest task 1776439311413\" moved to overdue (2 days). Follow-up drafted for Unassigned.\n5550073\t\"Vitest task 1776439529208\" moved to overdue (2 days). Follow-up drafted for Unassigned.\n5550074\t\"Vitest task 1776439960816\" moved to overdue (2 days). Follow-up drafted for Unassigned.\n5550075\t\"Vitest task 1776389096791\" moved to overdue (2 days). Follow-up drafted for Unassigned.\n5760008\tCreated 1 next-step tasks for \"Oman Luxury Resort\": Prepare comprehensive pilot testing materials for shortlisted users/partners\n5790002\tCompleted \"Prepare comprehensive pilot testing materials for shortlisted users/partners\" for Oman Luxury Resort. Draft deliverable generated.\n5850034\t\"Vitest task 1776635735254\" moved to overdue (2 days). Follow-up drafted for Unassigned.\n5850036\t\"Vitest task 1776636108666\" moved to overdue (2 days). Follow-up drafted for Unassigned.\n5850037\t\"Vitest task 1776636715266\" moved to overdue (2 days). Follow-up drafted for Unassigned.\n5970088\t\"Vitest task 1776877640438\" moved to overdue (0 days). Follow-up drafted for Unassigned.\n5970089\t\"Vitest task 1776880517274\" moved to overdue (0 days). Follow-up drafted for Unassigned.\n",
+  "stderr": "",
+  "execution_time_ms": 355
+}

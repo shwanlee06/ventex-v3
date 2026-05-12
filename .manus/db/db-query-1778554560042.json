@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, name FROM ventures WHERE name LIKE '%OrgLinked%' LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name FROM ventures WHERE name LIKE '%OrgLinked%' LIMIT 10;",
+  "rows": [
+    {
+      "id": "1050015",
+      "name": "OrgLinked Venture 1778544083693"
+    },
+    {
+      "id": "1080002",
+      "name": "OrgLinked Venture 1778550333364"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n1050015\tOrgLinked Venture 1778544083693\n1080002\tOrgLinked Venture 1778550333364\n",
+  "stderr": "",
+  "execution_time_ms": 270
+}

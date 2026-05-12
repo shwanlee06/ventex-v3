@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM agent_events WHERE organizationId IN (1140012, 1140015); DELETE FROM client_agent_config WHERE organizationId IN (1140012, 1140015); DELETE FROM org_venture_access WHERE organizationId IN (1140012, 1140015); DELETE FROM organizations WHERE id IN (1140012, 1140015);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute DELETE FROM agent_events WHERE organizationId IN (1140012, 1140015); DELETE FROM client_agent_config WHERE organizationId IN (1140012, 1140015); DELETE FROM org_venture_access WHERE organizationId IN (1140012, 1140015); DELETE FROM organizations WHERE id IN (1140012, 1140015);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 299
+}

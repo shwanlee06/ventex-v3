@@ -3609,3 +3609,8 @@
 - [x] UI consistency: check every page for visual bugs, broken states, missing data, dead buttons (ATLAS→VENTEX email fix)
 - [x] Fix all discovered data scoping, AI context, metrics, and UI issues
 - [x] Write tests for data isolation and run full suite (970 tests, 62 files, 0 failures)
+
+## Critical Functionality Fixes — May 11, 2026
+- [x] Sign-out: fix logout flow so it actually signs the user out (dedicated /api/logout GET endpoint + direct navigation)
+- [x] Engine pause/resume: added Pause/Resume + Run Now controls to Agent Execution Log header
+- [x] All interactive buttons: audited all buttons — no placeholders or no-ops found, all have real handlers

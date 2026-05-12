@@ -2594,6 +2594,96 @@ export const agentsRouter = router({
     }),
 
   /**
+   * Get agent config for the current org — admin only
+   * Returns which agents are enabled/disabled (persisted state)
+   */
+  getConfig: adminProcedure
+    .input(z.object({ organizationId: z.number().optional() }).optional())
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return null;
+      const orgId = input?.organizationId;
+      if (!orgId) return null;
+      const [config] = await db
+        .select()
+        .from(clientAgentConfig)
+        .where(eq(clientAgentConfig.organizationId, orgId))
+        .limit(1);
+      return config || null;
+    }),
+
+  /**
+   * Toggle an agent on/off for a specific org — admin only
+   * Persists to database so state survives page refreshes and scheduler cycles
+   */
+  toggleAgent: adminProcedure
+    .input(z.object({
+      organizationId: z.number(),
+      agentName: z.enum(["overdue", "velocity", "distribution", "orchestrator"]),
+      enabled: z.boolean(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Map frontend agent names to config columns
+      const columnMap: Record<string, keyof typeof clientAgentConfig.$inferSelect> = {
+        overdue: "complianceAgentEnabled",
+        velocity: "velocityAgentEnabled",
+        distribution: "dealFlowAgentEnabled",
+        orchestrator: "orchestratorEnabled",
+      };
+
+      const column = columnMap[input.agentName];
+      if (!column) throw new Error("Invalid agent name");
+
+      // Upsert: update if exists, create if not
+      const [existing] = await db
+        .select()
+        .from(clientAgentConfig)
+        .where(eq(clientAgentConfig.organizationId, input.organizationId))
+        .limit(1);
+
+      if (existing) {
+        await db.update(clientAgentConfig)
+          .set({ [column]: input.enabled })
+          .where(eq(clientAgentConfig.id, existing.id));
+      } else {
+        await db.insert(clientAgentConfig).values({
+          organizationId: input.organizationId,
+          velocityAgentEnabled: input.agentName === "velocity" ? input.enabled : true,
+          complianceAgentEnabled: input.agentName === "overdue" ? input.enabled : true,
+          dealFlowAgentEnabled: input.agentName === "distribution" ? input.enabled : true,
+          orchestratorEnabled: input.agentName === "orchestrator" ? input.enabled : true,
+          overdueDaysThreshold: 7,
+          distributionWarningDays: 14,
+          healthScoreAlertThreshold: 30,
+          autoAdvanceEnabled: true,
+          pollingIntervalMinutes: 30,
+        });
+      }
+
+      return { success: true, agentName: input.agentName, enabled: input.enabled };
+    }),
+
+  /**
+   * Pause/resume the entire scheduler — admin only
+   */
+  toggleScheduler: adminProcedure
+    .input(z.object({ action: z.enum(["pause", "resume"]) }))
+    .mutation(async ({ input }) => {
+      if (input.action === "pause") {
+        const { stopAgentScheduler } = await import("../agentScheduler");
+        stopAgentScheduler();
+      } else {
+        const { startAgentScheduler } = await import("../agentScheduler");
+        startAgentScheduler();
+      }
+      const { getSchedulerStatus } = await import("../agentScheduler");
+      return getSchedulerStatus();
+    }),
+
+  /**
    * Get agent scheduler status — admin only
    */
   schedulerStatus: adminProcedure

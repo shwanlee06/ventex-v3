@@ -1,0 +1,34 @@
+{
+  "query": "SELECT id, name, slug, orgStatus FROM organizations;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, slug, orgStatus FROM organizations;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "VENTEX",
+      "slug": "ventex",
+      "orgStatus": "active"
+    },
+    {
+      "id": "2",
+      "name": "Royalton Venture Holding",
+      "slug": "royalton",
+      "orgStatus": "active"
+    },
+    {
+      "id": "870037",
+      "name": "Meridian Holdings",
+      "slug": "meridian-holdings",
+      "orgStatus": "active"
+    },
+    {
+      "id": "870038",
+      "name": "Volkov Capital",
+      "slug": "volkov-capital",
+      "orgStatus": "active"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\torgStatus\n1\tVENTEX\tventex\tactive\n2\tRoyalton Venture Holding\troyalton\tactive\n870037\tMeridian Holdings\tmeridian-holdings\tactive\n870038\tVolkov Capital\tvolkov-capital\tactive\n",
+  "stderr": "",
+  "execution_time_ms": 274
+}

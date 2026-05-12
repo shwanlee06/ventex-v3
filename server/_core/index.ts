@@ -17,6 +17,8 @@ import { ssoRouter } from "../routes/ssoRoutes";
 import { createSCIMRouter } from "../enterprise/scimProvisioning";
 import { startCronScheduler, getCronStatus } from "../cron";
 import { randomBytes } from "crypto";
+import { getSessionCookieOptions } from "./cookies";
+import { COOKIE_NAME } from "../../shared/const";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -103,6 +105,22 @@ async function startServer() {
   app.use(ssoRouter);
   // SCIM 2.0 provisioning endpoint (enterprise SSO auto-provisioning)
   app.use("/scim/v2", createSCIMRouter());
+  // Dedicated logout endpoint — bypasses tRPC to ensure Set-Cookie header is always sent
+  // Supports both POST (for fetch) and GET (for direct navigation)
+  const handleLogout = (req: any, res: any) => {
+    const cookieOptions = getSessionCookieOptions(req);
+    res.cookie(COOKIE_NAME, "", { ...cookieOptions, maxAge: 0, expires: new Date(0) });
+    // If Accept header wants JSON (fetch call), return JSON
+    if (req.headers.accept?.includes("application/json") || req.method === "POST") {
+      res.json({ success: true });
+    } else {
+      // Direct navigation — redirect to landing page
+      res.redirect("/?logged_out=1");
+    }
+  };
+  app.get("/api/logout", handleLogout);
+  app.post("/api/logout", handleLogout);
+
   // CSRF protection: verify Origin header on mutation requests
   app.use("/api/trpc", (req, res, next) => {
     // Only enforce on state-changing methods

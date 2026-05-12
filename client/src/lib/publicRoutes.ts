@@ -2,7 +2,7 @@
  * Public routes that should NOT trigger auth queries or heartbeats.
  * Any page that an unauthenticated user can visit.
  */
-const PUBLIC_PATHS = ["/privacy", "/terms", "/invite", "/accept-invite"];
+const PUBLIC_PATHS = ["/privacy", "/terms", "/invite", "/accept-invite", "/sign-out"];
 
 /**
  * Returns true if the current window.location.pathname is a public route.

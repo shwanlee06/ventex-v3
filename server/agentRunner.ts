@@ -54,10 +54,15 @@ export async function runAgentsForOrg(
 ): Promise<{ signalCount: number; intelligence?: IntelligenceResult; escalation?: EscalationResult; proactive?: ProactiveAgentResult }> {
 
   // Phase 1: Core agents — Overdue, Velocity, Distribution
+  // Respect per-org agent config: skip agents that are disabled
+  const overdueEnabled = config?.complianceAgentEnabled !== false; // overdue maps to compliance
+  const velocityEnabled = config?.velocityAgentEnabled !== false;
+  const distributionEnabled = config?.dealFlowAgentEnabled !== false; // distribution maps to dealFlow
+
   const [overdueSignals, velocitySignals, distSignals] = await Promise.all([
-    runOverdueAgent(db, organizationId),
-    runVelocityAgent(db, organizationId),
-    runDistributionSentinel(db, organizationId),
+    overdueEnabled ? runOverdueAgent(db, organizationId) : Promise.resolve([]),
+    velocityEnabled ? runVelocityAgent(db, organizationId) : Promise.resolve([]),
+    distributionEnabled ? runDistributionSentinel(db, organizationId) : Promise.resolve([]),
   ]);
 
   const allSubSignals = [...overdueSignals, ...velocitySignals, ...distSignals];
@@ -80,7 +85,10 @@ export async function runAgentsForOrg(
   }
 
   // Phase 2: Orchestrator — cross-references all signals
-  const orchestratorSignals = await runOrchestrator(db, allSubSignals, organizationId);
+  const orchestratorEnabled = config?.orchestratorEnabled !== false;
+  const orchestratorSignals = orchestratorEnabled
+    ? await runOrchestrator(db, allSubSignals, organizationId)
+    : [];
   const allSignals = [...allSubSignals, ...orchestratorSignals];
   await persistSignals(db, allSignals);
 

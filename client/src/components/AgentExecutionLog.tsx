@@ -19,9 +19,14 @@ import {
   ChevronDown,
   ChevronUp,
   Filter,
+  Pause,
+  Play,
+  RefreshCw,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 // Agent color mapping
 const AGENT_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
@@ -64,6 +69,72 @@ function formatLogTimeFull(date: Date | string | null) {
   const d = new Date(date);
   return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }) +
     " UTC · " + d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function EngineControls() {
+  const utils = trpc.useUtils();
+  const statusQ = trpc.agents.schedulerStatus.useQuery(undefined, {
+    refetchInterval: 15_000,
+  });
+  const toggle = trpc.agents.toggleScheduler.useMutation({
+    onSuccess: (data) => {
+      statusQ.refetch();
+      utils.agents.list.invalidate();
+      toast.success(data.isActive ? "Engine resumed" : "Engine paused");
+    },
+    onError: () => toast.error("Failed to toggle engine"),
+  });
+  const triggerCycle = trpc.agents.triggerCycle.useMutation({
+    onSuccess: () => {
+      statusQ.refetch();
+      utils.agents.list.invalidate();
+      toast.success("Manual cycle triggered");
+    },
+    onError: () => toast.error("Failed to trigger cycle"),
+  });
+
+  const isActive = statusQ.data?.isActive ?? true;
+  const isRunning = statusQ.data?.isRunning ?? false;
+  const isBusy = toggle.isPending || triggerCycle.isPending;
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <button
+        onClick={() => toggle.mutate({ action: isActive ? "pause" : "resume" })}
+        disabled={isBusy}
+        className={cn(
+          "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-colors",
+          isActive
+            ? "bg-amber-500/10 text-amber-400 hover:bg-amber-500/20"
+            : "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20",
+          isBusy && "opacity-50 cursor-not-allowed"
+        )}
+        title={isActive ? "Pause all engines" : "Resume all engines"}
+      >
+        {isBusy ? (
+          <Loader2 className="size-3 animate-spin" />
+        ) : isActive ? (
+          <Pause className="size-3" />
+        ) : (
+          <Play className="size-3" />
+        )}
+        {isActive ? "Pause" : "Resume"}
+      </button>
+      <button
+        onClick={() => triggerCycle.mutate()}
+        disabled={isBusy || isRunning}
+        className={cn(
+          "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-colors",
+          "bg-primary/10 text-primary hover:bg-primary/20",
+          (isBusy || isRunning) && "opacity-50 cursor-not-allowed"
+        )}
+        title="Run one engine cycle now"
+      >
+        <RefreshCw className={cn("size-3", isRunning && "animate-spin")} />
+        {isRunning ? "Running" : "Run Now"}
+      </button>
+    </div>
+  );
 }
 
 function PurgeButton() {
@@ -195,6 +266,7 @@ export default function AgentExecutionLog({ organizationId, limit = 25, compact 
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <EngineControls />
           {events.length > 0 && (
             <div className="flex items-center gap-1.5">
               <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />

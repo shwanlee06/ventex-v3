@@ -1,0 +1,13 @@
+{
+  "query": "SELECT COUNT(*) as cnt FROM agent_events WHERE message LIKE '%OrgLinked Venture 17785440%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT COUNT(*) as cnt FROM agent_events WHERE message LIKE '%OrgLinked Venture 17785440%';",
+  "rows": [
+    {
+      "cnt": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "cnt\n0\n",
+  "stderr": "",
+  "execution_time_ms": 273
+}

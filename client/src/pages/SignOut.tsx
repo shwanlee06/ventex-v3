@@ -1,20 +1,25 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 /**
  * /sign-out page — the ONLY reliable way to sign out.
  *
- * This page:
- * 1. Clears all client-side auth state
- * 2. Calls the server to clear the httpOnly session cookie
- * 3. Redirects to the landing page with ?logged_out=1
+ * Strategy: Clear all client-side state, then navigate directly to
+ * GET /api/logout which clears the httpOnly cookie and redirects to /.
  *
- * Why a dedicated page? Because Radix UI dropdown menu items
- * swallow click events in certain scenarios. A plain <a href="/sign-out">
- * link ALWAYS works — no React, no event handlers, no race conditions.
+ * Why direct navigation instead of fetch()?
+ * Because fetch() with credentials:"include" can fail to apply Set-Cookie
+ * headers in certain proxy/cross-origin scenarios. A direct navigation
+ * (window.location.href) is ALWAYS same-origin and the browser ALWAYS
+ * applies Set-Cookie headers from navigation responses.
  */
 export default function SignOut() {
+  const hasRun = useRef(false);
+
   useEffect(() => {
-    // 1. Suppress the UNAUTHED redirect handler
+    if (hasRun.current) return;
+    hasRun.current = true;
+
+    // 1. Suppress the UNAUTHED redirect handler during transition
     try { (window as any).__ventex_logging_out = true; } catch {}
     try { sessionStorage.setItem("__ventex_logging_out", "1"); } catch {}
 
@@ -31,20 +36,15 @@ export default function SignOut() {
       document.cookie.split(";").forEach(c => {
         const name = c.split("=")[0].trim();
         document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
       });
     } catch {}
 
-    // 4. Call server to clear httpOnly session cookie, then redirect
-    fetch("/api/trpc/auth.logout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ "0": { "json": null } }),
-    })
-      .catch(() => {}) // ignore errors
-      .finally(() => {
-        window.location.replace("/?logged_out=1");
-      });
+    // 4. Navigate directly to /api/logout — this is a GET request that:
+    //    a) Clears the httpOnly session cookie via Set-Cookie header
+    //    b) Redirects to /?logged_out=1
+    //    Direct navigation guarantees the browser applies the Set-Cookie header.
+    window.location.href = "/api/logout";
   }, []);
 
   return (

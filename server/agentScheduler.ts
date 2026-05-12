@@ -58,11 +58,16 @@ async function executeAgentCycle(): Promise<{
       return { success: false, orgsProcessed: 0, totalSignals: 0, errors: ["Database not available"] };
     }
 
-    // Get all active organizations
+    // Get all active CLIENT organizations (exclude the core VENTEX operator org)
     const activeOrgs = await db
       .select({ id: organizations.id, name: organizations.name })
       .from(organizations)
-      .where(eq(organizations.status, "active"));
+      .where(
+        and(
+          eq(organizations.status, "active"),
+          eq(organizations.type, "client")
+        )
+      );
 
     // Auto-provision: create agent configs for any active org that doesn't have one yet
     // This ensures new clients get agents working from day one (multi-client ready)

@@ -1,14 +1,19 @@
 /**
- * hardLogout — SYNCHRONOUS sign-out. No async, no await, no promises.
- * Clears local state then immediately navigates away.
- * The server cookie clear happens via a beacon (fire-and-forget).
+ * hardLogout — Reliable sign-out that navigates to the /sign-out page.
+ * 
+ * The /sign-out page handles the actual server-side cookie clear with a proper
+ * awaited fetch call. This function just clears local state and redirects there.
+ * 
+ * Why navigate to /sign-out instead of doing it inline?
+ * Because Radix dropdowns and other UI components can swallow events.
+ * A window.location.href change is guaranteed to execute.
  */
 export function hardLogout(redirectTo: string = "/") {
-  // 1. Flag to suppress UNAUTHED handler
+  // 1. Flag to suppress UNAUTHED handler during transition
   try { (window as any).__ventex_logging_out = true; } catch {}
   try { sessionStorage.setItem("__ventex_logging_out", "1"); } catch {}
 
-  // 2. Clear localStorage
+  // 2. Clear localStorage immediately
   try {
     localStorage.removeItem("ventex_operator");
     localStorage.removeItem("ventex_demo_session");
@@ -16,21 +21,6 @@ export function hardLogout(redirectTo: string = "/") {
     localStorage.removeItem("manus-runtime-user-info");
   } catch {}
 
-  // 3. Clear client cookies
-  try {
-    document.cookie.split(";").forEach(c => {
-      const name = c.split("=")[0].trim();
-      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
-    });
-  } catch {}
-
-  // 4. Fire-and-forget server logout via sendBeacon (guaranteed to send even during navigation)
-  try {
-    const body = JSON.stringify({ "0": { "json": null } });
-    navigator.sendBeacon("/api/trpc/auth.logout", new Blob([body], { type: "application/json" }));
-  } catch {}
-
-  // 5. IMMEDIATELY redirect — this is synchronous, nothing can stop it
-  const dest = redirectTo + (redirectTo.includes("?") ? "&" : "?") + "logged_out=1";
-  window.location.href = dest;
+  // 3. Navigate to the sign-out page which handles server-side cookie clear
+  window.location.href = "/sign-out";
 }

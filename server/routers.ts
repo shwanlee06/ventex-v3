@@ -41,7 +41,13 @@ export const appRouter = router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
-      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      // Clear the session cookie — use clearCookie (available in Express res)
+      // Note: The dedicated /api/logout endpoint is the primary logout mechanism;
+      // this tRPC procedure is a fallback for programmatic logout.
+      ctx.res.clearCookie(COOKIE_NAME, {
+        ...cookieOptions,
+        maxAge: -1,
+      });
       return {
         success: true,
       } as const;

@@ -19,8 +19,10 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 
 const SEVERITY_STYLES: Record<string, { icon: React.ReactNode; bg: string; text: string; border: string; color: string }> = {
@@ -276,7 +278,31 @@ export default function AgentsPage() {
   const [, navigate] = useLocation();
   const [filterAgent, setFilterAgent] = useState<string>("all");
   const [filterSeverity, setFilterSeverity] = useState<string>("all");
-  const [pausedAgents, setPausedAgents] = useState<Set<AgentKey>>(new Set());
+  const { activeOrgId } = useWorkspace();
+  const utils = trpc.useUtils();
+
+  // Load persisted agent config from server
+  const { data: agentConfig } = trpc.agents.getConfig.useQuery(
+    { organizationId: activeOrgId || undefined },
+    { enabled: !!activeOrgId }
+  );
+  const toggleAgentMut = trpc.agents.toggleAgent.useMutation({
+    onSuccess: () => {
+      utils.agents.getConfig.invalidate();
+    },
+  });
+
+  // Derive paused state from server config
+  const pausedAgents = useMemo(() => {
+    const paused = new Set<AgentKey>();
+    if (agentConfig) {
+      if (!agentConfig.complianceAgentEnabled) paused.add("overdue");
+      if (!agentConfig.velocityAgentEnabled) paused.add("velocity");
+      if (!agentConfig.dealFlowAgentEnabled) paused.add("distribution");
+      if (!agentConfig.orchestratorEnabled) paused.add("orchestrator");
+    }
+    return paused;
+  }, [agentConfig]);
 
   // Compute per-agent events
   const agentEvents = useMemo(() => {
@@ -317,18 +343,28 @@ export default function AgentsPage() {
   }, [runSingleAgent, pausedAgents]);
 
   const togglePause = useCallback((key: AgentKey) => {
-    setPausedAgents(prev => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-        toast.success(`${AGENT_CONFIG[key].label} resumed`);
-      } else {
-        next.add(key);
-        toast.info(`${AGENT_CONFIG[key].label} paused`);
+    if (!activeOrgId) {
+      toast.error("No organization selected");
+      return;
+    }
+    const currentlyPaused = pausedAgents.has(key);
+    const newEnabled = currentlyPaused; // if paused, we're enabling; if running, we're disabling
+    toggleAgentMut.mutate(
+      { organizationId: activeOrgId, agentName: key, enabled: newEnabled },
+      {
+        onSuccess: () => {
+          if (newEnabled) {
+            toast.success(`${AGENT_CONFIG[key].label} resumed`);
+          } else {
+            toast.info(`${AGENT_CONFIG[key].label} paused`);
+          }
+        },
+        onError: (err) => {
+          toast.error(`Failed to toggle agent: ${err.message}`);
+        },
       }
-      return next;
-    });
-  }, []);
+    );
+  }, [activeOrgId, pausedAgents, toggleAgentMut]);
 
   const handleAction = useCallback((event: AgentEvent, actionType: string) => {
     if (actionType === "review_draft") {
