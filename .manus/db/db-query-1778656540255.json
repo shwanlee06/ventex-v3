@@ -1,0 +1,46 @@
+{
+  "query": "SELECT id, name, slug, type FROM organizations ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, slug, type FROM organizations ORDER BY id;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "VENTEX",
+      "slug": "ventex",
+      "type": "core"
+    },
+    {
+      "id": "2",
+      "name": "Royalton Venture Holding",
+      "slug": "royalton",
+      "type": "client"
+    },
+    {
+      "id": "870037",
+      "name": "Meridian Holdings",
+      "slug": "meridian-holdings",
+      "type": "client"
+    },
+    {
+      "id": "870038",
+      "name": "Volkov Capital",
+      "slug": "volkov-capital",
+      "type": "client"
+    },
+    {
+      "id": "1140027",
+      "name": "AI Test Client",
+      "slug": "ai-test-client-1778554661192",
+      "type": "client"
+    },
+    {
+      "id": "1140028",
+      "name": "AI Empty Test",
+      "slug": "ai-empty-test-1778554661548",
+      "type": "client"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tslug\ttype\n1\tVENTEX\tventex\tcore\n2\tRoyalton Venture Holding\troyalton\tclient\n870037\tMeridian Holdings\tmeridian-holdings\tclient\n870038\tVolkov Capital\tvolkov-capital\tclient\n1140027\tAI Test Client\tai-test-client-1778554661192\tclient\n1140028\tAI Empty Test\tai-empty-test-1778554661548\tclient\n",
+  "stderr": "",
+  "execution_time_ms": 265
+}

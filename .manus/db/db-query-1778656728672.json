@@ -1,0 +1,90 @@
+{
+  "query": "SELECT id, name FROM ventures WHERE organizationId IS NULL LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name FROM ventures WHERE organizationId IS NULL LIMIT 20;",
+  "rows": [
+    {
+      "id": "810018",
+      "name": "Meridian Tower Dubai"
+    },
+    {
+      "id": "810019",
+      "name": "Meridian Marina Residences"
+    },
+    {
+      "id": "810020",
+      "name": "Meridian Riviera Estate"
+    },
+    {
+      "id": "810021",
+      "name": "Meridian Yacht Athena"
+    },
+    {
+      "id": "810022",
+      "name": "Meridian Yacht Poseidon"
+    },
+    {
+      "id": "810023",
+      "name": "Volkov Bistro Chain"
+    },
+    {
+      "id": "810024",
+      "name": "Volkov Night Club"
+    },
+    {
+      "id": "810025",
+      "name": "Volkov Film Studio"
+    },
+    {
+      "id": "1080004",
+      "name": "Unassigned Venture 1778550333487"
+    },
+    {
+      "id": "1080005",
+      "name": "Test Venture 1778554656713"
+    },
+    {
+      "id": "1080008",
+      "name": "Unassigned Venture 1778554657218"
+    },
+    {
+      "id": "1080010",
+      "name": "Test Venture 1778554874492"
+    },
+    {
+      "id": "1080012",
+      "name": "Unassigned Venture 1778554874951"
+    },
+    {
+      "id": "1110002",
+      "name": "Test Venture 1778655099712"
+    },
+    {
+      "id": "1110004",
+      "name": "Unassigned Venture 1778655100190"
+    },
+    {
+      "id": "1110005",
+      "name": "Test Venture 1778655292862"
+    },
+    {
+      "id": "1110008",
+      "name": "Unassigned Venture 1778655293324"
+    },
+    {
+      "id": "1110010",
+      "name": "Test Venture 1778655324578"
+    },
+    {
+      "id": "1110012",
+      "name": "Unassigned Venture 1778655325082"
+    },
+    {
+      "id": "1110014",
+      "name": "Test Venture 1778655410902"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n810018\tMeridian Tower Dubai\n810019\tMeridian Marina Residences\n810020\tMeridian Riviera Estate\n810021\tMeridian Yacht Athena\n810022\tMeridian Yacht Poseidon\n810023\tVolkov Bistro Chain\n810024\tVolkov Night Club\n810025\tVolkov Film Studio\n1080004\tUnassigned Venture 1778550333487\n1080005\tTest Venture 1778554656713\n1080008\tUnassigned Venture 1778554657218\n1080010\tTest Venture 1778554874492\n1080012\tUnassigned Venture 1778554874951\n1110002\tTest Venture 1778655099712\n1110004\tUnassigned Venture 1778655100190\n1110005\tTest Venture 1778655292862\n1110008\tUnassigned Venture 1778655293324\n1110010\tTest Venture 1778655324578\n1110012\tUnassigned Venture 1778655325082\n1110014\tTest Venture 1778655410902\n",
+  "stderr": "",
+  "execution_time_ms": 274
+}

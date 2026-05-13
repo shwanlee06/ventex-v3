@@ -1,0 +1,64 @@
+{
+  "query": "SELECT id, title, organizationId, ventureId FROM tasks WHERE organizationId IS NULL LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, title, organizationId, ventureId FROM tasks WHERE organizationId IS NULL LIMIT 10;",
+  "rows": [
+    {
+      "id": "3150016",
+      "title": "Vitest task 1778554659801",
+      "organizationId": "NULL",
+      "ventureId": "NULL"
+    },
+    {
+      "id": "3150017",
+      "title": "AI Generated: Review Q2 financials",
+      "organizationId": "NULL",
+      "ventureId": "NULL"
+    },
+    {
+      "id": "3150018",
+      "title": "AI Generated: Follow up on permit renewal",
+      "organizationId": "NULL",
+      "ventureId": "NULL"
+    },
+    {
+      "id": "3150022",
+      "title": "Vitest task 1778554877916",
+      "organizationId": "NULL",
+      "ventureId": "NULL"
+    },
+    {
+      "id": "3210004",
+      "title": "Vitest task 1778655098450",
+      "organizationId": "NULL",
+      "ventureId": "NULL"
+    },
+    {
+      "id": "3210011",
+      "title": "Vitest task 1778655295456",
+      "organizationId": "NULL",
+      "ventureId": "NULL"
+    },
+    {
+      "id": "3210015",
+      "title": "Vitest task 1778655327318",
+      "organizationId": "NULL",
+      "ventureId": "NULL"
+    },
+    {
+      "id": "3210027",
+      "title": "Vitest task 1778655413129",
+      "organizationId": "NULL",
+      "ventureId": "NULL"
+    },
+    {
+      "id": "3210038",
+      "title": "Vitest task 1778656084998",
+      "organizationId": "NULL",
+      "ventureId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\torganizationId\tventureId\n3150016\tVitest task 1778554659801\tNULL\tNULL\n3150017\tAI Generated: Review Q2 financials\tNULL\tNULL\n3150018\tAI Generated: Follow up on permit renewal\tNULL\tNULL\n3150022\tVitest task 1778554877916\tNULL\tNULL\n3210004\tVitest task 1778655098450\tNULL\tNULL\n3210011\tVitest task 1778655295456\tNULL\tNULL\n3210015\tVitest task 1778655327318\tNULL\tNULL\n3210027\tVitest task 1778655413129\tNULL\tNULL\n3210038\tVitest task 1778656084998\tNULL\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 277
+}

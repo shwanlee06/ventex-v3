@@ -1,0 +1,90 @@
+{
+  "query": "SELECT id, name, role FROM team_members WHERE organizationId IS NULL LIMIT 16;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, role FROM team_members WHERE organizationId IS NULL LIMIT 16;",
+  "rows": [
+    {
+      "id": "11",
+      "name": "Shwan Lee",
+      "role": "Founder & CEO"
+    },
+    {
+      "id": "60049",
+      "name": "Chris Phelps",
+      "role": "CRO"
+    },
+    {
+      "id": "240117",
+      "name": "Brian Chen",
+      "role": "COO"
+    },
+    {
+      "id": "270015",
+      "name": "Michael Adenew",
+      "role": "Consultant"
+    },
+    {
+      "id": "1020001",
+      "name": "Kushal Gupta",
+      "role": "Lead Engineer"
+    },
+    {
+      "id": "1050001",
+      "name": "Durga Kar",
+      "role": "Chief Technical Officer"
+    },
+    {
+      "id": "1110022",
+      "name": "Test VENTEX Member 1778544083989",
+      "role": "Test Role"
+    },
+    {
+      "id": "1140001",
+      "name": "Test VENTEX Member 1778550336067",
+      "role": "Test Role"
+    },
+    {
+      "id": "1140008",
+      "name": "Test VENTEX Member 1778554657723",
+      "role": "Test Role"
+    },
+    {
+      "id": "1140015",
+      "name": "Test VENTEX Member 1778554877954",
+      "role": "Test Role"
+    },
+    {
+      "id": "1170004",
+      "name": "Test VENTEX Member 1778655102653",
+      "role": "Test Role"
+    },
+    {
+      "id": "1170007",
+      "name": "Test VENTEX Member 1778655273175",
+      "role": "Test Role"
+    },
+    {
+      "id": "1170010",
+      "name": "Test VENTEX Member 1778655290270",
+      "role": "Test Role"
+    },
+    {
+      "id": "1170017",
+      "name": "Test VENTEX Member 1778655326424",
+      "role": "Test Role"
+    },
+    {
+      "id": "1170024",
+      "name": "Test VENTEX Member 1778655413106",
+      "role": "Test Role"
+    },
+    {
+      "id": "1170034",
+      "name": "Test VENTEX Member 1778656085032",
+      "role": "Test Role"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\trole\n11\tShwan Lee\tFounder & CEO\n60049\tChris Phelps\tCRO\n240117\tBrian Chen\tCOO\n270015\tMichael Adenew\tConsultant\n1020001\tKushal Gupta\tLead Engineer\n1050001\tDurga Kar\tChief Technical Officer\n1110022\tTest VENTEX Member 1778544083989\tTest Role\n1140001\tTest VENTEX Member 1778550336067\tTest Role\n1140008\tTest VENTEX Member 1778554657723\tTest Role\n1140015\tTest VENTEX Member 1778554877954\tTest Role\n1170004\tTest VENTEX Member 1778655102653\tTest Role\n1170007\tTest VENTEX Member 1778655273175\tTest Role\n1170010\tTest VENTEX Member 1778655290270\tTest Role\n1170017\tTest VENTEX Member 1778655326424\tTest Role\n1170024\tTest VENTEX Member 1778655413106\tTest Role\n1170034\tTest VENTEX Member 1778656085032\tTest Role\n",
+  "stderr": "",
+  "execution_time_ms": 261
+}

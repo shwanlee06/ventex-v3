@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM activity_log WHERE entityId IN (SELECT id FROM ventures WHERE organizationId NOT IN (1, 2)); DELETE FROM market_signal WHERE 1=1 AND id NOT IN (SELECT id FROM market_signal WHERE affectedOrganizationIds LIKE '%1%' OR affectedOrganizationIds LIKE '%2%');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute DELETE FROM activity_log WHERE entityId IN (SELECT id FROM ventures WHERE organizationId NOT IN (1, 2)); DELETE FROM market_signal WHERE 1=1 AND id NOT IN (SELECT id FROM market_signal WHERE affectedOrganizationIds LIKE '%1%' OR affectedOrganizationIds LIKE '%2%');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 413
+}

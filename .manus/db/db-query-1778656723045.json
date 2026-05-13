@@ -1,0 +1,25 @@
+{
+  "query": "SELECT COUNT(*) as total FROM ventures; SELECT COUNT(*) as royalton FROM ventures WHERE organizationId = 2; SELECT COUNT(*) as null_org FROM ventures WHERE organizationId IS NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT COUNT(*) as total FROM ventures; SELECT COUNT(*) as royalton FROM ventures WHERE organizationId = 2; SELECT COUNT(*) as null_org FROM ventures WHERE organizationId IS NULL;",
+  "rows": [
+    {
+      "total": "50"
+    },
+    {
+      "total": "royalton"
+    },
+    {
+      "total": "27"
+    },
+    {
+      "total": "null_org"
+    },
+    {
+      "total": "23"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\n50\nroyalton\n27\nnull_org\n23\n",
+  "stderr": "",
+  "execution_time_ms": 274
+}

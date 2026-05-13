@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM venture_files WHERE ventureId IN (SELECT id FROM ventures WHERE organizationId NOT IN (1, 2)); DELETE FROM venture_folders WHERE ventureId IN (SELECT id FROM ventures WHERE organizationId NOT IN (1, 2)); DELETE FROM venture_team WHERE ventureId IN (SELECT id FROM ventures WHERE organizationId NOT IN (1, 2)); DELETE FROM venture_risks WHERE ventureId IN (SELECT id FROM ventures WHERE organizationId NOT IN (1, 2)); DELETE FROM meeting_briefs WHERE ventureId IN (SELECT id FROM ventures WHERE organizationId NOT IN (1, 2)); DELETE FROM document_intelligence WHERE ventureId IN (SELECT id FROM ventures WHERE organizationId NOT IN (1, 2));",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute DELETE FROM venture_files WHERE ventureId IN (SELECT id FROM ventures WHERE organizationId NOT IN (1, 2)); DELETE FROM venture_folders WHERE ventureId IN (SELECT id FROM ventures WHERE organizationId NOT IN (1, 2)); DELETE FROM venture_team WHERE ventureId IN (SELECT id FROM ventures WHERE organizationId NOT IN (1, 2)); DELETE FROM venture_risks WHERE ventureId IN (SELECT id FROM ventures WHERE organizationId NOT IN (1, 2)); DELETE FROM meeting_briefs WHERE ventureId IN (SELECT id FROM ventures WHERE organizationId NOT IN (1, 2)); DELETE FROM document_intelligence WHERE ventureId IN (SELECT id FROM ventures WHERE organizationId NOT IN (1, 2));",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 299
+}

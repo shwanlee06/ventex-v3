@@ -1,0 +1,55 @@
+{
+  "query": "SELECT id, name, organizationId FROM users;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, organizationId FROM users;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Shwan Lee",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "390151",
+      "name": "Jason Yu",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "750035",
+      "name": "Brian Chen",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "840001",
+      "name": "Christopher Phelps",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "933332",
+      "name": "Shourya Kudaravalli",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "2522851",
+      "name": "Michael Adenew",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "3900013",
+      "name": "Najib hanna",
+      "organizationId": "2"
+    },
+    {
+      "id": "9180009",
+      "name": "kushal gupta",
+      "organizationId": "NULL"
+    },
+    {
+      "id": "9420052",
+      "name": "Durga Kar",
+      "organizationId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\torganizationId\n1\tShwan Lee\tNULL\n390151\tJason Yu\tNULL\n750035\tBrian Chen\tNULL\n840001\tChristopher Phelps\tNULL\n933332\tShourya Kudaravalli\tNULL\n2522851\tMichael Adenew\tNULL\n3900013\tNajib hanna\t2\n9180009\tkushal gupta\tNULL\n9420052\tDurga Kar\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}

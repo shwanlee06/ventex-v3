@@ -1,0 +1,38 @@
+{
+  "query": "SELECT organizationId, COUNT(*) as cnt FROM agent_events GROUP BY organizationId;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT organizationId, COUNT(*) as cnt FROM agent_events GROUP BY organizationId;",
+  "rows": [
+    {
+      "organizationId": "NULL",
+      "cnt": "10"
+    },
+    {
+      "organizationId": "870038",
+      "cnt": "4"
+    },
+    {
+      "organizationId": "1",
+      "cnt": "235"
+    },
+    {
+      "organizationId": "1140028",
+      "cnt": "4"
+    },
+    {
+      "organizationId": "2",
+      "cnt": "928"
+    },
+    {
+      "organizationId": "1140027",
+      "cnt": "4"
+    },
+    {
+      "organizationId": "870037",
+      "cnt": "3"
+    }
+  ],
+  "messages": [],
+  "stdout": "organizationId\tcnt\nNULL\t10\n870038\t4\n1\t235\n1140028\t4\n2\t928\n1140027\t4\n870037\t3\n",
+  "stderr": "",
+  "execution_time_ms": 259
+}

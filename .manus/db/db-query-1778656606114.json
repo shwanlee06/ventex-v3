@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM api_keys WHERE organizationId NOT IN (1, 2); DELETE FROM blueprint_diagnostics WHERE organizationId NOT IN (1, 2); DELETE FROM blueprint_structure_modes WHERE organizationId NOT IN (1, 2); DELETE FROM client_agent_config WHERE organizationId NOT IN (1, 2); DELETE FROM client_velocity_benchmarks WHERE organizationId NOT IN (1, 2);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute DELETE FROM api_keys WHERE organizationId NOT IN (1, 2); DELETE FROM blueprint_diagnostics WHERE organizationId NOT IN (1, 2); DELETE FROM blueprint_structure_modes WHERE organizationId NOT IN (1, 2); DELETE FROM client_agent_config WHERE organizationId NOT IN (1, 2); DELETE FROM client_velocity_benchmarks WHERE organizationId NOT IN (1, 2);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 296
+}

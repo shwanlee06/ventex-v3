@@ -1,0 +1,38 @@
+{
+  "query": "SELECT 'organizations' as tbl, COUNT(*) as cnt FROM organizations UNION ALL SELECT 'ventures', COUNT(*) FROM ventures UNION ALL SELECT 'spvs', COUNT(*) FROM spvs UNION ALL SELECT 'tasks', COUNT(*) FROM tasks UNION ALL SELECT 'team_members', COUNT(*) FROM team_members UNION ALL SELECT 'distributions', COUNT(*) FROM distributions UNION ALL SELECT 'agent_events', COUNT(*) FROM agent_events;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT 'organizations' as tbl, COUNT(*) as cnt FROM organizations UNION ALL SELECT 'ventures', COUNT(*) FROM ventures UNION ALL SELECT 'spvs', COUNT(*) FROM spvs UNION ALL SELECT 'tasks', COUNT(*) FROM tasks UNION ALL SELECT 'team_members', COUNT(*) FROM team_members UNION ALL SELECT 'distributions', COUNT(*) FROM distributions UNION ALL SELECT 'agent_events', COUNT(*) FROM agent_events;",
+  "rows": [
+    {
+      "tbl": "team_members",
+      "cnt": "35"
+    },
+    {
+      "tbl": "organizations",
+      "cnt": "2"
+    },
+    {
+      "tbl": "spvs",
+      "cnt": "10"
+    },
+    {
+      "tbl": "ventures",
+      "cnt": "27"
+    },
+    {
+      "tbl": "tasks",
+      "cnt": "529"
+    },
+    {
+      "tbl": "distributions",
+      "cnt": "4"
+    },
+    {
+      "tbl": "agent_events",
+      "cnt": "1188"
+    }
+  ],
+  "messages": [],
+  "stdout": "tbl\tcnt\nteam_members\t35\norganizations\t2\nspvs\t10\nventures\t27\ntasks\t529\ndistributions\t4\nagent_events\t1188\n",
+  "stderr": "",
+  "execution_time_ms": 271
+}

@@ -1,0 +1,25 @@
+{
+  "query": "SELECT COUNT(*) as orphaned_spvs FROM spvs WHERE organizationId IS NULL; SELECT COUNT(*) as orphaned_tasks FROM tasks WHERE organizationId IS NULL; SELECT COUNT(*) as orphaned_distributions FROM distributions WHERE organizationId IS NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT COUNT(*) as orphaned_spvs FROM spvs WHERE organizationId IS NULL; SELECT COUNT(*) as orphaned_tasks FROM tasks WHERE organizationId IS NULL; SELECT COUNT(*) as orphaned_distributions FROM distributions WHERE organizationId IS NULL;",
+  "rows": [
+    {
+      "orphaned_spvs": "0"
+    },
+    {
+      "orphaned_spvs": "orphaned_tasks"
+    },
+    {
+      "orphaned_spvs": "9"
+    },
+    {
+      "orphaned_spvs": "orphaned_distributions"
+    },
+    {
+      "orphaned_spvs": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "orphaned_spvs\n0\norphaned_tasks\n9\norphaned_distributions\n0\n",
+  "stderr": "",
+  "execution_time_ms": 277
+}

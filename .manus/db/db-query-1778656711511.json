@@ -1,0 +1,170 @@
+{
+  "query": "SELECT * FROM org_venture_access LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT * FROM org_venture_access LIMIT 20;",
+  "rows": [
+    {
+      "id": "1",
+      "organizationId": "2",
+      "ventureId": "1",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:48"
+    },
+    {
+      "id": "2",
+      "organizationId": "2",
+      "ventureId": "2",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:48"
+    },
+    {
+      "id": "3",
+      "organizationId": "2",
+      "ventureId": "3",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:48"
+    },
+    {
+      "id": "4",
+      "organizationId": "2",
+      "ventureId": "4",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:48"
+    },
+    {
+      "id": "5",
+      "organizationId": "2",
+      "ventureId": "5",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:48"
+    },
+    {
+      "id": "6",
+      "organizationId": "2",
+      "ventureId": "6",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:48"
+    },
+    {
+      "id": "7",
+      "organizationId": "2",
+      "ventureId": "7",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:48"
+    },
+    {
+      "id": "8",
+      "organizationId": "2",
+      "ventureId": "8",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:48"
+    },
+    {
+      "id": "9",
+      "organizationId": "2",
+      "ventureId": "9",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:49"
+    },
+    {
+      "id": "10",
+      "organizationId": "2",
+      "ventureId": "10",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:49"
+    },
+    {
+      "id": "11",
+      "organizationId": "2",
+      "ventureId": "11",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:49"
+    },
+    {
+      "id": "12",
+      "organizationId": "2",
+      "ventureId": "12",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:49"
+    },
+    {
+      "id": "13",
+      "organizationId": "2",
+      "ventureId": "13",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:49"
+    },
+    {
+      "id": "14",
+      "organizationId": "2",
+      "ventureId": "14",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:49"
+    },
+    {
+      "id": "15",
+      "organizationId": "2",
+      "ventureId": "15",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:49"
+    },
+    {
+      "id": "16",
+      "organizationId": "2",
+      "ventureId": "16",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:49"
+    },
+    {
+      "id": "17",
+      "organizationId": "2",
+      "ventureId": "17",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:50"
+    },
+    {
+      "id": "18",
+      "organizationId": "2",
+      "ventureId": "18",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:50"
+    },
+    {
+      "id": "19",
+      "organizationId": "2",
+      "ventureId": "19",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:50"
+    },
+    {
+      "id": "20",
+      "organizationId": "2",
+      "ventureId": "20",
+      "orgPermission": "full",
+      "grantedBy": "NULL",
+      "createdAt": "2026-03-23 22:13:50"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\torganizationId\tventureId\torgPermission\tgrantedBy\tcreatedAt\n1\t2\t1\tfull\tNULL\t2026-03-23 22:13:48\n2\t2\t2\tfull\tNULL\t2026-03-23 22:13:48\n3\t2\t3\tfull\tNULL\t2026-03-23 22:13:48\n4\t2\t4\tfull\tNULL\t2026-03-23 22:13:48\n5\t2\t5\tfull\tNULL\t2026-03-23 22:13:48\n6\t2\t6\tfull\tNULL\t2026-03-23 22:13:48\n7\t2\t7\tfull\tNULL\t2026-03-23 22:13:48\n8\t2\t8\tfull\tNULL\t2026-03-23 22:13:48\n9\t2\t9\tfull\tNULL\t2026-03-23 22:13:49\n10\t2\t10\tfull\tNULL\t2026-03-23 22:13:49\n11\t2\t11\tfull\tNULL\t2026-03-23 22:13:49\n12\t2\t12\tfull\tNULL\t2026-03-23 22:13:49\n13\t2\t13\tfull\tNULL\t2026-03-23 22:13:49\n14\t2\t14\tfull\tNULL\t2026-03-23 22:13:49\n15\t2\t15\tfull\tNULL\t2026-03-23 22:13:49\n16\t2\t16\tfull\tNULL\t2026-03-23 22:13:49\n17\t2\t17\tfull\tNULL\t2026-03-23 22:13:50\n18\t2\t18\tfull\tNULL\t2026-03-23 22:13:50\n19\t2\t19\tfull\tNULL\t2026-03-23 22:13:50\n20\t2\t20\tfull\tNULL\t2026-03-23 22:13:50\n",
+  "stderr": "",
+  "execution_time_ms": 269
+}

@@ -3665,3 +3665,10 @@
 - [ ] Wire Principal Gate into remaining 6 action types (LP comms, compliance filing, contract execution, entity onboarding, external reports, capital stage advance)
 - [x] Fix readiness checker to work with real onboarded data
 - [ ] Test full flow: onboard → readiness passes → agents activate
+
+## Data Cleanup — Keep Only Royalton Investments
+- [x] Identify Royalton Investments org ID and all linked entities
+- [x] Delete all non-Royalton organizations and their linked data (Meridian, Volkov, AI Test, AI Empty)
+- [x] Delete orphaned records (agent_events, activity_log, test ventures, test team members)
+- [x] Backfill organizationId = 2 on all Royalton ventures/users/team with NULL org
+- [x] Verify only Royalton data remains (2 orgs, 27 ventures, 10 SPVs, 529 tasks, 25 team, 4 distributions)

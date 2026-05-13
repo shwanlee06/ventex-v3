@@ -1,0 +1,62 @@
+{
+  "query": "SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND COLUMN_NAME LIKE '%organization%' AND TABLE_NAME > 'org_venture_access' ORDER BY TABLE_NAME;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND COLUMN_NAME LIKE '%organization%' AND TABLE_NAME > 'org_venture_access' ORDER BY TABLE_NAME;",
+  "rows": [
+    {
+      "TABLE_NAME": "portfolio_health_trajectory",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "process_templates",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "recommendation_outcome",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "resource_contention_alert",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "smart_alerts",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "spvs",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "tasks",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "team_members",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "users",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "velocity_attribution",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "venture_forecast",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "venture_velocity",
+      "COLUMN_NAME": "organizationId"
+    },
+    {
+      "TABLE_NAME": "ventures",
+      "COLUMN_NAME": "organizationId"
+    }
+  ],
+  "messages": [],
+  "stdout": "TABLE_NAME\tCOLUMN_NAME\nportfolio_health_trajectory\torganizationId\nprocess_templates\torganizationId\nrecommendation_outcome\torganizationId\nresource_contention_alert\torganizationId\nsmart_alerts\torganizationId\nspvs\torganizationId\ntasks\torganizationId\nteam_members\torganizationId\nusers\torganizationId\nvelocity_attribution\torganizationId\nventure_forecast\torganizationId\nventure_velocity\torganizationId\nventures\torganizationId\n",
+  "stderr": "",
+  "execution_time_ms": 303
+}

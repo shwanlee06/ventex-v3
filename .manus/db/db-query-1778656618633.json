@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM event_trigger_log WHERE organizationId NOT IN (1, 2); DELETE FROM invitations WHERE organizationId NOT IN (1, 2); DELETE FROM notification_preferences WHERE organizationId NOT IN (1, 2); DELETE FROM org_venture_access WHERE organizationId NOT IN (1, 2); DELETE FROM portfolio_health_trajectory WHERE organizationId NOT IN (1, 2);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute DELETE FROM event_trigger_log WHERE organizationId NOT IN (1, 2); DELETE FROM invitations WHERE organizationId NOT IN (1, 2); DELETE FROM notification_preferences WHERE organizationId NOT IN (1, 2); DELETE FROM org_venture_access WHERE organizationId NOT IN (1, 2); DELETE FROM portfolio_health_trajectory WHERE organizationId NOT IN (1, 2);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 342
+}

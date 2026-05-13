@@ -1,0 +1,126 @@
+{
+  "query": "SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND (COLUMN_NAME LIKE '%venture%' OR COLUMN_NAME LIKE '%spv%') AND COLUMN_NAME LIKE '%Id%' ORDER BY TABLE_NAME;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND (COLUMN_NAME LIKE '%venture%' OR COLUMN_NAME LIKE '%spv%') AND COLUMN_NAME LIKE '%Id%' ORDER BY TABLE_NAME;",
+  "rows": [
+    {
+      "TABLE_NAME": "agent_drafts",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "ai_observations",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "api_keys",
+      "COLUMN_NAME": "ventureIds"
+    },
+    {
+      "TABLE_NAME": "document_downloads",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "document_intelligence",
+      "COLUMN_NAME": "spvId"
+    },
+    {
+      "TABLE_NAME": "document_intelligence",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "invitations",
+      "COLUMN_NAME": "ventureIds"
+    },
+    {
+      "TABLE_NAME": "meeting_briefs",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "org_venture_access",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "recommendation_outcome",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "spv_files",
+      "COLUMN_NAME": "spvId"
+    },
+    {
+      "TABLE_NAME": "spv_folders",
+      "COLUMN_NAME": "spvId"
+    },
+    {
+      "TABLE_NAME": "spv_team",
+      "COLUMN_NAME": "spvId"
+    },
+    {
+      "TABLE_NAME": "spv_ventures",
+      "COLUMN_NAME": "spvId"
+    },
+    {
+      "TABLE_NAME": "spv_ventures",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "spvs",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "tasks",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "tasks",
+      "COLUMN_NAME": "spvId"
+    },
+    {
+      "TABLE_NAME": "user_venture_access",
+      "COLUMN_NAME": "spvId"
+    },
+    {
+      "TABLE_NAME": "user_venture_access",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "velocity_attribution",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "venture_files",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "venture_folders",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "venture_forecast",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "venture_process_overrides",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "venture_process_tracking",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "venture_risks",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "venture_team",
+      "COLUMN_NAME": "ventureId"
+    },
+    {
+      "TABLE_NAME": "venture_velocity",
+      "COLUMN_NAME": "ventureId"
+    }
+  ],
+  "messages": [],
+  "stdout": "TABLE_NAME\tCOLUMN_NAME\nagent_drafts\tventureId\nai_observations\tventureId\napi_keys\tventureIds\ndocument_downloads\tventureId\ndocument_intelligence\tspvId\ndocument_intelligence\tventureId\ninvitations\tventureIds\nmeeting_briefs\tventureId\norg_venture_access\tventureId\nrecommendation_outcome\tventureId\nspv_files\tspvId\nspv_folders\tspvId\nspv_team\tspvId\nspv_ventures\tspvId\nspv_ventures\tventureId\nspvs\tventureId\ntasks\tventureId\ntasks\tspvId\nuser_venture_access\tspvId\nuser_venture_access\tventureId\nvelocity_attribution\tventureId\nventure_files\tventureId\nventure_folders\tventureId\nventure_forecast\tventureId\nventure_process_overrides\tventureId\nventure_process_tracking\tventureId\nventure_risks\tventureId\nventure_team\tventureId\nventure_velocity\tventureId\n",
+  "stderr": "",
+  "execution_time_ms": 281
+}
