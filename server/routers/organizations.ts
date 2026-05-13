@@ -324,6 +324,10 @@ export const organizationsRouter = router({
         sectors: z.array(z.string()).optional(),
         subscriptionTier: z.enum(["poc", "growth", "enterprise"]).optional(),
         renewalDate: z.string().optional(),
+        principalPhone: z.string().optional(),
+        timezone: z.string().optional(),
+        fiscalYearEnd: z.string().optional(),
+        reportingCadence: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -341,6 +345,10 @@ export const organizationsRouter = router({
         sectors: input.sectors || null,
         subscriptionTier: input.subscriptionTier || "poc",
         renewalDate: input.renewalDate || null,
+        principalPhone: input.principalPhone || null,
+        timezone: input.timezone || null,
+        fiscalYearEnd: input.fiscalYearEnd || null,
+        reportingCadence: (input.reportingCadence as any) || null,
       });
 
       const [created] = await db
@@ -385,6 +393,10 @@ export const organizationsRouter = router({
         sectors: z.array(z.string()).optional(),
         subscriptionTier: z.enum(["poc", "growth", "enterprise"]).optional(),
         renewalDate: z.string().max(32).optional(),
+        principalPhone: z.string().optional(),
+        timezone: z.string().optional(),
+        fiscalYearEnd: z.string().optional(),
+        reportingCadence: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -402,6 +414,10 @@ export const organizationsRouter = router({
       if (updates.sectors !== undefined) updateObj.sectors = updates.sectors;
       if (updates.subscriptionTier !== undefined) updateObj.subscriptionTier = updates.subscriptionTier;
       if (updates.renewalDate !== undefined) updateObj.renewalDate = updates.renewalDate;
+      if (updates.principalPhone !== undefined) updateObj.principalPhone = updates.principalPhone;
+      if (updates.timezone !== undefined) updateObj.timezone = updates.timezone;
+      if (updates.fiscalYearEnd !== undefined) updateObj.fiscalYearEnd = updates.fiscalYearEnd;
+      if (updates.reportingCadence !== undefined) updateObj.reportingCadence = updates.reportingCadence;
 
       if (Object.keys(updateObj).length > 0) {
         await db.update(organizations).set(updateObj).where(eq(organizations.id, id));
@@ -578,6 +594,11 @@ export const organizationsRouter = router({
         sector: z.string().optional(),
         location: z.string().optional(),
         status: z.string().optional(),
+        stage: z.string().optional(),
+        nextMilestone: z.string().optional(),
+        nextMilestoneDate: z.string().optional(),
+        legalEntity: z.string().optional(),
+        jurisdiction: z.string().optional(),
       })),
     }))
     .mutation(async ({ input }) => {
@@ -593,6 +614,12 @@ export const organizationsRouter = router({
           sector: v.sector || "Others",
           location: v.location || "",
           status: (v.status as any) || "In progress",
+          stage: v.stage || undefined,
+          nextMilestone: v.nextMilestone || undefined,
+          nextMilestoneDate: v.nextMilestoneDate || undefined,
+          legalEntity: v.legalEntity || undefined,
+          jurisdiction: v.jurisdiction || undefined,
+          organizationId: input.organizationId,
         });
         const [row] = await db.select({ id: ventures.id }).from(ventures).where(eq(ventures.slug, slug)).limit(1);
         if (row) {

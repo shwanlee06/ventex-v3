@@ -3652,3 +3652,16 @@
 
 ## Vision Spec v1 — Hard Blocks (Section 16)
 - [x] Enforce all 6 hard blocks at application layer (hardBlocks.ts module + wired into task completion, compliance filing, distribution release, agent log immutability)
+
+## Client Onboarding-to-Running Flow (Launch Priority)
+- [x] Audit full onboarding wizard: ensure all spec-required fields are collected
+- [x] Onboarding wizard Step 1: add principalPhone, timezone, fiscalYearEnd, reportingCadence
+- [x] Onboarding wizard Step 2: add legalEntity, jurisdiction, stage, nextMilestone, nextMilestoneDate per venture
+- [ ] Onboarding wizard Step 2: add SPV creation with capitalCommitted, purpose
+- [x] Onboarding wizard Step 3: add escalationPriority, authorityLevel, timezone per team member
+- [ ] Onboarding wizard: add compliance calendar step (at least 1 entry)
+- [ ] Onboarding wizard: add distribution schedule step (entries or mark as none)
+- [ ] Onboarding wizard: add document upload step (at least 1 per entity)
+- [ ] Wire Principal Gate into remaining 6 action types (LP comms, compliance filing, contract execution, entity onboarding, external reports, capital stage advance)
+- [x] Fix readiness checker to work with real onboarded data
+- [ ] Test full flow: onboard → readiness passes → agents activate

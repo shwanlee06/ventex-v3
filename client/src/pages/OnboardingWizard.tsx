@@ -1,9 +1,9 @@
-// Client Onboarding Wizard — 5-step admin-only flow
-// Step 1: Client details (name, contact, AUM, sectors, tier)
-// Step 2: Initial ventures (add form + skip)
-// Step 3: Team invitations (name, email, role + skip)
+// Client Onboarding Wizard — Vision Spec v1 aligned
+// Step 1: Client details (name, contact, phone, timezone, fiscal year, reporting cadence, AUM, sectors, tier)
+// Step 2: Initial ventures (name, sector, location, stage, legalEntity, jurisdiction, nextMilestone, nextMilestoneDate)
+// Step 3: Team invitations (name, email, role, escalationPriority, authorityLevel, timezone)
 // Step 4: Agent configuration (toggles + thresholds)
-// Step 5: Confirmation summary + "Launch Client" button
+// Step 5: Readiness checklist + "Launch Client" button
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
@@ -15,8 +15,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Building2, User, Briefcase, Bot, Rocket,
   Plus, Trash2, ChevronRight, ChevronLeft,
-  Check, ArrowRight, Loader2, Mail,
-  Globe, DollarSign, Tag,
+  Check, Loader2, Mail, CheckCircle2, XCircle,
+  Globe, DollarSign, Tag, Clock, Calendar,
+  Shield, Phone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,18 @@ const TIERS = [
   { value: "enterprise", label: "Enterprise", desc: "Custom SLA + priority support" },
 ];
 
+const STAGES = [
+  "Sourcing", "Due Diligence", "Active", "Exiting", "Closed",
+];
+
+const TIMEZONES = [
+  "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
+  "America/Phoenix", "America/Anchorage", "Pacific/Honolulu",
+  "Europe/London", "Europe/Paris", "Europe/Berlin",
+  "Asia/Dubai", "Asia/Singapore", "Asia/Tokyo",
+  "Australia/Sydney",
+];
+
 const STEPS = [
   { id: 1, label: "Client Details", icon: Building2 },
   { id: 2, label: "Ventures", icon: Briefcase },
@@ -52,12 +65,20 @@ interface VentureEntry {
   name: string;
   sector: string;
   location: string;
+  stage: string;
+  legalEntity: string;
+  jurisdiction: string;
+  nextMilestone: string;
+  nextMilestoneDate: string;
 }
 
 interface InviteEntry {
   name: string;
   email: string;
   role: "viewer" | "client" | "user" | "partner" | "manager" | "admin";
+  escalationPriority: number;
+  authorityLevel: string;
+  timezone: string;
 }
 
 interface AgentConfig {
@@ -87,6 +108,10 @@ export default function OnboardingWizard() {
   const [clientName, setClientName] = useState("");
   const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const [principalPhone, setPrincipalPhone] = useState("");
+  const [timezone, setTimezone] = useState("America/New_York");
+  const [fiscalYearEnd, setFiscalYearEnd] = useState("12-31");
+  const [reportingCadence, setReportingCadence] = useState("monthly");
   const [description, setDescription] = useState("");
   const [aumRange, setAumRange] = useState("");
   const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
@@ -94,11 +119,17 @@ export default function OnboardingWizard() {
 
   // Step 2 state
   const [ventures, setVentures] = useState<VentureEntry[]>([]);
-  const [newVenture, setNewVenture] = useState<VentureEntry>({ name: "", sector: "Others", location: "" });
+  const [newVenture, setNewVenture] = useState<VentureEntry>({
+    name: "", sector: "Others", location: "", stage: "Sourcing",
+    legalEntity: "", jurisdiction: "", nextMilestone: "", nextMilestoneDate: "",
+  });
 
   // Step 3 state
   const [invites, setInvites] = useState<InviteEntry[]>([]);
-  const [newInvite, setNewInvite] = useState<InviteEntry>({ name: "", email: "", role: "client" });
+  const [newInvite, setNewInvite] = useState<InviteEntry>({
+    name: "", email: "", role: "client", escalationPriority: 0,
+    authorityLevel: "standard", timezone: "America/New_York",
+  });
 
   // Step 4 state
   const [agentConfig, setAgentConfig] = useState<AgentConfig>({
@@ -127,6 +158,10 @@ export default function OnboardingWizard() {
       setClientName(org.name);
       setContactName(org.primaryContactName || "");
       setContactEmail(org.primaryContactEmail || "");
+      setPrincipalPhone((org as any).principalPhone || "");
+      setTimezone((org as any).timezone || "America/New_York");
+      setFiscalYearEnd((org as any).fiscalYearEnd || "12-31");
+      setReportingCadence((org as any).reportingCadence || "monthly");
       setDescription(org.description || "");
       setAumRange(org.aumRange || "");
       setSelectedSectors(org.sectors || []);
@@ -134,6 +169,12 @@ export default function OnboardingWizard() {
       setPreloaded(true);
     }
   }, [orgQuery.data, preloaded]);
+
+  // Readiness check for Step 5
+  const readinessQuery = trpc.onboarding.readiness.useQuery(
+    { organizationId: createdOrgId! },
+    { enabled: step === 5 && !!createdOrgId, refetchOnWindowFocus: false }
+  );
 
   // Mutations
   const createOrg = trpc.organizations.create.useMutation();
@@ -144,9 +185,10 @@ export default function OnboardingWizard() {
   const recalcHealth = trpc.blueprints.recalculateHealthScores.useMutation();
 
   const canProceed = useCallback(() => {
-    if (step === 1) return clientName.trim().length > 0 && selectedSectors.length > 0;
-    return true; // Steps 2-4 are optional (skip allowed)
-  }, [step, clientName, selectedSectors]);
+    if (step === 1) return clientName.trim().length > 0 && contactEmail.trim().length > 0 && selectedSectors.length > 0;
+    if (step === 2) return true; // ventures optional but encouraged
+    return true;
+  }, [step, clientName, contactEmail, selectedSectors]);
 
   const updateOrg = trpc.organizations.update.useMutation();
 
@@ -167,6 +209,10 @@ export default function OnboardingWizard() {
             aumRange: aumRange || undefined,
             sectors: selectedSectors.length > 0 ? selectedSectors : undefined,
             subscriptionTier: tier,
+            principalPhone: principalPhone || undefined,
+            timezone: timezone || undefined,
+            fiscalYearEnd: fiscalYearEnd || undefined,
+            reportingCadence: reportingCadence || undefined,
           });
           toast.success(`Client "${clientName}" updated`);
         } else {
@@ -181,12 +227,16 @@ export default function OnboardingWizard() {
             aumRange: aumRange || undefined,
             sectors: selectedSectors.length > 0 ? selectedSectors : undefined,
             subscriptionTier: tier,
+            principalPhone: principalPhone || undefined,
+            timezone: timezone || undefined,
+            fiscalYearEnd: fiscalYearEnd || undefined,
+            reportingCadence: reportingCadence || undefined,
           });
           orgId = org.id;
           setCreatedOrgId(org.id);
           toast.success(`Client "${clientName}" created`);
         }
-        // Connection 1: Auto-generate starter blueprints for selected sectors
+        // Auto-generate starter blueprints for selected sectors
         if (selectedSectors.length > 0) {
           generateBlueprints.mutate(
             { organizationId: orgId!, sectors: selectedSectors },
@@ -198,9 +248,7 @@ export default function OnboardingWizard() {
                   });
                 }
               },
-              onError: () => {
-                // Non-blocking — blueprints can be created later from the Blueprints tab
-              },
+              onError: () => {},
             }
           );
         }
@@ -222,6 +270,11 @@ export default function OnboardingWizard() {
             name: v.name,
             sector: v.sector,
             location: v.location || undefined,
+            stage: v.stage || undefined,
+            legalEntity: v.legalEntity || undefined,
+            jurisdiction: v.jurisdiction || undefined,
+            nextMilestone: v.nextMilestone || undefined,
+            nextMilestoneDate: v.nextMilestoneDate || undefined,
           })),
         });
         toast.success(`${ventures.length} venture(s) added`);
@@ -263,25 +316,23 @@ export default function OnboardingWizard() {
     }
 
     if (step < 5) setStep(step + 1);
-  }, [step, clientName, description, contactName, contactEmail, aumRange, selectedSectors, tier, ventures, invites, agentConfig, createdOrgId, createOrg, updateOrg, addVentures, sendInvitations, configureAgents]);
+  }, [step, clientName, description, contactName, contactEmail, principalPhone, timezone, fiscalYearEnd, reportingCadence, aumRange, selectedSectors, tier, ventures, invites, agentConfig, createdOrgId, createOrg, updateOrg, addVentures, sendInvitations, configureAgents]);
 
   const runInitialDiagnostic = trpc.diagnostics.runDiagnostic.useMutation();
 
   const handleLaunch = useCallback(async () => {
-    // Connection 4: Recalculate health scores on launch
     if (createdOrgId) {
       try {
         await recalcHealth.mutateAsync({ organizationId: createdOrgId });
       } catch { /* non-blocking */ }
 
-      // Connection 5: Run initial structural diagnostic
       runInitialDiagnostic.mutate(
         { organizationId: createdOrgId },
         {
           onSuccess: () => {
             toast.success("Initial diagnostic complete", { description: "Structural health scores are now available." });
           },
-          onError: () => { /* non-blocking — can be run later from Diagnostics tab */ },
+          onError: () => {},
         }
       );
     }
@@ -292,7 +343,10 @@ export default function OnboardingWizard() {
   const addVentureEntry = () => {
     if (!newVenture.name.trim()) return;
     setVentures(prev => [...prev, { ...newVenture }]);
-    setNewVenture({ name: "", sector: "Others", location: "" });
+    setNewVenture({
+      name: "", sector: "Others", location: "", stage: "Sourcing",
+      legalEntity: "", jurisdiction: "", nextMilestone: "", nextMilestoneDate: "",
+    });
   };
 
   const removeVenture = (idx: number) => {
@@ -302,7 +356,7 @@ export default function OnboardingWizard() {
   const addInviteEntry = () => {
     if (!newInvite.name.trim() || !newInvite.email.trim()) return;
     setInvites(prev => [...prev, { ...newInvite }]);
-    setNewInvite({ name: "", email: "", role: "client" });
+    setNewInvite({ name: "", email: "", role: "client", escalationPriority: 0, authorityLevel: "standard", timezone: "America/New_York" });
   };
 
   const removeInvite = (idx: number) => {
@@ -368,7 +422,7 @@ export default function OnboardingWizard() {
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">Client Details</h2>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Basic information about the new client organization.
+                    Organization profile, principal contact, and reporting preferences.
                   </p>
                 </div>
 
@@ -385,7 +439,7 @@ export default function OnboardingWizard() {
                   </div>
 
                   <div>
-                    <Label htmlFor="contactName">Primary Contact</Label>
+                    <Label htmlFor="contactName">Principal Name *</Label>
                     <Input
                       id="contactName"
                       value={contactName}
@@ -396,7 +450,7 @@ export default function OnboardingWizard() {
                   </div>
 
                   <div>
-                    <Label htmlFor="contactEmail">Contact Email</Label>
+                    <Label htmlFor="contactEmail">Principal Email *</Label>
                     <Input
                       id="contactEmail"
                       type="email"
@@ -405,6 +459,62 @@ export default function OnboardingWizard() {
                       placeholder="email@example.com"
                       className="mt-1.5"
                     />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="principalPhone">Principal Phone</Label>
+                    <Input
+                      id="principalPhone"
+                      type="tel"
+                      value={principalPhone}
+                      onChange={e => setPrincipalPhone(e.target.value)}
+                      placeholder="+1 (555) 000-0000"
+                      className="mt-1.5"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Timezone *</Label>
+                    <Select value={timezone} onValueChange={setTimezone}>
+                      <SelectTrigger className="mt-1.5">
+                        <SelectValue placeholder="Select timezone" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TIMEZONES.map(tz => (
+                          <SelectItem key={tz} value={tz}>{tz.replace(/_/g, " ")}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label>Fiscal Year End</Label>
+                    <Select value={fiscalYearEnd} onValueChange={setFiscalYearEnd}>
+                      <SelectTrigger className="mt-1.5">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="03-31">March 31</SelectItem>
+                        <SelectItem value="06-30">June 30</SelectItem>
+                        <SelectItem value="09-30">September 30</SelectItem>
+                        <SelectItem value="12-31">December 31</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label>Reporting Cadence</Label>
+                    <Select value={reportingCadence} onValueChange={setReportingCadence}>
+                      <SelectTrigger className="mt-1.5">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="weekly">Weekly</SelectItem>
+                        <SelectItem value="biweekly">Biweekly</SelectItem>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                        <SelectItem value="quarterly">Quarterly</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="md:col-span-2">
@@ -485,17 +595,17 @@ export default function OnboardingWizard() {
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">Initial Ventures</h2>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Add ventures for this client. You can skip and add later.
+                    Add ventures with stage, legal entity, and milestone data. Each venture needs a stage and next milestone for agent activation.
                   </p>
                 </div>
 
                 {/* Add form */}
                 <div className="bg-card border border-border rounded-lg p-4 space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <Input
                       value={newVenture.name}
                       onChange={e => setNewVenture(p => ({ ...p, name: e.target.value }))}
-                      placeholder="Venture name"
+                      placeholder="Venture name *"
                     />
                     <Select
                       value={newVenture.sector}
@@ -510,17 +620,49 @@ export default function OnboardingWizard() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <div className="flex gap-2">
-                      <Input
-                        value={newVenture.location}
-                        onChange={e => setNewVenture(p => ({ ...p, location: e.target.value }))}
-                        placeholder="Location"
-                      />
-                      <Button size="icon" onClick={addVentureEntry} disabled={!newVenture.name.trim()}>
-                        <Plus className="size-4" />
-                      </Button>
-                    </div>
+                    <Input
+                      value={newVenture.location}
+                      onChange={e => setNewVenture(p => ({ ...p, location: e.target.value }))}
+                      placeholder="Location (e.g. Dubai, UAE)"
+                    />
+                    <Select
+                      value={newVenture.stage}
+                      onValueChange={v => setNewVenture(p => ({ ...p, stage: v }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Stage" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {STAGES.map(s => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      value={newVenture.legalEntity}
+                      onChange={e => setNewVenture(p => ({ ...p, legalEntity: e.target.value }))}
+                      placeholder="Legal entity name"
+                    />
+                    <Input
+                      value={newVenture.jurisdiction}
+                      onChange={e => setNewVenture(p => ({ ...p, jurisdiction: e.target.value }))}
+                      placeholder="Jurisdiction (e.g. Delaware, Cayman)"
+                    />
+                    <Input
+                      value={newVenture.nextMilestone}
+                      onChange={e => setNewVenture(p => ({ ...p, nextMilestone: e.target.value }))}
+                      placeholder="Next milestone description"
+                    />
+                    <Input
+                      type="date"
+                      value={newVenture.nextMilestoneDate}
+                      onChange={e => setNewVenture(p => ({ ...p, nextMilestoneDate: e.target.value }))}
+                      placeholder="Milestone date"
+                    />
                   </div>
+                  <Button onClick={addVentureEntry} disabled={!newVenture.name.trim()} className="w-full">
+                    <Plus className="size-4 mr-1" /> Add Venture
+                  </Button>
                 </div>
 
                 {/* List */}
@@ -528,14 +670,19 @@ export default function OnboardingWizard() {
                   <div className="bg-card border border-border rounded-lg divide-y divide-border">
                     {ventures.map((v, i) => (
                       <div key={i} className="p-3 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Briefcase className="size-4 text-muted-foreground" />
-                          <div>
-                            <span className="text-sm font-medium text-foreground">{v.name}</span>
-                            <span className="text-xs text-muted-foreground ml-2">{v.sector}</span>
-                            {v.location && (
-                              <span className="text-xs text-muted-foreground ml-2">· {v.location}</span>
-                            )}
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <Briefcase className="size-4 text-muted-foreground flex-shrink-0" />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-foreground">{v.name}</span>
+                              <Badge variant="outline" className="text-[10px]">{v.stage}</Badge>
+                              <span className="text-xs text-muted-foreground">{v.sector}</span>
+                            </div>
+                            <div className="flex items-center gap-3 mt-0.5">
+                              {v.location && <span className="text-[10px] text-muted-foreground">{v.location}</span>}
+                              {v.legalEntity && <span className="text-[10px] text-muted-foreground">· {v.legalEntity}</span>}
+                              {v.nextMilestone && <span className="text-[10px] text-muted-foreground">· {v.nextMilestone}</span>}
+                            </div>
                           </div>
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => removeVenture(i)}>
@@ -549,7 +696,8 @@ export default function OnboardingWizard() {
                 {ventures.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
                     <Briefcase className="size-8 mx-auto mb-2 opacity-30" />
-                    <p className="text-sm">No ventures added yet. You can skip this step.</p>
+                    <p className="text-sm">No ventures added yet.</p>
+                    <p className="text-xs mt-1">At least 1 venture is required for agent activation.</p>
                   </div>
                 )}
               </div>
@@ -561,23 +709,23 @@ export default function OnboardingWizard() {
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">Team Invitations</h2>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Invite team members to the client portal. They will receive an email with a secure link.
+                    Invite team members. At least one member must have Escalation Priority = 1 for agent activation.
                   </p>
                 </div>
 
                 {/* Add form */}
                 <div className="bg-card border border-border rounded-lg p-4 space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <Input
                       value={newInvite.name}
                       onChange={e => setNewInvite(p => ({ ...p, name: e.target.value }))}
-                      placeholder="Full name"
+                      placeholder="Full name *"
                     />
                     <Input
                       type="email"
                       value={newInvite.email}
                       onChange={e => setNewInvite(p => ({ ...p, email: e.target.value }))}
-                      placeholder="email@example.com"
+                      placeholder="email@example.com *"
                     />
                     <Select
                       value={newInvite.role}
@@ -592,10 +740,50 @@ export default function OnboardingWizard() {
                         <SelectItem value="manager">Manager</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Button onClick={addInviteEntry} disabled={!newInvite.name.trim() || !newInvite.email.trim()}>
-                      <Plus className="size-4 mr-1" /> Add
-                    </Button>
+                    <Select
+                      value={String(newInvite.escalationPriority)}
+                      onValueChange={v => setNewInvite(p => ({ ...p, escalationPriority: Number(v) }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Escalation Priority" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0">No escalation</SelectItem>
+                        <SelectItem value="1">Priority 1 (first contact)</SelectItem>
+                        <SelectItem value="2">Priority 2 (backup)</SelectItem>
+                        <SelectItem value="3">Priority 3 (tertiary)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select
+                      value={newInvite.authorityLevel}
+                      onValueChange={v => setNewInvite(p => ({ ...p, authorityLevel: v }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Authority Level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="standard">Standard</SelectItem>
+                        <SelectItem value="elevated">Elevated</SelectItem>
+                        <SelectItem value="full">Full Authority</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select
+                      value={newInvite.timezone}
+                      onValueChange={v => setNewInvite(p => ({ ...p, timezone: v }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Timezone" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TIMEZONES.map(tz => (
+                          <SelectItem key={tz} value={tz}>{tz.replace(/_/g, " ")}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
+                  <Button onClick={addInviteEntry} disabled={!newInvite.name.trim() || !newInvite.email.trim()} className="w-full">
+                    <Plus className="size-4 mr-1" /> Add Team Member
+                  </Button>
                 </div>
 
                 {/* List */}
@@ -610,6 +798,11 @@ export default function OnboardingWizard() {
                             <span className="text-xs text-muted-foreground ml-2">{inv.email}</span>
                           </div>
                           <Badge variant="outline" className="text-[10px]">{inv.role}</Badge>
+                          {inv.escalationPriority > 0 && (
+                            <Badge variant="default" className="text-[10px] bg-amber-500/20 text-amber-400 border-amber-500/30">
+                              ESC {inv.escalationPriority}
+                            </Badge>
+                          )}
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => removeInvite(i)}>
                           <Trash2 className="size-3.5 text-muted-foreground" />
@@ -622,7 +815,8 @@ export default function OnboardingWizard() {
                 {invites.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
                     <User className="size-8 mx-auto mb-2 opacity-30" />
-                    <p className="text-sm">No invitations added yet. You can skip this step.</p>
+                    <p className="text-sm">No invitations added yet.</p>
+                    <p className="text-xs mt-1">At least one member with Escalation Priority 1 is required.</p>
                   </div>
                 )}
               </div>
@@ -642,10 +836,10 @@ export default function OnboardingWizard() {
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Agent Toggles</h3>
                   <div className="space-y-3">
                     {[
-                      { key: "velocityAgentEnabled" as const, label: "Velocity Agent", desc: "Monitors task completion rates, identifies bottlenecks, and calculates real-time velocity scores for each venture. Sends alerts when progress stalls." },
-                      { key: "complianceAgentEnabled" as const, label: "Overdue Agent", desc: "Tracks every task deadline across all ventures. Escalates after 24h (warning) and 48h (critical). Auto-drafts follow-up emails to responsible parties." },
-                      { key: "dealFlowAgentEnabled" as const, label: "Distribution Sentinel", desc: "Watches capital distribution schedules and investor payment timelines. Flags missed or late distributions before they become compliance issues." },
-                      { key: "orchestratorEnabled" as const, label: "Orchestrator", desc: "The master coordinator. Synthesizes signals from all agents into executive briefs, prioritizes actions, and ensures nothing falls through the cracks." },
+                      { key: "velocityAgentEnabled" as const, label: "Velocity Agent", desc: "Monitors venture stage progression. Flags stalls at 30d (Sourcing), 60d (DD), 90d (Exiting). Never advances Exiting/Closed without Principal confirmation." },
+                      { key: "complianceAgentEnabled" as const, label: "Overdue Agent", desc: "Tracks every task deadline. Escalates: 24h warning → 48h critical → 72h Principal alert. Handles blocked tasks with immediate escalation." },
+                      { key: "dealFlowAgentEnabled" as const, label: "Distribution Sentinel", desc: "Monitors distribution timelines: 30d draft notice → 14d LP recipients → 7d wire instructions → 3d Principal confirmation → 0d execute." },
+                      { key: "orchestratorEnabled" as const, label: "Orchestrator", desc: "Synthesizes all agent signals into weekly executive briefings. Detects cross-venture risks and generates portfolio-level insights." },
                     ].map(agent => (
                       <div key={agent.key} className="flex items-center justify-between">
                         <div>
@@ -713,16 +907,17 @@ export default function OnboardingWizard() {
               </div>
             )}
 
-            {/* ── Step 5: Confirmation ────────────────────────────── */}
+            {/* ── Step 5: Readiness Checklist + Launch ────────────── */}
             {step === 5 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-lg font-semibold text-foreground">Launch Summary</h2>
+                  <h2 className="text-lg font-semibold text-foreground">Launch Readiness</h2>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Review the configuration before launching the client portal.
+                    All 11 items must pass before agents can activate for this client.
                   </p>
                 </div>
 
+                {/* Summary card */}
                 <div className="bg-card border border-border rounded-lg p-5 space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="flex items-center justify-center size-10 rounded-lg bg-primary/10">
@@ -731,7 +926,7 @@ export default function OnboardingWizard() {
                     <div>
                       <h3 className="text-base font-semibold text-foreground">{clientName}</h3>
                       <p className="text-xs text-muted-foreground">
-                        {tier.toUpperCase()} tier · {aumRange || "AUM not set"}
+                        {tier.toUpperCase()} tier · {aumRange || "AUM not set"} · {timezone}
                       </p>
                     </div>
                   </div>
@@ -756,52 +951,59 @@ export default function OnboardingWizard() {
                       <p className="text-[10px] text-muted-foreground">Active Agents</p>
                     </div>
                   </div>
+                </div>
 
-                  {contactName && (
+                {/* Readiness checklist */}
+                <div className="bg-card border border-border rounded-lg p-5 space-y-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-semibold text-foreground">Onboarding Readiness Checklist</h3>
+                    {readinessQuery.data && (
+                      <Badge
+                        variant={readinessQuery.data.ready ? "default" : "outline"}
+                        className={cn(
+                          "text-xs",
+                          readinessQuery.data.ready
+                            ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                            : "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                        )}
+                      >
+                        {readinessQuery.data.passedCount}/{readinessQuery.data.totalCount} passed
+                      </Badge>
+                    )}
+                  </div>
+
+                  {readinessQuery.isLoading && (
+                    <div className="flex items-center gap-2 py-4 justify-center text-muted-foreground">
+                      <Loader2 className="size-4 animate-spin" />
+                      <span className="text-sm">Checking readiness...</span>
+                    </div>
+                  )}
+
+                  {readinessQuery.data && readinessQuery.data.items.map(item => (
+                    <div key={item.id} className="flex items-start gap-3 py-2">
+                      {item.passed ? (
+                        <CheckCircle2 className="size-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                      ) : (
+                        <XCircle className="size-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                      )}
+                      <div className="min-w-0">
+                        <span className={cn(
+                          "text-sm font-medium",
+                          item.passed ? "text-foreground" : "text-amber-400"
+                        )}>
+                          {item.label}
+                        </span>
+                        <p className="text-xs text-muted-foreground mt-0.5">{item.detail}</p>
+                      </div>
+                    </div>
+                  ))}
+
+                  {readinessQuery.data && !readinessQuery.data.ready && (
                     <div className="pt-3 border-t border-border">
-                      <p className="text-xs text-muted-foreground">
-                        Primary contact: <span className="text-foreground capitalize">{contactName}</span>
-                        {contactEmail && <span className="ml-1">({contactEmail})</span>}
+                      <p className="text-xs text-amber-400">
+                        Some items are incomplete. You can still launch, but agents will not activate until all items pass.
+                        You can complete missing items from the client detail pages after launch.
                       </p>
-                    </div>
-                  )}
-
-                  {selectedSectors.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {selectedSectors.map(s => (
-                        <Badge key={s} variant="outline" className="text-[10px]">{s}</Badge>
-                      ))}
-                    </div>
-                  )}
-
-                  {ventures.length > 0 && (
-                    <div className="pt-3 border-t border-border">
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Ventures</p>
-                      <div className="space-y-1">
-                        {ventures.map((v, i) => (
-                          <div key={i} className="flex items-center gap-2 text-xs">
-                            <span className="size-1 rounded-full bg-primary" />
-                            <span className="text-foreground">{v.name}</span>
-                            <span className="text-muted-foreground">{v.sector}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {invites.length > 0 && (
-                    <div className="pt-3 border-t border-border">
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Team Invitations</p>
-                      <div className="space-y-1">
-                        {invites.map((inv, i) => (
-                          <div key={i} className="flex items-center gap-2 text-xs">
-                            <Mail className="size-3 text-muted-foreground" />
-                            <span className="text-foreground capitalize">{inv.name}</span>
-                            <span className="text-muted-foreground">{inv.email}</span>
-                            <Badge variant="outline" className="text-[9px]">{inv.role}</Badge>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   )}
                 </div>
