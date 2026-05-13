@@ -3614,3 +3614,41 @@
 - [x] Sign-out: fix logout flow so it actually signs the user out (dedicated /api/logout GET endpoint + direct navigation)
 - [x] Engine pause/resume: added Pause/Resume + Run Now controls to Agent Execution Log header
 - [x] All interactive buttons: audited all buttons — no placeholders or no-ops found, all have real handlers
+
+## Vision Spec v1 — Schema Gaps
+- [x] Organizations: add principalPhone, timezone, fiscalYearEnd, reportingCadence columns
+- [x] Ventures: add organizationId (direct FK), legalEntity, jurisdiction, dateAcquired, currentValuation, equityOwned, keyContact, nextMilestoneDate, lastActivityDate, daysInCurrentStage, complianceDeadlines, openDeals, lastDistributionDate, nextDistributionDate, nextDistributionAmount, notes, flags
+- [x] SPVs: add ventureId, purpose, capitalCommitted, capitalCalled, capitalRemaining, nextCapitalCallDate, nextDistributionDate, nextDistributionAmount, legalCounsel, complianceDeadlines
+- [x] Tasks: add spvId, blockingReason, escalationContact, lastActionTaken, lastActionDate, followUpCount, lastFollowUpSent
+- [x] Distributions: add ventureId, spvId, lpRecipients, noticeDraftStatus, noticeSentDate, principalConfirmed, principalConfirmedAt, wireInstructionsOnFile, confirmationReceiptSent
+- [x] Create compliance table with all spec fields
+- [x] Document Vault: add organizationId and category to ventureFiles and spvFiles
+- [x] Team Members: add timezone, authorityLevel, escalationPriority
+
+## Vision Spec v1 — Enum Alignment
+- [ ] Venture stages: Sourcing | Due Diligence | Active | Exiting | Closed
+- [ ] SPV stages: Pre-Close | Active | Winding Down | Closed
+- [ ] Task priority: Critical | High | Medium | Low
+- [ ] Task status: Not Started | In Progress | Blocked | Complete
+- [ ] Distribution notice status: Not Started | Drafted | Sent to Principal | Confirmed | Released
+- [ ] Compliance status: Not Started | In Progress | Filed | Overdue
+- [ ] Document categories: Operating Agreement | Cap Table | LP Agreement | Active Contract | Compliance Filing | Board Resolution | Distribution Record | Insurance Certificate | Tax Filing | Other
+- [ ] Team authority level: Execute | Recommend | Approve
+
+## Vision Spec v1 — Agent Logic Gaps
+- [x] Overdue Agent: implement exact followUpCount/escalation timeline per spec
+- [x] Velocity Agent: implement exact stage thresholds (30/60/90 days) and auto-advance with capital/legal check
+- [x] Distribution Sentinel: implement exact 30/14/7/3/0 day timeline with wireInstructions and principalConfirmed gates
+- [x] Orchestrator: implement Weekly briefing with all required sections, cross-venture risk detection, comprehensive portfolio data
+
+## Vision Spec v1 — Agent Log Table
+- [x] Add ventureId, spvId, taskId, distributionId, recipient, outcome columns to agentEvents
+
+## Vision Spec v1 — Principal Confirmation Gate
+- [x] Enforce gate for all 8 action types at application layer (reusable module + wired into distribution release, team add/remove)
+
+## Vision Spec v1 — Client Onboarding Checklist
+- [x] Build 11-item onboarding checklist with agent activation gate (onboardingReadiness.ts + readiness query endpoint + agentRunner gate)
+
+## Vision Spec v1 — Hard Blocks (Section 16)
+- [x] Enforce all 6 hard blocks at application layer (hardBlocks.ts module + wired into task completion, compliance filing, distribution release, agent log immutability)

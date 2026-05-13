@@ -11,6 +11,7 @@ import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { storagePut } from "../storage";
 import { sendInvitationEmail, buildInviteLink } from "../invitationEmail";
 import { enforceRateLimit } from "../security/rateLimit";
+import { requirePrincipalGate } from "../security/principalGate";
 
 /**
  * Calculate live status from lastSeenAt timestamp and adminStatus.
@@ -176,6 +177,19 @@ export const teamRouter = router({
   })).mutation(async ({ ctx, input }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
+
+    // Section 14: Principal Gate — team member addition requires confirmation
+    if (input.organizationId) {
+      await requirePrincipalGate({
+        actionType: "team_change",
+        organizationId: input.organizationId,
+        entityName: input.name,
+        description: `Add team member "${input.name}" (${input.role || "unspecified role"})`,
+        userId: String(ctx.user.id),
+        userName: ctx.user.name || "System",
+      });
+    }
+
     const slug = slugify(input.name) + "-" + nanoid(4);
     const { organizationId, systemRole, origin, ...rest } = input;
 
@@ -501,6 +515,17 @@ export const teamRouter = router({
     if (!member) {
       // Member already deleted (e.g., stale UI data) — return success idempotently
       return { success: true, name: "Unknown" };
+    }
+
+    // Section 14: Principal Gate — team member removal requires confirmation
+    if (member.organizationId) {
+      await requirePrincipalGate({
+        actionType: "team_change",
+        organizationId: member.organizationId,
+        entityId: String(member.id),
+        entityName: member.name,
+        description: `Remove team member "${member.name}" (${member.role || "unspecified role"})`,
+      });
     }
 
     // Remove venture assignments

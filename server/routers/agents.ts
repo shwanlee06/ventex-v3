@@ -21,6 +21,8 @@ import {
   clientAgentConfig,
   ventureProcessTracking,
   processSteps,
+  compliance,
+  spvs,
 } from "../../drizzle/schema";
 import {
   sendOverdueAutoEmail,
@@ -62,27 +64,60 @@ interface AgentSignal {
   agentEntityName?: string;
   oldStatus?: string;
   newStatus?: string;
+  // Vision spec v1: direct FK columns for agent log
+  ventureId?: number | null;
+  spvId?: number | null;
+  taskId?: number | null;
+  distributionId?: number | null;
+  recipient?: string | null;
+  outcome?: string | null;
 }
 
 
+// Vision spec v1: stages must be exactly Sourcing | Due Diligence | Active | Exiting | Closed
+// Legacy stages are mapped to spec stages in getNextStage()
 const STAGE_PIPELINE = [
-  "In Validation",
-  "In Fundraising",
-  "Active Ventures",
-  "Completed",
+  "Sourcing",
+  "Due Diligence",
+  "Active",
+  "Exiting",
+  "Closed",
 ];
 
-// Capital-intensive stages require explicit client approval (Mode B)
-const CAPITAL_STAGES = ["In Fundraising"];
+// Legacy stage mapping — maps old stage names to spec stages for backward compat
+const LEGACY_STAGE_MAP: Record<string, string> = {
+  "In Validation": "Sourcing",
+  "In Fundraising": "Due Diligence",
+  "Active Ventures": "Active",
+  "Completed": "Closed",
+};
+
+function normalizeStage(stage: string): string {
+  return LEGACY_STAGE_MAP[stage] || stage;
+}
+
+// Capital-intensive stages require explicit Principal approval (Mode B)
+// Spec: Never advance Exiting or Closed without explicit Principal confirmation
+const CAPITAL_STAGES = ["Due Diligence", "Exiting", "In Fundraising"];
+
+// Vision spec v1: stall thresholds by stage (days)
+const STALL_THRESHOLDS: Record<string, number> = {
+  "Sourcing": 30,
+  "Due Diligence": 60,
+  "Exiting": 90,
+  // Active: no auto-flag unless Principal sets custom threshold
+};
 
 function getNextStage(current: string): string | null {
-  const idx = STAGE_PIPELINE.indexOf(current);
+  const normalized = normalizeStage(current);
+  const idx = STAGE_PIPELINE.indexOf(normalized);
   if (idx === -1 || idx >= STAGE_PIPELINE.length - 1) return null;
   return STAGE_PIPELINE[idx + 1];
 }
 
 function isCapitalStage(stage: string): boolean {
-  return CAPITAL_STAGES.includes(stage);
+  const normalized = normalizeStage(stage);
+  return CAPITAL_STAGES.includes(normalized);
 }
 
 
@@ -122,25 +157,27 @@ async function getVentureIdsForOrg(
   return rows.map((r) => r.ventureId);
 }
 
-// Finds tasks past due, moves them to overdue, drafts follow-up comms
+// Vision spec v1 — Overdue Agent
+// Runs every 6 hours. Queries all tasks where dueDate is past AND status is not Complete.
+// Escalation chain: assignee → escalationContact → Principal
+// Blocked tasks: immediate Principal alert with blockingReason
 
 export async function runOverdueAgent(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   orgId?: number | null
 ): Promise<AgentSignal[]> {
   const signals: AgentSignal[] = [];
+  const now = new Date();
 
-  // Build base conditions
-  const conditions = [
+  // --- Part A: Overdue tasks (dueDate past, status not Complete, not Blocked) ---
+  const overdueConditions: any[] = [
     ne(tasks.status, "complete"),
-    ne(tasks.status, "overdue"),
+    ne(tasks.status, "Complete"),
+    ne(tasks.status, "Blocked"),
+    ne(tasks.status, "blocked"),
     sql`${tasks.dueDate} IS NOT NULL AND ${tasks.dueDate} < CURDATE()`,
   ];
-
-  // Scope by org if provided
-  if (orgId) {
-    conditions.push(eq(tasks.organizationId, orgId));
-  }
+  if (orgId) overdueConditions.push(eq(tasks.organizationId, orgId));
 
   const overdueTasks = await db
     .select({
@@ -155,83 +192,169 @@ export async function runOverdueAgent(
       organizationId: tasks.organizationId,
       lastEmailSentAt: tasks.lastEmailSentAt,
       emailSentCount: tasks.emailSentCount,
+      followUpCount: tasks.followUpCount,
+      lastFollowUpSent: tasks.lastFollowUpSent,
+      escalationContact: tasks.escalationContact,
+      blockingReason: tasks.blockingReason,
+      spvId: tasks.spvId,
     })
     .from(tasks)
-    .where(and(...conditions));
+    .where(and(...overdueConditions));
 
-  if (overdueTasks.length === 0) {
-    const overdueConditions: any[] = [eq(tasks.status, "overdue")];
-    if (orgId) overdueConditions.push(eq(tasks.organizationId, orgId));
+  // --- Part B: Blocked tasks — immediate Principal alert ---
+  const blockedConditions: any[] = [
+    sql`(${tasks.status} = 'Blocked' OR ${tasks.status} = 'blocked')`,
+  ];
+  if (orgId) blockedConditions.push(eq(tasks.organizationId, orgId));
 
-    const existingOverdue = await db
-      .select({ id: tasks.id, title: tasks.title, dueDate: tasks.dueDate })
-      .from(tasks)
-      .where(and(...overdueConditions));
-
-    if (existingOverdue.length > 0) {
-      signals.push({
-        agentName: "Overdue Agent",
-        eventType: "signal",
-        message: `${existingOverdue.length} tasks remain in overdue status. No new overdue tasks detected.`,
-        severity: existingOverdue.length > 5 ? "warning" : "info",
-        organizationId: orgId,
-        audience: "client",
-        requiresClientAction: false, // summary signal, not actionable (no linked entity)
-        actionType: "notify",
-        actionLabel: "Review Overdue",
-        entityType: "task",
-      });
-    } else {
-      signals.push({
-        agentName: "Overdue Agent",
-        eventType: "signal",
-        message: "All tasks are on schedule. No overdue items detected.",
-        severity: "info",
-        organizationId: orgId,
-        audience: "client",
-        requiresClientAction: false,
-      });
-    }
-    return signals;
-  }
-
-  const now = new Date();
+  const blockedTasks = await db
+    .select({
+      id: tasks.id,
+      title: tasks.title,
+      dueDate: tasks.dueDate,
+      ventureId: tasks.ventureId,
+      organizationId: tasks.organizationId,
+      blockingReason: tasks.blockingReason,
+      assigneeNames: tasks.assigneeNames,
+      spvId: tasks.spvId,
+    })
+    .from(tasks)
+    .where(and(...blockedConditions));
 
   // Get venture names for context
-  const ventureIds = Array.from(new Set(overdueTasks.filter(t => t.ventureId).map(t => t.ventureId!)));
+  const allVentureIds = Array.from(new Set([
+    ...overdueTasks.filter(t => t.ventureId).map(t => t.ventureId!),
+    ...blockedTasks.filter(t => t.ventureId).map(t => t.ventureId!),
+  ]));
   let ventureMap: Record<number, { name: string; sector: string }> = {};
-  if (ventureIds.length > 0) {
+  if (allVentureIds.length > 0) {
     const ventureRows = await db
       .select({ id: ventures.id, name: ventures.name, sector: ventures.sector })
       .from(ventures)
-      .where(inArray(ventures.id, ventureIds));
+      .where(inArray(ventures.id, allVentureIds));
     for (const v of ventureRows) {
       ventureMap[v.id] = { name: v.name, sector: v.sector };
     }
   }
 
+  // Get Principal email for escalations
+  let principalEmail: string | null = null;
+  let principalName = "Principal";
+  if (orgId) {
+    const [org] = await db.select({
+      primaryContactEmail: organizations.primaryContactEmail,
+      primaryContactName: organizations.primaryContactName,
+    }).from(organizations).where(eq(organizations.id, orgId)).limit(1);
+    if (org?.primaryContactEmail) {
+      principalEmail = org.primaryContactEmail;
+      principalName = org.primaryContactName || "Principal";
+    }
+  }
+
+  // --- Process blocked tasks: immediate Principal alert ---
+  for (const task of blockedTasks) {
+    // Dedup: skip if we already alerted about this blocked task in the last 24h
+    const dedupConds: any[] = [
+      eq(agentEvents.agentName, "Overdue Agent"),
+      eq(agentEvents.agentEntityId, String(task.id)),
+      eq(agentEvents.actionType, "escalate"),
+      gte(agentEvents.createdAt, new Date(now.getTime() - 24 * 60 * 60 * 1000)),
+    ];
+    if (orgId) dedupConds.push(eq(agentEvents.organizationId, orgId));
+    const recent = await db.select({ id: agentEvents.id }).from(agentEvents).where(and(...dedupConds)).limit(1);
+    if (recent.length > 0) continue;
+
+    const ventureName = task.ventureId ? ventureMap[task.ventureId]?.name || "Unknown" : "Unassigned";
+    const reason = task.blockingReason || "No reason provided";
+
+    signals.push({
+      agentName: "Overdue Agent",
+      eventType: "alert",
+      message: `BLOCKED: "${task.title}" (${ventureName}) — ${reason}. Requires Principal attention.`,
+      severity: "critical",
+      organizationId: task.organizationId,
+      audience: "both",
+      requiresClientAction: true,
+      actionType: "escalate",
+      actionLabel: "Unblock Task",
+      actionPayload: { taskId: task.id, blockingReason: reason },
+      entityType: "task",
+      agentEntityId: String(task.id),
+      agentEntityName: task.title,
+      taskId: task.id,
+      ventureId: task.ventureId,
+      spvId: task.spvId,
+      recipient: principalName,
+      outcome: "pending",
+    });
+  }
+
+  // --- Process overdue tasks with escalation chain ---
+  if (overdueTasks.length === 0 && blockedTasks.length === 0) {
+    signals.push({
+      agentName: "Overdue Agent",
+      eventType: "signal",
+      message: "All tasks are on schedule. No overdue or blocked items detected.",
+      severity: "info",
+      organizationId: orgId,
+      audience: "client",
+      requiresClientAction: false,
+    });
+    return signals;
+  }
+
   for (const task of overdueTasks) {
     const due = new Date(task.dueDate!);
     const daysOverdue = Math.floor((now.getTime() - due.getTime()) / (1000 * 60 * 60 * 24));
-    const severity: Severity = daysOverdue > 21 ? "critical" : daysOverdue > 7 ? "warning" : "info";
-
-    await db.update(tasks).set({ status: "overdue" }).where(eq(tasks.id, task.id));
+    const followUpCount = task.followUpCount || 0;
+    const lastFollowUp = task.lastFollowUpSent ? new Date(task.lastFollowUpSent) : null;
+    const hoursSinceLastFollowUp = lastFollowUp
+      ? (now.getTime() - lastFollowUp.getTime()) / (1000 * 60 * 60)
+      : Infinity;
 
     const ventureName = task.ventureId ? ventureMap[task.ventureId]?.name || "Unknown" : "Unassigned";
-    const sector = task.ventureId ? ventureMap[task.ventureId]?.sector || "General" : "General";
     const assignees = task.assigneeNames?.join(", ") || "Unassigned";
 
-    // 3-Layer Blueprint lookup for richer overdue follow-ups
-    let blueprintHint = "";
-    let blueprintSourceLabel = "";
-    if (task.ventureId) {
-      try {
-        const bpResult = await lookupBlueprintForVenture(task.ventureId);
-        blueprintSourceLabel = bpResult.sourceLabel;
-        const ctx = buildBlueprintContext(bpResult);
-        if (ctx) blueprintHint = ctx;
-      } catch { /* no blueprint */ }
+    // Spec: determine escalation level
+    // Level 1: followUpCount is 0 OR (lastFollowUpSent > 7 days ago AND followUpCount < 3) → send to assignee
+    // Level 2: no response after 48h from first follow-up → send to escalationContact
+    // Level 3: no response from escalation contact after 24h → send to Principal
+    let escalationLevel: "assignee" | "escalation_contact" | "principal" = "assignee";
+    let recipientLabel = assignees;
+    let severity: Severity = "info";
+
+    if (followUpCount === 0 || (hoursSinceLastFollowUp > 7 * 24 && followUpCount < 3)) {
+      // Level 1: send follow-up to assignee
+      escalationLevel = "assignee";
+      recipientLabel = assignees;
+      severity = daysOverdue > 7 ? "warning" : "info";
+    } else if (followUpCount >= 1 && hoursSinceLastFollowUp > 48 && followUpCount < 3) {
+      // Level 2: escalate to escalationContact
+      escalationLevel = "escalation_contact";
+      recipientLabel = task.escalationContact || "Escalation Contact";
+      severity = "warning";
+    } else if (followUpCount >= 3 || (followUpCount >= 2 && hoursSinceLastFollowUp > 24)) {
+      // Level 3: escalate to Principal
+      escalationLevel = "principal";
+      recipientLabel = principalName;
+      severity = "critical";
+    } else {
+      // Within cooldown period — skip
+      continue;
     }
+
+    // Mark task as overdue if not already
+    if (task.status !== "overdue") {
+      await db.update(tasks).set({ status: "overdue" }).where(eq(tasks.id, task.id));
+    }
+
+    // Update followUpCount and lastFollowUpSent
+    await db.update(tasks).set({
+      followUpCount: followUpCount + 1,
+      lastFollowUpSent: now,
+      lastActionDate: now,
+      lastActionTaken: `Escalation level ${escalationLevel}: follow-up #${followUpCount + 1} sent to ${recipientLabel}`,
+    } as any).where(eq(tasks.id, task.id));
 
     // Dedup: skip if a pending draft already exists for this task
     const existingDraft = await db
@@ -248,23 +371,44 @@ export async function runOverdueAgent(
       .limit(1);
 
     if (existingDraft.length > 0) {
-      // Draft already exists for this task — skip
       signals.push({
         agentName: "Overdue Agent",
         eventType: "status_change",
         message: `"${task.title}" still overdue (${daysOverdue} days). Existing draft pending — skipping duplicate.`,
-        severity: daysOverdue > 7 ? "critical" as Severity : "warning" as Severity,
+        severity,
         organizationId: task.organizationId,
         audience: "client",
         requiresClientAction: false,
         actionType: "notify" as ActionType,
+        taskId: task.id,
+        ventureId: task.ventureId,
+        recipient: recipientLabel,
+        outcome: "pending",
       });
       continue;
     }
 
+    // Blueprint context
+    let blueprintHint = "";
+    let blueprintSourceLabel = "";
+    if (task.ventureId) {
+      try {
+        const bpResult = await lookupBlueprintForVenture(task.ventureId);
+        blueprintSourceLabel = bpResult.sourceLabel;
+        const ctx = buildBlueprintContext(bpResult);
+        if (ctx) blueprintHint = ctx;
+      } catch { /* no blueprint */ }
+    }
+
+    const escalationContext = escalationLevel === "principal"
+      ? ` This task has been escalated through the chain (${followUpCount} follow-ups sent). Requires your direct intervention.`
+      : escalationLevel === "escalation_contact"
+      ? ` Assignee has not responded after ${followUpCount} follow-ups. Escalating to escalation contact.`
+      : "";
+
     const draftBody = await callAgentLLM(
-      "You are VENTEX, a venture velocity platform. Draft a brief, professional follow-up message (max 4 sentences) to send to the assigned team member about an overdue task. Reference the task and venture by name. If blueprint blocking steps are provided, mention the specific step that needs attention. Be direct but professional. Sign off as 'VENTEX Operations'.",
-      `Task: "${task.title}" | Venture: ${ventureName} | Assigned to: ${assignees} | Days overdue: ${daysOverdue} | Sector: ${sector}${blueprintHint}${blueprintSourceLabel ? ` | Operating on: ${blueprintSourceLabel}` : ""}`
+      `You are VENTEX, a venture velocity platform. Draft a brief, professional ${escalationLevel === "principal" ? "escalation alert" : "follow-up message"} (max 4 sentences). Reference the task and venture by name.${escalationContext} Be direct but professional. Sign off as 'VENTEX Operations'.`,
+      `Task: "${task.title}" | Venture: ${ventureName} | Assigned to: ${assignees} | Days overdue: ${daysOverdue} | Follow-up #${followUpCount + 1} | Escalation level: ${escalationLevel} | Recipient: ${recipientLabel}${blueprintHint}`
     );
 
     const draftSafety = getDraftSafetyFields({ agentName: "Overdue Agent", draftType: "follow_up", hasEntityData: true, hasHistoricalData: daysOverdue > 0, hasBlueprintContext: !!blueprintHint });
@@ -273,10 +417,10 @@ export async function runOverdueAgent(
       ventureId: task.ventureId,
       ventureName,
       draftType: "follow_up",
-      subject: `Follow-up: ${task.title} (${daysOverdue} days overdue)`,
+      subject: `${escalationLevel === "principal" ? "ESCALATION: " : ""}Follow-up: ${task.title} (${daysOverdue} days overdue)`,
       body: draftBody,
-      recipientName: assignees,
-      recipientRole: "Assignee",
+      recipientName: recipientLabel,
+      recipientRole: escalationLevel === "principal" ? "Principal" : escalationLevel === "escalation_contact" ? "Escalation Contact" : "Assignee",
       status: "pending",
       createdByAgent: "Overdue Agent",
       ...draftSafety,
@@ -286,76 +430,54 @@ export async function runOverdueAgent(
 
     signals.push({
       agentName: "Overdue Agent",
-      eventType: "status_change",
-      message: `"${task.title}" moved to overdue (${daysOverdue} days). Follow-up drafted for ${assignees}.${blueprintSourceLabel ? ` [${blueprintSourceLabel}]` : ""}`,
+      eventType: escalationLevel === "principal" ? "alert" : "status_change",
+      message: `"${task.title}" overdue (${daysOverdue} days). ${escalationLevel === "principal" ? "ESCALATED TO PRINCIPAL." : escalationLevel === "escalation_contact" ? `Escalated to ${recipientLabel}.` : `Follow-up #${followUpCount + 1} drafted for ${assignees}.`}${blueprintSourceLabel ? ` [${blueprintSourceLabel}]` : ""}`,
       severity,
       organizationId: task.organizationId,
-      audience: "client",
+      audience: escalationLevel === "principal" ? "both" : "client",
       requiresClientAction: true,
-      actionType: "draft",
-      actionLabel: "Approve Follow-Up",
-      actionPayload: { draftId, taskId: task.id },
+      actionType: escalationLevel === "principal" ? "escalate" : "draft",
+      actionLabel: escalationLevel === "principal" ? "Review Escalation" : "Approve Follow-Up",
+      actionPayload: { draftId, taskId: task.id, escalationLevel },
       entityType: "task",
       agentEntityId: String(task.id),
       agentEntityName: task.title,
       oldStatus: task.status,
       newStatus: "overdue",
+      taskId: task.id,
+      ventureId: task.ventureId,
+      spvId: task.spvId,
+      recipient: recipientLabel,
+      outcome: "pending",
     });
 
-    // 7-day cooldown to prevent spam
-    if (daysOverdue > 3) {
-      const lastSent = task.lastEmailSentAt ? new Date(task.lastEmailSentAt).getTime() : 0;
-      const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-      const canSend = (now.getTime() - lastSent) > sevenDaysMs;
+    // Auto-send email for escalation levels 2 and 3
+    if (escalationLevel !== "assignee") {
+      let recipientEmail: string | null = null;
+      if (escalationLevel === "principal") {
+        recipientEmail = principalEmail;
+      } else if (task.escalationContact) {
+        // Look up escalation contact email
+        const [member] = await db.select({ email: teamMembers.email })
+          .from(teamMembers)
+          .where(eq(teamMembers.name, task.escalationContact))
+          .limit(1);
+        recipientEmail = member?.email || null;
+      }
 
-      if (canSend) {
-        // Find assignee email from team_members
-        const assigneeNames = task.assigneeNames || [];
-        let recipientEmail: string | null = null;
-        let recipientName = assigneeNames[0] || "Team Member";
-
-        if (assigneeNames.length > 0) {
-          const [member] = await db.select({ email: teamMembers.email, name: teamMembers.name })
-            .from(teamMembers)
-            .where(eq(teamMembers.name, assigneeNames[0]))
-            .limit(1);
-          if (member?.email) {
-            recipientEmail = member.email;
-            recipientName = member.name;
-          }
-        }
-
-        // Get venture stage for context
-        const ventureStage = task.ventureId
-          ? (await db.select({ stage: ventures.stage }).from(ventures).where(eq(ventures.id, task.ventureId)).limit(1))[0]?.stage || "Active"
-          : "Active";
-
-        if (recipientEmail) {
-          const deadline = new Date(now.getTime() + 48 * 60 * 60 * 1000);
-          const deadlineStr = deadline.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-
-          try {
-            const emailResult = await sendOverdueAutoEmail({
-              to: recipientEmail,
-              assigneeName: recipientName,
-              taskTitle: task.title,
-              ventureName,
-              stage: ventureStage,
-              daysOverdue,
-              deadlineDate: deadlineStr,
-            });
-
-            if (emailResult.success) {
-              // Update task email tracking
-              await db.update(tasks).set({
-                lastEmailSentAt: new Date(),
-                emailSentCount: (task.emailSentCount || 0) + 1,
-              } as any).where(eq(tasks.id, task.id));
-
-            }
-          } catch (emailErr) {
-            console.error(`[Overdue Agent] Auto-email failed for task ${task.id}:`, emailErr);
-          }
+      if (recipientEmail) {
+        try {
+          await sendOverdueAutoEmail({
+            to: recipientEmail,
+            assigneeName: recipientLabel,
+            taskTitle: task.title,
+            ventureName,
+            stage: "Overdue",
+            daysOverdue,
+            deadlineDate: new Date(now.getTime() + 48 * 60 * 60 * 1000).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+          });
+        } catch (emailErr) {
+          console.error(`[Overdue Agent] Escalation email failed for task ${task.id}:`, emailErr);
         }
       }
     }
@@ -391,6 +513,8 @@ export async function runVelocityAgent(
       status: ventures.status,
       healthScore: ventures.healthScore,
       updatedAt: ventures.updatedAt,
+      lastActivityDate: ventures.lastActivityDate,
+      daysInCurrentStage: ventures.daysInCurrentStage,
     })
     .from(ventures)
     .where(and(...ventureConditions));
@@ -607,7 +731,64 @@ export async function runVelocityAgent(
       }
     }
 
-    if (totalTasks === 0 && venture.stage === "In Validation") {
+    // Vision spec v1: stall detection using lastActivityDate and STALL_THRESHOLDS
+    const normalizedStage = normalizeStage(venture.stage);
+    const stallThreshold = STALL_THRESHOLDS[normalizedStage];
+    const lastActivity = venture.lastActivityDate ? new Date(venture.lastActivityDate) : new Date(venture.updatedAt);
+    const daysSinceActivity = Math.floor((now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
+
+    // Update daysInCurrentStage on the venture
+    const daysInStageCalc = Math.floor((now.getTime() - new Date(venture.updatedAt).getTime()) / (1000 * 60 * 60 * 24));
+    if (daysInStageCalc !== (venture.daysInCurrentStage || 0)) {
+      await db.update(ventures).set({ daysInCurrentStage: daysInStageCalc } as any).where(eq(ventures.id, venture.id));
+    }
+
+    if (stallThreshold && daysSinceActivity >= stallThreshold) {
+      // Stall detected — check dedup
+      const stallConditions: any[] = [
+        eq(agentEvents.agentName, "Velocity Agent"),
+        eq(agentEvents.agentEntityId, String(venture.id)),
+        eq(agentEvents.actionType, "escalate"),
+        gte(agentEvents.createdAt, new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)),
+      ];
+      if (orgId) stallConditions.push(eq(agentEvents.organizationId, orgId));
+      const recentStallAlerts = await db.select({ id: agentEvents.id }).from(agentEvents).where(and(...stallConditions)).limit(1);
+
+      if (recentStallAlerts.length === 0) {
+        const team = await db
+          .select({ name: teamMembers.name })
+          .from(ventureTeam)
+          .innerJoin(teamMembers, eq(ventureTeam.memberId, teamMembers.id))
+          .where(eq(ventureTeam.ventureId, venture.id));
+        const teamNames = team.map(t => t.name).join(", ") || "No team assigned";
+
+        const interventionNote = await callAgentLLM(
+          "You are VENTEX. Draft a brief internal note (3 sentences max) recommending a specific intervention for a stalled venture. Name the venture, how long it's been stalled, the stage threshold that was breached, and one concrete next action to unblock it.",
+          `Venture: "${venture.name}" | Sector: ${venture.sector} | Stage: ${normalizedStage} | Days since last activity: ${daysSinceActivity} | Threshold: ${stallThreshold} days | Team: ${teamNames}${blueprintContext}${bpSourceLabel ? ` | Operating on: ${bpSourceLabel}` : ""}`
+        );
+
+        signals.push({
+          agentName: "Velocity Agent",
+          eventType: "alert",
+          message: interventionNote,
+          severity: "warning",
+          organizationId: orgId,
+          audience: "both",
+          requiresClientAction: true,
+          actionType: "escalate",
+          actionLabel: "Unblock Venture",
+          actionPayload: { ventureId: venture.id, ventureName: venture.name, daysSinceActivity, stallThreshold },
+          entityType: "venture",
+          agentEntityId: String(venture.id),
+          agentEntityName: venture.name,
+          ventureId: venture.id,
+          outcome: "pending",
+        });
+      }
+    }
+
+    // Legacy stall detection for In Validation with no tasks
+    if (totalTasks === 0 && (venture.stage === "In Validation" || normalizedStage === "Sourcing")) {
       const daysStalled = Math.floor(
         (now.getTime() - new Date(venture.updatedAt).getTime()) / (1000 * 60 * 60 * 24)
       );
@@ -642,7 +823,7 @@ export async function runVelocityAgent(
       const stallBlueprintCtx = blueprintContext;
 
       const interventionNote = await callAgentLLM(
-        "You are VENTEX. Draft a brief internal note (3 sentences max) recommending a specific intervention for a stalled venture. Name the venture, how long it's been stalled, and one concrete next action to unblock it. If blueprint steps are provided, reference the specific blocking step and who owns it.",
+        "You are VENTEX. Draft a brief internal note (3 sentences max) recommending a specific intervention for a stalled venture. Name the venture, how long it's been stalled, and one concrete next action to unblock it. If blueprint steps are provided, reference the specific blocking steps and who owns them.",
         `Venture: "${venture.name}" | Sector: ${venture.sector} | Stage: In Validation | Days stalled: ${daysStalled} | Team members assigned: ${teamNames}${stallBlueprintCtx}${bpSourceLabel ? ` | Operating on: ${bpSourceLabel}` : ""}`
       );
 
@@ -660,6 +841,8 @@ export async function runVelocityAgent(
         entityType: "venture",
         agentEntityId: String(venture.id),
         agentEntityName: venture.name,
+        ventureId: venture.id,
+        outcome: "pending",
       });
     }
   }
@@ -681,6 +864,10 @@ export async function runVelocityAgent(
   return signals;
 }
 
+
+// Vision spec v1 — Distribution Sentinel
+// Timeline: T-30 draft LP notice | T-14 verify wire instructions | T-7 Principal confirmation | T-3 final reminder | T-0 execute
+// Hard blocks: no distribution without principalConfirmed AND wireInstructionsOnFile
 
 export async function runDistributionSentinel(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
@@ -705,6 +892,15 @@ export async function runDistributionSentinel(
       status: distributions.status,
       distributionDate: distributions.distributionDate,
       organizationId: distributions.organizationId,
+      ventureId: distributions.ventureId,
+      spvId: distributions.spvId,
+      lpRecipients: distributions.lpRecipients,
+      noticeDraftStatus: distributions.noticeDraftStatus,
+      noticeSentDate: distributions.noticeSentDate,
+      principalConfirmed: distributions.principalConfirmed,
+      principalConfirmedAt: distributions.principalConfirmedAt,
+      wireInstructionsOnFile: distributions.wireInstructionsOnFile,
+      confirmationReceiptSent: distributions.confirmationReceiptSent,
     })
     .from(distributions)
     .where(and(...distConditions));
@@ -745,94 +941,232 @@ export async function runDistributionSentinel(
       ? Math.floor((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
       : null;
 
+    // 24h dedup per distribution
     const alertConditions: any[] = [
       eq(agentEvents.agentName, "Distribution Sentinel"),
       eq(agentEvents.agentEntityId, String(dist.id)),
       gte(agentEvents.createdAt, new Date(now.getTime() - 24 * 60 * 60 * 1000)),
     ];
     if (orgId) alertConditions.push(eq(agentEvents.organizationId, orgId));
-
-    const recentAlerts = await db
-      .select({ id: agentEvents.id })
-      .from(agentEvents)
-      .where(and(...alertConditions))
-      .limit(1);
-
+    const recentAlerts = await db.select({ id: agentEvents.id }).from(agentEvents).where(and(...alertConditions)).limit(1);
     if (recentAlerts.length > 0) continue;
-
-    const severity: Severity =
-      daysUntil !== null && daysUntil < 0 ? "critical" :
-      daysUntil !== null && daysUntil <= 7 ? "critical" :
-      daysUntil !== null && daysUntil <= 30 ? "warning" : "info";
 
     const fundName = dist.fund || dist.name;
     const amount = Number(dist.amount || 0);
+    const lpCount = dist.lpRecipients?.length || 0;
+    const hasWireInstructions = dist.wireInstructionsOnFile;
+    const hasPrincipalConfirmation = dist.principalConfirmed;
+    const noticeDrafted = dist.noticeDraftStatus === "drafted" || dist.noticeDraftStatus === "sent";
 
-    // Dedup: skip if a pending LP notice draft already exists for this distribution
-    const existingLpDraft = await db
-      .select({ id: agentDrafts.id })
-      .from(agentDrafts)
-      .where(
-        and(
-          sql`${agentDrafts.organizationId} = ${dist.organizationId}`,
-          eq(agentDrafts.draftType, "lp_notice"),
-          eq(agentDrafts.status, "pending"),
-          sql`${agentDrafts.subject} LIKE ${`%${fundName}%`}`
+    // --- T-30: Draft LP notice ---
+    if (daysUntil !== null && daysUntil <= 30 && !noticeDrafted) {
+      // Dedup: skip if a pending LP notice draft already exists
+      const existingLpDraft = await db
+        .select({ id: agentDrafts.id })
+        .from(agentDrafts)
+        .where(
+          and(
+            sql`${agentDrafts.organizationId} = ${dist.organizationId}`,
+            eq(agentDrafts.draftType, "lp_notice"),
+            eq(agentDrafts.status, "pending"),
+            sql`${agentDrafts.subject} LIKE ${`%${fundName}%`}`
+          )
         )
-      )
-      .limit(1);
+        .limit(1);
 
-    if (existingLpDraft.length > 0) {
-      // Draft already exists — skip
+      if (existingLpDraft.length === 0) {
+        const draftBody = await callAgentLLM(
+          "You are VENTEX. Draft a brief, professional LP distribution notification (4 sentences max). Include fund name, amount, timing, LP recipients count, and next steps. Professional tone. Sign as 'VENTEX Operations'.",
+          `${fundName} | $${amount.toLocaleString()} | Due: ${dist.distributionDate || "TBD"} | Days until: ${daysUntil} | LP recipients: ${lpCount || "TBD"}`
+        );
+
+        const draftSafety = getDraftSafetyFields({ agentName: "Distribution Sentinel", draftType: "lp_notice", hasEntityData: true, hasHistoricalData: true });
+        const draftResult = await db.insert(agentDrafts).values({
+          organizationId: dist.organizationId,
+          ventureName: fundName,
+          draftType: "lp_notice",
+          subject: `Distribution Notice: ${fundName} — $${amount.toLocaleString()}`,
+          body: draftBody,
+          recipientName: "LP Investors",
+          recipientRole: "Limited Partner",
+          status: "pending",
+          createdByAgent: "Distribution Sentinel",
+          ...draftSafety,
+        });
+
+        const draftId = (draftResult as any)[0]?.insertId;
+
+        // Update distribution notice status
+        await db.update(distributions).set({ noticeDraftStatus: "drafted" } as any).where(eq(distributions.id, dist.id));
+
+        signals.push({
+          agentName: "Distribution Sentinel",
+          eventType: "alert",
+          message: `T-${daysUntil}: ${fundName} ($${amount.toLocaleString()}) — LP notice drafted for ${lpCount || "pending"} recipients.`,
+          severity: "warning",
+          organizationId: dist.organizationId,
+          audience: "client",
+          requiresClientAction: true,
+          actionType: "draft",
+          actionLabel: "Review LP Notice",
+          actionPayload: { draftId, distributionId: dist.id },
+          entityType: "distribution",
+          agentEntityId: String(dist.id),
+          agentEntityName: fundName,
+          distributionId: dist.id,
+          ventureId: dist.ventureId,
+          spvId: dist.spvId,
+          outcome: "pending",
+        });
+      }
+    }
+
+    // --- T-14: Verify wire instructions ---
+    if (daysUntil !== null && daysUntil <= 14 && !hasWireInstructions) {
       signals.push({
         agentName: "Distribution Sentinel",
         eventType: "alert",
-        message: `${fundName}: $${amount.toLocaleString()} — existing LP notice pending, skipping duplicate.`,
-        severity,
+        message: `T-${daysUntil}: ${fundName} ($${amount.toLocaleString()}) — WIRE INSTRUCTIONS MISSING. Distribution cannot proceed without wire instructions on file.`,
+        severity: "critical",
+        organizationId: dist.organizationId,
+        audience: "both",
+        requiresClientAction: true,
+        actionType: "escalate",
+        actionLabel: "Upload Wire Instructions",
+        actionPayload: { distributionId: dist.id, missingItem: "wireInstructions" },
+        entityType: "distribution",
+        agentEntityId: String(dist.id),
+        agentEntityName: fundName,
+        distributionId: dist.id,
+        ventureId: dist.ventureId,
+        spvId: dist.spvId,
+        recipient: "Principal",
+        outcome: "pending",
+      });
+    }
+
+    // --- T-7: Principal confirmation required ---
+    if (daysUntil !== null && daysUntil <= 7 && !hasPrincipalConfirmation) {
+      signals.push({
+        agentName: "Distribution Sentinel",
+        eventType: "alert",
+        message: `T-${daysUntil}: ${fundName} ($${amount.toLocaleString()}) — PRINCIPAL CONFIRMATION REQUIRED. Distribution blocked until Principal approves.`,
+        severity: "critical",
+        organizationId: dist.organizationId,
+        audience: "both",
+        requiresClientAction: true,
+        actionType: "escalate",
+        actionLabel: "Confirm Distribution",
+        actionPayload: { distributionId: dist.id, missingItem: "principalConfirmation" },
+        entityType: "distribution",
+        agentEntityId: String(dist.id),
+        agentEntityName: fundName,
+        distributionId: dist.id,
+        ventureId: dist.ventureId,
+        spvId: dist.spvId,
+        recipient: "Principal",
+        outcome: "pending",
+      });
+    }
+
+    // --- T-3: Final reminder ---
+    if (daysUntil !== null && daysUntil <= 3 && daysUntil > 0) {
+      const missingItems: string[] = [];
+      if (!hasWireInstructions) missingItems.push("wire instructions");
+      if (!hasPrincipalConfirmation) missingItems.push("Principal confirmation");
+      if (lpCount === 0) missingItems.push("LP recipient list");
+
+      const statusMsg = missingItems.length > 0
+        ? `BLOCKED: Missing ${missingItems.join(", ")}.`
+        : "All requirements met. Ready to execute.";
+
+      signals.push({
+        agentName: "Distribution Sentinel",
+        eventType: "alert",
+        message: `T-${daysUntil}: ${fundName} ($${amount.toLocaleString()}) — ${statusMsg}`,
+        severity: missingItems.length > 0 ? "critical" : "info",
+        organizationId: dist.organizationId,
+        audience: "both",
+        requiresClientAction: missingItems.length > 0,
+        actionType: missingItems.length > 0 ? "escalate" : "notify",
+        actionLabel: missingItems.length > 0 ? "Resolve Blockers" : "View Distribution",
+        actionPayload: { distributionId: dist.id, missingItems },
+        entityType: "distribution",
+        agentEntityId: String(dist.id),
+        agentEntityName: fundName,
+        distributionId: dist.id,
+        ventureId: dist.ventureId,
+        spvId: dist.spvId,
+        outcome: missingItems.length > 0 ? "pending" : "success",
+      });
+    }
+
+    // --- T-0: Execute day (hard block check) ---
+    if (daysUntil !== null && daysUntil <= 0) {
+      if (!hasPrincipalConfirmation || !hasWireInstructions) {
+        const blockers: string[] = [];
+        if (!hasPrincipalConfirmation) blockers.push("Principal has NOT confirmed");
+        if (!hasWireInstructions) blockers.push("wire instructions NOT on file");
+
+        signals.push({
+          agentName: "Distribution Sentinel",
+          eventType: "alert",
+          message: `HARD BLOCK: ${fundName} ($${amount.toLocaleString()}) is due ${daysUntil < 0 ? `${Math.abs(daysUntil)} days ago` : "today"} but CANNOT execute: ${blockers.join("; ")}.`,
+          severity: "critical",
+          organizationId: dist.organizationId,
+          audience: "both",
+          requiresClientAction: true,
+          actionType: "escalate",
+          actionLabel: "Resolve & Execute",
+          actionPayload: { distributionId: dist.id, blockers },
+          entityType: "distribution",
+          agentEntityId: String(dist.id),
+          agentEntityName: fundName,
+          distributionId: dist.id,
+          ventureId: dist.ventureId,
+          spvId: dist.spvId,
+          recipient: "Principal",
+          outcome: "failed",
+        });
+      } else {
+        signals.push({
+          agentName: "Distribution Sentinel",
+          eventType: "status_change",
+          message: `${fundName}: $${amount.toLocaleString()} — all requirements met. Principal confirmed, wire instructions on file. Ready for execution.`,
+          severity: "info",
+          organizationId: dist.organizationId,
+          audience: "client",
+          requiresClientAction: false,
+          actionType: "notify",
+          actionLabel: "Execute Distribution",
+          actionPayload: { distributionId: dist.id },
+          entityType: "distribution",
+          agentEntityId: String(dist.id),
+          agentEntityName: fundName,
+          distributionId: dist.id,
+          ventureId: dist.ventureId,
+          spvId: dist.spvId,
+          outcome: "success",
+        });
+      }
+    }
+
+    // --- Catch-all: distributions more than 30 days out, just monitor ---
+    if (daysUntil !== null && daysUntil > 30) {
+      // No action needed yet, just log for monitoring
+      signals.push({
+        agentName: "Distribution Sentinel",
+        eventType: "signal",
+        message: `${fundName}: $${amount.toLocaleString()} scheduled in ${daysUntil} days. Monitoring.`,
+        severity: "info",
         organizationId: dist.organizationId,
         audience: "client",
         requiresClientAction: false,
-        actionType: "notify" as ActionType,
+        distributionId: dist.id,
+        ventureId: dist.ventureId,
+        spvId: dist.spvId,
       });
-      continue;
     }
-
-    const draftBody = await callAgentLLM(
-      "You are VENTEX. Draft a brief, professional LP distribution notification (4 sentences max). Include fund name, amount, timing, and next steps. Professional tone. Sign as 'VENTEX'.",
-      `${fundName} | $${amount.toLocaleString()} | Due: ${dist.distributionDate || "TBD"} | Days until: ${daysUntil ?? "Unknown"}`
-    );
-
-    const draftSafety = getDraftSafetyFields({ agentName: "Distribution Sentinel", draftType: "lp_notice", hasEntityData: true, hasHistoricalData: daysUntil !== null });
-    const draftResult = await db.insert(agentDrafts).values({
-      organizationId: dist.organizationId,
-      ventureName: fundName,
-      draftType: "lp_notice",
-      subject: `Distribution Notice: ${fundName} — $${amount.toLocaleString()}`,
-      body: draftBody,
-      recipientName: "LP Investors",
-      recipientRole: "Limited Partner",
-      status: "pending",
-      createdByAgent: "Distribution Sentinel",
-      ...draftSafety,
-    });
-
-    const draftId = (draftResult as any)[0]?.insertId;
-
-    signals.push({
-      agentName: "Distribution Sentinel",
-      eventType: "alert",
-      message: `${fundName}: $${amount.toLocaleString()} ${daysUntil !== null ? (daysUntil < 0 ? `${Math.abs(daysUntil)} days overdue` : daysUntil === 0 ? `due today` : `due in ${daysUntil} days`) : "date TBD"}. LP notice drafted.`,
-      severity,
-      organizationId: dist.organizationId,
-      audience: "client",
-      requiresClientAction: true,
-      actionType: "draft",
-      actionLabel: "Confirm Distribution",
-      actionPayload: { draftId, distributionId: dist.id },
-      entityType: "distribution",
-      agentEntityId: String(dist.id),
-      agentEntityName: fundName,
-    });
   }
 
   if (signals.length === 0) {
@@ -851,84 +1185,254 @@ export async function runDistributionSentinel(
 }
 
 
+// Vision spec v1 — Orchestrator
+// Weekly Monday briefing + on-demand reports + cross-venture risk detection
+
 export async function runOrchestrator(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
   agentSignals: AgentSignal[],
   orgId?: number | null
 ): Promise<AgentSignal[]> {
   const signals: AgentSignal[] = [];
+  const now = new Date();
 
+  // Dedup: skip if orchestrator ran in last 3 minutes (unless there are new signals)
   const orchConditions: any[] = [
     eq(agentEvents.agentName, "Orchestrator"),
-    gte(agentEvents.createdAt, new Date(Date.now() - 3 * 60 * 1000)),
+    gte(agentEvents.createdAt, new Date(now.getTime() - 3 * 60 * 1000)),
   ];
   if (orgId) orchConditions.push(eq(agentEvents.organizationId, orgId));
+  const recentOrch = await db.select({ id: agentEvents.id }).from(agentEvents).where(and(...orchConditions)).limit(1);
+  if (recentOrch.length > 0 && agentSignals.length === 0) return signals;
 
-  const recentOrch = await db
-    .select({ id: agentEvents.id })
-    .from(agentEvents)
-    .where(and(...orchConditions))
-    .limit(1);
-
-  if (recentOrch.length > 0 && agentSignals.length === 0) {
-    return signals;
-  }
-
-  // Build portfolio snapshot — scoped by org
+  // --- Gather comprehensive portfolio data ---
   let ventureConditions: any[] = [];
   let taskConditions: any[] = [];
+  let spvConditions: any[] = [];
+  let distConditions: any[] = [];
+  let complianceConditions: any[] = [];
+
   if (orgId) {
     const orgVentureIds = await getVentureIdsForOrg(db, orgId);
     if (orgVentureIds.length > 0) {
       ventureConditions.push(inArray(ventures.id, orgVentureIds));
       taskConditions.push(inArray(tasks.ventureId, orgVentureIds));
     }
+    spvConditions.push(eq(spvs.organizationId, orgId));
+    distConditions.push(eq(distributions.organizationId, orgId));
+    complianceConditions.push(eq(compliance.organizationId, orgId as any));
   }
 
+  // 1. Active ventures and SPVs
   const ventureList = await db
-    .select({ id: ventures.id, name: ventures.name, stage: ventures.stage, healthScore: ventures.healthScore })
+    .select({
+      id: ventures.id, name: ventures.name, stage: ventures.stage,
+      healthScore: ventures.healthScore, sector: ventures.sector,
+      jurisdiction: ventures.jurisdiction, lastActivityDate: ventures.lastActivityDate,
+      daysInCurrentStage: ventures.daysInCurrentStage,
+    })
     .from(ventures)
     .where(ventureConditions.length > 0 ? and(...ventureConditions) : undefined)
-    .limit(30);
+    .limit(50);
 
-  const taskStats = await db
+  const spvList = await db
+    .select({ id: spvs.id, name: spvs.name, stage: spvs.stage })
+    .from(spvs)
+    .where(spvConditions.length > 0 ? and(...spvConditions) : undefined)
+    .limit(50);
+
+  // 2. Open tasks by priority
+  const tasksByPriority = await db
     .select({
-      total: sql<number>`COUNT(*)`,
-      overdue: sql<number>`SUM(CASE WHEN ${tasks.status} = 'overdue' THEN 1 ELSE 0 END)`,
-      complete: sql<number>`SUM(CASE WHEN ${tasks.status} = 'complete' THEN 1 ELSE 0 END)`,
+      priority: tasks.priority,
+      count: sql<number>`COUNT(*)`,
     })
     .from(tasks)
-    .where(taskConditions.length > 0 ? and(...taskConditions) : undefined);
+    .where(and(
+      ...(taskConditions.length > 0 ? taskConditions : []),
+      sql`${tasks.status} NOT IN ('complete', 'Complete')`
+    ))
+    .groupBy(tasks.priority);
 
-  const eventConditions: any[] = [ne(agentEvents.agentName, "Orchestrator")];
-  if (orgId) eventConditions.push(eq(agentEvents.organizationId, orgId));
+  // Date strings for varchar comparisons
+  const nowISO = now.toISOString().split("T")[0];
+  const thirtyDaysISO = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
-  const recentEvents = await db
-    .select()
+  // 3. Overdue tasks with venture name
+  const overdueTasks = await db
+    .select({
+      id: tasks.id, title: tasks.title, dueDate: tasks.dueDate,
+      ventureName: ventures.name, ventureId: tasks.ventureId,
+    })
+    .from(tasks)
+    .leftJoin(ventures, eq(tasks.ventureId, ventures.id))
+    .where(and(
+      ...(taskConditions.length > 0 ? taskConditions : []),
+      sql`${tasks.status} NOT IN ('complete', 'Complete')`,
+      lte(tasks.dueDate, nowISO)
+    ))
+    .limit(20);
+
+  // 4. Distributions in next 30 days
+  const upcomingDists = await db
+    .select({
+      id: distributions.id, name: distributions.name, fund: distributions.fund,
+      amount: distributions.amount, distributionDate: distributions.distributionDate,
+      principalConfirmed: distributions.principalConfirmed,
+      wireInstructionsOnFile: distributions.wireInstructionsOnFile,
+    })
+    .from(distributions)
+    .where(and(
+      ...(distConditions.length > 0 ? distConditions : []),
+      gte(distributions.distributionDate, nowISO),
+      lte(distributions.distributionDate, thirtyDaysISO)
+    ))
+    .limit(20);
+
+  // 5. Compliance deadlines in next 30 days
+  const upcomingCompliance = await db
+    .select({
+      id: compliance.id,
+      filingType: compliance.filingType, dueDate: compliance.dueDate,
+      status: compliance.status, jurisdiction: compliance.jurisdiction,
+    })
+    .from(compliance)
+    .where(and(
+      ...(complianceConditions.length > 0 ? complianceConditions : []),
+      gte(compliance.dueDate, nowISO),
+      lte(compliance.dueDate, thirtyDaysISO)
+    ))
+    .limit(20);
+
+  // 6. Stalled ventures (using STALL_THRESHOLDS)
+  const stalledVentures = ventureList.filter(v => {
+    const stage = normalizeStage(v.stage);
+    const threshold = STALL_THRESHOLDS[stage];
+    if (!threshold) return false;
+    const lastActivity = v.lastActivityDate ? new Date(v.lastActivityDate) : null;
+    if (!lastActivity) return (v.daysInCurrentStage || 0) > threshold;
+    const daysSince = Math.floor((now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
+    return daysSince >= threshold;
+  });
+
+  // 7. Items pending Principal confirmation
+  const pendingConfirmation = await db
+    .select({ id: agentEvents.id, message: agentEvents.message, agentName: agentEvents.agentName })
     .from(agentEvents)
-    .where(and(...eventConditions))
+    .where(and(
+      eq(agentEvents.requiresClientAction, true),
+      eq(agentEvents.actionTaken, false),
+      ...(orgId ? [eq(agentEvents.organizationId, orgId)] : [])
+    ))
     .orderBy(desc(agentEvents.createdAt))
     .limit(10);
 
-  const portfolioSnapshot = [
-    `Ventures: ${ventureList.length} total`,
-    `  At risk (health<50): ${ventureList.filter(v => v.healthScore !== null && v.healthScore < 50).length}`,
-    `  Stages: ${STAGE_PIPELINE.map(s => `${s}: ${ventureList.filter(v => v.stage === s).length}`).join(", ")}`,
-    `Tasks: ${taskStats[0]?.total || 0} total, ${taskStats[0]?.overdue || 0} overdue, ${taskStats[0]?.complete || 0} complete`,
-    `Recent agent signals:`,
-    ...(agentSignals.length > 0
-      ? agentSignals.map(s => `  [${s.agentName}] (${s.severity}): ${s.message}`)
-      : recentEvents.map(e => `  [${e.agentName}] (${e.severity}): ${e.message.substring(0, 100)}`)),
+  // 8. Full agent activity log for past 7 days
+  const weeklyEvents = await db
+    .select({
+      agentName: agentEvents.agentName, eventType: agentEvents.eventType,
+      severity: agentEvents.severity, message: agentEvents.message,
+      createdAt: agentEvents.createdAt,
+    })
+    .from(agentEvents)
+    .where(and(
+      gte(agentEvents.createdAt, new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)),
+      ...(orgId ? [eq(agentEvents.organizationId, orgId)] : [])
+    ))
+    .orderBy(desc(agentEvents.createdAt))
+    .limit(50);
+
+  // 9. Cross-venture risk detection: same jurisdiction, sector, or counterparty
+  const jurisdictionGroups: Record<string, string[]> = {};
+  const sectorGroups: Record<string, string[]> = {};
+  for (const v of ventureList) {
+    if (v.jurisdiction) {
+      if (!jurisdictionGroups[v.jurisdiction]) jurisdictionGroups[v.jurisdiction] = [];
+      jurisdictionGroups[v.jurisdiction].push(v.name);
+    }
+    if (v.sector) {
+      if (!sectorGroups[v.sector]) sectorGroups[v.sector] = [];
+      sectorGroups[v.sector].push(v.name);
+    }
+  }
+  const crossVentureRisks: string[] = [];
+  for (const [jurisdiction, names] of Object.entries(jurisdictionGroups)) {
+    if (names.length >= 2) crossVentureRisks.push(`Jurisdiction concentration: ${names.join(", ")} share ${jurisdiction}`);
+  }
+  for (const [sector, names] of Object.entries(sectorGroups)) {
+    if (names.length >= 2) crossVentureRisks.push(`Sector concentration: ${names.join(", ")} in ${sector}`);
+  }
+
+  // --- Build comprehensive briefing ---
+  const briefingSections = [
+    `=== WEEKLY EXECUTIVE BRIEFING ==="`,
+    ``,
+    `PORTFOLIO OVERVIEW:`,
+    `  Active Ventures: ${ventureList.length}`,
+    `  Active SPVs: ${spvList.length}`,
+    `  Stages: ${STAGE_PIPELINE.map(s => `${s}: ${ventureList.filter(v => normalizeStage(v.stage) === s).length}`).join(", ")}`,
+    ``,
+    `OPEN TASKS BY PRIORITY:`,
+    ...(tasksByPriority.length > 0
+      ? tasksByPriority.map(t => `  ${t.priority}: ${t.count}`)
+      : ["  No open tasks"]),
+    ``,
+    `OVERDUE TASKS (${overdueTasks.length}):`,
+    ...(overdueTasks.length > 0
+      ? overdueTasks.map(t => {
+          const daysOverdue = Math.floor((now.getTime() - new Date(t.dueDate!).getTime()) / (1000 * 60 * 60 * 24));
+          return `  "${t.title}" — ${t.ventureName || "Unassigned"} — ${daysOverdue} days overdue`;
+        })
+      : ["  None"]),
+    ``,
+    `DISTRIBUTIONS (NEXT 30 DAYS): ${upcomingDists.length}`,
+    ...(upcomingDists.length > 0
+      ? upcomingDists.map(d => {
+          const daysUntil = Math.floor((new Date(d.distributionDate!).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          const flags = [];
+          if (!d.principalConfirmed) flags.push("⚠ unconfirmed");
+          if (!d.wireInstructionsOnFile) flags.push("⚠ no wire");
+          return `  ${d.fund || d.name}: $${Number(d.amount || 0).toLocaleString()} in ${daysUntil}d ${flags.length > 0 ? flags.join(", ") : "✓"}`;
+        })
+      : ["  None"]),
+    ``,
+    `COMPLIANCE DEADLINES (NEXT 30 DAYS): ${upcomingCompliance.length}`,
+    ...(upcomingCompliance.length > 0
+      ? upcomingCompliance.map(c => {
+          const daysUntil = Math.floor((new Date(c.dueDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          return `  ${c.filingType} (${c.jurisdiction || "N/A"}) — ${c.status} — due in ${daysUntil}d`;
+        })
+      : ["  None"]),
+    ``,
+    `STALLED VENTURES (${stalledVentures.length}):`,
+    ...(stalledVentures.length > 0
+      ? stalledVentures.map(v => `  "${v.name}" — ${v.stage} — ${v.daysInCurrentStage || "?"}d in stage`)
+      : ["  None"]),
+    ``,
+    `PENDING PRINCIPAL CONFIRMATION (${pendingConfirmation.length}):`,
+    ...(pendingConfirmation.length > 0
+      ? pendingConfirmation.map(p => `  [${p.agentName}] ${p.message.substring(0, 120)}`)
+      : ["  None"]),
+    ``,
+    ...(crossVentureRisks.length > 0
+      ? [`CROSS-VENTURE RISK ALERTS:`, ...crossVentureRisks.map(r => `  ⚠ ${r}`), ``]
+      : []),
+    `AGENT ACTIVITY (PAST 7 DAYS): ${weeklyEvents.length} events`,
+    ...(weeklyEvents.slice(0, 15).map(e => `  [${e.agentName}] (${e.severity}) ${e.message.substring(0, 100)}`)),
+    ...(weeklyEvents.length > 15 ? [`  ... and ${weeklyEvents.length - 15} more`] : []),
   ].join("\n");
 
+  // Generate portfolio health summary
   const analysis = await callAgentLLM(
-    "You are the VENTEX Orchestrator — the master velocity agent for a UHNWI holding company. You see the entire portfolio across all verticals simultaneously. Your job is to find the ONE thing that, if acted on in the next 24 hours, would most accelerate the portfolio. Identify it, name the specific venture or sector, and state the exact action required. 2 sentences max. No preamble. No filler. Be direct.",
-    portfolioSnapshot
+    "You are the VENTEX Orchestrator — the master velocity agent for a UHNWI holding company. Based on this weekly briefing data, write: (1) A plain-English portfolio health summary paragraph (3-4 sentences). (2) The ONE thing that, if acted on in the next 24 hours, would most accelerate the portfolio — name the specific venture/sector and exact action required. Be direct, no filler.",
+    briefingSections
   );
 
   const maxSeverity: Severity = agentSignals.some(s => s.severity === "critical")
     ? "critical"
     : agentSignals.some(s => s.severity === "warning")
+    ? "warning"
+    : stalledVentures.length > 0 || overdueTasks.length > 3
     ? "warning"
     : "info";
 
@@ -938,10 +1442,21 @@ export async function runOrchestrator(
     message: analysis,
     severity: maxSeverity,
     organizationId: orgId,
-    audience: "operator",
-    requiresClientAction: false,
+    audience: "both",
+    requiresClientAction: pendingConfirmation.length > 0,
     actionType: "notify",
-    actionLabel: "Mark Resolved",
+    actionLabel: pendingConfirmation.length > 0 ? "Review Pending Items" : "Mark Resolved",
+    actionPayload: {
+      ventureCount: ventureList.length,
+      spvCount: spvList.length,
+      overdueTaskCount: overdueTasks.length,
+      upcomingDistCount: upcomingDists.length,
+      complianceCount: upcomingCompliance.length,
+      stalledCount: stalledVentures.length,
+      pendingConfirmationCount: pendingConfirmation.length,
+      crossVentureRisks: crossVentureRisks.length,
+    },
+    outcome: maxSeverity === "critical" ? "pending" : "success",
   });
 
   return signals;
@@ -1001,6 +1516,13 @@ export async function persistSignals(
       requiresClientAction: signal.requiresClientAction ?? false,
       isRead: false,
       actionTaken: false,
+      // Vision spec v1: direct FK columns for agent log
+      ventureId: signal.ventureId ?? null,
+      spvId: signal.spvId ?? null,
+      taskId: signal.taskId ?? null,
+      distributionId: signal.distributionId ?? null,
+      recipient: signal.recipient ?? null,
+      outcome: signal.outcome ?? null,
       ...eventSafety,
     } as any);
   }

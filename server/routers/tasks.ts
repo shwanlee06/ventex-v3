@@ -6,6 +6,7 @@ import { eq, desc, and, sql, inArray, isNull, ne } from "drizzle-orm";
 import { isVentexTeam, getOrgVentureIds, resolveVentureScope, logAudit } from "../security/rbac";
 import { createNotification, createBulkNotifications, NOTIF_TYPES } from "../notificationHelper";
 import { onTaskCompleted, onTaskOverdue } from "../intelligence/realtimeTriggers";
+import { enforceTaskCompletionAuth } from "../security/hardBlocks";
 
 /**
  * Calculate days overdue for a task.
@@ -143,6 +144,24 @@ export const tasksRouter = router({
       }
     }
     const { id, ...data } = input;
+
+    // Section 16 Hard Block 4: Task completion requires assignee or Principal confirmation
+    if (data.status === "complete" || data.status === "Complete") {
+      const [existingTask] = await db.select({
+        assigneeNames: tasks.assigneeNames,
+      }).from(tasks).where(eq(tasks.id, id)).limit(1);
+      const assignedTo = existingTask?.assigneeNames;
+      const assigneeName = Array.isArray(assignedTo) ? assignedTo[0] : assignedTo;
+      enforceTaskCompletionAuth(
+        data.status,
+        ctx.user.id,
+        ctx.user.name ?? undefined,
+        ctx.user.role ?? undefined,
+        typeof assigneeName === "string" ? assigneeName : null,
+        null
+      );
+    }
+
     await db.update(tasks).set(data).where(eq(tasks.id, id));
     const rows = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
     // Resolve org for audit trail

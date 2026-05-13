@@ -6,9 +6,10 @@
  */
 import { z } from "zod";
 import { eq } from "drizzle-orm";
-import { adminProcedure, router } from "../_core/trpc";
+import { adminProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { logAudit } from "../security/rbac";
+import { logAudit, isVentexTeam } from "../security/rbac";
+import { checkOnboardingReadiness } from "../onboardingReadiness";
 import {
   organizations,
   orgVentureAccess,
@@ -19,6 +20,19 @@ import {
 } from "../../drizzle/schema";
 
 export const onboardingRouter = router({
+  /**
+   * onboarding.readiness — Check the 11-item onboarding readiness for an org
+   * Section 15: If any item is unchecked, agents are blocked for that org.
+   */
+  readiness: protectedProcedure
+    .input(z.object({ organizationId: z.number() }))
+    .query(async ({ input, ctx }) => {
+      if (!isVentexTeam(ctx.user)) {
+        throw new Error("Only VENTEX team can check onboarding readiness");
+      }
+      return checkOnboardingReadiness(input.organizationId);
+    }),
+
   /**
    * onboarding.complete — Admin mutation
    * Called when the operator clicks "Launch" on onboarding step 5.

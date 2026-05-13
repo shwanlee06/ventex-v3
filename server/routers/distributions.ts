@@ -7,6 +7,7 @@ import { isVentexTeam, logAudit } from "../security/rbac";
 import { resolveOrgId } from "../security/orgScope";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { onDistributionScheduled } from "../intelligence/realtimeTriggers";
+import { requirePrincipalGate } from "../security/principalGate";
 
 export const distributionsRouter = router({
   // List distributions — scoped by organizationId with cross-tenant isolation
@@ -104,6 +105,23 @@ export const distributionsRouter = router({
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     const { id, ...data } = input;
+
+    // Section 14: Principal Gate — distribution release requires confirmation
+    if (data.status === "Paid" || data.status === "Released") {
+      const [existing] = await db.select().from(distributions).where(eq(distributions.id, id)).limit(1);
+      if (existing && existing.organizationId) {
+        await requirePrincipalGate({
+          actionType: "distribution_release",
+          organizationId: existing.organizationId,
+          entityId: String(id),
+          entityName: existing.name || "Distribution",
+          description: `Release distribution "${existing.name}" — $${(data.amount || existing.amount || 0).toLocaleString()}`,
+          userId: String(ctx.user.id),
+          userName: ctx.user.name || "System",
+        });
+      }
+    }
+
     await db.update(distributions).set(data).where(eq(distributions.id, id));
     const [updated] = await db.select().from(distributions).where(eq(distributions.id, id)).limit(1);
     if (updated) {

@@ -1,5 +1,5 @@
 // Schema — VENTEX System
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, bigint, json, boolean, double } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, bigint, json, boolean, double, decimal } from "drizzle-orm/mysql-core";
 
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -53,6 +53,11 @@ export const organizations = mysqlTable("organizations", {
   jurisdiction: varchar("jurisdiction", { length: 128 }),  // legal jurisdiction (e.g., 'Delaware, USA', 'DIFC, UAE')
   registrationNumber: varchar("registrationNumber", { length: 128 }),  // company registration / EIN
   dataResidencyRegion: varchar("dataResidencyRegion", { length: 32 }).default("us-east-1"),  // 'us-east-1' | 'eu-west-1' | 'ap-southeast-1'
+  // Vision spec v1 fields
+  principalPhone: varchar("principalPhone", { length: 32 }),
+  timezone: varchar("timezone", { length: 64 }).default("America/New_York"),  // IANA timezone
+  fiscalYearEnd: varchar("fiscalYearEnd", { length: 10 }),  // 'MM-DD' e.g. '12-31'
+  reportingCadence: mysqlEnum("reportingCadence", ["weekly", "biweekly", "monthly", "quarterly"]).default("weekly"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -125,6 +130,24 @@ export const ventures = mysqlTable("ventures", {
   // Entity hierarchy: link venture to operating entity
   operatingEntityId: int("operatingEntityId"),  // FK to organizations (operating entity that owns this venture)
   legalStructure: varchar("legalStructure", { length: 64 }),  // 'LLC' | 'LP' | 'Corp' | 'JV' | 'SPV'
+  // Vision spec v1 fields
+  organizationId: int("organizationId"),  // direct FK to owning org
+  legalEntity: varchar("legalEntity", { length: 255 }),  // full legal entity name
+  jurisdiction: varchar("jurisdiction", { length: 128 }),  // legal jurisdiction
+  dateAcquired: varchar("dateAcquired", { length: 32 }),  // ISO date string
+  currentValuation: decimal("currentValuation", { precision: 18, scale: 2 }),  // USD
+  equityOwned: decimal("equityOwned", { precision: 5, scale: 2 }),  // percentage 0-100
+  keyContact: varchar("keyContact", { length: 255 }),  // primary contact name
+  nextMilestoneDate: varchar("nextMilestoneDate", { length: 32 }),  // ISO date
+  lastActivityDate: timestamp("lastActivityDate"),  // last meaningful activity
+  daysInCurrentStage: int("daysInCurrentStage").default(0),
+  complianceDeadlines: json("complianceDeadlines").$type<string[]>(),  // upcoming deadlines
+  openDeals: int("openDeals").default(0),
+  lastDistributionDate: varchar("lastDistributionDate", { length: 32 }),
+  nextDistributionDate: varchar("nextDistributionDate", { length: 32 }),
+  nextDistributionAmount: decimal("nextDistributionAmount", { precision: 18, scale: 2 }),
+  notes: text("ventureNotes"),
+  flags: json("flags").$type<string[]>(),  // e.g. ['needs_review', 'compliance_risk']
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -158,6 +181,10 @@ export const teamMembers = mysqlTable("team_members", {
   lastSeenAt: timestamp("lastSeenAt"),  // updated by heartbeat or manual activity
   adminStatus: varchar("adminStatus", { length: 32 }).default("active"),  // admin-set: active, on_leave, deactivated
   slug: varchar("slug", { length: 255 }).notNull().unique(),
+  // Vision spec v1 fields
+  timezone: varchar("memberTimezone", { length: 64 }),  // IANA timezone
+  authorityLevel: mysqlEnum("authorityLevel", ["execute", "recommend", "approve"]).default("execute"),
+  escalationPriority: int("escalationPriority").default(99),  // lower = escalated to first
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -192,6 +219,14 @@ export const tasks = mysqlTable("tasks", {
   // Email tracking for auto-trigger emails
   lastEmailSentAt: timestamp("lastEmailSentAt"),
   emailSentCount: int("emailSentCount").default(0).notNull(),
+  // Vision spec v1 fields
+  spvId: int("spvId"),  // FK to spvs
+  blockingReason: text("blockingReason"),  // why the task is blocked
+  escalationContact: varchar("escalationContact", { length: 255 }),  // name or email of escalation target
+  lastActionTaken: text("lastActionTaken"),  // description of last action
+  lastActionDate: timestamp("lastActionDate"),
+  followUpCount: int("followUpCount").default(0).notNull(),
+  lastFollowUpSent: timestamp("lastFollowUpSent"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -210,6 +245,17 @@ export const spvs = mysqlTable("spvs", {
   currentStatus: text("currentStatus"),
   nextStep: text("nextStep"),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
+  // Vision spec v1 fields
+  ventureId: int("ventureId"),  // FK to parent venture
+  purpose: text("purpose"),  // purpose of the SPV
+  capitalCommitted: decimal("capitalCommitted", { precision: 18, scale: 2 }),
+  capitalCalled: decimal("capitalCalled", { precision: 18, scale: 2 }),
+  capitalRemaining: decimal("capitalRemaining", { precision: 18, scale: 2 }),
+  nextCapitalCallDate: varchar("nextCapitalCallDate", { length: 32 }),
+  nextDistributionDate: varchar("nextDistributionDate", { length: 32 }),
+  nextDistributionAmount: decimal("nextDistributionAmount", { precision: 18, scale: 2 }),
+  legalCounsel: varchar("legalCounsel", { length: 255 }),
+  complianceDeadlines: json("spvComplianceDeadlines").$type<string[]>(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -245,12 +291,46 @@ export const distributions = mysqlTable("distributions", {
   method: varchar("method", { length: 64 }),
   notes: text("notes"),
   distributionDate: varchar("distributionDate", { length: 32 }),
+  // Vision spec v1 fields
+  ventureId: int("distVentureId"),  // FK to ventures
+  spvId: int("distSpvId"),  // FK to spvs
+  lpRecipients: json("lpRecipients").$type<string[]>(),  // list of LP names/emails
+  noticeDraftStatus: varchar("noticeDraftStatus", { length: 32 }).default("not_started"),  // not_started | drafted | sent_to_principal | confirmed | released
+  noticeSentDate: timestamp("noticeSentDate"),
+  principalConfirmed: boolean("principalConfirmed").default(false).notNull(),
+  principalConfirmedAt: timestamp("principalConfirmedAt"),
+  wireInstructionsOnFile: boolean("wireInstructionsOnFile").default(false).notNull(),
+  confirmationReceiptSent: boolean("confirmationReceiptSent").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
 export type Distribution = typeof distributions.$inferSelect;
 export type InsertDistribution = typeof distributions.$inferInsert;
+
+// Vision spec v1: Compliance Calendar
+export const compliance = mysqlTable("compliance", {
+  id: int("id").autoincrement().primaryKey(),
+  organizationId: int("compOrgId"),
+  ventureId: int("compVentureId"),
+  spvId: int("compSpvId"),
+  filingType: varchar("filingType", { length: 128 }).notNull(),  // e.g. 'Annual Report', 'Tax Filing', 'License Renewal'
+  jurisdiction: varchar("compJurisdiction", { length: 128 }),
+  dueDate: varchar("compDueDate", { length: 32 }).notNull(),  // ISO date
+  status: varchar("compStatus", { length: 32 }).default("not_started").notNull(),  // not_started | in_progress | filed | overdue
+  assignedTo: varchar("assignedTo", { length: 255 }),  // team member name or email
+  assignedToId: int("assignedToId"),  // FK to team_members
+  filedDate: varchar("filedDate", { length: 32 }),  // ISO date when filed
+  filedBy: varchar("filedBy", { length: 255 }),
+  notes: text("compNotes"),
+  documentUrl: text("compDocUrl"),  // S3 URL to filed document
+  reminderSentAt: timestamp("reminderSentAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Compliance = typeof compliance.$inferSelect;
+export type InsertCompliance = typeof compliance.$inferInsert;
 
 export const activityLog = mysqlTable("activity_log", {
   id: int("id").autoincrement().primaryKey(),
@@ -279,6 +359,9 @@ export const ventureFiles = mysqlTable("venture_files", {
   fileUrl: text("fileUrl").notNull(),
   fileKey: varchar("fileKey", { length: 500 }),
   uploadedBy: varchar("uploadedBy", { length: 255 }),
+  // Vision spec v1 fields
+  organizationId: int("vfOrgId"),
+  category: varchar("vfCategory", { length: 64 }),  // Operating Agreement | Cap Table | LP Agreement | etc.
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -336,6 +419,9 @@ export const spvFiles = mysqlTable("spv_files", {
   fileUrl: text("fileUrl").notNull(),
   fileKey: varchar("fileKey", { length: 500 }),
   uploadedBy: varchar("uploadedBy", { length: 255 }),
+  // Vision spec v1 fields
+  organizationId: int("sfOrgId"),
+  category: varchar("sfCategory", { length: 64 }),  // Operating Agreement | Cap Table | LP Agreement | etc.
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -556,6 +642,13 @@ export const agentEvents = mysqlTable("agent_events", {
   actionTakenAt: timestamp("actionTakenAt"),
   actionTakenBy: varchar("actionTakenBy", { length: 255 }),
   clientDismissed: boolean("clientDismissed").default(false).notNull(),
+  // Vision spec v1: direct FK columns for agent log
+  ventureId: int("aeVentureId"),
+  spvId: int("aeSpvId"),
+  taskId: int("aeTaskId"),
+  distributionId: int("aeDistributionId"),
+  recipient: varchar("recipient", { length: 255 }),  // who was notified/escalated to
+  outcome: varchar("outcome", { length: 64 }),  // success | failed | pending | skipped
   // WS3: AI Safety fields
   humanApprovalRequired: boolean("humanApprovalRequired").default(true).notNull(),
   approvalStatus: varchar("approvalStatus", { length: 16 }).default("pending"),  // 'pending' | 'approved' | 'rejected'

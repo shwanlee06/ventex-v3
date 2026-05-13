@@ -23,6 +23,9 @@ import { runEscalationSweep, type EscalationResult } from "./intelligence/escala
 import { runProactiveTaskGenerator } from "./agents/proactiveTaskGenerator";
 import { runAutonomousTaskExecutor } from "./agents/autonomousTaskExecutor";
 
+// Section 15: Onboarding readiness gate
+import { checkOnboardingReadiness } from "./onboardingReadiness";
+
 // SSE broadcast — push real-time updates to connected clients
 import { broadcastSSE, type SSEEvent } from "./routes/sseEvents";
 
@@ -52,6 +55,27 @@ export async function runAgentsForOrg(
   organizationId: number,
   config: ClientAgentConfig | null
 ): Promise<{ signalCount: number; intelligence?: IntelligenceResult; escalation?: EscalationResult; proactive?: ProactiveAgentResult }> {
+
+  // Section 15: Onboarding readiness gate — skip orgs that aren't fully onboarded
+  try {
+    const readiness = await checkOnboardingReadiness(organizationId);
+    if (!readiness.ready) {
+      const incomplete = readiness.items.filter(i => !i.passed).map(i => i.label);
+      console.log(`[AgentRunner] Org ${organizationId} not ready (${readiness.passedCount}/${readiness.totalCount}): ${incomplete.join(", ")}`);
+      emitAgentEvent(organizationId, {
+        phase: "readiness_gate",
+        action: "blocked",
+        passedCount: readiness.passedCount,
+        totalCount: readiness.totalCount,
+        incompleteItems: incomplete,
+        message: `Agent activation blocked: ${readiness.totalCount - readiness.passedCount} onboarding item(s) incomplete`,
+      });
+      return { signalCount: 0 };
+    }
+  } catch (err: any) {
+    console.error(`[AgentRunner] Readiness check failed for org ${organizationId}:`, err.message);
+    // On error, allow agents to run (fail-open for existing orgs)
+  }
 
   // Phase 1: Core agents — Overdue, Velocity, Distribution
   // Respect per-org agent config: skip agents that are disabled
