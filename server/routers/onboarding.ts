@@ -10,6 +10,7 @@ import { adminProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { logAudit, isVentexTeam } from "../security/rbac";
 import { checkOnboardingReadiness } from "../onboardingReadiness";
+import { sendInvitationEmail, buildInviteLink } from "../invitationEmail";
 import {
   organizations,
   orgVentureAccess,
@@ -150,6 +151,20 @@ export const onboardingRouter = router({
             invitedByName: ctx.user.name || "VENTEX Admin",
             expiresAt,
           });
+          // Send invitation email
+          const inviteLink = buildInviteLink(
+            ctx.req.headers.origin || `https://${ctx.req.headers.host}`,
+            token
+          );
+          sendInvitationEmail({
+            recipientEmail: inv.email,
+            recipientName: inv.name,
+            role: inv.role,
+            inviterName: ctx.user.name || "VENTEX Admin",
+            inviteLink,
+            organizationName: org.name,
+            expiresInDays: 7,
+          }).catch(err => console.error("[Onboarding] Invitation email failed:", err));
           sentEmails.push(inv.email);
         }
       }

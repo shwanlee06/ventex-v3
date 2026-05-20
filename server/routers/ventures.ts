@@ -11,6 +11,7 @@ import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { onStageAdvanced } from "../intelligence/realtimeTriggers";
 import { enforceRateLimit } from "../security/rateLimit";
 import { sanitizeFilename } from "../security/sanitize";
+import { enforcePermission } from "../security/permissionEnforcer";
 
 // INJ-05: MIME type allowlist for file uploads
 const ALLOWED_MIME_TYPES = [
@@ -130,6 +131,7 @@ export const venturesRouter = router({
     priority: z.string().default("Medium"),
     organizationId: z.number().optional(),
   })).mutation(async ({ input, ctx }) => {
+    enforcePermission(ctx.user, "ventures", "create");
     if (!isVentexTeam(ctx.user)) {
       throw new Error("Only VENTEX team can create ventures");
     }
@@ -207,6 +209,7 @@ export const venturesRouter = router({
     nextMilestone: z.string().optional(),
     priority: z.string().optional(),
   })).mutation(async ({ input, ctx }) => {
+    enforcePermission(ctx.user, "ventures", "update");
     if (!isVentexTeam(ctx.user)) {
       throw new Error("Only VENTEX team can update ventures");
     }
@@ -392,6 +395,11 @@ export const venturesRouter = router({
     // INJ-05: Validate MIME type
     if (!isAllowedMimeType(input.fileType)) {
       throw new Error(`File type '${input.fileType}' is not permitted. Allowed types: images, PDFs, documents, spreadsheets, text files.`);
+    }
+    // Enterprise file size limit: 25MB
+    const MAX_SERVER_FILE_SIZE = 25 * 1024 * 1024;
+    if (input.fileSize > MAX_SERVER_FILE_SIZE) {
+      throw new Error(`File exceeds 25MB limit (${(input.fileSize / (1024 * 1024)).toFixed(1)}MB)`);
     }
     // INJ-06: Sanitize filename
     const safeFilename = sanitizeFilename(input.filename);

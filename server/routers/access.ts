@@ -18,6 +18,7 @@ import {
 import { eq, desc, and, sql } from "drizzle-orm";
 import { logAudit, isVentexTeam } from "../security/rbac";
 import { enforceRateLimit } from "../security/rateLimit";
+import { sendInvitationEmail, buildInviteLink } from "../invitationEmail";
 import crypto from "crypto";
 
 
@@ -315,6 +316,21 @@ export const accessRouter = router({
         ipAddress: ctx.req.ip,
         userAgent: ctx.req.headers["user-agent"],
       });
+
+      // Send invitation email
+      const inviteLink = buildInviteLink(
+        ctx.req.headers.origin || `https://${ctx.req.headers.host}`,
+        token
+      );
+      sendInvitationEmail({
+        recipientEmail: input.email.toLowerCase(),
+        recipientName: input.email.split("@")[0],
+        role: input.role,
+        inviterName: ctx.user.name ?? "VENTEX Admin",
+        inviteLink,
+        organizationName: org.name,
+        expiresInDays: input.expiresInDays,
+      }).catch(err => console.error("[Access] Invitation email failed:", err));
 
       return { success: true, token, orgSlug: org.slug };
     }),

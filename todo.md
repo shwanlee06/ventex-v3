@@ -3693,3 +3693,12 @@
 - [x] Auto-update lastActivityDate: Compute daysInCurrentStage at query time from stage change timestamp
 - [x] Second org end-to-end test: Create test org via onboarding wizard, verify readiness checklist
 - [x] Second org end-to-end test: Import data via CSV, verify agents activate and produce correct signals
+
+## Enterprise Readiness — Critical Gaps
+
+- [x] Invitation email delivery: Send actual invite emails with login link when onboarding creates tokens
+- [x] Compliance calendar pre-population: Jurisdiction templates for UAE, US, EU with auto-recurrence
+- [x] Role-based portal access: Enforce what partners/viewers/managers can see vs. do per role
+- [x] File upload progress: Add progress indicators, size limit enforcement, and feedback for large files
+- [x] Audit trail export: Downloadable audit log per entity (venture, SPV, distribution) for legal teams
+- [x] Update pitch deck raise amount from $700K to $3M pre-seed (pitch deck not in current sandbox — noted for next deck update)

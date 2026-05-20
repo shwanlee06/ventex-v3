@@ -8,6 +8,7 @@ import { resolveOrgId } from "../security/orgScope";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
 import { onDistributionScheduled } from "../intelligence/realtimeTriggers";
 import { requirePrincipalGate } from "../security/principalGate";
+import { enforcePermission } from "../security/permissionEnforcer";
 
 export const distributionsRouter = router({
   // List distributions — scoped by organizationId with cross-tenant isolation
@@ -44,6 +45,7 @@ export const distributionsRouter = router({
     distributionDate: z.string().optional(),
     organizationId: z.number().optional(),
   })).mutation(async ({ input, ctx }) => {
+    enforcePermission(ctx.user, "distributions", "create");
     if (!isVentexTeam(ctx.user)) {
       throw new Error("Only VENTEX team can create distributions");
     }
@@ -99,6 +101,7 @@ export const distributionsRouter = router({
     distributionDate: z.string().optional(),
     organizationId: z.number().optional(),
   })).mutation(async ({ input, ctx }) => {
+    enforcePermission(ctx.user, "distributions", "update");
     if (!isVentexTeam(ctx.user)) {
       throw new Error("Only VENTEX team can update distributions");
     }

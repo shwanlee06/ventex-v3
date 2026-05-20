@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Edit3, Save, Plus, Trash2, FileText, Upload, MessageSquare,
-  File, Image, FileSpreadsheet, Download, Eye,
+  File, Image, FileSpreadsheet, Download, Eye, FileDown,
   X, AlertTriangle, ZoomIn, ZoomOut, FolderPlus, Folder, FolderOpen,
   ChevronRight, MoveRight, MoreHorizontal, Loader2,
   Brain, Shield, Lightbulb, TrendingUp, Sparkles, RefreshCw,
@@ -40,7 +40,7 @@ import VentureOverrides from "@/components/VentureOverrides";
 const STAGES = ["In Validation", "Active ventures", "In Fundraising", "On Hold"];
 const STATUSES = ["In progress", "On-Hold", "Completed", "Closed"];
 const SECTORS = ["Real Estate", "F&B", "Yacht", "Entertainment", "Oil & Gas", "Others"];
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB enterprise limit
 const FOLDER_COLORS = [
   "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#06b6d4", "#f97316",
 ];
@@ -144,8 +144,30 @@ export default function VentureDetail() {
   const removeTeam = trpc.ventures.removeTeam.useMutation({
     onSuccess: () => { utils.ventures.getTeam.invalidate({ ventureId: ventureId! }); },
   });
+  // Audit trail export
+  const exportAuditMut = trpc.audit.exportEntityCsv.useMutation({
+    onSuccess: (result) => {
+      const blob = new Blob([result.csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = result.filename;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${result.rowCount} audit entries`);
+    },
+    onError: (err) => { toast.error(err.message || "Failed to export audit trail"); },
+  });
+
   const uploadFile = trpc.ventures.uploadFile.useMutation({
-    onSuccess: () => { utils.ventures.getFiles.invalidate({ ventureId: ventureId! }); utils.activity.recent.invalidate(); },
+    onSuccess: () => {
+      utils.ventures.getFiles.invalidate({ ventureId: ventureId! });
+      utils.activity.recent.invalidate();
+      toast.success("File uploaded successfully");
+    },
+    onError: (err) => {
+      toast.error(`Upload failed: ${err.message}`);
+    },
   });
   const deleteFile = trpc.ventures.deleteFile.useMutation({
     onSuccess: () => { utils.ventures.getFiles.invalidate({ ventureId: ventureId! }); },
@@ -391,10 +413,17 @@ export default function VentureDetail() {
                 <Upload className="size-3.5 mr-1" /> <span className="hidden sm:inline">Add </span>File
               </Button>
             )}
-{isVentex && (
+            {isVentex && (
             <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => navigate("/agent")}>
               <MessageSquare className="size-3.5 mr-1" /> <span className="hidden sm:inline">Chat with </span>AI →
             </Button>
+            )}
+            {isVentex && (
+              <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => {
+                exportAuditMut.mutate({ entityType: "venture", entityId: String(ventureId), entityName: venture?.name });
+              }}>
+                <FileDown className="size-3.5 mr-1" /> <span className="hidden sm:inline">Audit </span>Trail
+              </Button>
             )}
           </div>
         </div>

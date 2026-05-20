@@ -7,6 +7,7 @@ import { isVentexTeam, getOrgVentureIds, resolveVentureScope, logAudit } from ".
 import { createNotification, createBulkNotifications, NOTIF_TYPES } from "../notificationHelper";
 import { onTaskCompleted, onTaskOverdue } from "../intelligence/realtimeTriggers";
 import { enforceTaskCompletionAuth } from "../security/hardBlocks";
+import { enforcePermission, enforceTaskUpdateScope } from "../security/permissionEnforcer";
 
 /**
  * Calculate days overdue for a task.
@@ -84,6 +85,8 @@ export const tasksRouter = router({
     status: z.string().default("open"),
     description: z.string().optional(),
   })).mutation(async ({ input, ctx }) => {
+    // Permission check: viewer/client cannot create tasks
+    enforcePermission(ctx.user, "tasks", "create");
     if (!isVentexTeam(ctx.user) && input.ventureId) {
       const ventureIds = await getOrgVentureIds(ctx.user);
       if (ventureIds && !ventureIds.includes(input.ventureId)) {
@@ -133,6 +136,9 @@ export const tasksRouter = router({
     status: z.string().optional(),
     description: z.string().optional(),
   })).mutation(async ({ input, ctx }) => {
+    // Permission check: viewer cannot update, client can only mark complete
+    enforcePermission(ctx.user, "tasks", "update");
+    enforceTaskUpdateScope(ctx.user, input);
     const db = await getDb();
     if (!db) throw new Error("Database not available");
     // TENANT_PATCHED: Verify task belongs to a venture the user can access
@@ -211,6 +217,7 @@ export const tasksRouter = router({
   }),
 
   delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+    enforcePermission(ctx.user, "tasks", "delete");
     if (!isVentexTeam(ctx.user)) {
       throw new Error("Only VENTEX team can delete tasks");
     }

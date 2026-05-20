@@ -35,6 +35,7 @@ import { blueprintDiagnosticsRouter } from "./routers/blueprintDiagnostics";
 import { passkeysRouter } from "./routers/passkeys";
 import { dataLifecycleRouter } from "./routers/dataLifecycle";
 import { csvImportRouter } from "./routers/csvImport";
+import { complianceCalendarRouter } from "./routers/complianceCalendar";
 
 export const appRouter = router({
   system: systemRouter,
@@ -352,6 +353,7 @@ export const appRouter = router({
   passkeys: passkeysRouter,
   lifecycle: dataLifecycleRouter,
   csvImport: csvImportRouter,
+  complianceCalendar: complianceCalendarRouter,
 });
 
 export type AppRouter = typeof appRouter;

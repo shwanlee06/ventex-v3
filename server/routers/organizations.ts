@@ -18,6 +18,7 @@ import {
   agentEvents,
 } from "../../drizzle/schema";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
+import { sendInvitationEmail, buildInviteLink } from "../invitationEmail";
 
 /** Safely parse a JSON column that may be a string, array, or null */
 function parseJsonArray(val: unknown): string[] {
@@ -653,7 +654,7 @@ export const organizationsRouter = router({
 
       for (const inv of input.invites) {
         const token = crypto.randomBytes(32).toString("hex");
-        await db.insert(invitations).values({
+         await db.insert(invitations).values({
           email: inv.email,
           organizationId: input.organizationId,
           role: inv.role,
@@ -662,9 +663,25 @@ export const organizationsRouter = router({
           invitedByName: ctx.user.name || "VENTEX Admin",
           expiresAt,
         });
+        // Send invitation email
+        const inviteLink = buildInviteLink(
+          ctx.req.headers.origin || `https://${ctx.req.headers.host}`,
+          token
+        );
+        // Get org name for the email
+        const [org] = await db.select({ name: organizations.name })
+          .from(organizations).where(eq(organizations.id, input.organizationId)).limit(1);
+        sendInvitationEmail({
+          recipientEmail: inv.email,
+          recipientName: inv.name,
+          role: inv.role,
+          inviterName: ctx.user.name || "VENTEX Admin",
+          inviteLink,
+          organizationName: org?.name || "VENTEX",
+          expiresInDays: 7,
+        }).catch(err => console.error("[Orgs] Invitation email failed:", err));
         sent.push(inv.email);
       }
-
       return { sent: sent.length, emails: sent };
     }),
 
@@ -848,6 +865,20 @@ export const organizationsRouter = router({
             invitedByName: ctx.user.name || "VENTEX Admin",
             expiresAt,
           });
+          // Send invitation email
+          const inviteLink = buildInviteLink(
+            ctx.req.headers.origin || `https://${ctx.req.headers.host}`,
+            token
+          );
+          sendInvitationEmail({
+            recipientEmail: inv.email,
+            recipientName: inv.name,
+            role: inv.role,
+            inviterName: ctx.user.name || "VENTEX Admin",
+            inviteLink,
+            organizationName: org.name,
+            expiresInDays: 7,
+          }).catch(err => console.error("[Orgs] Onboarding invitation email failed:", err));
           sentEmails.push(inv.email);
         }
       }
