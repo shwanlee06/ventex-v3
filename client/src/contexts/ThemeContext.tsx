@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 
 type Theme = "light" | "dark";
 
@@ -8,6 +8,10 @@ interface ThemeContextType {
   switchable: boolean;
   compact: boolean;
   setCompact: (v: boolean) => void;
+  autoRefresh: boolean;
+  setAutoRefresh: (v: boolean) => void;
+  /** Call after fetching user preferences from server to sync local state */
+  syncFromServer: (prefs: { theme?: string; compactView?: boolean; autoRefresh?: boolean }) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -35,6 +39,11 @@ export function ThemeProvider({
     return localStorage.getItem("ventex_compact") === "true";
   });
 
+  const [autoRefresh, setAutoRefreshState] = useState<boolean>(() => {
+    const stored = localStorage.getItem("ventex_autorefresh");
+    return stored === null ? true : stored === "true";
+  });
+
   useEffect(() => {
     const root = document.documentElement;
     if (theme === "dark") {
@@ -58,6 +67,10 @@ export function ThemeProvider({
     localStorage.setItem("ventex_compact", String(compact));
   }, [compact]);
 
+  useEffect(() => {
+    localStorage.setItem("ventex_autorefresh", String(autoRefresh));
+  }, [autoRefresh]);
+
   const toggleTheme = switchable
     ? () => {
         setTheme(prev => (prev === "light" ? "dark" : "light"));
@@ -65,9 +78,22 @@ export function ThemeProvider({
     : undefined;
 
   const setCompact = (v: boolean) => setCompactState(v);
+  const setAutoRefresh = (v: boolean) => setAutoRefreshState(v);
+
+  const syncFromServer = useCallback((prefs: { theme?: string; compactView?: boolean; autoRefresh?: boolean }) => {
+    if (prefs.theme === "light" || prefs.theme === "dark") {
+      setTheme(prefs.theme);
+    }
+    if (typeof prefs.compactView === "boolean") {
+      setCompactState(prefs.compactView);
+    }
+    if (typeof prefs.autoRefresh === "boolean") {
+      setAutoRefreshState(prefs.autoRefresh);
+    }
+  }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, switchable, compact, setCompact }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, switchable, compact, setCompact, autoRefresh, setAutoRefresh, syncFromServer }}>
       {children}
     </ThemeContext.Provider>
   );

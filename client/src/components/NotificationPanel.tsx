@@ -14,6 +14,7 @@ import { useCallback, useState, useMemo } from "react";
 import { useSSEInvalidation } from "@/hooks/useSSE";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { useLocation } from "wouter";
 import { useAgents, getAgentConfig, resolveAgentKey, type AgentEvent, type AgentDraft } from "@/contexts/AgentContext";
 import {
@@ -93,6 +94,7 @@ interface NotificationPanelProps {
 
 export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps) {
   const utils = trpc.useUtils();
+  const notifPoll = useAutoRefresh(30_000);
   const [, navigate] = useLocation();
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("all");
@@ -105,7 +107,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
       limit: 50,
       ...(activeFilter ? { category: activeFilter as any } : {}),
     },
-    { refetchInterval: 30_000 }
+    { refetchInterval: notifPoll }
   );
 
   // SSE: instant refetch on notification events
@@ -661,8 +663,9 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
  * Polls every 30 seconds for real-time unread count.
  */
 export function useNotifications() {
+  const notifPoll = useAutoRefresh(30_000);
   const countQ = trpc.notifications.unreadCount.useQuery(undefined, {
-    refetchInterval: 30_000,
+    refetchInterval: notifPoll,
   });
   return { unreadCount: countQ.data || 0 };
 }

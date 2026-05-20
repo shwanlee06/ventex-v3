@@ -3728,3 +3728,8 @@
 - [x] Ensure dark/light toggle visually changes the entire UI
 - [x] Implement compact view CSS class that reduces spacing when enabled
 - [x] Verify all Settings toggles produce visible effects
+
+## Auto-Refresh & Preferences Sync (May 2026)
+- [x] Wire auto-refresh toggle to control refetchInterval across all polling components
+- [x] Sync theme/compact preferences from server on login (not just localStorage)
+- [x] Update all Airtable documents to reflect $5M raise

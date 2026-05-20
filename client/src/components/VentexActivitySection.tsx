@@ -2,6 +2,7 @@
 // Weekly summary of what VENTEX agents have done for this client.
 // Shows recent agent actions in plain English, no internal jargon.
 
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { trpc } from "@/lib/trpc";
 import { formatTimestamp } from "@/lib/data";
 import { motion } from "framer-motion";
@@ -47,9 +48,10 @@ function getClientFriendlyAction(event: {
 }
 
 export default function VentexActivitySection() {
+  const actPoll = useAutoRefresh(60_000);
   const feedQ = trpc.agents.clientFeed.useQuery(
     { limit: 20 },
-    { refetchInterval: 60000 }
+    { refetchInterval: actPoll }
   );
 
   // SSE real-time updates

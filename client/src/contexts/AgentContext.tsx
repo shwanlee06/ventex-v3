@@ -6,6 +6,7 @@ import { createContext, useContext, useMemo, useCallback, type ReactNode } from 
 import { trpc } from "@/lib/trpc";
 import { usePreviewMode } from "@/contexts/PreviewMode";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { useSSEInvalidation } from "@/hooks/useSSE";
 
 
@@ -204,6 +205,8 @@ const AgentContext = createContext<AgentContextValue | null>(null);
 
 export function AgentProvider({ children }: { children: ReactNode }) {
   const utils = trpc.useUtils();
+  const agentPoll30 = useAutoRefresh(30_000);
+  const agentPoll60 = useAutoRefresh(60_000);
   const { isPreviewMode } = usePreviewMode();
   const { activeOrgId } = useWorkspace();
 
@@ -213,22 +216,22 @@ export function AgentProvider({ children }: { children: ReactNode }) {
 
   const { data: events = [], isLoading: eventsLoading } = trpc.agents.list.useQuery(
     { limit: 100, organizationId: scopedOrgId },
-    { refetchInterval: 30000 }
+    { refetchInterval: agentPoll30 }
   );
 
   const { data: metrics, isLoading: metricsLoading } = trpc.agents.metrics.useQuery(
     scopedOrgId ? { organizationId: scopedOrgId } : undefined,
-    { refetchInterval: 30000 }
+    { refetchInterval: agentPoll30 }
   );
 
   const { data: drafts = [] } = trpc.agents.listDrafts.useQuery(
     { limit: 100, organizationId: scopedOrgId },
-    { refetchInterval: 30000 }
+    { refetchInterval: agentPoll30 }
   );
 
   const { data: velocityMetrics } = trpc.agents.velocityMetrics.useQuery(
     scopedOrgId ? { organizationId: scopedOrgId } : undefined,
-    { refetchInterval: 60000 }
+    { refetchInterval: agentPoll60 }
   );
 
 

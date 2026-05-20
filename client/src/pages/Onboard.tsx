@@ -2,6 +2,7 @@
 // VENTEX section = just you (the operator)
 // Client Contacts = unified searchable table with client filter
 
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import DashboardLayout from "@/components/DashboardLayout";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
@@ -64,6 +65,7 @@ function TypeBadge({ type }: { type: string }) {
 
 export default function OnboardPage() {
   const [, navigate] = useLocation();
+  const onboardPoll = useAutoRefresh(30_000);
   const [search, setSearch] = useState("");
   const [clientFilter, setClientFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -87,7 +89,7 @@ export default function OnboardPage() {
   const ventexTeamQ = trpc.team.listInternal.useQuery();
   const clientContactsQ = trpc.team.listByOrganization.useQuery();
   const orgsQ = trpc.organizations.list.useQuery();
-  const liveStatusesQ = trpc.team.liveStatuses.useQuery(undefined, { refetchInterval: 30000 });
+  const liveStatusesQ = trpc.team.liveStatuses.useQuery(undefined, { refetchInterval: onboardPoll });
   const utils = trpc.useUtils();
 
   // Build a map of member id -> live status info

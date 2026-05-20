@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import { hardLogout } from "@/lib/hardLogout";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 
 const VENTEX_LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT/ventex-logo-mark_1f534165.png";
 
@@ -91,8 +92,9 @@ export default function AppSidebar() {
   const pendingDraftCount = agentCtx?.pendingDraftCount ?? 0;
 
   // Pending decisions badge count
+  const pollInterval = useAutoRefresh(60_000);
   const { data: pendingApprovals } = trpc.agents.pendingApprovals.useQuery(undefined, {
-    refetchInterval: 60_000, // refresh every minute
+    refetchInterval: pollInterval,
   });
   const pendingDecisionsCount = (pendingApprovals?.events?.length ?? 0) + (pendingApprovals?.drafts?.length ?? 0);
 

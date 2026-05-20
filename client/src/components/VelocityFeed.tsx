@@ -2,6 +2,7 @@
 // Three card types: ACTION NEEDED (amber) · COMPLETED (teal) · WATCHING (gray)
 // Integrated with ClientActionModals for 4 action flows
 
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -259,6 +260,7 @@ function FeedCard({
 
 export default function VelocityFeed({ onNavigate }: VelocityFeedProps) {
   const { activeOrg } = useWorkspace();
+  const feedPoll = useAutoRefresh(30_000);
   const [showAll, setShowAll] = useState(false);
 
   // Action modal state
@@ -270,7 +272,7 @@ export default function VelocityFeed({ onNavigate }: VelocityFeedProps) {
 
   const feedQ = trpc.agents.clientFeed.useQuery(
     { organizationId: activeOrg?.id || 0, limit: 20 },
-    { enabled: !!activeOrg?.id, refetchInterval: 30000 }
+    { enabled: !!activeOrg?.id, refetchInterval: feedPoll }
   );
 
   // SSE: instant refetch on feed_update events

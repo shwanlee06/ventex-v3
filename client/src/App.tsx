@@ -5,6 +5,7 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch, Redirect, useLocation } from "wouter";
 import { useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { PreferencesSync } from "./components/PreferencesSync";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { PreviewModeProvider, usePreviewMode } from "./contexts/PreviewMode";
 import { WorkspaceProvider, useWorkspace } from "./contexts/WorkspaceContext";
@@ -203,6 +204,7 @@ function App() {
             <AgentProvider>
             <TooltipProvider>
               <HeartbeatProvider>
+                <PreferencesSync />
                 <Toaster />
                 <CookieConsent />
                 <Router />

@@ -106,7 +106,7 @@ function EmailTestSection() {
 }
 
 export default function SettingsConfigPage() {
-  const { theme, toggleTheme, compact, setCompact } = useTheme();
+  const { theme, toggleTheme, compact, setCompact, autoRefresh, setAutoRefresh } = useTheme();
   const darkMode = theme === "dark";
   const { user: authUser } = useAuth();
   const { isPreviewMode } = usePreviewMode();
@@ -125,7 +125,7 @@ export default function SettingsConfigPage() {
   });
 
   const compactView = compact;
-  const [autoRefresh, setAutoRefresh] = useState(true);
+
   const [emailNotifs, setEmailNotifs] = useState(true);
   const [pushNotifs, setPushNotifs] = useState(true);
   const [slackNotifs, setSlackNotifs] = useState(false);
