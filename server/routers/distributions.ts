@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { distributions, activityLog, fxRates } from "../../drizzle/schema";
+import { distributions, activityLog, fxRates, ventures } from "../../drizzle/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { isVentexTeam, logAudit } from "../security/rbac";
 import { resolveOrgId } from "../security/orgScope";
@@ -124,6 +124,12 @@ export const distributionsRouter = router({
 
     await db.update(distributions).set(data).where(eq(distributions.id, id));
     const [updated] = await db.select().from(distributions).where(eq(distributions.id, id)).limit(1);
+
+    // Auto-update venture lastActivityDate when distribution status changes
+    if (updated?.ventureId) {
+      await db.update(ventures).set({ lastActivityDate: new Date() }).where(eq(ventures.id, updated.ventureId));
+    }
+
     if (updated) {
       await db.insert(activityLog).values({
         entityType: "distribution", entityId: id, entityName: updated.name,

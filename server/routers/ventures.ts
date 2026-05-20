@@ -219,7 +219,13 @@ export const venturesRouter = router({
       const [prev] = await db.select({ stage: ventures.stage }).from(ventures).where(eq(ventures.id, id)).limit(1);
       oldStage = prev?.stage || null;
     }
-    await db.update(ventures).set(data).where(eq(ventures.id, id));
+    // Auto-update lastActivityDate on any venture modification
+    const updatePayload: any = { ...data, lastActivityDate: new Date() };
+    // Reset daysInCurrentStage to 0 when stage changes
+    if (data.stage && oldStage && oldStage !== data.stage) {
+      updatePayload.daysInCurrentStage = 0;
+    }
+    await db.update(ventures).set(updatePayload).where(eq(ventures.id, id));
     const rows = await db.select().from(ventures).where(eq(ventures.id, id)).limit(1);
     if (rows[0]) {
       // Resolve org for venture audit
@@ -402,6 +408,9 @@ export const venturesRouter = router({
       fileKey,
       uploadedBy: ctx.user.name || undefined,
     });
+    // Auto-update venture lastActivityDate on file upload
+    await db.update(ventures).set({ lastActivityDate: new Date() }).where(eq(ventures.id, input.ventureId));
+
     const [v] = await db.select().from(ventures).where(eq(ventures.id, input.ventureId)).limit(1);
     if (v) {
       await db.insert(activityLog).values({

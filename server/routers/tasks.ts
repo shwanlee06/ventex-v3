@@ -171,6 +171,11 @@ export const tasksRouter = router({
         .from(orgVentureAccess).where(eq(orgVentureAccess.ventureId, rows[0].ventureId)).limit(1);
       updOrgId = ova?.organizationId ?? null;
     }
+    // Auto-update venture lastActivityDate when a task is modified
+    if (rows[0]?.ventureId) {
+      await db.update(ventures).set({ lastActivityDate: new Date() }).where(eq(ventures.id, rows[0].ventureId));
+    }
+
     if (rows[0] && input.status) {
       await db.insert(activityLog).values({
         entityType: "task", entityId: id, entityName: rows[0].title,

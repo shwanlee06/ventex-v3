@@ -445,3 +445,296 @@ export async function sendStageAdvancedEmail(params: StageAdvancedEmailParams): 
     return { success: false, error: err.message };
   }
 }
+
+
+// ─── Principal Confirmation Request ─────────────────────────────────────────
+
+interface PrincipalConfirmationParams {
+  to: string;
+  principalName: string;
+  entityType: "distribution" | "stage_advance" | "capital_call" | "exit";
+  entityName: string;
+  amount?: string;
+  currency?: string;
+  daysUntilDeadline?: number;
+  context: string; // LLM-generated context summary
+  actionUrl?: string;
+}
+
+function principalConfirmationHtml(params: PrincipalConfirmationParams): string {
+  const urgencyLabel = params.daysUntilDeadline !== undefined
+    ? params.daysUntilDeadline <= 3
+      ? `<span style="color: #dc2626; font-weight: 600;">URGENT — ${params.daysUntilDeadline} day${params.daysUntilDeadline !== 1 ? "s" : ""} remaining</span>`
+      : `<span style="color: #d97706; font-weight: 500;">${params.daysUntilDeadline} days until deadline</span>`
+    : "";
+
+  return `<body style="${BODY_STYLE}">
+<div style="${CONTAINER_STYLE}">
+  <div style="${HEADER_STYLE}">
+    <p style="${HEADER_TEXT}">VENTEX — PRINCIPAL CONFIRMATION REQUIRED</p>
+  </div>
+  <p style="${P_STYLE}">${params.principalName},</p>
+  <p style="${P_STYLE}">Your confirmation is required for the following:</p>
+  <div style="${CARD_STYLE}">
+    <p style="${LABEL_STYLE}">Type</p>
+    <p style="${VALUE_STYLE}">${params.entityType.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</p>
+    <p style="${LABEL_STYLE}">Item</p>
+    <p style="${VALUE_STYLE}">${params.entityName}${params.amount ? ` — ${params.currency || "$"}${params.amount}` : ""}</p>
+    ${urgencyLabel ? `<p style="margin-top: 12px;">${urgencyLabel}</p>` : ""}
+  </div>
+  <p style="${P_STYLE}">${params.context}</p>
+  ${params.actionUrl ? `<p style="margin-top: 24px;"><a href="${params.actionUrl}" style="${BUTTON_STYLE}">Review & Confirm</a></p>` : ""}
+  <div style="${FOOTER_STYLE}">
+    <p style="${FOOTER_TEXT}">${SIGNATURE}</p>
+    <p style="${FOOTER_TEXT}">This action is blocked until you confirm. No distribution, stage advance, or capital call will proceed without your explicit approval.</p>
+  </div>
+</div>
+</body>`;
+}
+
+export async function sendPrincipalConfirmation(params: PrincipalConfirmationParams): Promise<EmailResult> {
+  if (!process.env.RESEND_API_KEY) {
+    return { success: false, error: "RESEND_API_KEY not configured" };
+  }
+  if (!checkDailyBudget()) {
+    return { success: false, error: "Daily email budget exhausted" };
+  }
+  await waitForEmailRateLimit();
+  try {
+    const urgency = params.daysUntilDeadline !== undefined && params.daysUntilDeadline <= 3 ? "URGENT: " : "";
+    const { data, error } = await resend.emails.send({
+      from: FROM_ADDRESS,
+      to: params.to,
+      replyTo: REPLY_TO,
+      subject: `${urgency}Confirmation Required: ${params.entityName}${params.amount ? ` — ${params.currency || "$"}${params.amount}` : ""}`,
+      html: principalConfirmationHtml(params),
+    });
+    if (error) {
+      console.error("[EmailService] Principal confirmation email failed:", error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, messageId: data?.id };
+  } catch (err: any) {
+    console.error("[EmailService] Principal confirmation email error:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+
+// ─── Distribution Sentinel Alert (T-30/14/7/3/0) ────────────────────────────
+
+interface DistributionAlertParams {
+  to: string | string[];
+  recipientName: string;
+  fundName: string;
+  amount: string;
+  currency?: string;
+  daysUntil: number;
+  milestone: "T-30" | "T-14" | "T-7" | "T-3" | "T-0";
+  alertMessage: string;
+  missingItems?: string[];
+  actionUrl?: string;
+}
+
+function distributionAlertHtml(params: DistributionAlertParams): string {
+  const severityColor = params.daysUntil <= 3 ? "#dc2626" : params.daysUntil <= 7 ? "#d97706" : "#2563eb";
+  const missingList = params.missingItems?.length
+    ? `<div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 12px; margin: 16px 0;">
+        <p style="font-size: 13px; color: #991b1b; font-weight: 500; margin: 0 0 8px;">Missing Requirements:</p>
+        <ul style="margin: 0; padding-left: 20px;">${params.missingItems.map(i => `<li style="font-size: 13px; color: #991b1b; margin-bottom: 4px;">${i}</li>`).join("")}</ul>
+       </div>`
+    : "";
+
+  return `<body style="${BODY_STYLE}">
+<div style="${CONTAINER_STYLE}">
+  <div style="${HEADER_STYLE}">
+    <p style="${HEADER_TEXT}">VENTEX — DISTRIBUTION SENTINEL ALERT</p>
+  </div>
+  <p style="${P_STYLE}">${params.recipientName},</p>
+  <div style="${CARD_STYLE}">
+    <p style="${LABEL_STYLE}">Distribution</p>
+    <p style="${VALUE_STYLE}">${params.fundName}</p>
+    <p style="${LABEL_STYLE}">Amount</p>
+    <p style="${VALUE_STYLE}">${params.currency || "$"}${params.amount}</p>
+    <p style="${LABEL_STYLE}">Timeline</p>
+    <p style="font-size: 15px; font-weight: 600; color: ${severityColor}; margin-bottom: 12px;">${params.milestone} — ${params.daysUntil} day${params.daysUntil !== 1 ? "s" : ""} until distribution</p>
+  </div>
+  <p style="${P_STYLE}">${params.alertMessage}</p>
+  ${missingList}
+  ${params.actionUrl ? `<p style="margin-top: 24px;"><a href="${params.actionUrl}" style="${BUTTON_STYLE}">Take Action</a></p>` : ""}
+  <div style="${FOOTER_STYLE}">
+    <p style="${FOOTER_TEXT}">${SIGNATURE}</p>
+  </div>
+</div>
+</body>`;
+}
+
+export async function sendDistributionAlert(params: DistributionAlertParams): Promise<EmailResult> {
+  if (!process.env.RESEND_API_KEY) {
+    return { success: false, error: "RESEND_API_KEY not configured" };
+  }
+  if (!checkDailyBudget()) {
+    return { success: false, error: "Daily email budget exhausted" };
+  }
+  await waitForEmailRateLimit();
+  try {
+    const urgency = params.daysUntil <= 3 ? "URGENT: " : "";
+    const { data, error } = await resend.emails.send({
+      from: FROM_ADDRESS,
+      to: Array.isArray(params.to) ? params.to : [params.to],
+      replyTo: REPLY_TO,
+      subject: `${urgency}${params.milestone} Alert: ${params.fundName} — ${params.currency || "$"}${params.amount}`,
+      html: distributionAlertHtml(params),
+    });
+    if (error) {
+      console.error("[EmailService] Distribution alert email failed:", error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, messageId: data?.id };
+  } catch (err: any) {
+    console.error("[EmailService] Distribution alert email error:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+
+// ─── Velocity Stall Alert ────────────────────────────────────────────────────
+
+interface VelocityStallAlertParams {
+  to: string;
+  recipientName: string;
+  ventureName: string;
+  sector: string;
+  stage: string;
+  daysSinceActivity: number;
+  threshold: number;
+  interventionNote: string;
+  actionUrl?: string;
+}
+
+function velocityStallAlertHtml(params: VelocityStallAlertParams): string {
+  return `<body style="${BODY_STYLE}">
+<div style="${CONTAINER_STYLE}">
+  <div style="${HEADER_STYLE}">
+    <p style="${HEADER_TEXT}">VENTEX — VELOCITY ALERT</p>
+  </div>
+  <p style="${P_STYLE}">${params.recipientName},</p>
+  <p style="${P_STYLE}">A venture in your portfolio has stalled and requires intervention:</p>
+  <div style="${CARD_STYLE}">
+    <p style="${LABEL_STYLE}">Venture</p>
+    <p style="${VALUE_STYLE}">${params.ventureName}</p>
+    <p style="${LABEL_STYLE}">Sector / Stage</p>
+    <p style="${VALUE_STYLE}">${params.sector} · ${params.stage}</p>
+    <p style="${LABEL_STYLE}">Days Since Activity</p>
+    <p style="font-size: 15px; font-weight: 600; color: #dc2626; margin-bottom: 12px;">${params.daysSinceActivity} days (threshold: ${params.threshold})</p>
+  </div>
+  <p style="${P_STYLE}">${params.interventionNote}</p>
+  ${params.actionUrl ? `<p style="margin-top: 24px;"><a href="${params.actionUrl}" style="${BUTTON_STYLE}">View Venture</a></p>` : ""}
+  <div style="${FOOTER_STYLE}">
+    <p style="${FOOTER_TEXT}">${SIGNATURE}</p>
+  </div>
+</div>
+</body>`;
+}
+
+export async function sendVelocityStallAlert(params: VelocityStallAlertParams): Promise<EmailResult> {
+  if (!process.env.RESEND_API_KEY) {
+    return { success: false, error: "RESEND_API_KEY not configured" };
+  }
+  if (!checkDailyBudget()) {
+    return { success: false, error: "Daily email budget exhausted" };
+  }
+  await waitForEmailRateLimit();
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_ADDRESS,
+      to: params.to,
+      replyTo: REPLY_TO,
+      subject: `Stall Alert: ${params.ventureName} — ${params.daysSinceActivity} days inactive`,
+      html: velocityStallAlertHtml(params),
+    });
+    if (error) {
+      console.error("[EmailService] Velocity stall alert email failed:", error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, messageId: data?.id };
+  } catch (err: any) {
+    console.error("[EmailService] Velocity stall alert email error:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+
+// ─── Orchestrator Weekly Briefing ────────────────────────────────────────────
+
+interface OrchestratorBriefingParams {
+  to: string;
+  principalName: string;
+  portfolioSummary: string;
+  topAction: string;
+  stats: {
+    ventureCount: number;
+    overdueTaskCount: number;
+    upcomingDistCount: number;
+    stalledCount: number;
+    pendingConfirmationCount: number;
+  };
+  actionUrl?: string;
+}
+
+function orchestratorBriefingHtml(params: OrchestratorBriefingParams): string {
+  return `<body style="${BODY_STYLE}">
+<div style="${CONTAINER_STYLE}">
+  <div style="${HEADER_STYLE}">
+    <p style="${HEADER_TEXT}">VENTEX — WEEKLY PORTFOLIO BRIEFING</p>
+  </div>
+  <p style="${P_STYLE}">${params.principalName},</p>
+  <p style="${P_STYLE}">${params.portfolioSummary}</p>
+  <div style="${CARD_STYLE}">
+    <p style="${LABEL_STYLE}">Portfolio Snapshot</p>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 8px;">
+      <tr><td style="font-size: 14px; color: #666; padding: 4px 0;">Active Ventures</td><td style="font-size: 14px; font-weight: 600; text-align: right; padding: 4px 0;">${params.stats.ventureCount}</td></tr>
+      <tr><td style="font-size: 14px; color: #666; padding: 4px 0;">Overdue Tasks</td><td style="font-size: 14px; font-weight: 600; text-align: right; padding: 4px 0; ${params.stats.overdueTaskCount > 0 ? "color: #dc2626;" : ""}">${params.stats.overdueTaskCount}</td></tr>
+      <tr><td style="font-size: 14px; color: #666; padding: 4px 0;">Upcoming Distributions</td><td style="font-size: 14px; font-weight: 600; text-align: right; padding: 4px 0;">${params.stats.upcomingDistCount}</td></tr>
+      <tr><td style="font-size: 14px; color: #666; padding: 4px 0;">Stalled Ventures</td><td style="font-size: 14px; font-weight: 600; text-align: right; padding: 4px 0; ${params.stats.stalledCount > 0 ? "color: #d97706;" : ""}">${params.stats.stalledCount}</td></tr>
+      <tr><td style="font-size: 14px; color: #666; padding: 4px 0;">Pending Confirmations</td><td style="font-size: 14px; font-weight: 600; text-align: right; padding: 4px 0; ${params.stats.pendingConfirmationCount > 0 ? "color: #d97706;" : ""}">${params.stats.pendingConfirmationCount}</td></tr>
+    </table>
+  </div>
+  <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <p style="font-size: 12px; color: #166534; font-weight: 600; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.05em;">Top Priority Action</p>
+    <p style="font-size: 15px; color: #166534; margin: 0; line-height: 1.5;">${params.topAction}</p>
+  </div>
+  ${params.actionUrl ? `<p style="margin-top: 24px;"><a href="${params.actionUrl}" style="${BUTTON_STYLE}">Open Dashboard</a></p>` : ""}
+  <div style="${FOOTER_STYLE}">
+    <p style="${FOOTER_TEXT}">${SIGNATURE}</p>
+  </div>
+</div>
+</body>`;
+}
+
+export async function sendOrchestratorBriefing(params: OrchestratorBriefingParams): Promise<EmailResult> {
+  if (!process.env.RESEND_API_KEY) {
+    return { success: false, error: "RESEND_API_KEY not configured" };
+  }
+  if (!checkDailyBudget()) {
+    return { success: false, error: "Daily email budget exhausted" };
+  }
+  await waitForEmailRateLimit();
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_ADDRESS,
+      to: params.to,
+      replyTo: REPLY_TO,
+      subject: `Weekly Briefing: ${params.stats.ventureCount} ventures · ${params.stats.overdueTaskCount} overdue · ${params.stats.pendingConfirmationCount} pending`,
+      html: orchestratorBriefingHtml(params),
+    });
+    if (error) {
+      console.error("[EmailService] Orchestrator briefing email failed:", error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, messageId: data?.id };
+  } catch (err: any) {
+    console.error("[EmailService] Orchestrator briefing email error:", err);
+    return { success: false, error: err.message };
+  }
+}

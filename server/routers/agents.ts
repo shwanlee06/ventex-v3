@@ -28,6 +28,10 @@ import {
   sendOverdueAutoEmail,
   sendReadyToAdvanceEmail,
   sendStageAdvancedEmail,
+  sendPrincipalConfirmation,
+  sendDistributionAlert,
+  sendVelocityStallAlert,
+  sendOrchestratorBriefing,
 } from "../emailService";
 import { onStageAdvanced, onTaskCompleted, onTaskOverdue } from "../intelligence/realtimeTriggers";
 import { eq, desc, sql, and, ne, gte, lte, inArray, isNotNull } from "drizzle-orm";
@@ -777,16 +781,39 @@ export async function runVelocityAgent(
           requiresClientAction: true,
           actionType: "escalate",
           actionLabel: "Unblock Venture",
-          actionPayload: { ventureId: venture.id, ventureName: venture.name, daysSinceActivity, stallThreshold },
+           actionPayload: { ventureId: venture.id, ventureName: venture.name, daysSinceActivity, stallThreshold },
           entityType: "venture",
           agentEntityId: String(venture.id),
           agentEntityName: venture.name,
           ventureId: venture.id,
           outcome: "pending",
         });
+
+        // Send velocity stall alert email
+        if (orgId) {
+          try {
+            const [stallOrg] = await db.select({
+              primaryContactEmail: organizations.primaryContactEmail,
+              primaryContactName: organizations.primaryContactName,
+            }).from(organizations).where(eq(organizations.id, orgId)).limit(1);
+            if (stallOrg?.primaryContactEmail) {
+              await sendVelocityStallAlert({
+                to: stallOrg.primaryContactEmail,
+                recipientName: stallOrg.primaryContactName || "Team",
+                ventureName: venture.name,
+                sector: venture.sector,
+                stage: normalizedStage,
+                daysSinceActivity,
+                threshold: stallThreshold,
+                interventionNote,
+              });
+            }
+          } catch (emailErr) {
+            console.error(`[Velocity Agent] Stall alert email failed:`, emailErr);
+          }
+        }
       }
     }
-
     // Legacy stall detection for In Validation with no tasks
     if (totalTasks === 0 && (venture.stage === "In Validation" || normalizedStage === "Sourcing")) {
       const daysStalled = Math.floor(
@@ -935,6 +962,20 @@ export async function runDistributionSentinel(
 
   const now = new Date();
 
+  // Resolve principal email for this org
+  let principalEmail: string | null = null;
+  let principalName = "Principal";
+  if (orgId) {
+    const [org] = await db.select({
+      primaryContactEmail: organizations.primaryContactEmail,
+      primaryContactName: organizations.primaryContactName,
+    }).from(organizations).where(eq(organizations.id, orgId)).limit(1);
+    if (org?.primaryContactEmail) {
+      principalEmail = org.primaryContactEmail;
+      principalName = org.primaryContactName || "Principal";
+    }
+  }
+
   for (const dist of scheduledDists) {
     const dueDate = dist.distributionDate ? new Date(dist.distributionDate) : null;
     const daysUntil = dueDate
@@ -1043,6 +1084,25 @@ export async function runDistributionSentinel(
         recipient: "Principal",
         outcome: "pending",
       });
+
+      // Send distribution alert email for T-14
+      if (principalEmail) {
+        try {
+          await sendDistributionAlert({
+            to: principalEmail,
+            recipientName: principalName,
+            fundName,
+            amount: amount.toLocaleString(),
+            currency: dist.currency || "USD",
+            daysUntil: daysUntil!,
+            milestone: "T-14",
+            alertMessage: `Wire instructions are missing for this distribution. The distribution cannot proceed without wire instructions on file.`,
+            missingItems: ["Wire transfer instructions"],
+          });
+        } catch (emailErr) {
+          console.error(`[Distribution Sentinel] T-14 alert email failed:`, emailErr);
+        }
+      }
     }
 
     // --- T-7: Principal confirmation required ---
@@ -1067,6 +1127,24 @@ export async function runDistributionSentinel(
         recipient: "Principal",
         outcome: "pending",
       });
+
+      // Send principal confirmation email
+      if (principalEmail) {
+        try {
+          await sendPrincipalConfirmation({
+            to: principalEmail,
+            principalName,
+            entityType: "distribution",
+            entityName: fundName,
+            amount: amount.toLocaleString(),
+            currency: dist.currency || "USD",
+            daysUntilDeadline: daysUntil,
+            context: `This distribution of $${amount.toLocaleString()} is due in ${daysUntil} day${daysUntil !== 1 ? "s" : ""}. It cannot proceed without your explicit confirmation. Wire instructions ${hasWireInstructions ? "are on file" : "are still missing"}.`,
+          });
+        } catch (emailErr) {
+          console.error(`[Distribution Sentinel] Principal confirmation email failed:`, emailErr);
+        }
+      }
     }
 
     // --- T-3: Final reminder ---
@@ -1099,6 +1177,27 @@ export async function runDistributionSentinel(
         spvId: dist.spvId,
         outcome: missingItems.length > 0 ? "pending" : "success",
       });
+
+      // Send T-3 distribution alert email
+      if (principalEmail) {
+        try {
+          await sendDistributionAlert({
+            to: principalEmail,
+            recipientName: principalName,
+            fundName,
+            amount: amount.toLocaleString(),
+            currency: dist.currency || "USD",
+            daysUntil: daysUntil!,
+            milestone: "T-3",
+            alertMessage: missingItems.length > 0
+              ? `FINAL WARNING: Distribution is ${daysUntil} day${daysUntil !== 1 ? "s" : ""} away and is BLOCKED.`
+              : `Distribution is ${daysUntil} day${daysUntil !== 1 ? "s" : ""} away. All requirements met — ready to execute.`,
+            missingItems: missingItems.length > 0 ? missingItems : undefined,
+          });
+        } catch (emailErr) {
+          console.error(`[Distribution Sentinel] T-3 alert email failed:`, emailErr);
+        }
+      }
     }
 
     // --- T-0: Execute day (hard block check) ---
@@ -1128,6 +1227,25 @@ export async function runDistributionSentinel(
           recipient: "Principal",
           outcome: "failed",
         });
+
+        // Send T-0 HARD BLOCK email
+        if (principalEmail) {
+          try {
+            await sendDistributionAlert({
+              to: principalEmail,
+              recipientName: principalName,
+              fundName,
+              amount: amount.toLocaleString(),
+              currency: dist.currency || "USD",
+              daysUntil: 0,
+              milestone: "T-0",
+              alertMessage: `HARD BLOCK: This distribution is ${daysUntil < 0 ? `${Math.abs(daysUntil)} days overdue` : "due today"} but CANNOT execute.`,
+              missingItems: blockers,
+            });
+          } catch (emailErr) {
+            console.error(`[Distribution Sentinel] T-0 alert email failed:`, emailErr);
+          }
+        }
       } else {
         signals.push({
           agentName: "Distribution Sentinel",
@@ -1458,6 +1576,37 @@ export async function runOrchestrator(
     },
     outcome: maxSeverity === "critical" ? "pending" : "success",
   });
+
+  // Send weekly briefing email to principal
+  if (orgId) {
+    try {
+      const [org] = await db.select({
+        primaryContactEmail: organizations.primaryContactEmail,
+        primaryContactName: organizations.primaryContactName,
+      }).from(organizations).where(eq(organizations.id, orgId)).limit(1);
+      if (org?.primaryContactEmail) {
+        // Extract top action from analysis (second paragraph)
+        const analysisParts = analysis.split("\n").filter(l => l.trim());
+        const portfolioSummary = analysisParts[0] || analysis;
+        const topAction = analysisParts.length > 1 ? analysisParts.slice(1).join(" ") : "Review your dashboard for the latest updates.";
+        await sendOrchestratorBriefing({
+          to: org.primaryContactEmail,
+          principalName: org.primaryContactName || "Principal",
+          portfolioSummary,
+          topAction,
+          stats: {
+            ventureCount: ventureList.length,
+            overdueTaskCount: overdueTasks.length,
+            upcomingDistCount: upcomingDists.length,
+            stalledCount: stalledVentures.length,
+            pendingConfirmationCount: pendingConfirmation.length,
+          },
+        });
+      }
+    } catch (emailErr) {
+      console.error(`[Orchestrator] Weekly briefing email failed:`, emailErr);
+    }
+  }
 
   return signals;
 }

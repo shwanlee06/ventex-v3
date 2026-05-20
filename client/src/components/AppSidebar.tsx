@@ -33,6 +33,8 @@ import {
   Menu,
   LogOut,
   Mail,
+  Upload,
+  CheckSquare,
 } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useState, useMemo, useEffect } from "react";
@@ -60,6 +62,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="size-[18px]" />, group: "Operations" },
   { label: "Activity", href: "/activity", icon: <Activity className="size-[18px]" />, group: "Operations" },
   { label: "Oversight", href: "/oversight", icon: <Eye className="size-[18px]" />, ventexOnly: true, group: "Operations" },
+  { label: "Decisions", href: "/decisions", icon: <CheckSquare className="size-[18px]" />, group: "Operations" },
 
   // Intelligence
   { label: "AI Agents", href: "/agents", icon: <Cpu className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },
@@ -69,6 +72,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { label: "VENTEX Team", href: "/ventex-team", icon: <Shield className="size-[18px]" />, ventexOnly: true, group: "Admin" },
   { label: "Client Contacts", href: "/team", icon: <Users className="size-[18px]" />, ventexOnly: true, group: "Admin" },
   { label: "Onboard Client", href: "/onboarding", icon: <UserPlus className="size-[18px]" />, ventexOnly: true, group: "Admin" },
+  { label: "Data Import", href: "/import", icon: <Upload className="size-[18px]" />, ventexOnly: true, group: "Admin" },
   { label: "Settings", href: "/settings", icon: <Settings className="size-[18px]" />, ventexOnly: true, group: "Admin" },
   // Partner-only
   { label: "My Portfolio", href: "/partner", icon: <Briefcase className="size-[18px]" />, partnerOnly: true },

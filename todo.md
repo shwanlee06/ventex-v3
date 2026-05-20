@@ -3672,3 +3672,24 @@
 - [x] Delete orphaned records (agent_events, activity_log, test ventures, test team members)
 - [x] Backfill organizationId = 2 on all Royalton ventures/users/team with NULL org
 - [x] Verify only Royalton data remains (2 orgs, 27 ventures, 10 SPVs, 529 tasks, 25 team, 4 distributions)
+
+## Production Readiness — Live Client Launch
+- [x] CSV Import: Build bulk upload for ventures, tasks, team members, SPVs with template validation
+- [x] CSV Import: Create downloadable CSV templates for each entity type
+- [x] CSV Import: Build import preview UI showing what will be created before committing
+- [x] CSV Import: Handle validation errors gracefully (show row-level errors, allow partial import)
+- [x] Email Notifications: Wire up Resend for escalation emails from Overdue Agent
+- [x] Email Notifications: Wire up Resend for follow-up emails from task engine
+- [x] Email Notifications: Wire up Resend for Principal Confirmation requests
+- [x] Email Notifications: Wire up Resend for Distribution Sentinel alerts (30/14/7/3/0 day)
+- [x] Email Notifications: Wire up Resend for weekly Orchestrator briefing delivery
+- [x] Principal Decision Queue: Build standalone /decisions page showing all pending confirmations
+- [x] Principal Decision Queue: Show context cards with history, numbers, team recommendation, downstream impact
+- [x] Principal Decision Queue: Approve/Reject actions that clear the gate and trigger next steps
+- [x] Principal Decision Queue: Batch approve capability for low-risk items
+- [x] Auto-update lastActivityDate: Task completion updates venture lastActivityDate
+- [x] Auto-update lastActivityDate: Document upload updates venture lastActivityDate
+- [x] Auto-update lastActivityDate: Distribution status change updates venture lastActivityDate
+- [x] Auto-update lastActivityDate: Compute daysInCurrentStage at query time from stage change timestamp
+- [x] Second org end-to-end test: Create test org via onboarding wizard, verify readiness checklist
+- [x] Second org end-to-end test: Import data via CSV, verify agents activate and produce correct signals

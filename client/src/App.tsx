@@ -42,6 +42,8 @@ import SignOut from "./pages/SignOut";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import TrustSecurity from "./pages/TrustSecurity";
+import CsvImport from "./pages/CsvImport";
+import Decisions from "./pages/Decisions";
 import { AgentProvider } from "./contexts/AgentContext";
 import { useHeartbeat } from "./hooks/useHeartbeat";
 import { useIdleTimeout } from "./hooks/useIdleTimeout";
@@ -215,6 +217,14 @@ function Router() {
       </Route>
       <Route path="/oversight">
         <RequireAuth><RequireVentex><OversightPage /></RequireVentex></RequireAuth>
+      </Route>
+
+      <Route path="/import">
+        <RequireAuth><RequireVentex><CsvImport /></RequireVentex></RequireAuth>
+      </Route>
+
+      <Route path="/decisions">
+        <RequireAuth><Decisions /></RequireAuth>
       </Route>
 
       <Route path="/404" component={NotFound} />
