@@ -87,14 +87,25 @@ export default function LiveTicker({ onEventClick }: LiveTickerProps) {
       /nothing to report/i,
       /no.*detected/i,
       /completed scheduled check/i,
+      /has been unactioned for/i,
+      /ESCALATION.*unactioned/i,
     ];
     const actionableEvents = events.filter((e: any) => {
       const msg = e.message || "";
       return !NOISE_PATTERNS.some(p => p.test(msg));
     });
+    // Deduplicate: group by message content, keep only the most recent of each
+    const seen = new Map<string, any>();
+    for (const e of actionableEvents) {
+      const key = (e.message || "").replace(/\d+/g, "N").slice(0, 40); // normalize numbers for dedup
+      if (!seen.has(key)) {
+        seen.set(key, e);
+      }
+    }
+    const deduped = Array.from(seen.values());
     // If no actionable events, show nothing (empty ticker will render "standing by")
-    if (actionableEvents.length === 0) return [];
-    return actionableEvents.slice(0, 12).map((e: any) => {
+    if (deduped.length === 0) return [];
+    return deduped.slice(0, 8).map((e: any) => {
       const config = getAgentConfig(e.agentName);
       const key = resolveAgentKey(e.agentName);
       return {

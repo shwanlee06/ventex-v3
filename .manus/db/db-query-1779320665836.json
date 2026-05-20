@@ -1,0 +1,30 @@
+{
+  "query": "SELECT 'organizations' as entity, COUNT(*) as cnt FROM organizations WHERE orgStatus = 'active' UNION ALL SELECT 'ventures', COUNT(*) FROM ventures UNION ALL SELECT 'tasks', COUNT(*) FROM tasks UNION ALL SELECT 'agent_events', COUNT(*) FROM agent_events UNION ALL SELECT 'agent_drafts', COUNT(*) FROM agent_drafts;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT 'organizations' as entity, COUNT(*) as cnt FROM organizations WHERE orgStatus = 'active' UNION ALL SELECT 'ventures', COUNT(*) FROM ventures UNION ALL SELECT 'tasks', COUNT(*) FROM tasks UNION ALL SELECT 'agent_events', COUNT(*) FROM agent_events UNION ALL SELECT 'agent_drafts', COUNT(*) FROM agent_drafts;",
+  "rows": [
+    {
+      "entity": "organizations",
+      "cnt": "2"
+    },
+    {
+      "entity": "agent_drafts",
+      "cnt": "160"
+    },
+    {
+      "entity": "tasks",
+      "cnt": "668"
+    },
+    {
+      "entity": "ventures",
+      "cnt": "54"
+    },
+    {
+      "entity": "agent_events",
+      "cnt": "2018"
+    }
+  ],
+  "messages": [],
+  "stdout": "entity\tcnt\norganizations\t2\nagent_drafts\t160\ntasks\t668\nventures\t54\nagent_events\t2018\n",
+  "stderr": "",
+  "execution_time_ms": 277
+}
