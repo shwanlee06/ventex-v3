@@ -187,12 +187,6 @@
     overscroll-behavior: none;
   }
 
-  /* Global custom cursor — hide default on pointer devices */
-  @media (pointer: fine) {
-    *, *::before, *::after {
-      cursor: none !important;
-    }
-  }
 
   /* ── Typography Rhythm ─────────────────────────────────── */
   /* HERO ZONE typography — generous, narrative */
