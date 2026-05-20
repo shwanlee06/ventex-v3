@@ -66,41 +66,41 @@
   --color-danger: oklch(0.63 0.22 25);
   --color-info: oklch(0.65 0.1 250);
 }
-/* ── Light Mode (mirrors dark for consistency) ───────────────────── */
+/* ── Light Mode — premium off-white with dark text ───────────────── */
 :root {
   --radius: 0px;
-  --primary: oklch(88% .004 264);
-  --primary-foreground: oklch(6% .003 264);
-  --sidebar-primary: oklch(88% .004 264);
-  --sidebar-primary-foreground: oklch(6% .003 264);
-  --chart-1: oklch(0.75 0.18 155);
+  --primary: oklch(25% .005 264);
+  --primary-foreground: oklch(98% .003 264);
+  --sidebar-primary: oklch(25% .005 264);
+  --sidebar-primary-foreground: oklch(98% .003 264);
+  --chart-1: oklch(0.45 0.18 155);
   --chart-2: oklch(0.45 0.15 25);
-  --chart-3: oklch(0.91 0.005 0);
+  --chart-3: oklch(0.35 0.005 0);
   --chart-4: oklch(0.52 0.005 0);
   --chart-5: oklch(0.70 0.005 0);
-  --background: oklch(6% .003 264);
-  --foreground: oklch(88% .004 264);
-  --card: oklch(12% .003 264);
-  --card-foreground: oklch(88% .004 264);
-  --popover: oklch(12% .003 264);
-  --popover-foreground: oklch(88% .004 264);
-  --secondary: oklch(15% .003 264);
-  --secondary-foreground: oklch(70% .004 264);
-  --muted: oklch(13% .003 264);
-  --muted-foreground: oklch(55% .004 264);
-  --accent: oklch(18% .005 264);
-  --accent-foreground: oklch(88% .004 264);
-  --destructive: oklch(45% .18 25);
-  --destructive-foreground: oklch(88% .004 264);
-  --border: oklch(88% .004 264/.12);
-  --input: oklch(88% .004 264/.12);
-  --ring: oklch(88% .004 264/.3);
-  --sidebar: oklch(7% .003 264);
-  --sidebar-foreground: oklch(88% .004 264);
-  --sidebar-accent: oklch(15% .003 264);
-  --sidebar-accent-foreground: oklch(88% .004 264);
-  --sidebar-border: oklch(88% .004 264/.10);
-  --sidebar-ring: oklch(88% .004 264/.3);
+  --background: oklch(97% .002 264);
+  --foreground: oklch(12% .003 264);
+  --card: oklch(100% 0 0);
+  --card-foreground: oklch(12% .003 264);
+  --popover: oklch(100% 0 0);
+  --popover-foreground: oklch(12% .003 264);
+  --secondary: oklch(93% .003 264);
+  --secondary-foreground: oklch(25% .004 264);
+  --muted: oklch(94% .002 264);
+  --muted-foreground: oklch(45% .004 264);
+  --accent: oklch(94% .003 264);
+  --accent-foreground: oklch(12% .004 264);
+  --destructive: oklch(55% .22 25);
+  --destructive-foreground: oklch(98% .003 264);
+  --border: oklch(12% .003 264/.10);
+  --input: oklch(12% .003 264/.12);
+  --ring: oklch(12% .003 264/.2);
+  --sidebar: oklch(98% .002 264);
+  --sidebar-foreground: oklch(12% .003 264);
+  --sidebar-accent: oklch(94% .003 264);
+  --sidebar-accent-foreground: oklch(12% .003 264);
+  --sidebar-border: oklch(12% .003 264/.08);
+  --sidebar-ring: oklch(12% .003 264/.2);
 
   /* ── Density Zone Spacing Tokens ───────────────────────── */
   /* HERO ZONE: generous, narrative, marketing */
@@ -690,3 +690,35 @@ button:active, [role="button"]:active, a.inline-flex:active {
 .live-pulse {
   animation: subtle-pulse 2s ease-in-out infinite;
 }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   COMPACT MODE — reduces padding, gaps, and font sizes for dense view
+   ══════════════════════════════════════════════════════════════════════ */
+.compact {
+  --space-data-card: 0.75rem;
+  --space-data-grid-gap: 0.5rem;
+  --space-data-row-h: 2.5rem;
+  --space-data-cell: 0.5rem 1rem;
+  --space-data-stack: 0.5rem;
+}
+
+.compact main {
+  font-size: 0.875rem;
+}
+
+.compact .p-3 { padding: 0.5rem; }
+.compact .p-4 { padding: 0.75rem; }
+.compact .p-6 { padding: 1rem; }
+.compact .gap-3 { gap: 0.5rem; }
+.compact .gap-4 { gap: 0.625rem; }
+.compact .gap-6 { gap: 0.75rem; }
+.compact .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0.625rem;
+}
+.compact .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0.75rem;
+}
+.compact .text-2xl { font-size: 1.25rem; }
+.compact .text-xl { font-size: 1.1rem; }
+.compact .text-lg { font-size: 1rem; }

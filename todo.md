@@ -3722,3 +3722,9 @@
 - [x] Update drafts.test.ts to reference Decisions page instead of deleted DraftCenter
 - [x] Verify TypeScript compiles cleanly (0 errors)
 - [x] All 1030 tests passing
+
+## Fix Broken Theme & Display Toggles (May 2026)
+- [x] Define proper light mode CSS variables (light background, dark text)
+- [x] Ensure dark/light toggle visually changes the entire UI
+- [x] Implement compact view CSS class that reduces spacing when enabled
+- [x] Verify all Settings toggles produce visible effects

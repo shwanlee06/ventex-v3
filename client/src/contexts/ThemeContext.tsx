@@ -6,6 +6,8 @@ interface ThemeContextType {
   theme: Theme;
   toggleTheme?: () => void;
   switchable: boolean;
+  compact: boolean;
+  setCompact: (v: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -29,6 +31,10 @@ export function ThemeProvider({
     return defaultTheme;
   });
 
+  const [compact, setCompactState] = useState<boolean>(() => {
+    return localStorage.getItem("ventex_compact") === "true";
+  });
+
   useEffect(() => {
     const root = document.documentElement;
     if (theme === "dark") {
@@ -42,14 +48,26 @@ export function ThemeProvider({
     }
   }, [theme, switchable]);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    if (compact) {
+      root.classList.add("compact");
+    } else {
+      root.classList.remove("compact");
+    }
+    localStorage.setItem("ventex_compact", String(compact));
+  }, [compact]);
+
   const toggleTheme = switchable
     ? () => {
         setTheme(prev => (prev === "light" ? "dark" : "light"));
       }
     : undefined;
 
+  const setCompact = (v: boolean) => setCompactState(v);
+
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, switchable }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, switchable, compact, setCompact }}>
       {children}
     </ThemeContext.Provider>
   );

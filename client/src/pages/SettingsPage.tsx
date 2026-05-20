@@ -106,7 +106,7 @@ function EmailTestSection() {
 }
 
 export default function SettingsConfigPage() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, compact, setCompact } = useTheme();
   const darkMode = theme === "dark";
   const { user: authUser } = useAuth();
   const { isPreviewMode } = usePreviewMode();
@@ -124,7 +124,7 @@ export default function SettingsConfigPage() {
     enabled: !!authUser,
   });
 
-  const [compactView, setCompactView] = useState(false);
+  const compactView = compact;
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [emailNotifs, setEmailNotifs] = useState(true);
   const [pushNotifs, setPushNotifs] = useState(true);
@@ -141,7 +141,7 @@ export default function SettingsConfigPage() {
   useEffect(() => {
     if (profile?.preferences) {
       const p = profile.preferences;
-      setCompactView(p.compactView ?? false);
+      setCompact(p.compactView ?? false);
       setAutoRefresh(p.autoRefresh ?? true);
       setEmailNotifs(p.emailNotifications ?? true);
       setPushNotifs(p.pushNotifications ?? true);
@@ -313,7 +313,7 @@ export default function SettingsConfigPage() {
   }, [passkeysQuery]);
 
   const handleDisplayToggle = useCallback(async (field: "compactView" | "autoRefresh", value: boolean) => {
-    if (field === "compactView") setCompactView(value);
+    if (field === "compactView") setCompact(value);
     else setAutoRefresh(value);
     try {
       await updateDisplay.mutateAsync({ [field]: value });
