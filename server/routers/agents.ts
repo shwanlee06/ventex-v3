@@ -470,18 +470,22 @@ export async function runOverdueAgent(
       }
 
       if (recipientEmail) {
-        try {
-          await sendOverdueAutoEmail({
-            to: recipientEmail,
-            assigneeName: recipientLabel,
-            taskTitle: task.title,
-            ventureName,
-            stage: "Overdue",
-            daysOverdue,
-            deadlineDate: new Date(now.getTime() + 48 * 60 * 60 * 1000).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
-          });
-        } catch (emailErr) {
-          console.error(`[Overdue Agent] Escalation email failed for task ${task.id}:`, emailErr);
+        const { checkEmailGate } = await import("../notificationGate");
+        const gate = await checkEmailGate(recipientEmail, "overdue");
+        if (gate.allowed) {
+          try {
+            await sendOverdueAutoEmail({
+              to: recipientEmail,
+              assigneeName: recipientLabel,
+              taskTitle: task.title,
+              ventureName,
+              stage: "Overdue",
+              daysOverdue,
+              deadlineDate: new Date(now.getTime() + 48 * 60 * 60 * 1000).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+            });
+          } catch (emailErr) {
+            console.error(`[Overdue Agent] Escalation email failed for task ${task.id}:`, emailErr);
+          }
         }
       }
     }
@@ -651,27 +655,31 @@ export async function runVelocityAgent(
           }
 
           if (clientEmail) {
-            // Get avg days for benchmark
-            const [avgResult] = await db.select({
-              avg: sql<number>`AVG(${ventureVelocity.daysInStage})`,
-            }).from(ventureVelocity).where(
-              orgId ? eq(ventureVelocity.organizationId, orgId) : sql`1=1`
-            );
-            const clientAvgDays = avgResult?.avg ? Math.round(avgResult.avg) : null;
+            const { checkEmailGate } = await import("../notificationGate");
+            const stageGate = await checkEmailGate(clientEmail, "stage_advance");
+            if (stageGate.allowed) {
+              // Get avg days for benchmark
+              const [avgResult] = await db.select({
+                avg: sql<number>`AVG(${ventureVelocity.daysInStage})`,
+              }).from(ventureVelocity).where(
+                orgId ? eq(ventureVelocity.organizationId, orgId) : sql`1=1`
+              );
+              const clientAvgDays = avgResult?.avg ? Math.round(avgResult.avg) : null;
 
-            try {
-              await sendStageAdvancedEmail({
-                to: clientEmail,
-                contactName: clientContactName,
-                ventureName: venture.name,
-                previousStage: venture.stage,
-                newStage: nextStage,
-                daysInPreviousStage: daysInStage,
-                clientAvgDays,
-                nextBlockingSteps: [],  // No steps defined yet for new stage
-              });
-            } catch (emailErr) {
-              console.error(`[Velocity Agent] Stage-advanced email failed:`, emailErr);
+              try {
+                await sendStageAdvancedEmail({
+                  to: clientEmail,
+                  contactName: clientContactName,
+                  ventureName: venture.name,
+                  previousStage: venture.stage,
+                  newStage: nextStage,
+                  daysInPreviousStage: daysInStage,
+                  clientAvgDays,
+                  nextBlockingSteps: [],  // No steps defined yet for new stage
+                });
+              } catch (emailErr) {
+                console.error(`[Velocity Agent] Stage-advanced email failed:`, emailErr);
+              }
             }
           }
         } else {
@@ -2590,14 +2598,18 @@ export const agentsRouter = router({
               const [member] = await db.select().from(teamMembers)
                 .where(eq(teamMembers.name, draft.recipientName)).limit(1);
               if (member?.email) {
-                await sendTaskFollowUp({
-                  to: member.email,
-                  assigneeName: draft.recipientName,
-                  taskTitle: event.agentEntityName || "Task",
-                  ventureName: draft.ventureName || "Portfolio",
-                  agentNote: editedBody || draft.body,
-                });
-                result.emailSent = true;
+                const { checkEmailGate } = await import("../notificationGate");
+                const taskGate = await checkEmailGate(member.email, "task");
+                if (taskGate.allowed) {
+                  await sendTaskFollowUp({
+                    to: member.email,
+                    assigneeName: draft.recipientName,
+                    taskTitle: event.agentEntityName || "Task",
+                    ventureName: draft.ventureName || "Portfolio",
+                    agentNote: editedBody || draft.body,
+                  });
+                  result.emailSent = true;
+                }
               }
             }
           } catch (e) {
@@ -2699,16 +2711,23 @@ export const agentsRouter = router({
             if (dist) {
               const recipients = payload.recipients as string[] | undefined;
               const toAddress = recipients?.length ? recipients : "ventex@aurovia.com";
-              await sendDistributionNotice({
-                to: toAddress,
-                recipientName: draft?.recipientName || "Investor",
-                fundName: dist.fund || dist.name,
-                amount: dist.amount?.toLocaleString() || "0",
-                currency: dist.currency || "USD",
-                distributionDate: dist.distributionDate || undefined,
-                draftBody: editedBody || draft?.body || `Distribution of ${dist.name} has been confirmed.`,
-              });
-              result.emailSent = true;
+              const { checkEmailGate } = await import("../notificationGate");
+              const distEmail = Array.isArray(toAddress) ? toAddress[0] : toAddress;
+              const distGate = await checkEmailGate(distEmail, "distribution");
+              if (!distGate.allowed) {
+                result.emailError = distGate.reason || "Blocked by preferences";
+              } else {
+                await sendDistributionNotice({
+                  to: toAddress,
+                  recipientName: draft?.recipientName || "Investor",
+                  fundName: dist.fund || dist.name,
+                  amount: dist.amount?.toLocaleString() || "0",
+                  currency: dist.currency || "USD",
+                  distributionDate: dist.distributionDate || undefined,
+                  draftBody: editedBody || draft?.body || `Distribution of ${dist.name} has been confirmed.`,
+                });
+                result.emailSent = true;
+              }
             }
           } catch (e) {
             result.emailError = String(e);
@@ -3051,26 +3070,29 @@ export const agentsRouter = router({
           name: organizations.name,
         }).from(organizations).where(eq(organizations.id, orgId)).limit(1);
 
-        if (org?.primaryContactEmail) {
-          // Get avg days for benchmark
-          const [avgResult] = await db.select({
-            avg: sql<number>`AVG(${ventureVelocity.daysInStage})`,
-          }).from(ventureVelocity).where(eq(ventureVelocity.organizationId, orgId));
-          const clientAvgDays = avgResult?.avg ? Math.round(avgResult.avg) : null;
-
-          try {
-            await sendStageAdvancedEmail({
-              to: org.primaryContactEmail,
-              contactName: org.primaryContactName || org.name,
-              ventureName: venture.name,
-              previousStage: venture.stage,
-              newStage: nextStage,
-              daysInPreviousStage: daysInStage,
-              clientAvgDays,
-              nextBlockingSteps: [],
-            });
-          } catch (emailErr) {
-            console.error(`[clientAdvanceStage] Email failed:`, emailErr);
+         if (org?.primaryContactEmail) {
+          const { checkEmailGate } = await import("../notificationGate");
+          const advGate = await checkEmailGate(org.primaryContactEmail, "stage_advance");
+          if (advGate.allowed) {
+            // Get avg days for benchmark
+            const [avgResult] = await db.select({
+              avg: sql<number>`AVG(${ventureVelocity.daysInStage})`,
+            }).from(ventureVelocity).where(eq(ventureVelocity.organizationId, orgId));
+            const clientAvgDays = avgResult?.avg ? Math.round(avgResult.avg) : null;
+            try {
+              await sendStageAdvancedEmail({
+                to: org.primaryContactEmail,
+                contactName: org.primaryContactName || org.name,
+                ventureName: venture.name,
+                previousStage: venture.stage,
+                newStage: nextStage,
+                daysInPreviousStage: daysInStage,
+                clientAvgDays,
+                nextBlockingSteps: [],
+              });
+            } catch (emailErr) {
+              console.error(`[clientAdvanceStage] Email failed:`, emailErr);
+            }
           }
         }
       }

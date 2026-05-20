@@ -3733,3 +3733,8 @@
 - [x] Wire auto-refresh toggle to control refetchInterval across all polling components
 - [x] Sync theme/compact preferences from server on login (not just localStorage)
 - [x] Update all Airtable documents to reflect $5M raise
+
+## Data Purge & Notification Wiring
+- [x] Purge orphaned agent_events from archived test clients (org 1200013, 1200015)
+- [x] Purge orphaned agent_drafts from archived test clients
+- [x] Wire notification toggles (email/push/Slack) to control actual delivery

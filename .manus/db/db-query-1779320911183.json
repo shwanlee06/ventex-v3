@@ -1,0 +1,30 @@
+{
+  "query": "SELECT id, name, orgStatus FROM organizations ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, orgStatus FROM organizations ORDER BY id;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "VENTEX",
+      "orgStatus": "active"
+    },
+    {
+      "id": "2",
+      "name": "Royalton Venture Holding",
+      "orgStatus": "active"
+    },
+    {
+      "id": "1200013",
+      "name": "AI Test Client",
+      "orgStatus": "archived"
+    },
+    {
+      "id": "1200015",
+      "name": "AI Empty Test",
+      "orgStatus": "archived"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\torgStatus\n1\tVENTEX\tactive\n2\tRoyalton Venture Holding\tactive\n1200013\tAI Test Client\tarchived\n1200015\tAI Empty Test\tarchived\n",
+  "stderr": "",
+  "execution_time_ms": 269
+}

@@ -1,0 +1,26 @@
+{
+  "query": "SELECT 'agent_events' as tbl, COUNT(*) as cnt FROM agent_events UNION ALL SELECT 'agent_drafts', COUNT(*) FROM agent_drafts UNION ALL SELECT 'test_events', COUNT(*) FROM agent_events WHERE organizationId IN (1200013, 1200015) UNION ALL SELECT 'test_drafts', COUNT(*) FROM agent_drafts WHERE organizationId IN (1200013, 1200015);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT 'agent_events' as tbl, COUNT(*) as cnt FROM agent_events UNION ALL SELECT 'agent_drafts', COUNT(*) FROM agent_drafts UNION ALL SELECT 'test_events', COUNT(*) FROM agent_events WHERE organizationId IN (1200013, 1200015) UNION ALL SELECT 'test_drafts', COUNT(*) FROM agent_drafts WHERE organizationId IN (1200013, 1200015);",
+  "rows": [
+    {
+      "tbl": "test_events",
+      "cnt": "0"
+    },
+    {
+      "tbl": "test_drafts",
+      "cnt": "0"
+    },
+    {
+      "tbl": "agent_drafts",
+      "cnt": "160"
+    },
+    {
+      "tbl": "agent_events",
+      "cnt": "2010"
+    }
+  ],
+  "messages": [],
+  "stdout": "tbl\tcnt\ntest_events\t0\ntest_drafts\t0\nagent_drafts\t160\nagent_events\t2010\n",
+  "stderr": "",
+  "execution_time_ms": 277
+}

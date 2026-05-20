@@ -1,0 +1,30 @@
+{
+  "query": "SELECT 'tasks' as tbl, organizationId, COUNT(*) as cnt FROM tasks GROUP BY organizationId UNION ALL SELECT 'ventures', CAST(organizationId AS CHAR), COUNT(*) FROM ventures GROUP BY organizationId;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT 'tasks' as tbl, organizationId, COUNT(*) as cnt FROM tasks GROUP BY organizationId UNION ALL SELECT 'ventures', CAST(organizationId AS CHAR), COUNT(*) FROM ventures GROUP BY organizationId;",
+  "rows": [
+    {
+      "tbl": "ventures",
+      "organizationId": "2",
+      "cnt": "27"
+    },
+    {
+      "tbl": "ventures",
+      "organizationId": "NULL",
+      "cnt": "27"
+    },
+    {
+      "tbl": "tasks",
+      "organizationId": "NULL",
+      "cnt": "11"
+    },
+    {
+      "tbl": "tasks",
+      "organizationId": "2",
+      "cnt": "657"
+    }
+  ],
+  "messages": [],
+  "stdout": "tbl\torganizationId\tcnt\nventures\t2\t27\nventures\tNULL\t27\ntasks\tNULL\t11\ntasks\t2\t657\n",
+  "stderr": "",
+  "execution_time_ms": 270
+}

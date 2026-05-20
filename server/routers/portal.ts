@@ -988,15 +988,19 @@ export const portalRouter = {
               }).from(organizations).where(eq(organizations.id, resolvedOrgId)).limit(1);
 
               if (org?.primaryContactEmail) {
-                sendStageAdvancedEmail({
-                  to: org.primaryContactEmail,
-                  contactName: org.primaryContactName || org.name,
-                  ventureName: venture.name,
-                  previousStage: clientFriendlyStage(venture.stage),
-                  newStage: clientFriendlyStage(nextStage),
-                  daysInPreviousStage: daysInStage,
-                  nextBlockingSteps: [],
-                }).catch((e: any) => console.error("[Portal] Stage email failed:", e));
+                const { checkEmailGate } = await import("../notificationGate");
+                const portalGate = await checkEmailGate(org.primaryContactEmail, "stage_advance");
+                if (portalGate.allowed) {
+                  sendStageAdvancedEmail({
+                    to: org.primaryContactEmail,
+                    contactName: org.primaryContactName || org.name,
+                    ventureName: venture.name,
+                    previousStage: clientFriendlyStage(venture.stage),
+                    newStage: clientFriendlyStage(nextStage),
+                    daysInPreviousStage: daysInStage,
+                    nextBlockingSteps: [],
+                  }).catch((e: any) => console.error("[Portal] Stage email failed:", e));
+                }
               }
             }
 

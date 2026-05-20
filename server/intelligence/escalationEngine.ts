@@ -6,6 +6,7 @@ import { agentEvents, organizations, tasks, ventures } from "../../drizzle/schem
 import { eq, and, lte, gte, desc, sql } from "drizzle-orm";
 import { sendClientNudge, sendOverdueAutoEmail } from "../emailService";
 import { createNotification, NOTIF_TYPES } from "../notificationHelper";
+import { checkOrgEmailGate } from "../notificationGate";
 
 const ESCALATION_THRESHOLD_HOURS = 48;
 const NUDGE_THRESHOLD_HOURS = 24;
@@ -75,18 +76,21 @@ export async function runEscalationSweep(organizationId: number): Promise<Escala
     );
 
     if (nudgeItems.length > 0 && org.primaryContactEmail) {
-      try {
-        const topItems = nudgeItems.slice(0, 5).map((e) => e.message);
-        await sendClientNudge({
-          to: org.primaryContactEmail,
-          clientName: org.name,
-          contactName: org.primaryContactName || org.name,
-          unactionedCount: nudgeItems.length,
-          topItems,
-        });
-        result.nudgesSent++;
-      } catch (err: any) {
-        result.errors.push(`Nudge email failed: ${err.message}`);
+      const nudgeGate = await checkOrgEmailGate(organizationId, "nudge");
+      if (nudgeGate.allowed) {
+        try {
+          const topItems = nudgeItems.slice(0, 5).map((e) => e.message);
+          await sendClientNudge({
+            to: org.primaryContactEmail,
+            clientName: org.name,
+            contactName: org.primaryContactName || org.name,
+            unactionedCount: nudgeItems.length,
+            topItems,
+          });
+          result.nudgesSent++;
+        } catch (err: any) {
+          result.errors.push(`Nudge email failed: ${err.message}`);
+        }
       }
     }
 
@@ -220,7 +224,8 @@ export async function runEscalationSweep(organizationId: number): Promise<Escala
       }
 
       // Send overdue email to org contact
-      if (org.primaryContactEmail) {
+      const overdueGate = await checkOrgEmailGate(organizationId, "overdue");
+      if (org.primaryContactEmail && overdueGate.allowed) {
         try {
           await sendOverdueAutoEmail({
             to: org.primaryContactEmail,
