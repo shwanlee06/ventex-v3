@@ -15,22 +15,20 @@ import {
   Briefcase,
   Users,
   LayoutDashboard,
-  Bot,
   DollarSign,
   Shield,
   ListChecks,
-  Activity,
+  CheckSquare,
 } from "lucide-react";
 
 const PAGES = [
   { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="size-4 text-muted-foreground" /> },
-  { name: "AI Agent", href: "/agent", icon: <Bot className="size-4 text-muted-foreground" /> },
   { name: "Ventures", href: "/ventures", icon: <Layers3 className="size-4 text-muted-foreground" /> },
   { name: "SPVs & Deals", href: "/spvs", icon: <Briefcase className="size-4 text-muted-foreground" /> },
   { name: "Team & Contacts", href: "/team", icon: <Users className="size-4 text-muted-foreground" /> },
   { name: "Tasks", href: "/tasks", icon: <ListChecks className="size-4 text-muted-foreground" /> },
   { name: "Distributions", href: "/distributions", icon: <DollarSign className="size-4 text-muted-foreground" /> },
-  { name: "Activity Log", href: "/activity", icon: <Activity className="size-4 text-muted-foreground" /> },
+  { name: "Decisions", href: "/decisions", icon: <CheckSquare className="size-4 text-muted-foreground" /> },
   { name: "Settings", href: "/settings", icon: <Shield className="size-4 text-muted-foreground" /> },
 ];
 

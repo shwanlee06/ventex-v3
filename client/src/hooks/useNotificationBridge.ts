@@ -39,7 +39,7 @@ function formatNotification(type: string, data: Record<string, unknown>): Notifi
       return {
         title: "VENTEX AI",
         body: (data.message as string) || "AI agent completed an action",
-        url: "/agent",
+        url: "/decisions",
       };
 
     case "feed_update":

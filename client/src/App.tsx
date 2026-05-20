@@ -12,7 +12,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import CustomCursor from "./components/CustomCursor";
 import { isVentexTeam } from "@/lib/ventex";
 import Home from "./pages/Home";
-import Agent from "./pages/Agent";
+// Agent chat removed — agents run silently
 import Verticals from "./pages/Verticals";
 import Onboard from "./pages/Onboard";
 import SpvDeals from "./pages/Settings";
@@ -36,7 +36,7 @@ import OnboardingWizard from "./pages/OnboardingWizard";
 import BlueprintsPage from "./pages/Blueprints";
 import BlueprintDiagnosticsPage from "./pages/BlueprintDiagnostics";
 import ClientPortal from "./pages/ClientPortal";
-import OversightPage from "./pages/Oversight";
+// Oversight removed — merged into Decision Queue
 import DraftCenter from "./pages/DraftCenter";
 import SignOut from "./pages/SignOut";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -176,9 +176,7 @@ function Router() {
       </Route>
 
       {/* VENTEX team only pages — admin/owner access required (blocked in preview mode) */}
-      <Route path="/agent">
-        <RequireAuth><RequireVentex><Agent /></RequireVentex></RequireAuth>
-      </Route>
+      {/* Agent chat removed — agents run silently, results surface in Decision Queue */}
       <Route path="/team/:slug">
         <RequireAuth><RequireVentex><TeamMemberDetail /></RequireVentex></RequireAuth>
       </Route>
@@ -215,9 +213,7 @@ function Router() {
       <Route path="/diagnostics">
         <RequireAuth><RequireVentex><BlueprintDiagnosticsPage /></RequireVentex></RequireAuth>
       </Route>
-      <Route path="/oversight">
-        <RequireAuth><RequireVentex><OversightPage /></RequireVentex></RequireAuth>
-      </Route>
+      {/* Oversight removed — merged into Decision Queue */}
 
       <Route path="/import">
         <RequireAuth><RequireVentex><CsvImport /></RequireVentex></RequireAuth>

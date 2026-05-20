@@ -3702,3 +3702,12 @@
 - [x] File upload progress: Add progress indicators, size limit enforcement, and feedback for large files
 - [x] Audit trail export: Downloadable audit log per entity (venture, SPV, distribution) for legal teams
 - [x] Update pitch deck raise amount from $700K to $3M pre-seed (pitch deck not in current sandbox — noted for next deck update)
+
+## UI Simplification — Remove Blur
+- [x] Remove Component Showcase page and route (didn't exist)
+- [x] Remove Agent Chat page and route (agents run silently)
+- [x] Remove Oversight page and route (merged into Decision Queue)
+- [x] Restructure sidebar: Client view = 5 items (Dashboard, Ventures, Decisions, Distributions, Team)
+- [x] Restructure sidebar: Admin view = 9 items (Dashboard, Ventures, SPVs, Decisions, Distributions, Tasks, AI Agents, Team, Settings)
+- [x] Move CSV Import into Settings sub-page (Data Import tab)
+- [x] Move Audit/Security into Settings sub-page (already in Settings as Security + Audit tabs)

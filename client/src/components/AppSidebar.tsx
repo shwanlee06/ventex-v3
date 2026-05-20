@@ -10,7 +10,6 @@ import { useAgents } from "@/contexts/AgentContext";
 import { trpc } from "@/lib/trpc";
 import {
   LayoutDashboard,
-  Bot,
   Layers3,
   Briefcase,
   ChevronLeft,
@@ -18,22 +17,14 @@ import {
   Users,
   DollarSign,
   ListChecks,
-  Activity,
   X,
   Building2,
   Plus,
   Loader2,
   Settings,
-  Shield,
   Cpu,
-  FileText,
-  Gauge,
-  UserPlus,
-  Eye,
   Menu,
   LogOut,
-  Mail,
-  Upload,
   CheckSquare,
 } from "lucide-react";
 import { useLocation, Link } from "wouter";
@@ -58,33 +49,30 @@ interface NavItem {
 }
 
 const ALL_NAV_ITEMS: NavItem[] = [
-  // Operations
-  { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="size-[18px]" />, group: "Operations" },
-  { label: "Activity", href: "/activity", icon: <Activity className="size-[18px]" />, group: "Operations" },
-  { label: "Oversight", href: "/oversight", icon: <Eye className="size-[18px]" />, ventexOnly: true, group: "Operations" },
-  { label: "Decisions", href: "/decisions", icon: <CheckSquare className="size-[18px]" />, group: "Operations" },
+  // ── ADMIN/OPERATOR VIEW (VENTEX team managing client orgs) ──
+  // Core
+  { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="size-[18px]" />, group: "Core" },
+  { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-[18px]" />, ventexOnly: true, group: "Core" },
+  { label: "SPVs & Deals", href: "/spvs", icon: <Briefcase className="size-[18px]" />, ventexOnly: true, group: "Core" },
+  { label: "Decisions", href: "/decisions", icon: <CheckSquare className="size-[18px]" />, group: "Core", badgeKey: "pendingDecisions" },
+  { label: "Distributions", href: "/distributions", icon: <DollarSign className="size-[18px]" />, group: "Core" },
+  { label: "Tasks", href: "/tasks", icon: <ListChecks className="size-[18px]" />, ventexOnly: true, group: "Core" },
+  // Operations (admin only)
+  { label: "AI Agents", href: "/agents", icon: <Cpu className="size-[18px]" />, ventexOnly: true, group: "Operations" },
+  { label: "Team", href: "/team", icon: <Users className="size-[18px]" />, ventexOnly: true, group: "Operations" },
+  { label: "Settings", href: "/settings", icon: <Settings className="size-[18px]" />, ventexOnly: true, group: "Operations" },
 
-  // Intelligence
-  { label: "AI Agents", href: "/agents", icon: <Cpu className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },
-  { label: "Blueprints", href: "/blueprints", icon: <Layers3 className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },
-  { label: "Diagnostics", href: "/diagnostics", icon: <Gauge className="size-[18px]" />, ventexOnly: true, group: "Intelligence" },
-  // Admin
-  { label: "VENTEX Team", href: "/ventex-team", icon: <Shield className="size-[18px]" />, ventexOnly: true, group: "Admin" },
-  { label: "Client Contacts", href: "/team", icon: <Users className="size-[18px]" />, ventexOnly: true, group: "Admin" },
-  { label: "Onboard Client", href: "/onboarding", icon: <UserPlus className="size-[18px]" />, ventexOnly: true, group: "Admin" },
-  { label: "Data Import", href: "/import", icon: <Upload className="size-[18px]" />, ventexOnly: true, group: "Admin" },
-  { label: "Settings", href: "/settings", icon: <Settings className="size-[18px]" />, ventexOnly: true, group: "Admin" },
-  // Partner-only
+  // ── CLIENT VIEW (principal / their team) ──
+  { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-[18px]" />, clientOnly: true },
+  { label: "Decisions", href: "/decisions", icon: <CheckSquare className="size-[18px]" />, clientOnly: true, badgeKey: "pendingDecisions" },
+  { label: "Distributions", href: "/distributions", icon: <DollarSign className="size-[18px]" />, clientOnly: true },
+  { label: "Team", href: "/team", icon: <Users className="size-[18px]" />, clientOnly: true },
+
+  // ── PARTNER VIEW ──
   { label: "My Portfolio", href: "/partner", icon: <Briefcase className="size-[18px]" />, partnerOnly: true },
   { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-[18px]" />, partnerOnly: true },
-  { label: "Tasks", href: "/tasks", icon: <ListChecks className="size-[18px]" />, partnerOnly: true },
+  { label: "Decisions", href: "/decisions", icon: <CheckSquare className="size-[18px]" />, partnerOnly: true },
   { label: "Distributions", href: "/distributions", icon: <DollarSign className="size-[18px]" />, partnerOnly: true },
-  // Client-only
-  { label: "Ventures", href: "/ventures", icon: <Layers3 className="size-[18px]" />, clientOnly: true },
-  { label: "Draft Center", href: "/drafts", icon: <Mail className="size-[18px]" />, clientOnly: true, badgeKey: "pendingDrafts" },
-  { label: "SPVs & Deals", href: "/spvs", icon: <Briefcase className="size-[18px]" />, clientOnly: true },
-  { label: "Tasks", href: "/tasks", icon: <ListChecks className="size-[18px]" />, clientOnly: true },
-  { label: "Distributions", href: "/distributions", icon: <DollarSign className="size-[18px]" />, clientOnly: true },
 ];
 
 export default function AppSidebar() {
@@ -102,8 +90,15 @@ export default function AppSidebar() {
   const agentCtx = useAgents();
   const pendingDraftCount = agentCtx?.pendingDraftCount ?? 0;
 
+  // Pending decisions badge count
+  const { data: pendingApprovals } = trpc.agents.pendingApprovals.useQuery(undefined, {
+    refetchInterval: 60_000, // refresh every minute
+  });
+  const pendingDecisionsCount = (pendingApprovals?.events?.length ?? 0) + (pendingApprovals?.drafts?.length ?? 0);
+
   const badgeCounts: Record<string, number> = {
     pendingDrafts: pendingDraftCount,
+    pendingDecisions: pendingDecisionsCount,
   };
 
   const createOrg = trpc.organizations.create.useMutation({

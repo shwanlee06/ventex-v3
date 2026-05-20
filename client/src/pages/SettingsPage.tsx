@@ -394,6 +394,9 @@ export default function SettingsConfigPage() {
             <TabsTrigger value="audit" className="text-xs gap-1 sm:gap-1.5 touch-manipulation">
               <Activity className="size-3" /> <span className="hidden sm:inline">Audit Log</span><span className="sm:hidden">Audit</span>
             </TabsTrigger>
+            <TabsTrigger value="import" className="text-xs gap-1 sm:gap-1.5 touch-manipulation">
+              <Download className="size-3" /> <span className="hidden sm:inline">Data Import</span><span className="sm:hidden">Import</span>
+            </TabsTrigger>
           </TabsList>
 
           {/* ═══════════════════ GENERAL TAB ═══════════════════ */}
@@ -1163,6 +1166,30 @@ export default function SettingsConfigPage() {
                     <p className="text-xs text-muted-foreground">No activity recorded yet. Actions are logged when you interact with the system.</p>
                   </div>
                 )}
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          {/* ═══════════════════ DATA IMPORT TAB ═══════════════════ */}
+          <TabsContent value="import">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+              <Card className="p-4 sm:p-6 bg-card border-border">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <Download className="size-4 text-primary" />
+                    Bulk Data Import
+                  </h3>
+                </div>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Import ventures, tasks, team members, and SPVs from CSV files. Download templates, validate your data, and preview before committing.
+                </p>
+                <Button
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => window.location.href = "/import"}
+                >
+                  <Download className="size-3 mr-1" /> Open Data Import Tool
+                </Button>
               </Card>
             </motion.div>
           </TabsContent>

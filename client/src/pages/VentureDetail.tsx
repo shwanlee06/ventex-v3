@@ -14,7 +14,7 @@ import { useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, Edit3, Save, Plus, Trash2, FileText, Upload, MessageSquare,
+  ArrowLeft, Edit3, Save, Plus, Trash2, FileText, Upload,
   File, Image, FileSpreadsheet, Download, Eye, FileDown,
   X, AlertTriangle, ZoomIn, ZoomOut, FolderPlus, Folder, FolderOpen,
   ChevronRight, MoveRight, MoreHorizontal, Loader2,
@@ -413,11 +413,7 @@ export default function VentureDetail() {
                 <Upload className="size-3.5 mr-1" /> <span className="hidden sm:inline">Add </span>File
               </Button>
             )}
-            {isVentex && (
-            <Button size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => navigate("/agent")}>
-              <MessageSquare className="size-3.5 mr-1" /> <span className="hidden sm:inline">Chat with </span>AI →
-            </Button>
-            )}
+
             {isVentex && (
               <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => {
                 exportAuditMut.mutate({ entityType: "venture", entityId: String(ventureId), entityName: venture?.name });
