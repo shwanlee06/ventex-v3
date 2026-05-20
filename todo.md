@@ -3711,3 +3711,14 @@
 - [x] Restructure sidebar: Admin view = 9 items (Dashboard, Ventures, SPVs, Decisions, Distributions, Tasks, AI Agents, Team, Settings)
 - [x] Move CSV Import into Settings sub-page (Data Import tab)
 - [x] Move Audit/Security into Settings sub-page (already in Settings as Security + Audit tabs)
+
+## UI Noise Removal & Cleanup (May 2026)
+- [x] Remove Agent Intelligence collapsible panel from VentexDashboard
+- [x] Remove unused intelOpen state and Brain icon import
+- [x] Remove unused Activity, TrendingUp imports
+- [x] Remove unused AnimatePresence import
+- [x] Delete dead page files: ActivityLog, Blueprints, SecurityPage, AccessManagement, VentexTeam, DraftCenter, Oversight, BlueprintDiagnostics, Drafts, Agent (singular)
+- [x] Delete dead component files: AgentExecutionLog, ExecutiveSummaryWidget, LivePresenceWidget, MorningBriefingCard, NeedsAttentionWidget, OverdueAlertBanner, VelocityIntelligenceCard, PWAInstallPrompt, CustomCursor, VelocityKPI
+- [x] Update drafts.test.ts to reference Decisions page instead of deleted DraftCenter
+- [x] Verify TypeScript compiles cleanly (0 errors)
+- [x] All 1030 tests passing

@@ -3,16 +3,14 @@ import CookieConsent from "@/components/CookieConsent";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, Redirect, useLocation } from "wouter";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { PreviewModeProvider, usePreviewMode } from "./contexts/PreviewMode";
 import { WorkspaceProvider, useWorkspace } from "./contexts/WorkspaceContext";
 import { useAuth } from "@/_core/hooks/useAuth";
-import CustomCursor from "./components/CustomCursor";
 import { isVentexTeam } from "@/lib/ventex";
 import Home from "./pages/Home";
-// Agent chat removed — agents run silently
 import Verticals from "./pages/Verticals";
 import Onboard from "./pages/Onboard";
 import SpvDeals from "./pages/Settings";
@@ -24,20 +22,12 @@ import VentureDetail from "./pages/VentureDetail";
 import TasksPage from "./pages/TasksPage";
 import TeamMemberDetail from "./pages/TeamMemberDetail";
 import SpvDetail from "./pages/SpvDetail";
-import ActivityLog from "./pages/ActivityLog";
-import SecurityPage from "./pages/SecurityPage";
-import AccessManagement from "./pages/AccessManagement";
 import InviteAccept from "./pages/InviteAccept";
 import ClientDetail from "./pages/ClientDetail";
-import VentexTeam from "./pages/VentexTeam";
 import AcceptInvite from "./pages/AcceptInvite";
 import AgentsPage from "./pages/Agents";
 import OnboardingWizard from "./pages/OnboardingWizard";
-import BlueprintsPage from "./pages/Blueprints";
-import BlueprintDiagnosticsPage from "./pages/BlueprintDiagnostics";
 import ClientPortal from "./pages/ClientPortal";
-// Oversight removed — merged into Decision Queue
-import DraftCenter from "./pages/DraftCenter";
 import SignOut from "./pages/SignOut";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -48,7 +38,6 @@ import { AgentProvider } from "./contexts/AgentContext";
 import { useHeartbeat } from "./hooks/useHeartbeat";
 import { useIdleTimeout } from "./hooks/useIdleTimeout";
 import { useNotificationBridge } from "./hooks/useNotificationBridge";
-import PWAInstallPrompt from "./components/PWAInstallPrompt";
 
 /* Auth guard - checks real OAuth session via useAuth hook.
    Falls back to localStorage for the SpyOps cinematic flow. */
@@ -58,12 +47,10 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (loading) return;
-    // Check real session first, then localStorage fallback
     const hasLocalSession = Boolean(localStorage.getItem("ventex_operator"));
     if (!isAuthenticated && !hasLocalSession) {
       navigate("/", { replace: true });
     }
-    // If authenticated via OAuth but localStorage not set yet, set it
     if (isAuthenticated && user && !localStorage.getItem("ventex_operator")) {
       localStorage.setItem("ventex_operator", user.name || "OPERATOR");
     }
@@ -115,10 +102,10 @@ function DashboardSwitch() {
 function Router() {
   return (
     <Switch>
-      {/* Login / landing page is the root */}
+      {/* Login / landing */}
       <Route path="/" component={SpyOps} />
 
-      {/* Client portal — standalone client-facing view (WS2: requires auth) */}
+      {/* Client portal */}
       <Route path="/portal/:orgSlug">
         {(params: { orgSlug: string }) => <RequireAuth><ClientPortal orgSlug={params.orgSlug} /></RequireAuth>}
       </Route>
@@ -126,26 +113,21 @@ function Router() {
         <Redirect to="/dashboard" />
       </Route>
 
-      {/* Sign out page — clears session and redirects to landing */}
+      {/* Sign out */}
       <Route path="/sign-out" component={SignOut} />
 
-      {/* Legal & Trust pages — public, no auth */}
+      {/* Legal pages — public */}
       <Route path="/privacy" component={PrivacyPolicy} />
       <Route path="/terms" component={TermsOfService} />
       <Route path="/trust" component={TrustSecurity} />
 
-      {/* Partner invite acceptance — public, no auth */}
+      {/* Invite acceptance — public */}
       <Route path="/invite/:orgSlug/:token" component={InviteAccept} />
-
-      {/* Team member invite acceptance — public, no auth */}
       <Route path="/accept-invite" component={AcceptInvite} />
 
-      {/* Protected dashboard pages — available to all authenticated users */}
+      {/* ═══ Core pages — all authenticated users ═══ */}
       <Route path="/dashboard">
         <RequireAuth><DashboardSwitch /></RequireAuth>
-      </Route>
-      <Route path="/clients/:slug">
-        <RequireAuth><RequireVentex><ClientDetail /></RequireVentex></RequireAuth>
       </Route>
       <Route path="/ventures/:slug">
         <RequireAuth><VentureDetail /></RequireAuth>
@@ -153,20 +135,11 @@ function Router() {
       <Route path="/ventures">
         <RequireAuth><Verticals /></RequireAuth>
       </Route>
-      <Route path="/tasks">
-        <RequireAuth><TasksPage /></RequireAuth>
-      </Route>
-      <Route path="/spvs/:slug">
-        <RequireAuth><SpvDetail /></RequireAuth>
-      </Route>
-      <Route path="/spvs">
-        <RequireAuth><SpvDeals /></RequireAuth>
+      <Route path="/decisions">
+        <RequireAuth><Decisions /></RequireAuth>
       </Route>
       <Route path="/distributions">
         <RequireAuth><Distributions /></RequireAuth>
-      </Route>
-      <Route path="/activity">
-        <RequireAuth><ActivityLog /></RequireAuth>
       </Route>
       <Route path="/partner">
         <RequireAuth><Home /></RequireAuth>
@@ -175,25 +148,24 @@ function Router() {
         <RequireAuth><Profile /></RequireAuth>
       </Route>
 
-      {/* VENTEX team only pages — admin/owner access required (blocked in preview mode) */}
-      {/* Agent chat removed — agents run silently, results surface in Decision Queue */}
+      {/* ═══ Admin pages — VENTEX team only ═══ */}
+      <Route path="/clients/:slug">
+        <RequireAuth><RequireVentex><ClientDetail /></RequireVentex></RequireAuth>
+      </Route>
+      <Route path="/spvs/:slug">
+        <RequireAuth><SpvDetail /></RequireAuth>
+      </Route>
+      <Route path="/spvs">
+        <RequireAuth><SpvDeals /></RequireAuth>
+      </Route>
+      <Route path="/tasks">
+        <RequireAuth><TasksPage /></RequireAuth>
+      </Route>
       <Route path="/team/:slug">
         <RequireAuth><RequireVentex><TeamMemberDetail /></RequireVentex></RequireAuth>
       </Route>
       <Route path="/team">
         <RequireAuth><RequireVentex><Onboard /></RequireVentex></RequireAuth>
-      </Route>
-      <Route path="/ventex-team/:slug">
-        <RequireAuth><RequireVentex><TeamMemberDetail /></RequireVentex></RequireAuth>
-      </Route>
-      <Route path="/ventex-team">
-        <RequireAuth><RequireVentex><VentexTeam /></RequireVentex></RequireAuth>
-      </Route>
-      <Route path="/security">
-        <RequireAuth><RequireVentex><SecurityPage /></RequireVentex></RequireAuth>
-      </Route>
-      <Route path="/access">
-        <RequireAuth><RequireVentex><AccessManagement /></RequireVentex></RequireAuth>
       </Route>
       <Route path="/settings">
         <RequireAuth><RequireVentex><SettingsPage /></RequireVentex></RequireAuth>
@@ -201,28 +173,14 @@ function Router() {
       <Route path="/agents">
         <RequireAuth><RequireVentex><AgentsPage /></RequireVentex></RequireAuth>
       </Route>
-      <Route path="/drafts">
-        <RequireAuth><DraftCenter /></RequireAuth>
-      </Route>
       <Route path="/onboarding">
         <RequireAuth><RequireVentex><OnboardingWizard /></RequireVentex></RequireAuth>
       </Route>
-      <Route path="/blueprints">
-        <RequireAuth><RequireVentex><BlueprintsPage /></RequireVentex></RequireAuth>
-      </Route>
-      <Route path="/diagnostics">
-        <RequireAuth><RequireVentex><BlueprintDiagnosticsPage /></RequireVentex></RequireAuth>
-      </Route>
-      {/* Oversight removed — merged into Decision Queue */}
-
       <Route path="/import">
         <RequireAuth><RequireVentex><CsvImport /></RequireVentex></RequireAuth>
       </Route>
 
-      <Route path="/decisions">
-        <RequireAuth><Decisions /></RequireAuth>
-      </Route>
-
+      {/* 404 */}
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
@@ -245,10 +203,8 @@ function App() {
             <AgentProvider>
             <TooltipProvider>
               <HeartbeatProvider>
-                <CustomCursor />
                 <Toaster />
                 <CookieConsent />
-                <PWAInstallPrompt />
                 <Router />
               </HeartbeatProvider>
             </TooltipProvider>

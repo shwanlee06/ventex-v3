@@ -17,8 +17,6 @@ import {
   Users,
   Layers3,
   ListChecks,
-  Activity,
-  TrendingUp,
   Loader2,
   Trash2,
   Archive,
@@ -29,14 +27,13 @@ import {
   ArrowDown,
   Minus,
   Mail,
-  Brain,
   Bot,
   Download,
   Rocket,
   Check,
   UserPlus,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -68,13 +65,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import AITaskGenerator from "@/components/AITaskGenerator";
 import { exportCSV, VENTURE_COLUMNS } from "@/lib/export";
-import OverdueAlertBanner from "@/components/OverdueAlertBanner";
-import LivePresenceWidget from "@/components/LivePresenceWidget";
-import VelocityIntelligenceCard from "@/components/VelocityIntelligenceCard";
-import AgentExecutionLog from "@/components/AgentExecutionLog";
-import ExecutiveSummaryWidget from "@/components/ExecutiveSummaryWidget";
-import MorningBriefingCard from "@/components/MorningBriefingCard";
-import NeedsAttentionWidget from "@/components/NeedsAttentionWidget";
+
 
 type SortField = "name" | "ventures" | "velocity" | "overdue" | "health" | "completion";
 type ViewMode = "grid" | "table";
@@ -267,7 +258,6 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
   const [archiveTarget, setArchiveTarget] = useState<{ id: number; name: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
   const [aiTaskTarget, setAiTaskTarget] = useState<{ id: number; name: string } | null>(null);
-  const [intelOpen, setIntelOpen] = useState(false);
 
   // Current tab's clients
   const clients = tabMode === "active" ? activeClients : archivedClients;
@@ -433,16 +423,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
     <div className="p-5 sm:p-6 md:p-8 space-y-6 pb-24 md:pb-8">
 
       {/* ── Velocity System KPIs ──────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        {/* Velocity Intelligence Card — Upgrade 1 */}
-        <VelocityIntelligenceCard
-          avgVelocity={kpis.avgVelocity}
-          highVelocity={kpis.highVelocity}
-          lowVelocity={kpis.lowVelocity}
-          clients={clientsWithVelocity}
-        />
-
-        {/* Remaining 4 standard KPI cards — enhanced with trend indicators */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
             label: "Clients",
@@ -542,26 +523,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
         ))}
       </div>
 
-      {/* ── F3-024: AI Morning Briefing Card ──────────────────── */}
-      <MorningBriefingCard
-        overdueTasks={kpis.totalOverdue}
-        clientsNeedingAttention={kpis.clientsNeedingAttention}
-        totalClients={kpis.totalClients}
-        totalOpenTasks={kpis.totalOpenTasks}
-        avgVelocity={kpis.avgVelocity}
-        overallCompletion={kpis.overallCompletion}
-      />
-
-      {/* ── Live Presence ────────────────────────────────────── */}
-      <LivePresenceWidget />
-
-      {/* ── Overdue Alert Banner — only shows when there are overdue items */}
-      <OverdueAlertBanner onNavigate={onNavigate} />
-
-      {/* ── Needs Attention — stale/dormant items from lifecycle sweep */}
-      <NeedsAttentionWidget onNavigate={onNavigate} />
-
-      {/* ── Active / Archived Tabs — CLIENT LIST FIRST for clarity ── */}
+      {/* ── Active / Archived Tabs ── */}
       <div className="flex items-center gap-1 border-b border-border">
         <button
           onClick={() => { setTabMode("active"); setStatusFilter("all"); setSearchTerm(""); }}
@@ -695,7 +657,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                 }}
                 className="h-9 gap-1.5 border-primary/20 text-primary hover:bg-primary/10"
               >
-                <Brain className="size-4" />
+                <Zap className="size-4" />
                 <span className="hidden sm:inline">AI Tasks</span>
               </Button>
               <Button
@@ -905,7 +867,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                             className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors opacity-0 group-hover:opacity-100"
                             title="Generate AI tasks"
                           >
-                            <Brain className="size-3.5" />
+                            <Zap className="size-3.5" />
                           </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); setArchiveTarget({ id: client.id, name: client.name }); }}
@@ -972,7 +934,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
                       className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                       title="Generate AI tasks"
                     >
-                      <Brain className="size-3.5" />
+                      <Zap className="size-3.5" />
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); setArchiveTarget({ id: client.id, name: client.name }); }}
@@ -1096,36 +1058,6 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
         </div>
       )}
 
-      {/* ── Intelligence Panel (collapsed by default) ─────────── */}
-      <div className="border border-border rounded-xl overflow-hidden">
-        <button
-          onClick={() => setIntelOpen(!intelOpen)}
-          className="w-full flex items-center justify-between px-5 py-3 bg-card hover:bg-accent/30 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <Brain className="size-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">Agent Intelligence</span>
-            <span className="text-[10px] font-mono text-muted-foreground bg-secondary/50 px-1.5 py-0.5 rounded">AI Summary + Execution Log</span>
-          </div>
-          <ChevronRight className={cn("size-4 text-muted-foreground transition-transform", intelOpen && "rotate-90")} />
-        </button>
-        <AnimatePresence>
-          {intelOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className="overflow-hidden"
-            >
-              <div className="p-4 space-y-4 border-t border-border">
-                <ExecutiveSummaryWidget />
-                <AgentExecutionLog />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
 
       {/* ── Add Client Dialog (Matches Onboarding Wizard Step 1) ── */}
       <Dialog open={addDialogOpen} onOpenChange={(open) => { setAddDialogOpen(open); if (!open) resetAddClientForm(); }}>
