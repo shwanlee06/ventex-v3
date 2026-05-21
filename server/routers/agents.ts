@@ -2375,6 +2375,89 @@ export const agentsRouter = router({
         confidenceScore: event.confidenceScore ?? undefined,
       });
 
+            return { success: true };
+    }),
+
+  /**
+   * Approve an agent draft — marks as approved/sent, logs to audit trail
+   */
+  approveDraft: adminProcedure
+    .input(z.object({
+      draftId: z.number(),
+      editedBody: z.string().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const [draft] = await db.select().from(agentDrafts).where(eq(agentDrafts.id, input.draftId)).limit(1);
+      if (!draft) throw new TRPCError({ code: "NOT_FOUND", message: "Draft not found" });
+
+      const userName = ctx.user.name || ctx.user.email || "Admin";
+      const now = new Date();
+
+      await db.update(agentDrafts).set({
+        status: "sent",
+        approvalStatus: "approved",
+        approvedBy: userName,
+        approvedAt: now,
+        sentAt: now,
+        sentBy: userName,
+        disclaimer: generateDisclaimer(userName, now),
+        ...(input.editedBody ? { body: input.editedBody } : {}),
+      } as any).where(eq(agentDrafts.id, input.draftId));
+
+      await logApprovalAction({
+        entityType: "draft",
+        entityId: input.draftId,
+        action: "approved",
+        actorId: ctx.user.id,
+        actorName: userName,
+        originalContent: draft.body,
+        finalContent: input.editedBody || draft.body,
+        confidenceScore: draft.confidenceScore ?? undefined,
+        disclaimerApplied: generateDisclaimer(userName, now),
+      });
+
+      return { success: true };
+    }),
+
+  /**
+   * Reject an agent draft — marks as rejected, logs to audit trail
+   */
+  rejectDraft: adminProcedure
+    .input(z.object({
+      draftId: z.number(),
+      reason: z.string(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const [draft] = await db.select().from(agentDrafts).where(eq(agentDrafts.id, input.draftId)).limit(1);
+      if (!draft) throw new TRPCError({ code: "NOT_FOUND", message: "Draft not found" });
+
+      const userName = ctx.user.name || ctx.user.email || "Admin";
+
+      await db.update(agentDrafts).set({
+        status: "dismissed",
+        approvalStatus: "rejected",
+        approvedBy: userName,
+        approvedAt: new Date(),
+        rejectionReason: input.reason,
+      } as any).where(eq(agentDrafts.id, input.draftId));
+
+      await logApprovalAction({
+        entityType: "draft",
+        entityId: input.draftId,
+        action: "rejected",
+        actorId: ctx.user.id,
+        actorName: userName,
+        originalContent: draft.body,
+        reason: input.reason,
+        confidenceScore: draft.confidenceScore ?? undefined,
+      });
+
       return { success: true };
     }),
 

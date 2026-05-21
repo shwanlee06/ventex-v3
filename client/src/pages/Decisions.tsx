@@ -56,22 +56,25 @@ export default function Decisions() {
   const [rejectReason, setRejectReason] = useState("");
 
   const { data, isLoading, refetch } = trpc.agents.pendingApprovals.useQuery({});
-  const approveMutation = trpc.agents.approveEvent.useMutation({
-    onSuccess: () => {
-      toast.success("Decision approved");
-      refetch();
-    },
-    onError: (err) => toast.error(err.message),
+  const approveEventMutation = trpc.agents.approveEvent.useMutation({
+    onSuccess: () => { toast.success("Decision approved"); refetch(); },
+    onError: (err: any) => toast.error(err.message),
   });
-  const rejectMutation = trpc.agents.rejectEvent.useMutation({
-    onSuccess: () => {
-      toast.success("Decision rejected");
-      refetch();
-      setRejectDialog(null);
-      setRejectReason("");
-    },
-    onError: (err) => toast.error(err.message),
+  const rejectEventMutation = trpc.agents.rejectEvent.useMutation({
+    onSuccess: () => { toast.success("Decision rejected"); refetch(); setRejectDialog(null); setRejectReason(""); },
+    onError: (err: any) => toast.error(err.message),
   });
+  const approveDraftMutation = trpc.agents.approveDraft.useMutation({
+    onSuccess: () => { toast.success("Draft approved & sent"); refetch(); },
+    onError: (err: any) => toast.error(err.message),
+  });
+  const rejectDraftMutation = trpc.agents.rejectDraft.useMutation({
+    onSuccess: () => { toast.success("Draft rejected"); refetch(); setRejectDialog(null); setRejectReason(""); },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const approvePending = approveEventMutation.isPending || approveDraftMutation.isPending;
+  const rejectPending = rejectEventMutation.isPending || rejectDraftMutation.isPending;
 
   // Transform data into unified decision items
   const decisions: DecisionItem[] = useMemo(() => {
@@ -126,7 +129,11 @@ export default function Decisions() {
   }, [data]);
 
   const handleApprove = (item: DecisionItem) => {
-    approveMutation.mutate({ eventId: item.id });
+    if (item.type === "draft") {
+      approveDraftMutation.mutate({ draftId: item.id });
+    } else {
+      approveEventMutation.mutate({ eventId: item.id });
+    }
   };
 
   const handleReject = () => {
@@ -134,7 +141,11 @@ export default function Decisions() {
       toast.error("Please provide a reason for rejection");
       return;
     }
-    rejectMutation.mutate({ eventId: rejectDialog.id, reason: rejectReason });
+    if (rejectDialog.type === "draft") {
+      rejectDraftMutation.mutate({ draftId: rejectDialog.id, reason: rejectReason });
+    } else {
+      rejectEventMutation.mutate({ eventId: rejectDialog.id, reason: rejectReason });
+    }
   };
 
   const getCategoryIcon = (category: string) => {
@@ -231,7 +242,7 @@ export default function Decisions() {
                       variant="outline"
                       className="text-xs text-red-400 border-red-500/30 hover:bg-red-500/10 h-8"
                       onClick={() => setRejectDialog(item)}
-                      disabled={rejectMutation.isPending}
+                      disabled={rejectPending}
                     >
                       <XCircle className="size-3.5 mr-1" />
                       Reject
@@ -240,9 +251,9 @@ export default function Decisions() {
                       size="sm"
                       className="text-xs bg-emerald-600 hover:bg-emerald-700 h-8"
                       onClick={() => handleApprove(item)}
-                      disabled={approveMutation.isPending}
+                      disabled={approvePending}
                     >
-                      {approveMutation.isPending ? (
+                      {approvePending ? (
                         <Loader2 className="size-3.5 mr-1 animate-spin" />
                       ) : (
                         <CheckCircle2 className="size-3.5 mr-1" />
@@ -277,9 +288,9 @@ export default function Decisions() {
             <Button
               variant="destructive"
               onClick={handleReject}
-              disabled={rejectMutation.isPending || !rejectReason.trim()}
+              disabled={rejectPending || !rejectReason.trim()}
             >
-              {rejectMutation.isPending ? <Loader2 className="size-4 animate-spin mr-1" /> : null}
+              {rejectPending ? <Loader2 className="size-4 animate-spin mr-1" /> : null}
               Reject
             </Button>
           </DialogFooter>

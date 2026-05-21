@@ -559,29 +559,47 @@ export const organizationsRouter = router({
       if (!org) throw new Error("Organization not found");
       if (org.type === "core") throw new Error("Cannot delete core organization");
 
-      // 1. Delete org_venture_access links
+      // Get all ventures owned by this org for cascade cleanup
+      const orgVentures = await db.select({ id: ventures.id }).from(ventures).where(eq(ventures.organizationId, input.id));
+      const ventureIds = orgVentures.map(v => v.id);
+
+      // 1. Delete venture-related data if org has ventures
+      if (ventureIds.length > 0) {
+        await db.delete(ventureTeam).where(inArray(ventureTeam.ventureId, ventureIds));
+        await db.delete(tasks).where(inArray(tasks.ventureId, ventureIds));
+        await db.delete(spvVentures).where(inArray(spvVentures.ventureId, ventureIds));
+        await db.delete(ventures).where(inArray(ventures.id, ventureIds));
+      }
+
+      // 2. Delete org_venture_access links
       await db.delete(orgVentureAccess).where(eq(orgVentureAccess.organizationId, input.id));
 
-      // 2. Delete distributions linked to this org
+      // 3. Delete distributions linked to this org
       await db.delete(distributions).where(eq(distributions.organizationId, input.id));
 
-      // 3. Delete invitations for this org
+      // 4. Delete invitations for this org
       await db.delete(invitations).where(eq(invitations.organizationId, input.id));
 
-      // 4. Delete API keys for this org
+      // 5. Delete API keys for this org
       await db.delete(apiKeys).where(eq(apiKeys.organizationId, input.id));
 
-      // 5. Log the deletion
+      // 6. Delete agent config for this org
+      await db.delete(clientAgentConfig).where(eq(clientAgentConfig.organizationId, input.id));
+
+      // 7. Delete agent events for this org
+      await db.delete(agentEvents).where(eq(agentEvents.organizationId, input.id));
+
+      // 8. Log the deletion
       await db.insert(activityLog).values({
         entityType: "organization",
         entityName: org.name,
         action: "Client Deleted",
-        detail: `Client "${org.name}" was permanently removed from the system`,
+        detail: `Client "${org.name}" and all associated data (${ventureIds.length} ventures) permanently removed`,
         userName: "VENTEX Admin",
         activitySource: "atlas_ops",
       });
 
-      // 6. Delete the organization itself
+      // 9. Delete the organization itself
       await db.delete(organizations).where(eq(organizations.id, input.id));
 
       return { success: true, name: org.name };

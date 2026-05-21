@@ -402,7 +402,8 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
 
   const handleDeleteClient = () => {
     if (!deleteTarget) return;
-    deleteOrg.mutate({ id: deleteTarget.id });
+    const targetId = deleteTarget.id;
+    deleteOrg.mutate({ id: targetId });
   };
 
   if (isLoading) {
@@ -1248,7 +1249,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleArchiveClient}
+              onClick={() => { if (archiveTarget) archiveOrg.mutate({ id: archiveTarget.id }); }}
               className="bg-amber-600 hover:bg-amber-700 text-white"
             >
               {archiveOrg.isPending ? <Loader2 className="size-4 animate-spin mr-1.5" /> : <Archive className="size-4 mr-1.5" />}
@@ -1270,7 +1271,7 @@ export default function VentexDashboard({ onNavigate }: VentexDashboardProps) {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDeleteClient}
+              onClick={() => { if (deleteTarget) deleteOrg.mutate({ id: deleteTarget.id }); }}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               {deleteOrg.isPending ? <Loader2 className="size-4 animate-spin mr-1.5" /> : <Trash2 className="size-4 mr-1.5" />}

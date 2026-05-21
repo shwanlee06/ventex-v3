@@ -3757,3 +3757,12 @@
 - [x] Add delete task UI button in TasksPage edit dialog
 - [x] Verify all CRUD operations: clients (create/archive/delete), ventures (create/edit/delete), SPVs (create/edit/delete), tasks (create/edit/delete), distributions (create/edit/delete), team members (create/edit/delete)
 - [x] Zero TypeScript errors across all changes
+
+## Decision Queue & Client Delete Fixes
+- [x] Fix Decision Queue approve/reject — was calling approveEvent for drafts (wrong table lookup)
+- [x] Add approveDraft endpoint — marks draft as approved/sent with audit trail
+- [x] Add rejectDraft endpoint — marks draft as rejected/dismissed with audit trail
+- [x] Fix Decisions page to route approve/reject by item type (event vs draft)
+- [x] Fix client delete cascade — now cleans up ventures, tasks, team, SPVs, agent events, agent config
+- [x] Fix AlertDialogAction race condition — pass ID directly in onClick to avoid state nulling
+- [x] Add decisions.test.ts — 6 passing tests for all approve/reject/delete endpoints
