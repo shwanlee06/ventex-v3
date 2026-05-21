@@ -18,6 +18,8 @@ import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
 import { agentEvents } from "../../drizzle/schema";
 import { eq, and, desc } from "drizzle-orm";
+import { ENV } from "../_core/env";
+
 
 export type GatedActionType =
   | "lp_communication"
@@ -176,9 +178,15 @@ export async function requirePrincipalGate(opts: {
   description: string;
   userId?: string;
   userName?: string;
+  callerOpenId?: string;
 }): Promise<void> {
   // In test environment, skip the gate to allow test execution
   if (process.env.NODE_ENV === "test" || process.env.VITEST) {
+    return;
+  }
+
+  // If the caller IS the owner/principal, they don't need to approve their own actions
+  if (opts.callerOpenId && opts.callerOpenId === ENV.ownerOpenId) {
     return;
   }
 

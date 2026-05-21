@@ -187,6 +187,7 @@ export const teamRouter = router({
         description: `Add team member "${input.name}" (${input.role || "unspecified role"})`,
         userId: String(ctx.user.id),
         userName: ctx.user.name || "System",
+        callerOpenId: ctx.user.openId,
       });
     }
 
@@ -506,7 +507,7 @@ export const teamRouter = router({
   }),
 
   /** Delete a team member */
-  delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+  delete: adminProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
 
@@ -525,6 +526,7 @@ export const teamRouter = router({
         entityId: String(member.id),
         entityName: member.name,
         description: `Remove team member "${member.name}" (${member.role || "unspecified role"})`,
+        callerOpenId: ctx.user.openId,
       });
     }
 

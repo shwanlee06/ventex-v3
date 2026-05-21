@@ -3774,3 +3774,10 @@
 - [x] Add bulk action bar — shows "Approve N" / "Reject N" buttons when items selected
 - [x] Reject dialog handles both single and bulk mode
 - [x] Add 3 new tests for bulk endpoints (9 total passing)
+
+## Principal Gate & Delete Fixes
+- [x] Fixed Principal Gate blocking owner from removing team members (gate now auto-bypasses for owner)
+- [x] Fixed Principal Gate blocking owner from releasing distributions (same bypass)
+- [x] Added Delete button to active clients in ClientDetail (was only showing for archived)
+- [x] Cleaned up all test data from production DB (31 test team members, 2 test orgs, 3 test ventures, 53 test notifications, 186 test activity logs)
+- [x] Cleared all stale pending gate events

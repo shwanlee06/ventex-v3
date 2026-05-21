@@ -121,6 +121,7 @@ export const distributionsRouter = router({
           description: `Release distribution "${existing.name}" — $${(data.amount || existing.amount || 0).toLocaleString()}`,
           userId: String(ctx.user.id),
           userName: ctx.user.name || "System",
+          callerOpenId: ctx.user.openId,
         });
       }
     }

@@ -322,14 +322,24 @@ export default function ClientDetail() {
                 </Button>
               </>
             ) : (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowArchiveDialog(true)}
-                className="h-8 px-2 text-muted-foreground hover:text-amber-400 hover:bg-amber-500/10"
-              >
-                <Archive className="size-4 mr-1" /> Archive Client
-              </Button>
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowArchiveDialog(true)}
+                  className="h-8 px-2 text-muted-foreground hover:text-amber-400 hover:bg-amber-500/10"
+                >
+                  <Archive className="size-4 mr-1" /> Archive Client
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="h-8 px-2 text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
+                >
+                  <Trash2 className="size-4 mr-1" /> Delete
+                </Button>
+              </>
             )}
           </div>
         </div>
