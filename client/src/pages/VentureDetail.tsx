@@ -34,6 +34,10 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import BlueprintJourneyTracker from "@/components/BlueprintJourneyTracker";
 import VentureOverrides from "@/components/VentureOverrides";
 
@@ -184,6 +188,10 @@ export default function VentureDetail() {
   const renameFolderMut = trpc.ventures.renameFolder.useMutation({
     onSuccess: () => { utils.ventures.getFolders.invalidate({ ventureId: ventureId! }); },
   });
+  const deleteVenture = trpc.ventures.delete.useMutation({
+    onSuccess: () => { toast.success("Venture deleted"); navigate("/ventures"); },
+    onError: (err: any) => { toast.error(err.message || "Failed to delete venture"); },
+  });
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -203,6 +211,7 @@ export default function VentureDetail() {
   const [renameFolderIdState, setRenameFolderIdState] = useState<number | null>(null);
   const [renameFolderName, setRenameFolderName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   // Lightbox
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -419,6 +428,11 @@ export default function VentureDetail() {
                 exportAuditMut.mutate({ entityType: "venture", entityId: String(ventureId), entityName: venture?.name });
               }}>
                 <FileDown className="size-3.5 mr-1" /> <span className="hidden sm:inline">Audit </span>Trail
+              </Button>
+            )}
+            {isVentex && (
+              <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation text-red-400 hover:text-red-300 hover:border-red-500/50" onClick={() => setDeleteConfirmOpen(true)}>
+                <Trash2 className="size-3.5 mr-1" /> Delete
               </Button>
             )}
           </div>
@@ -1076,6 +1090,27 @@ export default function VentureDetail() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Delete Venture Confirmation */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Venture</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <strong>{venture?.name}</strong> and all associated tasks, files, and team assignments. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={() => { if (ventureId) deleteVenture.mutate({ id: ventureId }); }}
+            >
+              Delete Permanently
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

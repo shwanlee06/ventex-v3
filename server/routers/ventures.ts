@@ -813,4 +813,39 @@ export const venturesRouter = router({
 
       return { updated, total: allVentures.length };
     }),
+
+  // Delete venture — VENTEX team only, cascades related records
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+    enforcePermission(ctx.user, "ventures", "delete");
+    if (!isVentexTeam(ctx.user)) {
+      throw new Error("Only VENTEX team can delete ventures");
+    }
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const [venture] = await db.select().from(ventures).where(eq(ventures.id, input.id)).limit(1);
+    if (!venture) throw new Error("Venture not found");
+    await db.delete(ventureTeam).where(eq(ventureTeam.ventureId, input.id));
+    await db.delete(ventureFiles).where(eq(ventureFiles.ventureId, input.id));
+    await db.delete(ventureFolders).where(eq(ventureFolders.ventureId, input.id));
+    await db.delete(tasks).where(eq(tasks.ventureId, input.id));
+    await db.delete(orgVentureAccess).where(eq(orgVentureAccess.ventureId, input.id));
+    await db.delete(ventureProcessTracking).where(eq(ventureProcessTracking.ventureId, input.id));
+    await db.delete(ventures).where(eq(ventures.id, input.id));
+    await db.insert(activityLog).values({
+      entityType: "venture", entityName: venture.name, action: "Venture Deleted",
+      detail: `Venture "${venture.name}" permanently deleted`,
+      userName: ctx.user.name || "System", sector: venture.sector,
+      activitySource: "atlas_ops",
+    });
+    await logAudit({
+      userId: ctx.user.id,
+      userName: ctx.user.name,
+      action: "delete",
+      entityType: "venture",
+      entityId: String(input.id),
+      entityName: venture.name,
+      details: JSON.stringify({ sector: venture.sector }),
+    });
+    return { success: true };
+  }),
 });

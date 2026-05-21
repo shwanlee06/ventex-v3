@@ -437,4 +437,37 @@ export const spvsRouter = router({
         closed: all.filter(s => s.stage === "Closed deal").length,
       };
     }),
+
+  // Delete SPV — VENTEX team only
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+    enforcePermission(ctx.user, "spvs", "delete");
+    if (!isVentexTeam(ctx.user)) {
+      throw new Error("Only VENTEX team can delete SPVs");
+    }
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const [spv] = await db.select().from(spvs).where(eq(spvs.id, input.id)).limit(1);
+    if (!spv) throw new Error("SPV not found");
+    // Cascade delete related records
+    await db.delete(spvVentures).where(eq(spvVentures.spvId, input.id));
+    await db.delete(spvTeam).where(eq(spvTeam.spvId, input.id));
+    await db.delete(spvFiles).where(eq(spvFiles.spvId, input.id));
+    await db.delete(spvFolders).where(eq(spvFolders.spvId, input.id));
+    await db.delete(spvs).where(eq(spvs.id, input.id));
+    await db.insert(activityLog).values({
+      entityType: "spv", entityName: spv.name, action: "SPV Deleted",
+      detail: `SPV "${spv.name}" permanently deleted`,
+      userName: ctx.user.name || "System",
+      activitySource: "atlas_ops",
+    });
+    await logAudit({
+      userId: ctx.user.id,
+      userName: ctx.user.name,
+      action: "delete",
+      entityType: "spv",
+      entityId: String(input.id),
+      entityName: spv.name,
+    });
+    return { success: true };
+  }),
 });

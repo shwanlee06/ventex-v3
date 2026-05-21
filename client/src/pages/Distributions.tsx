@@ -16,7 +16,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { motion, AnimatePresence } from "framer-motion";
-import { DollarSign, Clock, XCircle, CheckCircle2, Plus, FileDown, LayoutGrid, List, Loader2, GitCommitVertical, X, ArrowRightLeft, Settings2 } from "lucide-react";
+import { DollarSign, Clock, XCircle, CheckCircle2, Plus, FileDown, LayoutGrid, List, Loader2, GitCommitVertical, X, ArrowRightLeft, Settings2, Trash2 } from "lucide-react";
 import { useState, useCallback, useMemo } from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -195,6 +195,14 @@ export default function DistributionsPage() {
       toast.success("Distribution created");
     },
     onError: (err) => toast.error(err.message),
+  });
+  const deleteDist = trpc.distributions.delete.useMutation({
+    onSuccess: () => {
+      distQ.refetch();
+      setDistModal(null);
+      toast.success("Distribution deleted");
+    },
+    onError: (err) => toast.error(err.message || "Failed to delete distribution"),
   });
 
   const distributions = distQ.data || [];
@@ -691,6 +699,15 @@ export default function DistributionsPage() {
                   }}>
                     <FileDown className="size-3.5 mr-1" /> Export PDF
                   </Button>
+                  {isAdmin && (
+                    <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation text-red-400 hover:text-red-300 hover:border-red-500/50" onClick={() => {
+                      if (confirm("Delete this distribution permanently?")) {
+                        deleteDist.mutate({ id: distModal.id });
+                      }
+                    }}>
+                      <Trash2 className="size-3.5 mr-1" /> Delete
+                    </Button>
+                  )}
                   <Button variant="ghost" size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={() => setDistModal(null)}>Close</Button>
                 </DialogFooter>
               </>

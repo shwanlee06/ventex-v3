@@ -260,4 +260,33 @@ export const distributionsRouter = router({
         paidAmount: all.filter(d => d.status === "Paid").reduce((s, d) => s + (d.amount || 0), 0),
       };
     }),
+
+  // Delete distribution — VENTEX team only
+  delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
+    enforcePermission(ctx.user, "distributions", "delete");
+    if (!isVentexTeam(ctx.user)) {
+      throw new Error("Only VENTEX team can delete distributions");
+    }
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const [dist] = await db.select().from(distributions).where(eq(distributions.id, input.id)).limit(1);
+    if (!dist) throw new Error("Distribution not found");
+    await db.delete(distributions).where(eq(distributions.id, input.id));
+    await db.insert(activityLog).values({
+      entityType: "distribution", entityName: dist.name || `Distribution #${dist.id}`,
+      action: "Distribution Deleted",
+      detail: `Distribution "${dist.name || dist.id}" deleted`,
+      userName: ctx.user.name || "System",
+      activitySource: "atlas_ops",
+    });
+    await logAudit({
+      userId: ctx.user.id,
+      userName: ctx.user.name,
+      action: "delete",
+      entityType: "distribution",
+      entityId: String(input.id),
+      entityName: dist.name || `Distribution #${dist.id}`,
+    });
+    return { success: true };
+  }),
 });

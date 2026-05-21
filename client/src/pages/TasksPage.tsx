@@ -12,7 +12,7 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ListChecks, Plus, CheckCircle2, Clock, AlertTriangle,
-  Search, X, LayoutGrid, List, Columns3,
+  Search, X, LayoutGrid, List, Columns3, Trash2,
 } from "lucide-react";
 import { useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
@@ -98,6 +98,10 @@ export default function TasksPage() {
   });
   const updateTask = trpc.tasks.update.useMutation({
     onSuccess: () => { utils.tasks.list.invalidate(); utils.tasks.metrics.invalidate(); utils.activity.recent.invalidate(); },
+  });
+  const deleteTask = trpc.tasks.delete.useMutation({
+    onSuccess: () => { utils.tasks.list.invalidate(); utils.tasks.metrics.invalidate(); utils.activity.recent.invalidate(); setEditTaskId(null); toast.success("Task deleted"); },
+    onError: (err: any) => { toast.error(err.message || "Failed to delete task"); },
   });
 
   const [search, setSearch] = useState("");
@@ -723,6 +727,15 @@ export default function TasksPage() {
                   <Button size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={() => { handleToggle(editTask.id); setEditTaskId(null); }}>
                     <CheckCircle2 className="size-3.5 mr-1" />
                     {editTask.status === "complete" ? "Reopen Task" : "Mark Complete"}
+                  </Button>
+                )}
+                {isAdmin && (
+                  <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation text-red-400 hover:text-red-300 hover:border-red-500/50" onClick={() => {
+                    if (confirm("Delete this task permanently?")) {
+                      deleteTask.mutate({ id: editTask.id });
+                    }
+                  }}>
+                    <Trash2 className="size-3.5 mr-1" /> Delete
                   </Button>
                 )}
                 <Button variant="ghost" size="sm" className="text-xs h-9 min-h-[36px] w-full sm:w-auto touch-manipulation" onClick={() => setEditTaskId(null)}>{isAdmin ? "Close" : "Done"}</Button>

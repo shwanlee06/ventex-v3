@@ -32,6 +32,10 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 const ALL_STAGES = ["Active deal", "In negotiation", "Closed deal", "Dropped deal"];
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB enterprise limit
@@ -152,7 +156,12 @@ export default function SpvDetail() {
   const renameFolderMut = trpc.spvs.renameFolder.useMutation({
     onSuccess: () => { utils.spvs.getFolders.invalidate({ spvId: spvId || 0 }); },
   });
+  const deleteSpv = trpc.spvs.delete.useMutation({
+    onSuccess: () => { toast.success("SPV deleted"); navigate("/settings"); },
+    onError: (err) => { toast.error(err.message || "Failed to delete SPV"); },
+  });
 
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editNotes, setEditNotes] = useState("");
   const [editNextStep, setEditNextStep] = useState("");
@@ -386,12 +395,16 @@ export default function SpvDetail() {
                   <Button variant="ghost" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation" onClick={() => setEditing(false)}>
                     <X className="size-3.5" />
                   </Button>
-                </div>
+                                </div>
               )
+            )}
+            {isSpvAdmin && (
+              <Button variant="outline" size="sm" className="text-xs h-9 min-h-[36px] touch-manipulation text-red-400 hover:text-red-300 hover:border-red-500/50" onClick={() => setDeleteConfirmOpen(true)}>
+                <Trash2 className="size-3.5 mr-1" /> Delete
+              </Button>
             )}
           </div>
         </div>
-
         {/* Main content */}
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6">
           {/* Left column */}
@@ -866,6 +879,27 @@ export default function SpvDetail() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Delete SPV Confirmation */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete SPV</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <strong>{spv?.name}</strong> and all associated files, team assignments, and linked ventures. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={() => { if (spvId) deleteSpv.mutate({ id: spvId }); }}
+            >
+              Delete Permanently
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

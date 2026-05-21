@@ -3747,3 +3747,13 @@
 - [x] Remove all fake data arrays from data.ts (300+ lines of dead code)
 - [x] Archive test client orgs (AI Empty Test, AI Test Client)
 - [x] Assign NULL-org ventures/tasks/drafts to Royalton org
+## CRUD Completeness Audit (May 2026)
+- [x] Add delete venture endpoint (cascade: team, files, folders, tasks, orgAccess, processTracking)
+- [x] Add delete venture UI button in VentureDetail page with confirmation dialog
+- [x] Add delete distribution endpoint (VENTEX team only, with audit log)
+- [x] Add delete distribution UI button in distribution detail modal
+- [x] Add delete SPV endpoint (cascade: ventures, team, files, folders)
+- [x] Add delete SPV UI button in SpvDetail page with confirmation dialog
+- [x] Add delete task UI button in TasksPage edit dialog
+- [x] Verify all CRUD operations: clients (create/archive/delete), ventures (create/edit/delete), SPVs (create/edit/delete), tasks (create/edit/delete), distributions (create/edit/delete), team members (create/edit/delete)
+- [x] Zero TypeScript errors across all changes

@@ -1,0 +1,44 @@
+{
+  "build_command": "pnpm run build",
+  "capabilities": [
+    "db",
+    "server",
+    "user"
+  ],
+  "dev_command": "pnpm run dev",
+  "env_vars": {
+    "DATABASE_URL": "mysql://3cMrMxTWfwieJG9.0a82203cd945:1bT5UvfnHJU06G0y9OHt@gateway04.us-east-1.prod.aws.tidbcloud.com:4000/TYkqBQavc4Sd5YvF3sSZqT?ssl={\"rejectUnauthorized\":true}"
+  },
+  "experiments": null,
+  "git_remote": {
+    "repo_url": "s3://vida-prod-gitrepo/webdev-git/310519663421947072/TYkqBQavc4Sd5YvF3sSZqT",
+    "access_key_id": "ASIAZV3A2ECZGKPUOICP",
+    "secret_access_key": "8q5bbhYN+7Yup0i46lL39Za2z9SY45z5RhnH5frk",
+    "session_token": "IQoJb3JpZ2luX2VjEDEaCXVzLWVhc3QtMSJIMEYCIQDDryAsYw6AZUaSW749XG3130Mv45D2r64xJ7nQYKSlcwIhAI8PX3Fxw3oM/hBITrx92SG7hQKDwJ3oLuok9/FUfeivKv8DCPr//////////wEQBBoMNjY1Mzg2MDk4ODY2IgzqxbnLSWJi1QA/iAEq0wOE+FyOOYzYcREOC8Iw0jmmMBprZykfhsLRogyrP55gHGfyHiGX1jnEVwBq9rt2oJ1WrcAeUAKG/Nay2RcDnaS4dQuNMLo6sBir55sTYQBX4SfzIGVsaiPeyz0jbyYnkhTeJQ5/uvIq1thxWWiw7y+Ltzh2O9T5elNZvxlwuK5xfB06XWJsttWk/YIDIahRH6sM/SbIQ7Oi0xfZSTCzIh9ndT5ZicJ9I5PG1lCCquh3wrZ3To/OK/Tms0iQpvNFmXNTA2JlEaJ4rg5Yan0fxSwiL/5X3v6agL6gEtFxMpim27aI8v/1YHl8iqFztxykJXeTraAU7boLA7Izf0vqVcLTQehrMT3+nhHErajZ3g1qMCgRfZ32d6Y2gWndnwOcxbaIG2TIz7iHb6CiFexHKM9moQISpUhr5ffnhetaACsPtFR6u6NM664o7HQQ49lUotROSK+UMPzIgUfaf536i0yj8QFAiIz6dHA1a9TCONLcFZcwI7CGQPyWCEXwJ8Lu0+VLf2j9qJYMxP4Lts3opwtbsKYkpM8OC6IMGX1IxLkB/LVsGZr1C8gzjJq5Uv8BgCQLj7pm4XCDscB4jyMKxZZ2SgZvbSnSPT5ueKaGBFJ9BWN9QjDwsrnQBjqcAbKWXdNX8tgOLR9co0/U3N7Dn9AjTW7FQIMYuDExMCPV0DhhZ/wl2P++XR6oqH8pAFpfk1SJQU31Fga29kBt8CwMyITG7SYIFUV406loBHaVM/hP6nmEFYojPthfGWsAMJvf/84Zosawqb6Hf1LeVAyKx770Y1U1sCHpvFF2v9SZY4rehv6XCnOl1qE22XRAlGCWB7NdZaH/YUmawg==",
+    "expiration": "2026-05-21T13:01:36.000Z"
+  },
+  "name": "royalton-system",
+  "path": "/home/ubuntu/royalton-system",
+  "port": 3000,
+  "secrets": {
+    "AIRTABLE_PAT": "pat441FHcgOyv4I7F.c136ef1321d86ae60fb3def740985abc5332212679035ea29b7ef0d481438c1d",
+    "BUILT_IN_FORGE_API_KEY": "LnyrDX9gWMk2Nq8aweBfC4",
+    "BUILT_IN_FORGE_API_URL": "https://forge.manus.ai",
+    "ENCRYPTION_MASTER_KEY": "467ac62d9a442c20ac6177db9b162385df9cf05dddafdff25839e95be163ac3a",
+    "JWT_SECRET": "PvvkLzdnnKvpgkqKXnCUQZ",
+    "OAUTH_SERVER_URL": "https://api.manus.im",
+    "OWNER_NAME": "Shwan lee",
+    "OWNER_OPEN_ID": "3CJdUnVYxhkVWSh5udtwP8",
+    "RESEND_API_KEY": "re_MpmuzUZa_6AZPpQdysxpokbcVnJCmAy4P",
+    "VITE_ANALYTICS_ENDPOINT": "https://manus-analytics.com",
+    "VITE_ANALYTICS_WEBSITE_ID": "4b49b9f4-b6c5-4bc5-894d-608b245d9b44",
+    "VITE_APP_ID": "TYkqBQavc4Sd5YvF3sSZqT",
+    "VITE_APP_LOGO": "https://files.manuscdn.com/user_upload_by_module/web_dev_logo/310519663421947072/gmyxHBcBajpPBEEx.png",
+    "VITE_APP_TITLE": "VENTEX powered by Aurovia",
+    "VITE_FRONTEND_FORGE_API_KEY": "5oTKnLrKRUrAAmzLqgDKbU",
+    "VITE_FRONTEND_FORGE_API_URL": "https://forge.manus.ai",
+    "VITE_OAUTH_PORTAL_URL": "https://manus.im"
+  },
+  "template_id": "web-db-user",
+  "test_command": "pnpm test"
+}
