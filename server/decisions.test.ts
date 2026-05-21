@@ -80,6 +80,44 @@ describe("Decision Queue endpoints", () => {
   });
 });
 
+describe("Bulk approve/reject endpoints", () => {
+  it("bulkApprove endpoint exists and handles empty items gracefully", async () => {
+    const { ctx } = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.agents.bulkApprove({ items: [] });
+    expect(result.approved).toBe(0);
+    expect(result.failed).toBe(0);
+    expect(result.total).toBe(0);
+  });
+
+  it("bulkApprove handles non-existent items without throwing", async () => {
+    const { ctx } = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.agents.bulkApprove({
+      items: [
+        { id: 999998, type: "event" },
+        { id: 999999, type: "draft" },
+      ],
+    });
+    expect(result.failed).toBe(2);
+    expect(result.approved).toBe(0);
+  });
+
+  it("bulkReject endpoint exists and validates reason", async () => {
+    const { ctx } = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const result = await caller.agents.bulkReject({
+      items: [{ id: 999999, type: "event" }],
+      reason: "Not needed",
+    });
+    expect(result.failed).toBe(1);
+    expect(result.rejected).toBe(0);
+  });
+});
+
 describe("Client delete endpoint", () => {
   it("delete endpoint exists and validates input", async () => {
     const { ctx } = createAdminContext();

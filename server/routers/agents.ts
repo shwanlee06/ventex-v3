@@ -2462,6 +2462,151 @@ export const agentsRouter = router({
     }),
 
   /**
+   * Bulk approve multiple decisions (events and/or drafts) at once
+   */
+  bulkApprove: adminProcedure
+    .input(z.object({
+      items: z.array(z.object({
+        id: z.number(),
+        type: z.enum(["event", "draft"]),
+      })),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const userName = ctx.user.name || ctx.user.email || "Admin";
+      let approved = 0;
+      let failed = 0;
+
+      for (const item of input.items) {
+        try {
+          if (item.type === "event") {
+            const [event] = await db.select().from(agentEvents).where(eq(agentEvents.id, item.id)).limit(1);
+            if (!event) { failed++; continue; }
+
+            await db.update(agentEvents).set({
+              approvalStatus: "approved",
+              approvedBy: userName,
+              approvedAt: new Date(),
+            } as any).where(eq(agentEvents.id, item.id));
+
+            await logApprovalAction({
+              entityType: "event",
+              entityId: item.id,
+              action: "approved",
+              actorId: ctx.user.id,
+              actorName: userName,
+              originalContent: event.message,
+              confidenceScore: event.confidenceScore ?? undefined,
+            });
+            approved++;
+          } else {
+            const [draft] = await db.select().from(agentDrafts).where(eq(agentDrafts.id, item.id)).limit(1);
+            if (!draft) { failed++; continue; }
+
+            await db.update(agentDrafts).set({
+              status: "sent",
+              approvalStatus: "approved",
+              approvedBy: userName,
+              approvedAt: new Date(),
+            } as any).where(eq(agentDrafts.id, item.id));
+
+            await logApprovalAction({
+              entityType: "draft",
+              entityId: item.id,
+              action: "approved",
+              actorId: ctx.user.id,
+              actorName: userName,
+              originalContent: draft.body,
+              confidenceScore: draft.confidenceScore ?? undefined,
+            });
+            approved++;
+          }
+        } catch {
+          failed++;
+        }
+      }
+
+      return { approved, failed, total: input.items.length };
+    }),
+
+  /**
+   * Bulk reject multiple decisions (events and/or drafts) at once
+   */
+  bulkReject: adminProcedure
+    .input(z.object({
+      items: z.array(z.object({
+        id: z.number(),
+        type: z.enum(["event", "draft"]),
+      })),
+      reason: z.string().min(1),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const userName = ctx.user.name || ctx.user.email || "Admin";
+      let rejected = 0;
+      let failed = 0;
+
+      for (const item of input.items) {
+        try {
+          if (item.type === "event") {
+            const [event] = await db.select().from(agentEvents).where(eq(agentEvents.id, item.id)).limit(1);
+            if (!event) { failed++; continue; }
+
+            await db.update(agentEvents).set({
+              approvalStatus: "rejected",
+              approvedBy: userName,
+              approvedAt: new Date(),
+              rejectionReason: input.reason,
+            } as any).where(eq(agentEvents.id, item.id));
+
+            await logApprovalAction({
+              entityType: "event",
+              entityId: item.id,
+              action: "rejected",
+              actorId: ctx.user.id,
+              actorName: userName,
+              originalContent: event.message,
+              reason: input.reason,
+              confidenceScore: event.confidenceScore ?? undefined,
+            });
+            rejected++;
+          } else {
+            const [draft] = await db.select().from(agentDrafts).where(eq(agentDrafts.id, item.id)).limit(1);
+            if (!draft) { failed++; continue; }
+
+            await db.update(agentDrafts).set({
+              status: "dismissed",
+              approvalStatus: "rejected",
+              approvedBy: userName,
+              approvedAt: new Date(),
+              rejectionReason: input.reason,
+            } as any).where(eq(agentDrafts.id, item.id));
+
+            await logApprovalAction({
+              entityType: "draft",
+              entityId: item.id,
+              action: "rejected",
+              actorId: ctx.user.id,
+              actorName: userName,
+              originalContent: draft.body,
+              reason: input.reason,
+              confidenceScore: draft.confidenceScore ?? undefined,
+            });
+            rejected++;
+          }
+        } catch {
+          failed++;
+        }
+      }
+
+      return { rejected, failed, total: input.items.length };
+    }),
+
+  /**
    * Get approval audit log — immutable history of all approvals/rejections
    */
   approvalLog: adminProcedure

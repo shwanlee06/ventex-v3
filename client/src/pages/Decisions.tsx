@@ -1,4 +1,4 @@
-// Principal Decision Queue — Clean, calm page for pending approvals
+// Principal Decision Queue — with bulk select/approve/reject
 import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
@@ -11,8 +11,12 @@ import {
   AlertTriangle,
   XCircle,
   Zap,
+  CheckCheck,
+  Square,
+  CheckSquare,
+  MinusSquare,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -52,10 +56,13 @@ type DecisionItem = {
 };
 
 export default function Decisions() {
-  const [rejectDialog, setRejectDialog] = useState<DecisionItem | null>(null);
+  const [rejectDialog, setRejectDialog] = useState<{ mode: "single"; item: DecisionItem } | { mode: "bulk" } | null>(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const { data, isLoading, refetch } = trpc.agents.pendingApprovals.useQuery({});
+
+  // Single mutations
   const approveEventMutation = trpc.agents.approveEvent.useMutation({
     onSuccess: () => { toast.success("Decision approved"); refetch(); },
     onError: (err: any) => toast.error(err.message),
@@ -73,8 +80,28 @@ export default function Decisions() {
     onError: (err: any) => toast.error(err.message),
   });
 
-  const approvePending = approveEventMutation.isPending || approveDraftMutation.isPending;
-  const rejectPending = rejectEventMutation.isPending || rejectDraftMutation.isPending;
+  // Bulk mutations
+  const bulkApproveMutation = trpc.agents.bulkApprove.useMutation({
+    onSuccess: (result) => {
+      toast.success(`${result.approved} approved${result.failed > 0 ? `, ${result.failed} failed` : ""}`);
+      setSelected(new Set());
+      refetch();
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+  const bulkRejectMutation = trpc.agents.bulkReject.useMutation({
+    onSuccess: (result) => {
+      toast.success(`${result.rejected} rejected${result.failed > 0 ? `, ${result.failed} failed` : ""}`);
+      setSelected(new Set());
+      setRejectDialog(null);
+      setRejectReason("");
+      refetch();
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const approvePending = approveEventMutation.isPending || approveDraftMutation.isPending || bulkApproveMutation.isPending;
+  const rejectPending = rejectEventMutation.isPending || rejectDraftMutation.isPending || bulkRejectMutation.isPending;
 
   // Transform data into unified decision items
   const decisions: DecisionItem[] = useMemo(() => {
@@ -128,6 +155,31 @@ export default function Decisions() {
     });
   }, [data]);
 
+  // Selection helpers
+  const itemKey = (item: DecisionItem) => `${item.type}-${item.id}`;
+
+  const toggleSelect = useCallback((item: DecisionItem) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      const key = itemKey(item);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    if (selected.size === decisions.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(decisions.map(itemKey)));
+    }
+  }, [decisions, selected.size]);
+
+  const selectedItems = useMemo(() => {
+    return decisions.filter(d => selected.has(itemKey(d)));
+  }, [decisions, selected]);
+
   const handleApprove = (item: DecisionItem) => {
     if (item.type === "draft") {
       approveDraftMutation.mutate({ draftId: item.id });
@@ -137,15 +189,35 @@ export default function Decisions() {
   };
 
   const handleReject = () => {
-    if (!rejectDialog || !rejectReason.trim()) {
+    if (!rejectReason.trim()) {
       toast.error("Please provide a reason for rejection");
       return;
     }
-    if (rejectDialog.type === "draft") {
-      rejectDraftMutation.mutate({ draftId: rejectDialog.id, reason: rejectReason });
-    } else {
-      rejectEventMutation.mutate({ eventId: rejectDialog.id, reason: rejectReason });
+    if (rejectDialog?.mode === "bulk") {
+      bulkRejectMutation.mutate({
+        items: selectedItems.map(i => ({ id: i.id, type: i.type as "event" | "draft" })),
+        reason: rejectReason,
+      });
+    } else if (rejectDialog?.mode === "single") {
+      const item = rejectDialog.item;
+      if (item.type === "draft") {
+        rejectDraftMutation.mutate({ draftId: item.id, reason: rejectReason });
+      } else {
+        rejectEventMutation.mutate({ eventId: item.id, reason: rejectReason });
+      }
     }
+  };
+
+  const handleBulkApprove = () => {
+    if (selectedItems.length === 0) return;
+    bulkApproveMutation.mutate({
+      items: selectedItems.map(i => ({ id: i.id, type: i.type as "event" | "draft" })),
+    });
+  };
+
+  const handleBulkReject = () => {
+    if (selectedItems.length === 0) return;
+    setRejectDialog({ mode: "bulk" });
   };
 
   const getCategoryIcon = (category: string) => {
@@ -166,19 +238,75 @@ export default function Decisions() {
     }
   };
 
+  const isAllSelected = decisions.length > 0 && selected.size === decisions.length;
+  const isSomeSelected = selected.size > 0 && selected.size < decisions.length;
+
   return (
     <DashboardLayout title="Decision Queue" subtitle="PRINCIPAL CONFIRMATIONS">
       <div className="p-4 md:p-6 space-y-4">
-        {/* Header summary — single line */}
+        {/* Header with summary + bulk actions */}
         {!isLoading && decisions.length > 0 && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Clock className="size-3.5" />
-            <span>{decisions.length} pending {decisions.length === 1 ? "decision" : "decisions"}</span>
-            {decisions.some(d => d.severity === "critical") && (
-              <>
-                <span className="text-muted-foreground/50">·</span>
-                <span className="text-red-400">{decisions.filter(d => d.severity === "critical").length} critical</span>
-              </>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {/* Select all toggle */}
+              <button
+                onClick={toggleSelectAll}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                title={isAllSelected ? "Deselect all" : "Select all"}
+              >
+                {isAllSelected ? (
+                  <CheckSquare className="size-4 text-primary" />
+                ) : isSomeSelected ? (
+                  <MinusSquare className="size-4 text-primary" />
+                ) : (
+                  <Square className="size-4" />
+                )}
+              </button>
+
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Clock className="size-3.5" />
+                <span>
+                  {selected.size > 0
+                    ? `${selected.size} of ${decisions.length} selected`
+                    : `${decisions.length} pending ${decisions.length === 1 ? "decision" : "decisions"}`
+                  }
+                </span>
+                {decisions.some(d => d.severity === "critical") && selected.size === 0 && (
+                  <>
+                    <span className="text-muted-foreground/50">·</span>
+                    <span className="text-red-400">{decisions.filter(d => d.severity === "critical").length} critical</span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Bulk action buttons — show when items are selected */}
+            {selected.size > 0 && (
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs text-red-400 border-red-500/30 hover:bg-red-500/10 h-7"
+                  onClick={handleBulkReject}
+                  disabled={rejectPending}
+                >
+                  <XCircle className="size-3.5 mr-1" />
+                  Reject {selected.size}
+                </Button>
+                <Button
+                  size="sm"
+                  className="text-xs bg-emerald-600 hover:bg-emerald-700 h-7"
+                  onClick={handleBulkApprove}
+                  disabled={approvePending}
+                >
+                  {bulkApproveMutation.isPending ? (
+                    <Loader2 className="size-3.5 mr-1 animate-spin" />
+                  ) : (
+                    <CheckCheck className="size-3.5 mr-1" />
+                  )}
+                  Approve {selected.size}
+                </Button>
+              </div>
             )}
           </div>
         )}
@@ -198,83 +326,109 @@ export default function Decisions() {
           </div>
         ) : (
           <div className="space-y-2">
-            {decisions.map((item) => (
-              <div
-                key={`${item.type}-${item.id}`}
-                className={cn(
-                  "bg-card border rounded-lg p-4 transition-all",
-                  item.severity === "critical" ? "border-red-500/30" : "border-border"
-                )}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  {/* Left: Content */}
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <div className={cn("mt-0.5 flex-shrink-0", getCategoryColor(item.category))}>
-                      {getCategoryIcon(item.category)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-sm font-medium text-foreground">{item.title}</span>
-                        {item.severity === "critical" && (
-                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-red-500/10 text-red-400">
-                            Critical
-                          </span>
-                        )}
-                      </div>
-                      {item.entityName && (
-                        <span className="text-[11px] text-muted-foreground font-mono block">{item.entityName}</span>
-                      )}
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-[10px] text-muted-foreground font-mono">
-                          {friendlyTime(item.createdAt)}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground/50">·</span>
-                        <span className="text-[10px] text-muted-foreground font-mono">{item.agentName}</span>
-                      </div>
-                    </div>
-                  </div>
+            {decisions.map((item) => {
+              const key = itemKey(item);
+              const isSelected = selected.has(key);
 
-                  {/* Right: Actions */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-xs text-red-400 border-red-500/30 hover:bg-red-500/10 h-8"
-                      onClick={() => setRejectDialog(item)}
-                      disabled={rejectPending}
-                    >
-                      <XCircle className="size-3.5 mr-1" />
-                      Reject
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="text-xs bg-emerald-600 hover:bg-emerald-700 h-8"
-                      onClick={() => handleApprove(item)}
-                      disabled={approvePending}
-                    >
-                      {approvePending ? (
-                        <Loader2 className="size-3.5 mr-1 animate-spin" />
-                      ) : (
-                        <CheckCircle2 className="size-3.5 mr-1" />
-                      )}
-                      Approve
-                    </Button>
+              return (
+                <div
+                  key={key}
+                  className={cn(
+                    "bg-card border rounded-lg p-4 transition-all",
+                    item.severity === "critical" ? "border-red-500/30" : "border-border",
+                    isSelected && "border-primary/50 bg-primary/5"
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    {/* Left: Checkbox + Content */}
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      {/* Selection checkbox */}
+                      <button
+                        onClick={() => toggleSelect(item)}
+                        className="mt-0.5 flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {isSelected ? (
+                          <CheckSquare className="size-4 text-primary" />
+                        ) : (
+                          <Square className="size-4" />
+                        )}
+                      </button>
+
+                      <div className={cn("mt-0.5 flex-shrink-0", getCategoryColor(item.category))}>
+                        {getCategoryIcon(item.category)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-sm font-medium text-foreground">{item.title}</span>
+                          {item.severity === "critical" && (
+                            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-red-500/10 text-red-400">
+                              Critical
+                            </span>
+                          )}
+                        </div>
+                        {item.entityName && (
+                          <span className="text-[11px] text-muted-foreground font-mono block">{item.entityName}</span>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            {friendlyTime(item.createdAt)}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground/50">·</span>
+                          <span className="text-[10px] text-muted-foreground font-mono">{item.agentName}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right: Actions */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs text-red-400 border-red-500/30 hover:bg-red-500/10 h-8"
+                        onClick={() => setRejectDialog({ mode: "single", item })}
+                        disabled={rejectPending}
+                      >
+                        <XCircle className="size-3.5 mr-1" />
+                        Reject
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="text-xs bg-emerald-600 hover:bg-emerald-700 h-8"
+                        onClick={() => handleApprove(item)}
+                        disabled={approvePending}
+                      >
+                        {approvePending ? (
+                          <Loader2 className="size-3.5 mr-1 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="size-3.5 mr-1" />
+                        )}
+                        Approve
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* Reject Dialog */}
-      <Dialog open={!!rejectDialog} onOpenChange={() => setRejectDialog(null)}>
+      {/* Reject Dialog — handles both single and bulk */}
+      <Dialog open={!!rejectDialog} onOpenChange={() => { setRejectDialog(null); setRejectReason(""); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reject Decision</DialogTitle>
+            <DialogTitle>
+              {rejectDialog?.mode === "bulk"
+                ? `Reject ${selected.size} Decisions`
+                : "Reject Decision"
+              }
+            </DialogTitle>
             <DialogDescription>
-              Provide a reason for rejecting: {rejectDialog?.title}
+              {rejectDialog?.mode === "bulk"
+                ? `Provide a reason for rejecting ${selected.size} selected items.`
+                : `Provide a reason for rejecting: ${rejectDialog?.mode === "single" ? rejectDialog.item.title : ""}`
+              }
             </DialogDescription>
           </DialogHeader>
           <Textarea
@@ -284,14 +438,14 @@ export default function Decisions() {
             className="min-h-[100px]"
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectDialog(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => { setRejectDialog(null); setRejectReason(""); }}>Cancel</Button>
             <Button
               variant="destructive"
               onClick={handleReject}
               disabled={rejectPending || !rejectReason.trim()}
             >
               {rejectPending ? <Loader2 className="size-4 animate-spin mr-1" /> : null}
-              Reject
+              {rejectDialog?.mode === "bulk" ? `Reject ${selected.size}` : "Reject"}
             </Button>
           </DialogFooter>
         </DialogContent>

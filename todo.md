@@ -3766,3 +3766,11 @@
 - [x] Fix client delete cascade — now cleans up ventures, tasks, team, SPVs, agent events, agent config
 - [x] Fix AlertDialogAction race condition — pass ID directly in onClick to avoid state nulling
 - [x] Add decisions.test.ts — 6 passing tests for all approve/reject/delete endpoints
+
+## Decision Queue Bulk Actions
+- [x] Add bulkApprove endpoint — approves multiple events/drafts in one call with audit trail
+- [x] Add bulkReject endpoint — rejects multiple events/drafts with shared reason
+- [x] Add checkbox selection UI to Decision Queue — select all, select individual
+- [x] Add bulk action bar — shows "Approve N" / "Reject N" buttons when items selected
+- [x] Reject dialog handles both single and bulk mode
+- [x] Add 3 new tests for bulk endpoints (9 total passing)
