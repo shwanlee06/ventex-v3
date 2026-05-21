@@ -1,0 +1,22 @@
+{
+  "query": "SELECT draftStatus, draftType, createdByAgent, COUNT(*) as cnt FROM agent_drafts GROUP BY draftStatus, draftType, createdByAgent ORDER BY cnt DESC LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT draftStatus, draftType, createdByAgent, COUNT(*) as cnt FROM agent_drafts GROUP BY draftStatus, draftType, createdByAgent ORDER BY cnt DESC LIMIT 20;",
+  "rows": [
+    {
+      "draftStatus": "pending",
+      "draftType": "follow_up",
+      "createdByAgent": "Overdue Agent",
+      "cnt": "165"
+    },
+    {
+      "draftStatus": "pending",
+      "draftType": "lp_notice",
+      "createdByAgent": "Distribution Sentinel",
+      "cnt": "3"
+    }
+  ],
+  "messages": [],
+  "stdout": "draftStatus\tdraftType\tcreatedByAgent\tcnt\npending\tfollow_up\tOverdue Agent\t165\npending\tlp_notice\tDistribution Sentinel\t3\n",
+  "stderr": "",
+  "execution_time_ms": 268
+}

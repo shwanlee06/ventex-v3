@@ -28,8 +28,8 @@ export const RETENTION_DAYS = {
   auditLog: 365,
   activityLog: 180,
   expiredSessions: 30,
-  agentEvents: 180,
-  readNotifications: 90,
+  agentEvents: 30, // Keep agent event feed lean
+  readNotifications: 14, // Keep notification panel clean — 2 weeks max
 } as const;
 
 export interface PurgeResult {

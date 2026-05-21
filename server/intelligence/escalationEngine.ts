@@ -10,7 +10,7 @@ import { checkOrgEmailGate } from "../notificationGate";
 
 const ESCALATION_THRESHOLD_HOURS = 48;
 const NUDGE_THRESHOLD_HOURS = 24;
-const MAX_NUDGES_PER_SWEEP = 10;
+const MAX_NUDGES_PER_SWEEP = 3; // Keep low to prevent notification overwhelm
 const MAX_OVERDUE_EMAILS_PER_SWEEP = 3; // Cap to avoid Resend rate limits
 const OVERDUE_EMAIL_COOLDOWN_DAYS = 7; // Don't re-email about the same task within 7 days
 
@@ -143,17 +143,31 @@ export async function runEscalationSweep(organizationId: number): Promise<Escala
           },
         });
 
-        // Create notification for VENTEX operators
-        await createNotification({
-          organizationId,
-          type: NOTIF_TYPES.SMART_ALERT,
-          category: "critical",
-          title: `48h Escalation: ${org.name}`,
-          message: `"${event.agentEntityName || "Item"}" requires attention — unactioned for 48+ hours.`,
-          entityType: event.entityType || undefined,
-          entityId: event.agentEntityId ? parseInt(event.agentEntityId) : undefined,
-          entityName: event.agentEntityName || undefined,
-        });
+        // Create notification for VENTEX operators (only if no recent notification for same entity)
+        const existingNotif = await db
+          .select({ id: sql`id` })
+          .from(sql`notifications`)
+          .where(
+            and(
+              sql`organizationId = ${organizationId}`,
+              sql`type = 'smart_alert'`,
+              sql`entityId = ${event.agentEntityId ? parseInt(event.agentEntityId) : 0}`,
+              sql`createdAt >= ${escalationDedupWindow}`,
+            )
+          )
+          .limit(1);
+        if (existingNotif.length === 0) {
+          await createNotification({
+            organizationId,
+            type: NOTIF_TYPES.SMART_ALERT,
+            category: "critical",
+            title: `48h Escalation: ${org.name}`,
+            message: `"${event.agentEntityName || "Item"}" requires attention — unactioned for 48+ hours.`,
+            entityType: event.entityType || undefined,
+            entityId: event.agentEntityId ? parseInt(event.agentEntityId) : undefined,
+            entityName: event.agentEntityName || undefined,
+          });
+        }
 
         result.escalationsCreated++;
       } catch (err: any) {

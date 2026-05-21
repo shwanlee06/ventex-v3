@@ -1,0 +1,14 @@
+{
+  "query": "SELECT MIN(createdAt) as oldest, MAX(createdAt) as newest FROM notifications;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT MIN(createdAt) as oldest, MAX(createdAt) as newest FROM notifications;",
+  "rows": [
+    {
+      "oldest": "2026-05-14 03:08:17",
+      "newest": "2026-05-21 00:09:53"
+    }
+  ],
+  "messages": [],
+  "stdout": "oldest\tnewest\n2026-05-14 03:08:17\t2026-05-21 00:09:53\n",
+  "stderr": "",
+  "execution_time_ms": 282
+}

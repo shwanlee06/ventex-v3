@@ -1,28 +1,19 @@
-// Principal Decision Queue — Single page for all pending approvals/confirmations
-// Shows: distribution confirmations, stage advance approvals, agent event approvals
+// Principal Decision Queue — Clean, calm page for pending approvals
 import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  AlertTriangle,
   CheckCircle2,
   Clock,
-  Shield,
   Loader2,
   DollarSign,
   TrendingUp,
-  FileCheck,
-  Layers3,
-  ArrowRight,
+  AlertTriangle,
   XCircle,
-  CheckCheck,
-  Timer,
   Zap,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import {
@@ -48,11 +39,6 @@ function friendlyTime(d: Date | string): string {
   return `${days}d ago`;
 }
 
-function daysWaiting(d: Date | string): number {
-  const date = typeof d === "string" ? new Date(d) : d;
-  return Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
-}
-
 type DecisionItem = {
   id: number;
   type: "event" | "draft" | "distribution";
@@ -62,19 +48,12 @@ type DecisionItem = {
   severity: string;
   agentName: string;
   entityName?: string;
-  entityType?: string;
   createdAt: Date | string;
-  daysWaiting: number;
-  actionPayload?: Record<string, unknown>;
-  confidenceScore?: number | null;
 };
 
 export default function Decisions() {
-  const [filter, setFilter] = useState<"all" | "distribution" | "stage_advance" | "task_escalation" | "agent_action">("all");
   const [rejectDialog, setRejectDialog] = useState<DecisionItem | null>(null);
   const [rejectReason, setRejectReason] = useState("");
-  const [batchMode, setBatchMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   const { data, isLoading, refetch } = trpc.agents.pendingApprovals.useQuery({});
   const approveMutation = trpc.agents.approveEvent.useMutation({
@@ -99,7 +78,6 @@ export default function Decisions() {
     if (!data) return [];
     const items: DecisionItem[] = [];
 
-    // Agent events requiring approval
     for (const event of data.events || []) {
       let category: DecisionItem["category"] = "agent_action";
       if (event.entityType === "distribution" || event.actionType === "escalate" && event.agentName === "Distribution Sentinel") {
@@ -119,15 +97,10 @@ export default function Decisions() {
         severity: event.severity,
         agentName: event.agentName,
         entityName: event.agentEntityName || undefined,
-        entityType: event.entityType || undefined,
         createdAt: event.createdAt,
-        daysWaiting: daysWaiting(event.createdAt),
-        actionPayload: event.actionPayload || undefined,
-        confidenceScore: event.confidenceScore,
       });
     }
 
-    // Drafts requiring approval
     for (const draft of data.drafts || []) {
       items.push({
         id: draft.id,
@@ -138,14 +111,11 @@ export default function Decisions() {
         severity: "info",
         agentName: draft.createdByAgent || "Agent",
         entityName: draft.ventureName || undefined,
-        entityType: draft.draftType || undefined,
         createdAt: draft.createdAt,
-        daysWaiting: daysWaiting(draft.createdAt),
-        confidenceScore: draft.confidenceScore,
       });
     }
 
-    // Sort by severity (critical first) then by date
+    // Sort: critical first, then by date
     return items.sort((a, b) => {
       const severityOrder = { critical: 0, warning: 1, info: 2 };
       const aSev = severityOrder[a.severity as keyof typeof severityOrder] ?? 2;
@@ -155,45 +125,17 @@ export default function Decisions() {
     });
   }, [data]);
 
-  const filteredDecisions = filter === "all" ? decisions : decisions.filter(d => d.category === filter);
-
-  const handleApprove = async (item: DecisionItem) => {
+  const handleApprove = (item: DecisionItem) => {
     approveMutation.mutate({ eventId: item.id });
   };
 
-  const handleReject = async () => {
+  const handleReject = () => {
     if (!rejectDialog || !rejectReason.trim()) {
       toast.error("Please provide a reason for rejection");
       return;
     }
     rejectMutation.mutate({ eventId: rejectDialog.id, reason: rejectReason });
   };
-
-  const handleBatchApprove = async () => {
-    const items = filteredDecisions.filter(d => selectedIds.has(d.id));
-    for (const item of items) {
-      await approveMutation.mutateAsync({ eventId: item.id });
-    }
-    setSelectedIds(new Set());
-    setBatchMode(false);
-    toast.success(`${items.length} decisions approved`);
-  };
-
-  const toggleSelect = (id: number) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const stats = useMemo(() => ({
-    total: decisions.length,
-    critical: decisions.filter(d => d.severity === "critical").length,
-    distributions: decisions.filter(d => d.category === "distribution").length,
-    staleOver3Days: decisions.filter(d => d.daysWaiting >= 3).length,
-  }), [decisions]);
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -213,209 +155,104 @@ export default function Decisions() {
     }
   };
 
-  const getSeverityBadge = (severity: string) => {
-    switch (severity) {
-      case "critical": return <Badge variant="destructive" className="text-[10px]">Critical</Badge>;
-      case "warning": return <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-[10px]">Warning</Badge>;
-      default: return <Badge variant="secondary" className="text-[10px]">Info</Badge>;
-    }
-  };
-
   return (
     <DashboardLayout title="Decision Queue" subtitle="PRINCIPAL CONFIRMATIONS">
-      <div className="p-4 md:p-6 space-y-6">
-        {/* Stats Bar */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-lg" />)
-          ) : (
-            <>
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-card border border-border rounded-lg p-4 flex flex-col gap-1"
-              >
-                <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Pending</span>
-                <span className="text-2xl font-semibold font-mono text-foreground">{stats.total}</span>
-                <span className="text-[10px] text-muted-foreground">decisions awaiting</span>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 }}
-                className="bg-card border border-border rounded-lg p-4 flex flex-col gap-1"
-              >
-                <span className="text-[11px] uppercase tracking-wider text-red-400">Critical</span>
-                <span className="text-2xl font-semibold font-mono text-red-400">{stats.critical}</span>
-                <span className="text-[10px] text-muted-foreground">require immediate action</span>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-card border border-border rounded-lg p-4 flex flex-col gap-1"
-              >
-                <span className="text-[11px] uppercase tracking-wider text-emerald-400">Distributions</span>
-                <span className="text-2xl font-semibold font-mono text-emerald-400">{stats.distributions}</span>
-                <span className="text-[10px] text-muted-foreground">pending confirmation</span>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                className="bg-card border border-border rounded-lg p-4 flex flex-col gap-1"
-              >
-                <span className="text-[11px] uppercase tracking-wider text-amber-400">Stale</span>
-                <span className="text-2xl font-semibold font-mono text-amber-400">{stats.staleOver3Days}</span>
-                <span className="text-[10px] text-muted-foreground">waiting 3+ days</span>
-              </motion.div>
-            </>
-          )}
-        </div>
-
-        {/* Filters & Batch Actions */}
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-2">
-            {(["all", "distribution", "stage_advance", "task_escalation", "agent_action"] as const).map(f => (
-              <Button
-                key={f}
-                variant={filter === f ? "default" : "outline"}
-                size="sm"
-                className="text-xs"
-                onClick={() => setFilter(f)}
-              >
-                {f === "all" ? "All" : f.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
-              </Button>
-            ))}
-          </div>
-          <div className="flex items-center gap-2">
-            {batchMode && selectedIds.size > 0 && (
-              <Button size="sm" onClick={handleBatchApprove} className="text-xs bg-emerald-600 hover:bg-emerald-700">
-                <CheckCheck className="size-3.5 mr-1" />
-                Approve {selectedIds.size} Selected
-              </Button>
+      <div className="p-4 md:p-6 space-y-4">
+        {/* Header summary — single line */}
+        {!isLoading && decisions.length > 0 && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Clock className="size-3.5" />
+            <span>{decisions.length} pending {decisions.length === 1 ? "decision" : "decisions"}</span>
+            {decisions.some(d => d.severity === "critical") && (
+              <>
+                <span className="text-muted-foreground/50">·</span>
+                <span className="text-red-400">{decisions.filter(d => d.severity === "critical").length} critical</span>
+              </>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs"
-              onClick={() => { setBatchMode(!batchMode); setSelectedIds(new Set()); }}
-            >
-              {batchMode ? "Cancel Batch" : "Batch Mode"}
-            </Button>
           </div>
-        </div>
+        )}
 
-        {/* Decision Cards */}
+        {/* Decision list */}
         {isLoading ? (
           <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-lg" />)}
+            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />)}
           </div>
-        ) : filteredDecisions.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-20 text-center"
-          >
-            <CheckCircle2 className="size-12 text-emerald-400 mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">All Clear</h3>
-            <p className="text-sm text-muted-foreground max-w-md">
-              No pending decisions. All confirmations have been processed. The system will alert you when new items require your attention.
+        ) : decisions.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <CheckCircle2 className="size-10 text-emerald-400 mb-4" />
+            <h3 className="text-base font-semibold text-foreground mb-1">All Clear</h3>
+            <p className="text-sm text-muted-foreground max-w-sm">
+              No pending decisions. You'll be notified when new items require your attention.
             </p>
-          </motion.div>
+          </div>
         ) : (
-          <div className="space-y-3">
-            <AnimatePresence mode="popLayout">
-              {filteredDecisions.map((item, i) => (
-                <motion.div
-                  key={`${item.type}-${item.id}`}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ delay: i * 0.03, duration: 0.2 }}
-                  className={cn(
-                    "bg-card border rounded-lg p-4 transition-all",
-                    item.severity === "critical" ? "border-red-500/30" : "border-border",
-                    batchMode && selectedIds.has(item.id) && "ring-2 ring-primary/50",
-                    item.daysWaiting >= 3 && "border-l-2 border-l-amber-500"
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    {/* Left: Content */}
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                      {batchMode && (
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.has(item.id)}
-                          onChange={() => toggleSelect(item.id)}
-                          className="mt-1 size-4 rounded border-border"
-                        />
-                      )}
-                      <div className={cn("mt-0.5", getCategoryColor(item.category))}>
-                        {getCategoryIcon(item.category)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <span className="text-sm font-medium text-foreground">{item.title}</span>
-                          {getSeverityBadge(item.severity)}
-                          {item.daysWaiting >= 3 && (
-                            <Badge variant="outline" className="text-[10px] text-amber-400 border-amber-500/30">
-                              <Timer className="size-3 mr-0.5" />
-                              {item.daysWaiting}d waiting
-                            </Badge>
-                          )}
-                        </div>
-                        {item.entityName && (
-                          <span className="text-xs text-muted-foreground font-mono">{item.entityName}</span>
-                        )}
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
-                        <div className="flex items-center gap-3 mt-2">
-                          <span className="text-[10px] text-muted-foreground">
-                            <Clock className="size-3 inline mr-0.5" />
-                            {friendlyTime(item.createdAt)}
+          <div className="space-y-2">
+            {decisions.map((item) => (
+              <div
+                key={`${item.type}-${item.id}`}
+                className={cn(
+                  "bg-card border rounded-lg p-4 transition-all",
+                  item.severity === "critical" ? "border-red-500/30" : "border-border"
+                )}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  {/* Left: Content */}
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className={cn("mt-0.5 flex-shrink-0", getCategoryColor(item.category))}>
+                      {getCategoryIcon(item.category)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-sm font-medium text-foreground">{item.title}</span>
+                        {item.severity === "critical" && (
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-red-500/10 text-red-400">
+                            Critical
                           </span>
-                          <span className="text-[10px] text-muted-foreground font-mono">{item.agentName}</span>
-                          {item.confidenceScore != null && (
-                            <span className="text-[10px] text-muted-foreground">
-                              AI Confidence: {item.confidenceScore}%
-                            </span>
-                          )}
-                        </div>
+                        )}
+                      </div>
+                      {item.entityName && (
+                        <span className="text-[11px] text-muted-foreground font-mono block">{item.entityName}</span>
+                      )}
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-[10px] text-muted-foreground font-mono">
+                          {friendlyTime(item.createdAt)}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground/50">·</span>
+                        <span className="text-[10px] text-muted-foreground font-mono">{item.agentName}</span>
                       </div>
                     </div>
-
-                    {/* Right: Actions */}
-                    {!batchMode && (
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-xs text-red-400 border-red-500/30 hover:bg-red-500/10"
-                          onClick={() => setRejectDialog(item)}
-                          disabled={rejectMutation.isPending}
-                        >
-                          <XCircle className="size-3.5 mr-1" />
-                          Reject
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="text-xs bg-emerald-600 hover:bg-emerald-700"
-                          onClick={() => handleApprove(item)}
-                          disabled={approveMutation.isPending}
-                        >
-                          {approveMutation.isPending ? (
-                            <Loader2 className="size-3.5 mr-1 animate-spin" />
-                          ) : (
-                            <CheckCircle2 className="size-3.5 mr-1" />
-                          )}
-                          Approve
-                        </Button>
-                      </div>
-                    )}
                   </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+
+                  {/* Right: Actions */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-xs text-red-400 border-red-500/30 hover:bg-red-500/10 h-8"
+                      onClick={() => setRejectDialog(item)}
+                      disabled={rejectMutation.isPending}
+                    >
+                      <XCircle className="size-3.5 mr-1" />
+                      Reject
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="text-xs bg-emerald-600 hover:bg-emerald-700 h-8"
+                      onClick={() => handleApprove(item)}
+                      disabled={approveMutation.isPending}
+                    >
+                      {approveMutation.isPending ? (
+                        <Loader2 className="size-3.5 mr-1 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="size-3.5 mr-1" />
+                      )}
+                      Approve
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

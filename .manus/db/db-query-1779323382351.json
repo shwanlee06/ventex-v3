@@ -1,0 +1,19 @@
+{
+  "query": "SELECT COUNT(*) as total FROM notifications; SELECT COUNT(*) as total_drafts FROM agent_drafts;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT COUNT(*) as total FROM notifications; SELECT COUNT(*) as total_drafts FROM agent_drafts;",
+  "rows": [
+    {
+      "total": "1181"
+    },
+    {
+      "total": "total_drafts"
+    },
+    {
+      "total": "3"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\n1181\ntotal_drafts\n3\n",
+  "stderr": "",
+  "execution_time_ms": 274
+}
