@@ -127,21 +127,25 @@ describe("ventures.create with organizationId", () => {
   const caller = appRouter.createCaller(createAdminContext());
 
   afterAll(async () => {
-    // Clean up all test ventures created during this suite
+    // Clean up all test ventures created during this suite via direct DB delete
+    const { db } = await import("./db");
+    const { ventures } = await import("../drizzle/schema");
+    const { eq, or, like } = await import("drizzle-orm");
     for (const id of createdVentureIds) {
       try {
-        await caller.ventures.delete({ id });
-      } catch {
-        // Venture may already be deleted or delete endpoint may not exist
-        // Fallback: direct DB cleanup
-        try {
-          const { db } = await import("./db");
-          const { ventures } = await import("../drizzle/schema");
-          const { eq } = await import("drizzle-orm");
-          await db.delete(ventures).where(eq(ventures.id, id));
-        } catch {}
-      }
+        await db.delete(ventures).where(eq(ventures.id, id));
+      } catch {}
     }
+    // Also clean up any leaked test data by name pattern
+    try {
+      await db.delete(ventures).where(
+        or(
+          like(ventures.name, 'OrgLinked%'),
+          like(ventures.name, 'Test Venture%'),
+          like(ventures.name, 'Unassigned Venture%')
+        )
+      );
+    } catch {}
   });
 
   it("creates a venture and cleans up", async () => {

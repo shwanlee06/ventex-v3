@@ -1,0 +1,135 @@
+{
+  "query": "SELECT id, name, organizationId FROM ventures WHERE name LIKE 'OrgLinked%' OR name LIKE 'Test%' OR name LIKE '%test%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT id, name, organizationId FROM ventures WHERE name LIKE 'OrgLinked%' OR name LIKE 'Test%' OR name LIKE '%test%';",
+  "rows": [
+    {
+      "id": "1080007",
+      "name": "OrgLinked Venture 1778554657094",
+      "organizationId": "2"
+    },
+    {
+      "id": "1080011",
+      "name": "OrgLinked Venture 1778554874837",
+      "organizationId": "2"
+    },
+    {
+      "id": "1110003",
+      "name": "OrgLinked Venture 1778655100062",
+      "organizationId": "2"
+    },
+    {
+      "id": "1110007",
+      "name": "OrgLinked Venture 1778655293198",
+      "organizationId": "2"
+    },
+    {
+      "id": "1110011",
+      "name": "OrgLinked Venture 1778655324929",
+      "organizationId": "2"
+    },
+    {
+      "id": "1110015",
+      "name": "OrgLinked Venture 1778655411236",
+      "organizationId": "2"
+    },
+    {
+      "id": "1110019",
+      "name": "OrgLinked Venture 1778656083829",
+      "organizationId": "2"
+    },
+    {
+      "id": "1140001",
+      "name": "Test Venture 1779303967791",
+      "organizationId": "2"
+    },
+    {
+      "id": "1140002",
+      "name": "OrgLinked Venture 1779303968157",
+      "organizationId": "2"
+    },
+    {
+      "id": "1140005",
+      "name": "Test Venture 1779305078165",
+      "organizationId": "2"
+    },
+    {
+      "id": "1140006",
+      "name": "OrgLinked Venture 1779305078498",
+      "organizationId": "2"
+    },
+    {
+      "id": "1140009",
+      "name": "Test Venture 1779305146883",
+      "organizationId": "2"
+    },
+    {
+      "id": "1140010",
+      "name": "OrgLinked Venture 1779305147240",
+      "organizationId": "2"
+    },
+    {
+      "id": "1170001",
+      "name": "Test Venture 1779314792013",
+      "organizationId": "2"
+    },
+    {
+      "id": "1170002",
+      "name": "OrgLinked Venture 1779314792360",
+      "organizationId": "2"
+    },
+    {
+      "id": "1170005",
+      "name": "Test Venture 1779314982007",
+      "organizationId": "2"
+    },
+    {
+      "id": "1170006",
+      "name": "OrgLinked Venture 1779314982375",
+      "organizationId": "2"
+    },
+    {
+      "id": "1170010",
+      "name": "Test Venture 1779315183371",
+      "organizationId": "2"
+    },
+    {
+      "id": "1170011",
+      "name": "OrgLinked Venture 1779315183736",
+      "organizationId": "2"
+    },
+    {
+      "id": "1170013",
+      "name": "Test Venture 1779315399955",
+      "organizationId": "2"
+    },
+    {
+      "id": "1170014",
+      "name": "OrgLinked Venture 1779315400284",
+      "organizationId": "2"
+    },
+    {
+      "id": "1170017",
+      "name": "Test Venture 1779315580829",
+      "organizationId": "2"
+    },
+    {
+      "id": "1170018",
+      "name": "OrgLinked Venture 1779315581180",
+      "organizationId": "2"
+    },
+    {
+      "id": "1170021",
+      "name": "Test Venture 1779315779032",
+      "organizationId": "2"
+    },
+    {
+      "id": "1170022",
+      "name": "OrgLinked Venture 1779315779379",
+      "organizationId": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\torganizationId\n1080007\tOrgLinked Venture 1778554657094\t2\n1080011\tOrgLinked Venture 1778554874837\t2\n1110003\tOrgLinked Venture 1778655100062\t2\n1110007\tOrgLinked Venture 1778655293198\t2\n1110011\tOrgLinked Venture 1778655324929\t2\n1110015\tOrgLinked Venture 1778655411236\t2\n1110019\tOrgLinked Venture 1778656083829\t2\n1140001\tTest Venture 1779303967791\t2\n1140002\tOrgLinked Venture 1779303968157\t2\n1140005\tTest Venture 1779305078165\t2\n1140006\tOrgLinked Venture 1779305078498\t2\n1140009\tTest Venture 1779305146883\t2\n1140010\tOrgLinked Venture 1779305147240\t2\n1170001\tTest Venture 1779314792013\t2\n1170002\tOrgLinked Venture 1779314792360\t2\n1170005\tTest Venture 1779314982007\t2\n1170006\tOrgLinked Venture 1779314982375\t2\n1170010\tTest Venture 1779315183371\t2\n1170011\tOrgLinked Venture 1779315183736\t2\n1170013\tTest Venture 1779315399955\t2\n1170014\tOrgLinked Venture 1779315400284\t2\n1170017\tTest Venture 1779315580829\t2\n1170018\tOrgLinked Venture 1779315581180\t2\n1170021\tTest Venture 1779315779032\t2\n1170022\tOrgLinked Venture 1779315779379\t2\n",
+  "stderr": "",
+  "execution_time_ms": 269
+}

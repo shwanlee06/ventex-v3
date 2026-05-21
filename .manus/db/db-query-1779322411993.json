@@ -1,0 +1,334 @@
+{
+  "query": "SELECT v.id, v.name, v.organizationId, o.name as orgName FROM ventures v LEFT JOIN organizations o ON v.organizationId = o.id ORDER BY v.organizationId, v.name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute SELECT v.id, v.name, v.organizationId, o.name as orgName FROM ventures v LEFT JOIN organizations o ON v.organizationId = o.id ORDER BY v.organizationId, v.name;",
+  "rows": [
+    {
+      "id": "12",
+      "name": "Bagatelle",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "8",
+      "name": "Berbara - Lebanon",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "14",
+      "name": "Berlin",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "16",
+      "name": "Casino - Malaysia",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "4",
+      "name": "Chekka Land - Resort",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "13",
+      "name": "JV Yacht - Nammos",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "15",
+      "name": "KTL-Dubai Casino License",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "11",
+      "name": "Mar-a-Lago Yacht Club",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "3",
+      "name": "Muscat Bay",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "5",
+      "name": "Muscat Grand Hotel",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1",
+      "name": "Nammos - Barcelona",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "9",
+      "name": "Nammos - Ibiza",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "2",
+      "name": "Nammos - Lagonissi",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "6",
+      "name": "Nammos - Watson Island",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "10",
+      "name": "Nammos Lebanon",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "17",
+      "name": "North Africa Development",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "18",
+      "name": "Oman Luxury Resort",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1080007",
+      "name": "OrgLinked Venture 1778554657094",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1080011",
+      "name": "OrgLinked Venture 1778554874837",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1110003",
+      "name": "OrgLinked Venture 1778655100062",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1110007",
+      "name": "OrgLinked Venture 1778655293198",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1110011",
+      "name": "OrgLinked Venture 1778655324929",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1110015",
+      "name": "OrgLinked Venture 1778655411236",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1110019",
+      "name": "OrgLinked Venture 1778656083829",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1140002",
+      "name": "OrgLinked Venture 1779303968157",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1140006",
+      "name": "OrgLinked Venture 1779305078498",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1140010",
+      "name": "OrgLinked Venture 1779305147240",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170002",
+      "name": "OrgLinked Venture 1779314792360",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170006",
+      "name": "OrgLinked Venture 1779314982375",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170011",
+      "name": "OrgLinked Venture 1779315183736",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170014",
+      "name": "OrgLinked Venture 1779315400284",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170018",
+      "name": "OrgLinked Venture 1779315581180",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170022",
+      "name": "OrgLinked Venture 1779315779379",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "19",
+      "name": "P430",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1140001",
+      "name": "Test Venture 1779303967791",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1140005",
+      "name": "Test Venture 1779305078165",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1140009",
+      "name": "Test Venture 1779305146883",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170001",
+      "name": "Test Venture 1779314792013",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170005",
+      "name": "Test Venture 1779314982007",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170010",
+      "name": "Test Venture 1779315183371",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170013",
+      "name": "Test Venture 1779315399955",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170017",
+      "name": "Test Venture 1779315580829",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170021",
+      "name": "Test Venture 1779315779032",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1140003",
+      "name": "Unassigned Venture 1779303968293",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1140007",
+      "name": "Unassigned Venture 1779305078597",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1140011",
+      "name": "Unassigned Venture 1779305147362",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170003",
+      "name": "Unassigned Venture 1779314792500",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170007",
+      "name": "Unassigned Venture 1779314982489",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170012",
+      "name": "Unassigned Venture 1779315183859",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170015",
+      "name": "Unassigned Venture 1779315400407",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170019",
+      "name": "Unassigned Venture 1779315581297",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "1170023",
+      "name": "Unassigned Venture 1779315779488",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "20",
+      "name": "Venezuela Mining Rights",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    },
+    {
+      "id": "7",
+      "name": "Zarka City",
+      "organizationId": "2",
+      "orgName": "Royalton Venture Holding"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\torganizationId\torgName\n12\tBagatelle\t2\tRoyalton Venture Holding\n8\tBerbara - Lebanon\t2\tRoyalton Venture Holding\n14\tBerlin\t2\tRoyalton Venture Holding\n16\tCasino - Malaysia\t2\tRoyalton Venture Holding\n4\tChekka Land - Resort\t2\tRoyalton Venture Holding\n13\tJV Yacht - Nammos\t2\tRoyalton Venture Holding\n15\tKTL-Dubai Casino License\t2\tRoyalton Venture Holding\n11\tMar-a-Lago Yacht Club\t2\tRoyalton Venture Holding\n3\tMuscat Bay\t2\tRoyalton Venture Holding\n5\tMuscat Grand Hotel\t2\tRoyalton Venture Holding\n1\tNammos - Barcelona\t2\tRoyalton Venture Holding\n9\tNammos - Ibiza\t2\tRoyalton Venture Holding\n2\tNammos - Lagonissi\t2\tRoyalton Venture Holding\n6\tNammos - Watson Island\t2\tRoyalton Venture Holding\n10\tNammos Lebanon\t2\tRoyalton Venture Holding\n17\tNorth Africa Development\t2\tRoyalton Venture Holding\n18\tOman Luxury Resort\t2\tRoyalton Venture Holding\n1080007\tOrgLinked Venture 1778554657094\t2\tRoyalton Venture Holding\n1080011\tOrgLinked Venture 1778554874837\t2\tRoyalton Venture Holding\n1110003\tOrgLinked Venture 1778655100062\t2\tRoyalton Venture Holding\n1110007\tOrgLinked Venture 1778655293198\t2\tRoyalton Venture Holding\n1110011\tOrgLinked Venture 1778655324929\t2\tRoyalton Venture Holding\n1110015\tOrgLinked Venture 1778655411236\t2\tRoyalton Venture Holding\n1110019\tOrgLinked Venture 1778656083829\t2\tRoyalton Venture Holding\n1140002\tOrgLinked Venture 1779303968157\t2\tRoyalton Venture Holding\n1140006\tOrgLinked Venture 1779305078498\t2\tRoyalton Venture Holding\n1140010\tOrgLinked Venture 1779305147240\t2\tRoyalton Venture Holding\n1170002\tOrgLinked Venture 1779314792360\t2\tRoyalton Venture Holding\n1170006\tOrgLinked Venture 1779314982375\t2\tRoyalton Venture Holding\n1170011\tOrgLinked Venture 1779315183736\t2\tRoyalton Venture Holding\n1170014\tOrgLinked Venture 1779315400284\t2\tRoyalton Venture Holding\n1170018\tOrgLinked Venture 1779315581180\t2\tRoyalton Venture Holding\n1170022\tOrgLinked Venture 1779315779379\t2\tRoyalton Venture Holding\n19\tP430\t2\tRoyalton Venture Holding\n1140001\tTest Venture 1779303967791\t2\tRoyalton Venture Holding\n1140005\tTest Venture 1779305078165\t2\tRoyalton Venture Holding\n1140009\tTest Venture 1779305146883\t2\tRoyalton Venture Holding\n1170001\tTest Venture 1779314792013\t2\tRoyalton Venture Holding\n1170005\tTest Venture 1779314982007\t2\tRoyalton Venture Holding\n1170010\tTest Venture 1779315183371\t2\tRoyalton Venture Holding\n1170013\tTest Venture 1779315399955\t2\tRoyalton Venture Holding\n1170017\tTest Venture 1779315580829\t2\tRoyalton Venture Holding\n1170021\tTest Venture 1779315779032\t2\tRoyalton Venture Holding\n1140003\tUnassigned Venture 1779303968293\t2\tRoyalton Venture Holding\n1140007\tUnassigned Venture 1779305078597\t2\tRoyalton Venture Holding\n1140011\tUnassigned Venture 1779305147362\t2\tRoyalton Venture Holding\n1170003\tUnassigned Venture 1779314792500\t2\tRoyalton Venture Holding\n1170007\tUnassigned Venture 1779314982489\t2\tRoyalton Venture Holding\n1170012\tUnassigned Venture 1779315183859\t2\tRoyalton Venture Holding\n1170015\tUnassigned Venture 1779315400407\t2\tRoyalton Venture Holding\n1170019\tUnassigned Venture 1779315581297\t2\tRoyalton Venture Holding\n1170023\tUnassigned Venture 1779315779488\t2\tRoyalton Venture Holding\n20\tVenezuela Mining Rights\t2\tRoyalton Venture Holding\n7\tZarka City\t2\tRoyalton Venture Holding\n",
+  "stderr": "",
+  "execution_time_ms": 370
+}

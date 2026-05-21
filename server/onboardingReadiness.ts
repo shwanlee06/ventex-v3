@@ -108,7 +108,6 @@ export async function checkOnboardingReadiness(organizationId: number): Promise<
     id: spvs.id,
     name: spvs.name,
     capitalCommitted: spvs.capitalCommitted,
-    lpRecipients: (spvs as any).lpRecipients ?? null,
   }).from(spvs).where(eq(spvs.organizationId, organizationId));
 
   // If no SPVs, this is a pass (not all orgs have SPVs)

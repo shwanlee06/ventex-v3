@@ -1016,30 +1016,30 @@ export default function SettingsConfigPage() {
                         <Switch checked={emailNotifs} onCheckedChange={(v) => { setEmailNotifs(v); setHasNotifChanges(true); }} />
                       </div>
                       <Separator />
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between opacity-50">
                         <div className="flex items-center gap-3">
                           <div className="size-8 rounded-lg bg-green-500/10 flex items-center justify-center">
                             <Bell className="size-4 text-green-400" />
                           </div>
                           <div>
                             <p className="text-sm text-foreground">Push Notifications</p>
-                            <p className="text-xs text-muted-foreground">Browser push alerts for urgent items</p>
+                            <p className="text-xs text-muted-foreground">Coming soon — browser push alerts for urgent items</p>
                           </div>
                         </div>
-                        <Switch checked={pushNotifs} onCheckedChange={(v) => { setPushNotifs(v); setHasNotifChanges(true); }} />
+                        <span className="text-[10px] font-mono text-muted-foreground bg-secondary px-2 py-0.5 rounded">SOON</span>
                       </div>
                       <Separator />
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between opacity-50">
                         <div className="flex items-center gap-3">
                           <div className="size-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
                             <MessageSquare className="size-4 text-purple-400" />
                           </div>
                           <div>
                             <p className="text-sm text-foreground">Slack Integration</p>
-                            <p className="text-xs text-muted-foreground">Post alerts to Slack channel</p>
+                            <p className="text-xs text-muted-foreground">Coming soon — post alerts to Slack channel</p>
                           </div>
                         </div>
-                        <Switch checked={slackNotifs} onCheckedChange={(v) => { setSlackNotifs(v); setHasNotifChanges(true); }} />
+                        <span className="text-[10px] font-mono text-muted-foreground bg-secondary px-2 py-0.5 rounded">SOON</span>
                       </div>
                     </div>
                   )}

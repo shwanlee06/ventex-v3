@@ -3738,3 +3738,12 @@
 - [x] Purge orphaned agent_events from archived test clients (org 1200013, 1200015)
 - [x] Purge orphaned agent_drafts from archived test clients
 - [x] Wire notification toggles (email/push/Slack) to control actual delivery
+
+## Production Readiness Pass (May 2026)
+- [x] Fix AgentRunner readiness check crash (lpRecipients column missing from DB)
+- [x] Mark Push/Slack toggles as 'Coming Soon' (not wired to real services)
+- [x] Fix ventures-listWithOrgs test leaking data into production DB
+- [x] Delete all OrgLinked/Test ventures and orphaned data from DB
+- [x] Remove all fake data arrays from data.ts (300+ lines of dead code)
+- [x] Archive test client orgs (AI Empty Test, AI Test Client)
+- [x] Assign NULL-org ventures/tasks/drafts to Royalton org

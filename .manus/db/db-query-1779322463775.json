@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM activity_log WHERE entityName LIKE 'OrgLinked%' OR entityName LIKE 'Test Venture%' OR entityName LIKE 'Unassigned Venture%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute DELETE FROM activity_log WHERE entityName LIKE 'OrgLinked%' OR entityName LIKE 'Test Venture%' OR entityName LIKE 'Unassigned Venture%';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 287
+}

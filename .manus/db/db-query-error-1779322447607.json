@@ -1,0 +1,8 @@
+{
+  "query": "DELETE FROM activity_log WHERE ventureId IN (SELECT id FROM ventures WHERE name LIKE 'OrgLinked%' OR name LIKE 'Test Venture%' OR name LIKE 'Unassigned Venture%');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3cMrMxTWfwieJG9.0a82203cd945 --database TYkqBQavc4Sd5YvF3sSZqT --execute DELETE FROM activity_log WHERE ventureId IN (SELECT id FROM ventures WHERE name LIKE 'OrgLinked%' OR name LIKE 'Test Venture%' OR name LIKE 'Unassigned Venture%');",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'ventureid' in 'where clause'"
+  ]
+}
