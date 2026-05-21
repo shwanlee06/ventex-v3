@@ -8,6 +8,16 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
 
+// Register BigInt with superjson to match server-side registration
+superjson.registerCustom<bigint, string>(
+  {
+    isApplicable: (v): v is bigint => typeof v === "bigint",
+    serialize: (v) => v.toString(),
+    deserialize: (v) => BigInt(v),
+  },
+  "bigint"
+);
+
 const queryClient = new QueryClient();
 
 // Flag to suppress UNAUTHED redirect during intentional logout

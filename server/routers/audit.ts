@@ -71,7 +71,7 @@ export const auditRouter = router({
 
       return {
         entries,
-        total: countResult[0]?.count ?? 0,
+        total: Number(countResult[0]?.count) ?? 0,
       };
     }),
 
@@ -115,7 +115,7 @@ export const auditRouter = router({
 
       return {
         entries,
-        total: countResult[0]?.count ?? 0,
+        total: Number(countResult[0]?.count) ?? 0,
       };
     }),
 

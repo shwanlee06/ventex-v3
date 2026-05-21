@@ -81,8 +81,8 @@ export const accessRouter = router({
         .where(eq(orgVentureAccess.organizationId, org.id));
       result.push({
         ...org,
-        memberCount: memberCount?.count ?? 0,
-        ventureCount: ventureCount?.count ?? 0,
+        memberCount: Number(memberCount?.count) ?? 0,
+        ventureCount: Number(ventureCount?.count) ?? 0,
       });
     }
 
@@ -708,11 +708,11 @@ export const accessRouter = router({
       .where(eq(apiKeys.status, "active"));
 
     return {
-      organizations: orgCount?.count ?? 0,
-      invitations: inviteCount?.count ?? 0,
-      pendingInvitations: pendingCount?.count ?? 0,
-      apiKeys: keyCount?.count ?? 0,
-      activeKeys: activeKeyCount?.count ?? 0,
+      organizations: Number(orgCount?.count) ?? 0,
+      invitations: Number(inviteCount?.count) ?? 0,
+      pendingInvitations: Number(pendingCount?.count) ?? 0,
+      apiKeys: Number(keyCount?.count) ?? 0,
+      activeKeys: Number(activeKeyCount?.count) ?? 0,
     };
   }),
 

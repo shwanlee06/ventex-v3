@@ -106,7 +106,7 @@ export const notificationsRouter = router({
       .from(notifications)
       .where(where);
 
-    return result[0]?.count || 0;
+    return Number(result[0]?.count) || 0;
   }),
 
   /**

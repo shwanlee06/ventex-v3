@@ -6,6 +6,17 @@ import { createAutoAuditMiddleware } from "../security/auditMiddleware";
 import { createTenantGuard } from "../security/tenantGuard";
 import { getOrgAllowlist, getClientIp } from "../security/ipAllowlist";
 
+// Register BigInt with superjson to prevent "unable to transform response" errors
+// MySQL2 can return BigInt for COUNT/SUM even with supportBigNumbers enabled
+superjson.registerCustom<bigint, string>(
+  {
+    isApplicable: (v): v is bigint => typeof v === "bigint",
+    serialize: (v) => v.toString(),
+    deserialize: (v) => BigInt(v),
+  },
+  "bigint"
+);
+
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
 });

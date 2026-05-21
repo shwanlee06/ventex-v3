@@ -81,7 +81,7 @@ export const activityRouter = router({
     }
 
     const countResult = await db.select({ count: sql<number>`COUNT(*)` }).from(activityLog);
-    const total = countResult[0]?.count || 0;
+    const total = Number(countResult[0]?.count) || 0;
 
     return { items: filteredItems, total };
   }),

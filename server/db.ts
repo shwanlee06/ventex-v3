@@ -25,6 +25,8 @@ function createPool(): mysql.Pool {
     enableKeepAlive: true,
     keepAliveInitialDelay: 10_000, // Send keep-alive every 10s to prevent stale connections
     connectTimeout: 10_000,     // 10s connect timeout
+    supportBigNumbers: true,    // Return BigInt as Number/String instead of native BigInt
+    bigNumberStrings: false,    // Return as Number (not string) when safe — prevents JSON serialization errors
   });
   return pool;
 }

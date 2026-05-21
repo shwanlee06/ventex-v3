@@ -359,7 +359,7 @@ export const tasksRouter = router({
         orgId: org.id,
         orgName: org.name,
         orgSlug: org.slug,
-        overdueCount: data?.count || 0,
+        overdueCount: Number(data?.count) || 0,
         maxDaysOverdue: data?.maxDays || 0,
         criticalCount: data?.criticalCount || 0,
         overdueTasks: data?.tasks?.sort((a, b) => b.daysOverdue - a.daysOverdue).slice(0, 5) || [],

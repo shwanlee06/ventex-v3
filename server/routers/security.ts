@@ -331,7 +331,7 @@ export const securityRouter = router({
 
       return {
         entries,
-        total: countResult[0]?.count ?? 0,
+        total: Number(countResult[0]?.count) ?? 0,
       };
     }),
 
@@ -353,10 +353,10 @@ export const securityRouter = router({
     ]);
 
     return {
-      total: total[0]?.count ?? 0,
-      denied: denied[0]?.count ?? 0,
-      errors: errors[0]?.count ?? 0,
-      today: todayCount[0]?.count ?? 0,
+      total: Number(total[0]?.count) ?? 0,
+      denied: Number(denied[0]?.count) ?? 0,
+      errors: Number(errors[0]?.count) ?? 0,
+      today: Number(todayCount[0]?.count) ?? 0,
     };
   }),
 
@@ -377,9 +377,9 @@ export const securityRouter = router({
         db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.role, "admin")),
         db.select({ count: sql<number>`count(*)` }).from(userVentureAccess),
       ]);
-      userCount = uc[0]?.count ?? 0;
-      adminCount = ac[0]?.count ?? 0;
-      accessGrantCount = agc[0]?.count ?? 0;
+      userCount = Number(uc[0]?.count) ?? 0;
+      adminCount = Number(ac[0]?.count) ?? 0;
+      accessGrantCount = Number(agc[0]?.count) ?? 0;
     }
 
     return {
@@ -664,8 +664,8 @@ export const securityRouter = router({
     ]);
 
     return {
-      totalRecords: totalResult[0]?.count ?? 0,
-      expiredRecords: expiredResult[0]?.count ?? 0,
+      totalRecords: Number(totalResult[0]?.count) ?? 0,
+      expiredRecords: Number(expiredResult[0]?.count) ?? 0,
       retentionDays: RETENTION_DAYS,
       cutoffDate: cutoffDate.toISOString(),
       oldestRecord: oldestResult[0]?.oldest ? new Date(oldestResult[0].oldest).toISOString() : null,
@@ -701,7 +701,7 @@ export const securityRouter = router({
 
       // Count how many would be purged
       const [countResult] = await db.select({ count: sql<number>`count(*)` }).from(auditLog).where(where);
-      const purgeCount = countResult?.count ?? 0;
+      const purgeCount = Number(countResult?.count) ?? 0;
 
       if (input.dryRun) {
         return {

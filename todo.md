@@ -3781,3 +3781,7 @@
 - [x] Added Delete button to active clients in ClientDetail (was only showing for archived)
 - [x] Cleaned up all test data from production DB (31 test team members, 2 test orgs, 3 test ventures, 53 test notifications, 186 test activity logs)
 - [x] Cleared all stale pending gate events
+- [x] Fix "unable to transform response from server" — BigInt serialization
+  - Added supportBigNumbers/bigNumberStrings to MySQL pool config
+  - Registered BigInt with superjson on both server and client
+  - Wrapped all COUNT(*) results with Number() across all routers
