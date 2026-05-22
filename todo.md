@@ -3785,3 +3785,7 @@
   - Added supportBigNumbers/bigNumberStrings to MySQL pool config
   - Registered BigInt with superjson on both server and client
   - Wrapped all COUNT(*) results with Number() across all routers
+- [x] Fix blank page on Chrome — CSP was blocking all scripts
+  - Production CSP used nonce-based 'strict-dynamic' but platform injects scripts without nonces
+  - Changed to 'unsafe-inline' for both script-src and style-src in production
+  - Also fixed serveStatic to inject nonces into HTML (belt-and-suspenders approach)

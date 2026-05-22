@@ -64,10 +64,10 @@ async function startServer() {
     const isDev = process.env.NODE_ENV === "development";
     const scriptSrc = isDev
       ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
-      : `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`;
+      : "script-src 'self' 'unsafe-inline'";
     const styleSrc = isDev
       ? "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com"
-      : `style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com`;
+      : "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com";
     const reportUri = isDev ? "" : "; report-uri /api/csp-report; report-to csp-endpoint";
     res.setHeader(
       "Content-Security-Policy",

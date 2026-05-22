@@ -57,9 +57,24 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  app.use(express.static(distPath, {
+    index: false, // Don't auto-serve index.html — we handle it below with nonce injection
+  }));
 
+  // Serve index.html with CSP nonce injection for all non-static routes
   app.use("*path", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+    const indexPath = path.resolve(distPath, "index.html");
+    const nonce = (res as any).cspNonce || "";
+    try {
+      let html = fs.readFileSync(indexPath, "utf-8");
+      // Inject nonce into all <script> tags
+      html = html.replace(/<script/g, `<script nonce="${nonce}"`);
+      // Inject nonce into all <style> and <link rel="stylesheet"> tags
+      html = html.replace(/<style/g, `<style nonce="${nonce}"`);
+      html = html.replace(/<link([^>]*rel="stylesheet")/g, `<link nonce="${nonce}"$1`);
+      res.status(200).set({ "Content-Type": "text/html" }).end(html);
+    } catch (e) {
+      res.sendFile(indexPath);
+    }
   });
 }
