@@ -3789,3 +3789,11 @@
   - Production CSP used nonce-based 'strict-dynamic' but platform injects scripts without nonces
   - Changed to 'unsafe-inline' for both script-src and style-src in production
   - Also fixed serveStatic to inject nonces into HTML (belt-and-suspenders approach)
+- [x] Team page: Add dedicated VENTEX team section with full member table and Add VENTEX Member button
+  - Shows all Internal type team members in a proper table (name, role, function, email, status)
+  - "Add VENTEX Member" button with system role selector and auto-invitation
+  - Invite link shown after creation for sharing
+  - Separate from Client Contacts section below
+- [x] Fix Shwan Lee's org assignment (removed from Royalton orgId=2, set to NULL as VENTEX operator)
+- [x] Fix all admin users' organizationId (8 users: orgId 2 → NULL, they're VENTEX operators not Royalton team)
+- [x] Fix all Internal team_members organizationId (6 members: orgId 2 → NULL)
