@@ -1291,7 +1291,7 @@ export default function SpyOps() {
           OPERATIONAL INTELLIGENCE. VENTURE COMMAND.
         </div>
         {/* right — FIX 16: nav links wired to section IDs */}
-        <div style={{ display: "flex", gap: 4 }}>
+        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
           {[
             { label: "OPERATIONS", id: "hero" },
             { label: "SECTORS", id: "sectors" },
@@ -1317,6 +1317,24 @@ export default function SpyOps() {
               [{l.label}]
             </button>
           ))}
+          <span style={{ width: 1, height: 14, background: "rgba(255,255,255,0.2)", display: "inline-block", margin: "0 4px" }} />
+          <button
+            onClick={() => navigate("/demo")}
+            className="spyops-nav-link"
+            style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 10,
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              color: "#06b6d4",
+              background: "transparent",
+              border: "1px solid rgba(6,182,212,0.3)",
+              padding: "6px 10px",
+              cursor: "none",
+            }}
+          >
+            [PROTOTYPE]
+          </button>
         </div>
       </nav>
 

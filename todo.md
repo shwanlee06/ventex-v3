@@ -3797,3 +3797,5 @@
 - [x] Fix Shwan Lee's org assignment (removed from Royalton orgId=2, set to NULL as VENTEX operator)
 - [x] Fix all admin users' organizationId (8 users: orgId 2 → NULL, they're VENTEX operators not Royalton team)
 - [x] Fix all Internal team_members organizationId (6 members: orgId 2 → NULL)
+- [x] Landing page: Add subtle "View Prototype" link in corner (cyan [PROTOTYPE] button in nav bar)
+- [x] Create /demo route with interactive read-only prototype showcase (dashboard, agents, portal views with anonymized data)

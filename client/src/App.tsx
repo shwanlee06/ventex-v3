@@ -33,6 +33,7 @@ import SignOut from "./pages/SignOut";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import TrustSecurity from "./pages/TrustSecurity";
+import Demo from "./pages/Demo";
 import CsvImport from "./pages/CsvImport";
 import Decisions from "./pages/Decisions";
 import { AgentProvider } from "./contexts/AgentContext";
@@ -121,6 +122,9 @@ function Router() {
       <Route path="/privacy" component={PrivacyPolicy} />
       <Route path="/terms" component={TermsOfService} />
       <Route path="/trust" component={TrustSecurity} />
+
+      {/* Prototype demo — public */}
+      <Route path="/demo" component={Demo} />
 
       {/* Invite acceptance — public */}
       <Route path="/invite/:orgSlug/:token" component={InviteAccept} />
