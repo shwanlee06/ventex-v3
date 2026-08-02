@@ -1154,6 +1154,37 @@ export default function SpyOps() {
                 </div>
               </div>
 
+              {/* Prototype link — bottom-right corner */}
+              <button
+                onClick={() => navigate("/demo")}
+                style={{
+                  position: "absolute",
+                  bottom: 32,
+                  right: 32,
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 10,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: "#06b6d4",
+                  background: "transparent",
+                  border: "1px solid rgba(6,182,212,0.3)",
+                  padding: "8px 14px",
+                  cursor: "none",
+                  transition: "border-color 0.2s, color 0.2s",
+                  zIndex: 10,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(6,182,212,0.7)";
+                  e.currentTarget.style.color = "#22d3ee";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(6,182,212,0.3)";
+                  e.currentTarget.style.color = "#06b6d4";
+                }}
+              >
+                [VIEW PROTOTYPE]
+              </button>
+
             </div>
           )}
 
